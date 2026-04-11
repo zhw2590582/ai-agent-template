@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import type { UIMessage } from 'ai';
+import { MessageSquarePlusIcon, PanelLeftIcon, SparklesIcon } from 'lucide-react';
 
-import { ToolStats } from '@/features/tools/components/tool-stats';
 import { STARTER_PROMPTS } from '@/features/chat/lib/chat-config';
+import { Button } from '@/components/ui/button';
 
 interface ChatSidebarProps {
   isBusy: boolean;
@@ -17,34 +18,39 @@ export function ChatSidebar({
   messages,
   onQuickPrompt,
 }: ChatSidebarProps) {
+  const totalMessages = Math.max(0, messages.length - 1);
+
   return (
-    <aside className="flex flex-col gap-4 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
-      <div className="rounded-[2rem] border border-stone-200/80 bg-white/80 p-6 shadow-[0_18px_50px_rgba(28,25,23,0.08)] backdrop-blur">
-        <div className="text-[11px] uppercase tracking-[0.32em] text-stone-500">
-          AI Agent
+    <aside className="flex h-full flex-col border-r border-border bg-muted/30">
+      <div className="flex items-center justify-between px-4 py-4">
+        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <PanelLeftIcon className="size-4" />
+          Agent Workspace
         </div>
-        <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-stone-950">
-          通用聊天界面
-        </h1>
-        <p className="mt-4 text-sm leading-6 text-stone-600">
-          首页现在直接是一个可用的 agent 工作台。文本响应、工具调用和工具统计都在同一个界面里。
-        </p>
+        <div className="rounded-full bg-background px-2 py-1 text-[11px] text-muted-foreground">
+          {totalMessages} messages
+        </div>
       </div>
 
-      <ToolStats messages={messages} />
+      <div className="px-3">
+        <Button className="w-full justify-start gap-2 rounded-2xl" size="lg">
+          <MessageSquarePlusIcon data-icon="inline-start" />
+          新对话
+        </Button>
+      </div>
 
-      <div className="rounded-[1.8rem] border border-stone-200/80 bg-[#1c1917] p-5 text-stone-100 shadow-[0_18px_50px_rgba(28,25,23,0.16)]">
-        <div className="text-[11px] uppercase tracking-[0.28em] text-stone-400">
-          Quick Start
+      <div className="px-3 pt-5">
+        <div className="px-2 text-[11px] uppercase tracking-[0.26em] text-muted-foreground">
+          Quick Prompts
         </div>
-        <div className="mt-3 space-y-3">
-          {STARTER_PROMPTS.map(prompt => (
+        <div className="mt-3 flex flex-col gap-2">
+          {STARTER_PROMPTS.map((prompt) => (
             <button
               key={prompt}
               type="button"
               onClick={() => onQuickPrompt(prompt)}
               disabled={isBusy}
-              className="w-full rounded-2xl border border-stone-700 px-4 py-3 text-left text-sm leading-6 text-stone-200 transition hover:border-stone-500 hover:bg-stone-900 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-2xl border border-transparent bg-background px-3 py-3 text-left text-sm leading-6 text-foreground transition hover:border-border hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
             >
               {prompt}
             </button>
@@ -52,14 +58,23 @@ export function ChatSidebar({
         </div>
       </div>
 
-      <div className="rounded-[1.8rem] border border-stone-200/80 bg-white/85 p-5 shadow-[0_14px_40px_rgba(28,25,23,0.08)]">
-        <div className="text-[11px] uppercase tracking-[0.28em] text-stone-500">
-          Resource
+      <div className="mt-5 px-3">
+        <div className="px-2 text-[11px] uppercase tracking-[0.26em] text-muted-foreground">
+          Workspace
         </div>
-        <div className="mt-3 flex flex-col gap-3 text-sm text-stone-700">
+        <div className="mt-3 flex flex-col gap-2">
+          <div className="rounded-2xl bg-background px-4 py-3">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <SparklesIcon className="size-4 text-muted-foreground" />
+              通用 AI Agent
+            </div>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              宽屏聊天工作区，支持流式回复和工具调用。
+            </p>
+          </div>
           <Link
             href="/test-deepseek"
-            className="rounded-2xl bg-stone-100 px-4 py-3 transition hover:bg-stone-200"
+            className="rounded-2xl bg-background px-4 py-3 text-sm transition hover:bg-accent"
           >
             打开 DeepSeek 测试页
           </Link>
@@ -67,13 +82,16 @@ export function ChatSidebar({
             href="https://ai-sdk.dev/"
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-2xl bg-stone-100 px-4 py-3 transition hover:bg-stone-200"
+            className="rounded-2xl bg-background px-4 py-3 text-sm transition hover:bg-accent"
           >
             查看 AI SDK 文档
           </a>
         </div>
       </div>
+
+      <div className="mt-auto px-5 py-4 text-xs text-muted-foreground">
+        布局参考 chatgpt.com
+      </div>
     </aside>
   );
 }
-

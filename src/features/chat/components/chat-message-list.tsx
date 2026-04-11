@@ -1,9 +1,29 @@
 'use client';
 
 import type { UIMessage } from 'ai';
+import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
 
-import { ToolInvocationDisplay } from '@/features/tools/components/tool-invocation';
 import { getTextContent, getToolParts } from '@/features/chat/lib/message-utils';
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from '@/components/ai-elements/conversation';
+import {
+  Message,
+  MessageAction,
+  MessageActions,
+  MessageContent,
+  MessageResponse,
+} from '@/components/ai-elements/message';
+import {
+  Tool,
+  ToolContent,
+  ToolHeader,
+  ToolInput,
+  ToolOutput,
+} from '@/components/ai-elements/tool';
+import { cn } from '@/lib/utils';
 
 interface ChatMessageListProps {
   error?: Error;
@@ -16,57 +36,107 @@ export function ChatMessageList({
   messages,
   onRetry,
 }: ChatMessageListProps) {
+  const lastAssistantMessageId = [...messages]
+    .reverse()
+    .find(message => message.role === 'assistant')?.id;
+
   return (
-    <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-7">
-      {messages.map(message => {
-        const toolParts = getToolParts(message);
-        const textContent = getTextContent(message);
-
-        return (
-          <article
-            key={message.id}
-            className={`max-w-3xl rounded-[1.9rem] px-5 py-4 ${
-              message.role === 'user'
-                ? 'ml-auto bg-stone-950 text-stone-50'
-                : 'mr-auto border border-stone-200 bg-[#faf7f2] text-stone-900'
-            }`}
-          >
-            <div className="mb-3 text-[11px] uppercase tracking-[0.3em] opacity-60">
-              {message.role === 'user' ? 'You' : 'Agent'}
+    <Conversation className="min-h-0 flex-1">
+      <ConversationContent className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-8">
+        {messages.length === 1 ? (
+          <div className="flex min-h-[42vh] items-center justify-center">
+            <div className="max-w-2xl text-center">
+              <h3 className="text-3xl font-semibold tracking-tight">
+                今天想让 agent 帮你做什么？
+              </h3>
+              <p className="mt-3 text-base leading-7 text-muted-foreground">
+                你可以直接聊天，也可以让它查时间、做计算，或者触发工具完成更具体的任务。
+              </p>
             </div>
+          </div>
+        ) : null}
 
-            {textContent ? (
-              <div className="whitespace-pre-wrap text-sm leading-7">
-                {textContent}
-              </div>
-            ) : null}
+        {messages.map(message => {
+          const toolParts = getToolParts(message);
+          const textContent = getTextContent(message);
+          const isLastAssistantMessage = message.id === lastAssistantMessageId;
 
-            {toolParts.length > 0 ? (
-              <ToolInvocationDisplay parts={toolParts} />
-            ) : null}
-          </article>
-        );
-      })}
+          return (
+            <div key={message.id} className="w-full">
+              {textContent ? (
+                <Message from={message.role}>
+                  <MessageContent
+                    className={cn(
+                      message.role === 'user'
+                        ? 'max-w-[85%] rounded-[1.6rem]'
+                        : 'max-w-none',
+                    )}
+                  >
+                    <MessageResponse>{textContent}</MessageResponse>
+                  </MessageContent>
+                </Message>
+              ) : null}
 
-      {messages.length === 1 ? (
-        <div className="rounded-[1.9rem] border border-dashed border-stone-300 bg-white/60 px-6 py-10 text-center text-sm leading-7 text-stone-500">
-          试试问一个需要工具的问题，比如天气、时间，或者让它帮你做个计算。
-        </div>
-      ) : null}
+              {toolParts.length > 0 ? (
+                <div className="ml-0 mt-3 max-w-3xl">
+                  {toolParts.map(part => {
+                    const toolName = part.type.replace('tool-', '');
 
-      {error ? (
-        <div className="rounded-[1.6rem] border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
-          请求失败。请检查 `DEEPSEEK_API_KEY` 配置，或稍后重试。
-          <button
-            type="button"
-            onClick={onRetry}
-            className="ml-3 rounded-full border border-red-300 px-3 py-1 text-xs uppercase tracking-[0.2em]"
-          >
-            Retry
-          </button>
-        </div>
-      ) : null}
-    </div>
+                    return (
+                      <Tool
+                        key={part.toolCallId}
+                        className="border-border/80 bg-card/60"
+                        defaultOpen={part.state !== 'output-available'}
+                      >
+                        <ToolHeader
+                          state={part.state}
+                          title={toolName}
+                          type={part.type}
+                        />
+                        <ToolContent>
+                          {'input' in part && part.input !== undefined ? (
+                            <ToolInput input={part.input} />
+                          ) : null}
+                          <ToolOutput
+                            errorText={'errorText' in part ? part.errorText : undefined}
+                            output={'output' in part ? part.output : undefined}
+                          />
+                        </ToolContent>
+                      </Tool>
+                    );
+                  })}
+                </div>
+              ) : null}
+
+              {message.role === 'assistant' && isLastAssistantMessage && textContent ? (
+                <MessageActions className="mt-2">
+                  <MessageAction
+                    label="Retry"
+                    onClick={onRetry}
+                    tooltip="重新生成"
+                  >
+                    <RefreshCcwIcon className="size-3.5" />
+                  </MessageAction>
+                  <MessageAction
+                    label="Copy"
+                    onClick={() => navigator.clipboard.writeText(textContent)}
+                    tooltip="复制回答"
+                  >
+                    <CopyIcon className="size-3.5" />
+                  </MessageAction>
+                </MessageActions>
+              ) : null}
+            </div>
+          );
+        })}
+
+        {error ? (
+          <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-5 py-4 text-sm text-destructive">
+            请求失败。请检查 `DEEPSEEK_API_KEY` 配置，或稍后重试。
+          </div>
+        ) : null}
+      </ConversationContent>
+      <ConversationScrollButton />
+    </Conversation>
   );
 }
-

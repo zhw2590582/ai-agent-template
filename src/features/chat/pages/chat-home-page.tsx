@@ -39,44 +39,33 @@ export function ChatHomePage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f5f1ea] text-stone-950">
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.9),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(120,113,108,0.18),_transparent_30%)]" />
-        <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:grid lg:grid-cols-[320px_minmax(0,1fr)] lg:px-8">
+    <main className="h-screen bg-background text-foreground">
+      <div className="grid h-full w-full grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]">
           <ChatSidebar
             isBusy={isBusy}
             messages={messages}
             onQuickPrompt={handleQuickPrompt}
           />
 
-          <section className="flex min-h-[70vh] flex-col rounded-[2.2rem] border border-stone-200/80 bg-white/75 shadow-[0_20px_60px_rgba(28,25,23,0.10)] backdrop-blur">
-            <div className="border-b border-stone-200/80 px-5 py-5 sm:px-7">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <section className="flex min-h-0 flex-col bg-background">
+            <div className="border-b border-border px-6 py-4">
+              <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div className="text-[11px] uppercase tracking-[0.32em] text-stone-500">
-                    Stream
+                  <div className="text-[11px] uppercase tracking-[0.32em] text-muted-foreground">
+                    chatgpt.com inspired
                   </div>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-stone-950">
-                    直接开始对话
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                    通用 AI Agent
                   </h2>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs uppercase tracking-[0.22em] text-stone-500">
+                  <div className="rounded-full border border-border bg-muted px-3 py-1 text-xs uppercase tracking-[0.22em] text-muted-foreground">
                     {status === 'ready'
                       ? 'Ready'
                       : status === 'error'
                         ? 'Error'
                         : 'Thinking'}
                   </div>
-                  {isBusy ? (
-                    <button
-                      type="button"
-                      onClick={() => stop()}
-                      className="rounded-full bg-stone-950 px-4 py-2 text-xs uppercase tracking-[0.22em] text-stone-50"
-                    >
-                      Stop
-                    </button>
-                  ) : null}
                 </div>
               </div>
             </div>
@@ -90,13 +79,13 @@ export function ChatHomePage() {
             <ChatComposer
               input={input}
               isBusy={isBusy}
+              onStop={stop}
               onInputChange={setInput}
               onSubmit={handleSubmit}
+              status={status}
             />
           </section>
-        </div>
       </div>
     </main>
   );
 }
-
