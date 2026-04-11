@@ -1,112 +1,60 @@
-# 项目设置指南
+# Setup
 
 ## 首次运行
 
-1. **安装依赖**
+```bash
+bun install
+cp .env.example .env.local
+bun run dev
+```
 
-   ```bash
-   bun install
-   ```
+访问地址：
 
-2. **配置环境变量**
+- 中文：`http://localhost:3000/zh-CN`
+- 英文：`http://localhost:3000/en-US`
+- 默认：`http://localhost:3000`
 
-   ```bash
-   # 复制环境变量模板
-   cp .env.example .env.local
+## 必需环境变量
 
-   # 编辑 .env.local，填入你的 API Key
-   ```
+- `DEEPSEEK_API_KEY`
 
-3. **启动开发服务器**
+可选：
 
-   ```bash
-   bun dev
-   ```
+- `OPENAI_API_KEY`
+- `NEXT_PUBLIC_APP_URL`
 
-4. **访问应用**
-
-   应用支持多语言访问：
-   - **中文**: `http://localhost:3000/zh-CN`
-   - **English**: `http://localhost:3000/en-US`
-   - **默认**: `http://localhost:3000` (自动重定向到 zh-CN)
-
-## 环境变量说明
-
-必需的环境变量：
-
-- `DEEPSEEK_API_KEY`: DeepSeek API Key（[获取地址](https://platform.deepseek.com/api_keys)）
-
-可选的环境变量：
-
-- `OPENAI_API_KEY`: 如果需要使用 OpenAI 模型
-
-环境变量会在应用启动时自动验证，缺少必需变量会报错。
+环境变量会在应用启动时由 [src/config/env.ts](../src/config/env.ts) 校验。
 
 ## 常用命令
 
 ```bash
-# 开发
-bun dev              # 启动开发服务器
+bun run dev
+bun run build
+bun run start
 
-# 构建
-bun run build        # 生产构建
-bun start            # 运行生产服务器
-
-# 测试
-bun test             # 运行测试（监听模式）
-bun run test:run     # 运行测试（单次）
-bun run test:ui      # 测试 UI 界面
-bun run test:coverage # 测试覆盖率
-
-# 代码质量
-bun run format       # Prettier 格式化（自动修复）
-bun run format:check # 检查格式（不修改）
-bun run lint         # ESLint 检查
-bun run typecheck    # TypeScript 类型检查
-bun run ci           # 完整 CI 检查（提交前运行）
+bun run format
+bun run format:check
+bun run lint
+bun run typecheck
+bun run test:run
+bun run ci
 ```
 
-### CI 检查说明
+## 提交前最低检查
 
-`bun run ci` 会依次执行：
+```bash
+bun run ci
+```
 
-1. `format:check` - 检查代码格式
-2. `lint` - 检查代码质量
-3. `typecheck` - 检查类型安全
-4. `test:run` - 运行所有测试
+它会执行：
 
-建议在提交代码前运行此命令。
+1. `format:check`
+2. `lint`
+3. `typecheck`
+4. `test:run`
 
-## 国际化
+## 相关文档
 
-项目支持中英文切换：
-
-- **翻译文件**: `src/locales/zh-CN.ts` 和 `src/locales/en-US.ts`
-- **语言切换**: 使用 `<LanguageSwitcher />` 组件
-- **详细文档**: [i18n-guide.md](i18n-guide.md)
-
-## 测试
-
-项目使用 **Vitest** 作为测试框架：
-
-- **运行测试**: `bun test`
-- **测试覆盖率**: `bun run test:coverage`
-- **详细文档**: [testing.md](testing.md)
-
-## 项目结构
-
-详见 [architecture.md](architecture.md)
-
-## 开发规范
-
-详见 [conventions.md](conventions.md)
-
-## GitHub Actions
-
-项目已配置 CI/CD 流程：
-
-- **CI**: 每次 push 和 PR 都会运行 format/lint/typecheck/build
-- **Deploy**: 合并到 main 后自动部署到 Vercel
-- **Dependabot**: 自动检查依赖更新
-
-详见 [.github/README.md](../.github/README.md)
+- 项目现状：[project-status.md](./project-status.md)
+- 架构说明：[architecture.md](./architecture.md)
+- 测试说明：[testing.md](./testing.md)

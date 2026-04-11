@@ -1,41 +1,26 @@
 # Docs
 
-这套文档不再按“教程步骤”组织，而是按“长期演进的应用工程”组织。
+给 AI 和新协作者的推荐阅读顺序：
 
-如果你后面会持续实现更多 AI Agent 能力，建议按这个顺序阅读：
+1. [project-status.md](./project-status.md): 当前真实状态、已完成范围、占位模块、下一优先级
+2. [architecture.md](./architecture.md): 当前代码结构、职责边界、核心请求链路
+3. [conventions.md](./conventions.md): 开发约束和改动原则
+4. [roadmap.md](./roadmap.md): 下一阶段的推荐推进顺序
 
-1. [architecture.md](./architecture.md) - 系统架构和分层设计
-2. [conventions.md](./conventions.md) - 代码规范和实现原则
-3. [roadmap.md](./roadmap.md) - 功能演进路线图
-4. [capability-mapping.md](./capability-mapping.md) - 与教程内容的对照分析
+专题文档：
 
-保留的参考资料：
+- [SETUP.md](./SETUP.md): 本地启动、环境变量、常用命令
+- [testing.md](./testing.md): 测试命令、测试分层、当前覆盖范围
+- [i18n-guide.md](./i18n-guide.md): 国际化实现方式和扩展规则
 
-- `ai-agents-for-beginners/`：理论与模式参考
-- `mcp-for-beginners/`：MCP 与工具协议参考
+低优先级参考资料：
 
-## 文档目标
+- `ai-agents-for-beginners/`: AI Agent 理论与设计模式参考
+- `mcp-for-beginners/`: MCP 协议与工具化参考
 
-- 让当前代码结构易读、易改、易扩展
-- 为未来增加记忆、RAG、规划、多代理等能力预留清晰边界
-- 降低“功能越来越多但目录越来越乱”的风险
+已收敛的历史文档：
 
-## 当前文档清单
+- [capability-mapping.md](./capability-mapping.md): 教程能力到项目路线的简表
+- [architecture-optimization.md](./architecture-optimization.md): 2026-04-11 的基础设施整理记录
 
-- [architecture.md](./architecture.md): 当前系统分层、职责边界和扩展入口
-- [conventions.md](./conventions.md): 代码组织、命名、文件职责和实现原则
-- [roadmap.md](./roadmap.md): 后续功能演进建议与推荐实现顺序（Phase 1 已完成 ✅）
-- [capability-mapping.md](./capability-mapping.md): 与 `ai-agents-for-beginners` 的功能对照、实现难度分析和详细路径
-
-## 快速开始
-
-**如果你是新加入的开发者**，按这个顺序阅读：
-
-1. 先看 [architecture.md](./architecture.md) 了解整体结构
-2. 再看 [conventions.md](./conventions.md) 了解编码规范
-3. 准备开发新功能时看 [capability-mapping.md](./capability-mapping.md)
-
-**如果你想了解后续规划**：
-
-- 直接看 [roadmap.md](./roadmap.md)
-- 详细实现路径看 [capability-mapping.md](./capability-mapping.md)
+如果只看一个文件，先看 [project-status.md](./project-status.md)。

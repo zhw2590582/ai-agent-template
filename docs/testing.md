@@ -1,294 +1,56 @@
-# 测试指南
+# Testing
 
-本项目使用 **Vitest** 作为测试框架，配合 React Testing Library 进行组件测试。
+## 当前测试栈
 
-## 快速开始
+- Vitest
+- React Testing Library
+- jsdom
 
-### 运行测试
+## 常用命令
 
 ```bash
-# 交互式监听模式（开发时推荐）
 bun test
-
-# 运行一次所有测试（CI 使用）
 bun run test:run
-
-# 只运行单元测试
 bun run test:unit
-
-# 只运行集成测试
 bun run test:integration
-
-# E2E 测试目录约定
-bun run test:e2e
-
-# 带 UI 界面的测试
-bun run test:ui
-
-# 生成测试覆盖率报告
 bun run test:coverage
 ```
 
-### 运行特定测试
+`bun run test:e2e` 目前只是占位命令，还没有真实 E2E 套件。
 
-```bash
-# 运行特定文件
-bun test tests/unit/lib/errors.test.ts
+## 当前测试分层
 
-# 运行匹配的测试
-bun test calculator
-
-# 监听模式下按 'p' 过滤文件名
-```
-
-## 测试文件组织
-
-### 目录结构
-
-测试文件统一放在 `tests/` 目录，并按分层规范组织：
-
-```
+```text
 tests/
-├── unit/                     # 单元测试
-│   ├── lib/
-│   ├── components/
-│   └── server/
-├── integration/              # 集成测试
-└── e2e/                      # 端到端测试
+├── unit/
+├── integration/
+└── e2e/
 ```
 
-说明：
+当前现实情况：
 
-- `tests/unit`: 纯函数、工具类、组件行为测试
-- `tests/integration`: 多模块协作、API/流程级测试
-- `tests/e2e`: 浏览器端到端测试（建议 Playwright/Cypress）
+- `unit/` 有基础组件和工具测试
+- `integration/` 有聊天 API 相关测试
+- `e2e/` 只有占位目录
 
-### 命名约定
+## 当前测试重点
 
-- **单元测试**: `*.test.ts` - 测试纯函数、工具类
-- **组件测试**: `*.test.tsx` - 测试 React 组件
-- **集成测试**: `*.integration.test.ts` - 测试多个模块协作
+已有覆盖主要集中在：
 
-## 编写测试
+- i18n
+- 错误处理
+- 语言切换
+- chat route 和部分模型行为
 
-### 单元测试示例
+还需要补的高价值测试：
 
-```typescript
-// tests/unit/lib/utils.test.ts
-import { describe, it, expect } from 'vitest';
-import { formatDate } from '@/lib/utils';
+1. 主题 hydration 场景
+2. 聊天主链路更多边界情况
+3. 工具调用结果展示
+4. 真正的 E2E
 
-describe('formatDate', () => {
-  it('should format date correctly', () => {
-    const date = new Date('2024-01-01');
-    expect(formatDate(date)).toBe('2024-01-01');
-  });
+## 建议
 
-  it('should handle invalid date', () => {
-    expect(() => formatDate(null as any)).toThrow();
-  });
-});
-```
-
-### 组件测试示例
-
-```typescript
-// tests/unit/components/button.test.tsx
-import { render, screen } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
-import { Button } from '@/components/ui/button';
-
-describe('Button', () => {
-  it('should render children', () => {
-    render(<Button>Click me</Button>);
-    expect(screen.getByRole('button')).toHaveTextContent('Click me');
-  });
-
-  it('should handle click event', async () => {
-    const handleClick = vi.fn();
-    const user = userEvent.setup();
-
-    render(<Button onClick={handleClick}>Click me</Button>);
-
-    await user.click(screen.getByRole('button'));
-    expect(handleClick).toHaveBeenCalledOnce();
-  });
-});
-```
-
-### 异步测试示例
-
-```typescript
-// tests/integration/server/api.test.ts
-import { describe, it, expect } from 'vitest';
-import { fetchData } from '@/server/api';
-
-describe('fetchData', () => {
-  it('should fetch data successfully', async () => {
-    const result = await fetchData('test');
-    expect(result).toBeDefined();
-  });
-
-  it('should throw on error', async () => {
-    await expect(fetchData('invalid')).rejects.toThrow();
-  });
-});
-```
-
-## Mocking
-
-### Mock 函数
-
-```typescript
-import { vi } from 'vitest';
-
-const mockFn = vi.fn();
-mockFn('hello');
-
-expect(mockFn).toHaveBeenCalledWith('hello');
-expect(mockFn).toHaveBeenCalledOnce();
-```
-
-### Mock 模块
-
-```typescript
-// 自动 mock
-vi.mock('./module', () => ({
-  someFunction: vi.fn(() => 'mocked'),
-}));
-
-// 部分 mock
-vi.mock('./module', async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    someFunction: vi.fn(),
-  };
-});
-```
-
-### 全局 Mocks
-
-项目已在 `vitest.setup.ts` 中配置了常用 mocks：
-
-- **Next.js navigation**: `useRouter`, `usePathname`, `useSearchParams`
-- **next-intl**: `useTranslations`, `useLocale`, `useFormatter`
-
-## 测试覆盖率
-
-### 查看覆盖率
-
-```bash
-bun run test:coverage
-```
-
-覆盖率报告会生成在 `coverage/` 目录：
-
-- `coverage/index.html` - HTML 报告
-- `coverage/coverage-final.json` - JSON 数据
-
-### 覆盖率目标
-
-- **Statements**: > 80%
-- **Branches**: > 75%
-- **Functions**: > 80%
-- **Lines**: > 80%
-
-## 最佳实践
-
-### DO ✅
-
-- **一个测试一个断言**（或紧密相关的几个）
-- **使用描述性的测试名称**（should/when/given）
-- **测试公共 API，不测试实现细节**
-- **使用 `describe` 分组相关测试**
-- **清理副作用**（自动通过 `afterEach(cleanup)`）
-- **Mock 外部依赖**（API、数据库、第三方服务）
-
-### DON'T ❌
-
-- **不要测试第三方库的功能**
-- **不要过度 mock**（影响测试可信度）
-- **不要在测试中使用真实的 API 调用**
-- **不要忽略测试失败**
-- **不要写脆弱的测试**（依赖具体的实现细节）
-
-## 调试测试
-
-### 使用 VS Code 调试器
-
-1. 在测试文件中设置断点
-2. 按 F5 或点击 "Run and Debug"
-3. 选择 "Vitest" 配置
-
-### 使用 console.log
-
-```typescript
-it('should do something', () => {
-  const result = myFunction();
-  console.log(result); // 会在测试输出中显示
-  expect(result).toBe(expected);
-});
-```
-
-### 只运行特定测试
-
-```typescript
-// 只运行这个测试
-it.only('should only run this', () => {
-  // ...
-});
-
-// 跳过这个测试
-it.skip('should skip this', () => {
-  // ...
-});
-
-// 标记为 TODO
-it.todo('should implement this later');
-```
-
-## CI 集成
-
-测试已集成到 CI pipeline：
-
-```yaml
-# .github/workflows/ci.yml
-- name: Run tests
-  run: bun run test:run
-```
-
-每次 push 或 PR 都会自动运行测试。
-
-## 常见问题
-
-### Q: 测试运行很慢？
-
-A: 使用 `test:run` 而非 `test`，或者限制测试范围：
-
-```bash
-bun test src/lib  # 只测试 lib 目录
-```
-
-### Q: jsdom 环境限制？
-
-A: 某些浏览器 API 在 jsdom 中不可用（如 `IntersectionObserver`）。解决方案：
-
-```typescript
-// vitest.setup.ts
-global.IntersectionObserver = class IntersectionObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-};
-```
-
-### Q: React 组件测试报错？
-
-A: 确保使用 `@testing-library/react` 的最新版本，并查看是否需要 mock Router 或 i18n。
-
-## 参考资料
-
-- [Vitest 官方文档](https://vitest.dev/)
-- [React Testing Library](https://testing-library.com/react)
-- [Testing Library Queries](https://testing-library.com/docs/queries/about)
+- 改服务端链路时，至少跑 `bun run test:run`
+- 改 UI 交互时，补对应组件测试
+- 要合并前，跑 `bun run ci`

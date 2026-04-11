@@ -21,22 +21,18 @@ export function ThemeToggle() {
       return 'dark';
     }
 
-    if (document.documentElement.classList.contains('light')) {
-      return 'light';
-    }
-
-    return window.localStorage.getItem(THEME_STORAGE_KEY) === 'light' ? 'light' : 'dark';
+    return document.documentElement.classList.contains('light') ? 'light' : 'dark';
   });
 
   useEffect(() => {
     applyTheme(theme);
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    document.cookie = `${THEME_COOKIE_KEY}=${theme}; path=/; max-age=31536000; samesite=lax`;
   }, [theme]);
 
   const toggleTheme = () => {
     const nextTheme: ThemeMode = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
-    window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
-    document.cookie = `${THEME_COOKIE_KEY}=${nextTheme}; path=/; max-age=31536000; samesite=lax`;
   };
 
   return (
