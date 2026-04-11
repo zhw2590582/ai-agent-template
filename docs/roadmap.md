@@ -74,7 +74,16 @@
    - `src/lib/i18n.ts`: 类型安全的翻译工具函数
    - 为将来集成 next-intl 做好准备
 
-7. ✅ 文档完善
+7. ✅ i18n 完整集成（已启用）
+   - 安装并配置 **next-intl 4.9.1**
+   - 重构 app 目录为 `[locale]` 路由结构
+   - `src/proxy.ts`: 自动语言检测和重定向（Next.js 16+）
+   - `src/i18n/request.ts`: next-intl 请求配置
+   - `src/components/language-switcher.tsx`: 语言切换组件
+   - 支持中英文切换，URL 格式：`/zh-CN/...` 或 `/en-US/...`
+   - 详见 `docs/i18n-guide.md`
+
+8. ✅ 文档完善
    - `docs/conventions.md`: 代码规范（新增 Tailwind 和 i18n 约定）
    - `docs/capability-mapping.md`: 功能覆盖对照表
    - `docs/architecture-optimization.md`: 架构优化记录

@@ -165,20 +165,35 @@ bun run ci
 
 ## i18n 约定
 
-当前阶段 i18n 已做前期准备，但**暂不启用**（等 Phase 2-3 完成）。
+已集成 **next-intl** 实现完整的国际化支持。
 
 ### 目录结构
 
 ```
 src/
+├── app/
+│   └── [locale]/        # 语言路由
+│       ├── layout.tsx   # 带 i18n 的布局
+│       └── page.tsx     # 页面
+├── components/
+│   └── language-switcher.tsx  # 语言切换组件
 ├── config/
 │   └── i18n.ts          # i18n 配置
+├── i18n/
+│   └── request.ts       # next-intl 请求配置
 ├── locales/
 │   ├── zh-CN.ts         # 中文翻译
 │   └── en-US.ts         # 英文翻译
-└── lib/
-    └── i18n.ts          # i18n 工具函数
+├── lib/
+│   └── i18n.ts          # i18n 工具函数（与 next-intl 兼容）
+└── proxy.ts             # 语言检测路由（Next.js 16+）
 ```
+
+### 路由规则
+
+- **URL 格式**: `/zh-CN/...` 或 `/en-US/...`
+- **默认语言**: `zh-CN`
+- **自动检测**: 根据浏览器语言自动重定向
 
 ### 翻译文件规范
 
@@ -187,17 +202,52 @@ src/
 3. **模块化**：按功能域组织翻译（common, chat, tools, errors 等）
 4. **类型安全**：英文翻译文件必须实现 `Translations` 类型
 
-### 使用方式（未来）
+### 使用方式
+
+#### Server Components
 
 ```typescript
-import { t, createTranslator } from '@/lib/i18n';
+import { useTranslations } from 'next-intl';
 
-// 方式 1：直接使用
-const text = t('zh-CN', 'chat.status.ready');
+export default function MyComponent() {
+  const t = useTranslations();
 
-// 方式 2：创建绑定语言的函数
-const t = createTranslator('zh-CN');
-const text = t('common.app_name');
+  return <h1>{t('common.app_name')}</h1>;
+}
+```
+
+#### Client Components
+
+```typescript
+'use client';
+
+import { useTranslations } from 'next-intl';
+
+export default function MyComponent() {
+  const t = useTranslations();
+
+  return <button>{t('common.confirm')}</button>;
+}
+```
+
+#### 嵌套命名空间
+
+```typescript
+const t = useTranslations('chat');
+// 访问 chat.status.ready
+const status = t('status.ready');
+```
+
+### 语言切换
+
+使用 `LanguageSwitcher` 组件：
+
+```typescript
+import { LanguageSwitcher } from '@/components/language-switcher';
+
+<LanguageSwitcher />;
+```
+
 ```
 
 ### 添加新翻译
@@ -213,3 +263,4 @@ Phase 2-3 完成后，考虑集成 `next-intl`：
 - 服务端自动语言检测
 - 路由级语言切换
 - 日期、数字格式化
+```

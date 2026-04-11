@@ -39,9 +39,9 @@ export const LOCALE_CONFIG: Record<Locale, { name: string; flag: string }> = {
 /**
  * i18n 特性开关
  *
- * 当前阶段保持关闭，待 Phase 2-3 完成后再启用
+ * 已启用：集成 next-intl 完成
  */
-export const I18N_ENABLED = false;
+export const I18N_ENABLED = true;
 
 /**
  * 语言检测策略

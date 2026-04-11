@@ -18,7 +18,9 @@
 - 服务端工具调用（天气、计算器、时间查询）
 - 暗黑主题聊天界面
 - 功能域与服务端分层
+- **完整的国际化支持** 🌍：基于 next-intl，支持中英文切换
 - **Phase 1 完成** ✅：工具拆分、Prompt 抽离、类型系统建立
+- **Phase 1.5 完成** ✅：基础设施（环境变量验证、错误处理、日志系统、CI/CD、i18n）
 
 当前还没有做：
 
@@ -30,16 +32,45 @@
 
 这些能力会在现有结构上逐步接入，而不是推倒重来。
 
-## Run
+### 访问应用
+
+应用支持多语言访问：
+
+- **中文**: `http://localhost:3000/zh-CN`
+- **English**: `http://localhost:3000/en-US`
+- **默认**: `http://localhost:3000` (自动重定向到 zh-CN)
+
+### 启动开发环境
 
 ```bash
 bun install
 bun run dev
 ```
 
-默认入口：
+详细设置说明见 [SETUP.md](./SETUP.md)
 
-- App: `http://localhost:3000`
+## Features
+
+### 国际化 (i18n) 🌍
+
+- ✅ 基于 **next-intl** 的完整国际化支持
+- ✅ 支持语言：中文 (zh-CN)、English (en-US)
+- ✅ 自动语言检测（URL / Cookie / Accept-Language）
+- ✅ 语言切换组件
+- ✅ 类型安全的翻译系统
+
+使用方法：
+
+```typescript
+import { useTranslations } from 'next-intl';
+
+export default function MyComponent() {
+  const t = useTranslations();
+  return <h1>{t('common.app_name')}</h1>;
+}
+```
+
+详见 [docs/i18n-guide.md](./docs/i18n-guide000`
 
 详细设置说明见 [SETUP.md](./SETUP.md)
 
@@ -47,28 +78,44 @@ bun run dev
 
 ### 本地开发
 
-```bash
+````bash
 # 启动开发服务器
 bun dev
 
-# 代码格式化
-bun run format
-
-# 快速 CI 检查（提交前运行）
-bun run ci
-
-# 完整检查
-bun run format:check  # 格式检查
-bun run lint          # 代码质量
-bun run typecheck     # 类型检查
-bun run build         # 构建验证
-```
-
-### CI/CD
-
-项目使用 GitHub Actions 进行自动化检查和部署：
-
-- ✅ 代码格式检查 (Prettier)
+# 代码格式化[locale]/            # ← i18n: 语言路由层
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   └── api/chat/route.ts
+├── components/
+│   ├── ai-elements/
+│   ├── ui/
+│   └── language-switcher.tsx  # ← 语言切换组件
+├── config/                    # ← 新增：集中配置管理
+│   ├── app.ts                 # 应用配置、特性开关
+│   ├── env.ts                 # 环境变量验证
+│   ├── i18n.ts                # i18n 配置
+│   └── paths.ts               # 路径常量
+├── features/
+│   └── chat/
+│       ├── components/
+│       ├── lib/
+│       └── pages/
+├── i18n/
+│   └── request.ts             # ← next-intl 配置
+├── lib/
+│   ├── errors.ts              # ← 新增：错误处理
+│   ├── i18n.ts                # ← i18n 工具函数
+│   ├── logger.ts              # ← 新增：日志系统
+│   └── utils.ts
+├── locales/                   # ← 新增：翻译文件
+│   ├── zh-CN.ts
+│   └── en-US.ts
+├── proxy.ts                   # ← i18n 路由处理（Next.js 16+）
+└── server/
+    ├── ai/
+    │   ├── models.ts
+    │   ├── prompts.ts         # 系统 prompt 管理
+    │   └── tools/             #
 - ✅ 代码质量检查 (ESLint)
 - ✅ TypeScript 类型检查
 - ✅ 构建验证
@@ -104,7 +151,7 @@ src/
     │       └── index.ts
     ├── chat.ts
     └── types.ts            # ← 新增：共享类型定义
-```
+````
 
 ## Docs
 
