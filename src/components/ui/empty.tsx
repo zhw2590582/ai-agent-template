@@ -28,7 +28,7 @@ function EmptyHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       className={cn(
-        'border-border bg-background flex flex-col items-start gap-3 rounded-2xl border p-4',
+        'border-border bg-background flex flex-col items-center gap-3 rounded-2xl border p-4 text-center',
         className
       )}
       {...props}
