@@ -87,6 +87,25 @@ export function getSupabaseEnv() {
   };
 }
 
+export function isSentryConfigured() {
+  return Boolean(env.NEXT_PUBLIC_SENTRY_DSN);
+}
+
+export function getSentryEnv() {
+  const dsn = env.NEXT_PUBLIC_SENTRY_DSN;
+
+  if (!dsn) {
+    throw new Error('Sentry DSN is missing. Please set NEXT_PUBLIC_SENTRY_DSN.');
+  }
+
+  return {
+    authToken: env.SENTRY_AUTH_TOKEN,
+    dsn,
+    org: env.SENTRY_ORG,
+    project: env.SENTRY_PROJECT,
+  };
+}
+
 /**
  * 环境变量类型（供其他模块使用）
  */

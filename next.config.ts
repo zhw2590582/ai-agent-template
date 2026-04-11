@@ -1,5 +1,8 @@
 import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
+
+import { isSentryConfigured } from '@/config/env';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
@@ -22,4 +25,14 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+const configuredNextConfig = withNextIntl(nextConfig);
+
+export default isSentryConfigured()
+  ? withSentryConfig(configuredNextConfig, {
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      silent: true,
+      tunnelRoute: '/monitoring',
+      widenClientFileUpload: true,
+    })
+  : configuredNextConfig;

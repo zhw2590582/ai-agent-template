@@ -7,6 +7,8 @@
  * 3. 便于日志记录和监控
  */
 
+import * as Sentry from '@sentry/nextjs';
+
 import { logger } from './logger';
 import { t } from './i18n';
 
@@ -89,12 +91,30 @@ export const handleErrorWithLocale = (error: unknown, locale: Locale): Response 
   // 已知的应用错误
   if (error instanceof AppError) {
     logger.error(`[${error.code}] ${error.message}`, { details: error.details });
+    Sentry.captureException(error, {
+      extra: {
+        details: error.details,
+        locale,
+        statusCode: error.statusCode,
+      },
+      tags: {
+        code: error.code,
+        handled: 'true',
+      },
+    });
     return error.toResponse(locale);
   }
 
   // AI SDK 错误
   if (error instanceof Error && error.message.includes('API')) {
     logger.error('[API_ERROR] 模型请求失败', { message: error.message });
+    Sentry.captureException(error, {
+      extra: { locale },
+      tags: {
+        code: ErrorCode.MODEL_ERROR,
+        handled: 'true',
+      },
+    });
     return new AppError(
       ErrorCode.MODEL_ERROR,
       t(locale, 'errors.model_error'),
@@ -105,6 +125,13 @@ export const handleErrorWithLocale = (error: unknown, locale: Locale): Response 
 
   // 未知错误
   logger.error('[UNKNOWN_ERROR] 未知错误', { error });
+  Sentry.captureException(error, {
+    extra: { locale },
+    tags: {
+      code: ErrorCode.UNKNOWN,
+      handled: 'true',
+    },
+  });
   return new AppError(ErrorCode.UNKNOWN, t(locale, 'errors.unknown'), 500).toResponse(locale);
 };
 
