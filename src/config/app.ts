@@ -53,6 +53,9 @@ export const FEATURES = {
   PLANNING: false,
   MULTI_AGENT: false,
 
+  // i18n 支持（Phase 2-3 后启用）
+  I18N: false,
+
   // 实验性功能
   VOICE_INPUT: false,
   IMAGE_UPLOAD: false,

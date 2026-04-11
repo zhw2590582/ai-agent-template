@@ -74,39 +74,43 @@
 ### 必须遵守的规则
 
 1. **使用标准类名而非任意值**
+
    ```tsx
    // ❌ 错误
-   className="min-w-[96px]"
-   
+   className = 'min-w-[96px]';
+
    // ✅ 正确
-   className="min-w-24"
+   className = 'min-w-24';
    ```
 
 2. **important 修饰符位置**
+
    ```tsx
    // ❌ 错误
-   className="dark:!bg-[var(--color)]"
-   
+   className = 'dark:!bg-[var(--color)]';
+
    // ✅ 正确
-   className="dark:bg-(--color)!"
+   className = 'dark:bg-(--color)!';
    ```
 
 3. **calc 表达式中的空格**
+
    ```tsx
    // ❌ 错误
-   className="translate-y-[calc(-50%_-_2px)]"
-   
+   className = 'translate-y-[calc(-50%_-_2px)]';
+
    // ✅ 正确
-   className="translate-y-[calc(-50%-2px)]"
+   className = 'translate-y-[calc(-50%-2px)]';
    ```
 
 4. **优先使用语义化尺寸**
+
    ```tsx
    // ❌ 避免自定义像素值
-   className="rounded-[2px]"
-   
+   className = 'rounded-[2px]';
+
    // ✅ 使用预定义尺寸
-   className="rounded-xs"
+   className = 'rounded-xs';
    ```
 
 ### 检查方式
@@ -158,3 +162,54 @@ bun run ci
 - 新能力如何接入
 - 哪些边界已经存在
 - 哪些边界需要继续拆分
+
+## i18n 约定
+
+当前阶段 i18n 已做前期准备，但**暂不启用**（等 Phase 2-3 完成）。
+
+### 目录结构
+
+```
+src/
+├── config/
+│   └── i18n.ts          # i18n 配置
+├── locales/
+│   ├── zh-CN.ts         # 中文翻译
+│   └── en-US.ts         # 英文翻译
+└── lib/
+    └── i18n.ts          # i18n 工具函数
+```
+
+### 翻译文件规范
+
+1. **统一结构**：所有语言文件必须保持相同的嵌套结构
+2. **命名约定**：使用 snake_case 命名翻译键
+3. **模块化**：按功能域组织翻译（common, chat, tools, errors 等）
+4. **类型安全**：英文翻译文件必须实现 `Translations` 类型
+
+### 使用方式（未来）
+
+```typescript
+import { t, createTranslator } from '@/lib/i18n';
+
+// 方式 1：直接使用
+const text = t('zh-CN', 'chat.status.ready');
+
+// 方式 2：创建绑定语言的函数
+const t = createTranslator('zh-CN');
+const text = t('common.app_name');
+```
+
+### 添加新翻译
+
+1. 在 `zh-CN.ts` 中添加键值
+2. 在 `en-US.ts` 中添加对应翻译
+3. TypeScript 会自动提示缺失的翻译
+
+### 集成计划
+
+Phase 2-3 完成后，考虑集成 `next-intl`：
+
+- 服务端自动语言检测
+- 路由级语言切换
+- 日期、数字格式化

@@ -37,6 +37,58 @@
 - 类型系统为 Phase 2-6 做好准备，减少后续重构
 - 代码结构更符合 production 标准
 
+## Phase 1.5: Infrastructure & Code Quality ✅
+
+**状态**: 已完成（2026-04-11）
+
+**目标**: 建立生产级基础设施和严格的代码质量标准。
+
+**已完成的动作**:
+
+1. ✅ 环境变量验证系统
+   - `src/config/env.ts`: 使用 Zod 进行运行时验证
+   - 类型安全的环境变量访问
+
+2. ✅ 集中配置管理
+   - `src/config/app.ts`: AI_CONFIG, CHAT_CONFIG, FEATURES
+   - `src/config/paths.ts`: 路径常量
+   - `src/config/i18n.ts`: i18n 配置（已准备但未启用）
+
+3. ✅ 错误处理与日志系统
+   - `src/lib/errors.ts`: ErrorCode enum, AppError class
+   - `src/lib/logger.ts`: 结构化日志（开发/生产环境自适应）
+
+4. ✅ 代码质量工具
+   - Prettier 3.8.2 + prettier-plugin-tailwindcss 0.7.2
+   - ESLint 9 + eslint-config-prettier + eslint-plugin-prettier
+   - 严格的 Tailwind CSS 规范（禁止任意值警告）
+
+5. ✅ CI/CD 流程
+   - GitHub Actions workflows (ci.yml, deploy.yml)
+   - Dependabot 自动依赖更新
+   - PR template 和文档
+
+6. ✅ i18n 前期准备（未启用）
+   - `src/locales/zh-CN.ts`: 中文翻译文件
+   - `src/locales/en-US.ts`: 英文翻译文件
+   - `src/lib/i18n.ts`: 类型安全的翻译工具函数
+   - 为将来集成 next-intl 做好准备
+
+7. ✅ 文档完善
+   - `docs/conventions.md`: 代码规范（新增 Tailwind 和 i18n 约定）
+   - `docs/capability-mapping.md`: 功能覆盖对照表
+   - `docs/architecture-optimization.md`: 架构优化记录
+   - `SETUP.md`: CI/CD 设置指南
+
+**实际收益**:
+
+- 所有配置集中管理，易于维护和测试
+- 类型安全的环境变量，避免运行时错误
+- 结构化日志和错误处理，便于问题追踪
+- 自动化 CI/CD，确保代码质量
+- i18n 基础设施就绪，将来启用只需配置路由
+- 严格的代码标准，避免技术债务积累
+
 ## Phase 2: Memory
 
 目标：支持短期记忆与历史会话。
