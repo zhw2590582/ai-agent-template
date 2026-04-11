@@ -1,6 +1,7 @@
 'use client';
 
 import type { ChatStatus } from 'ai';
+import { useTranslations } from 'next-intl';
 import {
   PromptInput,
   PromptInputBody,
@@ -27,6 +28,8 @@ export function ChatComposer({
   onStop,
   onSubmit,
 }: ChatComposerProps) {
+  const t = useTranslations();
+
   return (
     <div className="border-border bg-background border-t px-6 py-5">
       <div className="mx-auto w-full max-w-3xl">
@@ -37,13 +40,13 @@ export function ChatComposer({
               disabled={isBusy}
               value={input}
               onChange={(event) => onInputChange(event.target.value)}
-              placeholder="给 AI Agent 发送消息"
+              placeholder={t('chat.composer.placeholder')}
             />
           </PromptInputBody>
           <PromptInputFooter>
             <PromptInputTools>
               <div className="text-muted-foreground px-2 text-xs">
-                宽屏工作区，支持流式回复与工具调用
+                {t('chat.composer.workspace_hint')}
               </div>
             </PromptInputTools>
             <PromptInputSubmit
@@ -55,7 +58,7 @@ export function ChatComposer({
         </PromptInput>
 
         <p className="text-muted-foreground mt-3 text-center text-xs">
-          Enter 发送，Shift + Enter 换行
+          {t('chat.composer.enter_hint')}
         </p>
       </div>
     </div>

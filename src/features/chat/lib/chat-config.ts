@@ -1,21 +1,27 @@
 import type { UIMessage } from 'ai';
 
-export const STARTER_PROMPTS = [
-  '现在上海时间几点？',
-  '帮我算一下 (24 * 8) / 3',
-  '北京今天适合出门吗？',
-  '给我一份今天的工作启动清单',
-];
+type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
 
-export const INITIAL_MESSAGES: UIMessage[] = [
-  {
-    id: 'welcome-message',
-    role: 'assistant',
-    parts: [
-      {
-        type: 'text',
-        text: '我是一个通用 AI Agent。你可以直接聊天，也可以让我查时间、做计算，或调用工具来辅助回答。',
-      },
-    ],
-  },
-];
+export function getStarterPrompts(t: TranslateFn): string[] {
+  return [
+    t('chat.quick_prompts.items.time'),
+    t('chat.quick_prompts.items.calculate'),
+    t('chat.quick_prompts.items.weather'),
+    t('chat.quick_prompts.items.todo'),
+  ];
+}
+
+export function getInitialMessages(t: TranslateFn): UIMessage[] {
+  return [
+    {
+      id: 'welcome-message',
+      role: 'assistant',
+      parts: [
+        {
+          type: 'text',
+          text: t('chat.welcome_message'),
+        },
+      ],
+    },
+  ];
+}

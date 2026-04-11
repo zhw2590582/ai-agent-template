@@ -31,9 +31,35 @@ const zhCN = {
   chat: {
     title: '通用 AI Agent',
     subtitle: 'chatgpt.com inspired',
+    welcome_message:
+      '我是一个通用 AI Agent。你可以直接聊天，也可以让我查时间、做计算，或调用工具来辅助回答。',
     input_placeholder: '输入消息...',
     send: '发送',
     stop: '停止',
+    actions: {
+      retry: '重试',
+      regenerate: '重新生成',
+      copy: '复制',
+      copy_response: '复制回答',
+    },
+    composer: {
+      placeholder: '给 AI Agent 发送消息',
+      workspace_hint: '宽屏工作区，支持流式回复与工具调用',
+      enter_hint: 'Enter 发送，Shift + Enter 换行',
+    },
+    sidebar: {
+      agent_workspace: 'Agent 工作区',
+      messages: '{count} 条消息',
+      new_chat: '新对话',
+      workspace: '工作区',
+      workspace_desc: '宽屏聊天工作区，支持流式回复和工具调用。',
+      view_ai_sdk_docs: '查看 AI SDK 文档',
+      dark_mode_only: '仅支持暗色模式',
+    },
+    empty_state: {
+      title: '今天想让 agent 帮你做什么？',
+      description: '你可以直接聊天，也可以让它查时间、做计算，或者触发工具完成更具体的任务。',
+    },
     retry: '重试',
     regenerate: '重新生成',
     status: {
@@ -43,12 +69,18 @@ const zhCN = {
     },
     quick_prompts: {
       title: '快速提示',
-      // 预留快速提示词
+      items: {
+        time: '现在上海时间几点？',
+        calculate: '帮我算一下 (24 * 8) / 3',
+        weather: '北京今天适合出门吗？',
+        todo: '给我一份今天的工作启动清单',
+      },
     },
     errors: {
       network: '网络错误，请重试',
       rate_limit: '请求过于频繁',
       server: '服务器错误',
+      request_failed: '请求失败。请检查 DEEPSEEK_API_KEY 配置，或稍后重试。',
       unknown: '未知错误',
     },
   },

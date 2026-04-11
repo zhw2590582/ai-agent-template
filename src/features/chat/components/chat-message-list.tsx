@@ -2,6 +2,7 @@
 
 import type { UIMessage } from 'ai';
 import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { getTextContent, getToolParts } from '@/features/chat/lib/message-utils';
 import {
@@ -32,9 +33,17 @@ interface ChatMessageListProps {
 }
 
 export function ChatMessageList({ error, messages, onRetry }: ChatMessageListProps) {
+  const t = useTranslations();
   const lastAssistantMessageId = [...messages]
     .reverse()
     .find((message) => message.role === 'assistant')?.id;
+
+  const getToolTitle = (toolName: string) => {
+    if (toolName === 'weather') return t('tools.weather.name');
+    if (toolName === 'calculator') return t('tools.calculator.name');
+    if (toolName === 'datetime') return t('tools.datetime.name');
+    return toolName;
+  };
 
   return (
     <Conversation className="min-h-0 flex-1">
@@ -42,9 +51,11 @@ export function ChatMessageList({ error, messages, onRetry }: ChatMessageListPro
         {messages.length === 1 ? (
           <div className="flex min-h-[42vh] items-center justify-center">
             <div className="max-w-2xl text-center">
-              <h3 className="text-3xl font-semibold tracking-tight">今天想让 agent 帮你做什么？</h3>
+              <h3 className="text-3xl font-semibold tracking-tight">
+                {t('chat.empty_state.title')}
+              </h3>
               <p className="text-muted-foreground mt-3 text-base leading-7">
-                你可以直接聊天，也可以让它查时间、做计算，或者触发工具完成更具体的任务。
+                {t('chat.empty_state.description')}
               </p>
             </div>
           </div>
@@ -80,7 +91,11 @@ export function ChatMessageList({ error, messages, onRetry }: ChatMessageListPro
                         className="border-border/80 bg-card/60"
                         defaultOpen={part.state !== 'output-available'}
                       >
-                        <ToolHeader state={part.state} title={toolName} type={part.type} />
+                        <ToolHeader
+                          state={part.state}
+                          title={getToolTitle(toolName)}
+                          type={part.type}
+                        />
                         <ToolContent>
                           {'input' in part && part.input !== undefined ? (
                             <ToolInput input={part.input} />
@@ -98,13 +113,17 @@ export function ChatMessageList({ error, messages, onRetry }: ChatMessageListPro
 
               {message.role === 'assistant' && isLastAssistantMessage && textContent ? (
                 <MessageActions className="mt-2">
-                  <MessageAction label="Retry" onClick={onRetry} tooltip="重新生成">
+                  <MessageAction
+                    label={t('chat.actions.retry')}
+                    onClick={onRetry}
+                    tooltip={t('chat.actions.regenerate')}
+                  >
                     <RefreshCcwIcon className="size-3.5" />
                   </MessageAction>
                   <MessageAction
-                    label="Copy"
+                    label={t('chat.actions.copy')}
                     onClick={() => navigator.clipboard.writeText(textContent)}
-                    tooltip="复制回答"
+                    tooltip={t('chat.actions.copy_response')}
                   >
                     <CopyIcon className="size-3.5" />
                   </MessageAction>
@@ -116,7 +135,7 @@ export function ChatMessageList({ error, messages, onRetry }: ChatMessageListPro
 
         {error ? (
           <div className="border-destructive/20 bg-destructive/10 text-destructive rounded-2xl border px-5 py-4 text-sm">
-            请求失败。请检查 `DEEPSEEK_API_KEY` 配置，或稍后重试。
+            {t('chat.errors.request_failed')}
           </div>
         ) : null}
       </ConversationContent>

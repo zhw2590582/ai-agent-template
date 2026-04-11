@@ -33,9 +33,36 @@ export const enUS: Translations = {
   chat: {
     title: 'General AI Agent',
     subtitle: 'chatgpt.com inspired',
+    welcome_message:
+      'I am a general AI Agent. You can chat directly, ask me to check time, do calculations, or call tools for richer answers.',
     input_placeholder: 'Type a message...',
     send: 'Send',
     stop: 'Stop',
+    actions: {
+      retry: 'Retry',
+      regenerate: 'Regenerate',
+      copy: 'Copy',
+      copy_response: 'Copy response',
+    },
+    composer: {
+      placeholder: 'Send a message to AI Agent',
+      workspace_hint: 'Wide workspace with streaming responses and tool calling',
+      enter_hint: 'Press Enter to send, Shift + Enter for newline',
+    },
+    sidebar: {
+      agent_workspace: 'Agent Workspace',
+      messages: '{count} messages',
+      new_chat: 'New chat',
+      workspace: 'Workspace',
+      workspace_desc: 'Wide chat workspace with streaming responses and tool calling.',
+      view_ai_sdk_docs: 'View AI SDK docs',
+      dark_mode_only: 'Dark mode only',
+    },
+    empty_state: {
+      title: 'What do you want the agent to help with today?',
+      description:
+        'You can chat directly, ask it to check time, do calculations, or trigger tools for more specific tasks.',
+    },
     retry: 'Retry',
     regenerate: 'Regenerate',
     status: {
@@ -45,11 +72,18 @@ export const enUS: Translations = {
     },
     quick_prompts: {
       title: 'Quick Prompts',
+      items: {
+        time: 'What time is it now in Shanghai?',
+        calculate: 'Calculate (24 * 8) / 3 for me',
+        weather: 'Is it good weather to go out in Beijing today?',
+        todo: 'Give me a startup checklist for today',
+      },
     },
     errors: {
       network: 'Network error, please retry',
       rate_limit: 'Too many requests',
       server: 'Server error',
+      request_failed: 'Request failed. Please check DEEPSEEK_API_KEY or try again later.',
       unknown: 'Unknown error',
     },
   },

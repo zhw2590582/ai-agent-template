@@ -8,6 +8,9 @@
  */
 
 import { logger } from './logger';
+import { t } from './i18n';
+
+type Locale = 'zh-CN' | 'en-US';
 
 /**
  * 应用错误类型
@@ -55,12 +58,15 @@ export class AppError extends Error {
   /**
    * 转换为 HTTP Response
    */
-  toResponse(): Response {
+  toResponse(locale: Locale = 'zh-CN'): Response {
+    const fallbackMessage = t(locale, `errors.${this.code.toLowerCase()}` as never);
+    const message = this.message || fallbackMessage;
+
     return new Response(
       JSON.stringify({
         error: {
           code: this.code,
-          message: this.message,
+          message,
           details: this.details,
         },
       }),
@@ -76,10 +82,14 @@ export class AppError extends Error {
  * 错误处理辅助函数
  */
 export const handleError = (error: unknown): Response => {
+  return handleErrorWithLocale(error, 'zh-CN');
+};
+
+export const handleErrorWithLocale = (error: unknown, locale: Locale): Response => {
   // 已知的应用错误
   if (error instanceof AppError) {
     logger.error(`[${error.code}] ${error.message}`, { details: error.details });
-    return error.toResponse();
+    return error.toResponse(locale);
   }
 
   // AI SDK 错误
@@ -87,15 +97,15 @@ export const handleError = (error: unknown): Response => {
     logger.error('[API_ERROR] 模型请求失败', { message: error.message });
     return new AppError(
       ErrorCode.MODEL_ERROR,
-      '模型请求失败，请稍后重试',
+      t(locale, 'errors.model_error'),
       500,
       error.message
-    ).toResponse();
+    ).toResponse(locale);
   }
 
   // 未知错误
   logger.error('[UNKNOWN_ERROR] 未知错误', { error });
-  return new AppError(ErrorCode.UNKNOWN, '服务暂时不可用，请稍后重试', 500).toResponse();
+  return new AppError(ErrorCode.UNKNOWN, t(locale, 'errors.unknown'), 500).toResponse(locale);
 };
 
 /**
