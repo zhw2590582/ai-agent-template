@@ -22,6 +22,7 @@ export const enUS: Translations = {
     delete: 'Delete',
     edit: 'Edit',
     back: 'Back',
+    back_to_chat: 'Back to chat',
     next: 'Next',
     previous: 'Previous',
     search: 'Search',
@@ -47,15 +48,20 @@ export const enUS: Translations = {
     composer: {
       placeholder: 'Send a message to AI Agent',
       workspace_hint: 'Wide workspace with streaming responses and tool calling',
+      model_label: 'Model',
       enter_hint: 'Press Enter to send, Shift + Enter for newline',
+    },
+    header: {
+      show_sidebar: 'Show sidebar',
+      hide_sidebar: 'Hide sidebar',
     },
     sidebar: {
       agent_workspace: 'Agent Workspace',
       messages: '{count} messages',
       new_chat: 'New chat',
-      workspace: 'Workspace',
-      workspace_desc: 'Wide chat workspace with streaming responses and tool calling.',
-      view_ai_sdk_docs: 'View AI SDK docs',
+      history: 'History',
+      history_item: 'Item {index}',
+      no_history: 'No history yet. Send a message and it will appear here.',
       dark_mode_only: 'Dark mode only',
     },
     empty_state: {
@@ -70,21 +76,16 @@ export const enUS: Translations = {
       thinking: 'Thinking',
       error: 'Error',
     },
-    quick_prompts: {
-      title: 'Quick Prompts',
-      items: {
-        time: 'What time is it now in Shanghai?',
-        calculate: 'Calculate (24 * 8) / 3 for me',
-        weather: 'Is it good weather to go out in Beijing today?',
-        todo: 'Give me a startup checklist for today',
-      },
-    },
     errors: {
       network: 'Network error, please retry',
       rate_limit: 'Too many requests',
       server: 'Server error',
       request_failed: 'Request failed. Please check DEEPSEEK_API_KEY or try again later.',
       unknown: 'Unknown error',
+    },
+    models: {
+      deepseek_chat: 'DeepSeek Chat',
+      deepseek_coder: 'DeepSeek Coder',
     },
   },
 
@@ -107,6 +108,57 @@ export const enUS: Translations = {
     title: 'Settings',
     language: 'Language',
     theme: 'Theme',
+  },
+
+  auth: {
+    sign_in: 'Sign in',
+    title: 'Sign-in entry',
+    description:
+      'Authentication is not wired in yet. This page is reserved for a future login flow.',
+    back_to_chat: 'Back to chat',
+  },
+
+  navigation: {
+    providers: 'Providers',
+    agents: 'Agents',
+    plugins: 'Plugins',
+    tools: 'Tools',
+    skills: 'Skills',
+    memory: 'Memory',
+    settings: 'Settings',
+  },
+
+  placeholders: {
+    providers: {
+      title: 'Providers Page',
+      description:
+        'This is a placeholder for future provider management and model connection settings.',
+    },
+    agents: {
+      title: 'Agents Page',
+      description:
+        'This is a placeholder for future agent roles, strategies, and execution settings.',
+    },
+    plugins: {
+      title: 'Plugins Page',
+      description: 'This is a placeholder for future plugin browsing and management.',
+    },
+    tools: {
+      title: 'Tools Page',
+      description: 'This is a placeholder for future tool configuration and availability.',
+    },
+    skills: {
+      title: 'Skills Page',
+      description: 'This is a placeholder for future skill packs and workflow management.',
+    },
+    memory: {
+      title: 'Memory Page',
+      description: 'This is a placeholder for future memory controls and storage settings.',
+    },
+    settings: {
+      title: 'Settings Page',
+      description: 'This is a placeholder for future application preferences and settings.',
+    },
   },
 
   errors: {

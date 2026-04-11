@@ -1,9 +1,10 @@
 import { convertToModelMessages, streamText, type UIMessage } from 'ai';
 
 import { AI_CONFIG } from '@/config/app';
+import { LOCALE_DETECTION_STRATEGY } from '@/config/i18n';
 import { handleErrorWithLocale } from '@/lib/errors';
 import { t } from '@/lib/i18n';
-import { defaultModel } from '@/server/ai/models';
+import { defaultModel, getChatModel } from '@/server/ai/models';
 import { DEFAULT_SYSTEM_PROMPT } from '@/server/ai/prompts';
 import { agentTools } from '@/server/ai/tools';
 
@@ -21,7 +22,7 @@ function getLocaleFromRequest(request: Request): 'zh-CN' | 'en-US' {
   const localeFromCookie = cookie
     .split(';')
     .map((item) => item.trim())
-    .find((item) => item.startsWith('NEXT_LOCALE='))
+    .find((item) => item.startsWith(`${LOCALE_DETECTION_STRATEGY.cookieName}=`))
     ?.split('=')[1];
 
   if (localeFromCookie === 'zh-CN' || localeFromCookie === 'en-US') {
@@ -40,10 +41,16 @@ export async function handleChatPost(request: Request) {
   const locale = getLocaleFromRequest(request);
 
   try {
-    const { messages }: { messages: UIMessage[] } = await request.json();
+    const {
+      messages,
+      model,
+    }: {
+      messages: UIMessage[];
+      model?: string;
+    } = await request.json();
 
     const result = streamText({
-      model: defaultModel.chat,
+      model: model ? getChatModel(model) : defaultModel.chat,
       system: DEFAULT_SYSTEM_PROMPT,
       messages: await convertToModelMessages(messages),
       tools: agentTools,

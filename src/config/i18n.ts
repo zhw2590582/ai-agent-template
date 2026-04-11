@@ -48,13 +48,13 @@ export const I18N_ENABLED = true;
  *
  * 未来可以根据以下优先级检测语言：
  * 1. URL 参数 (?lang=en-US)
- * 2. Cookie (preferred-locale)
+ * 2. Cookie (NEXT_LOCALE)
  * 3. Accept-Language header
  * 4. 默认语言
  */
 export const LOCALE_DETECTION_STRATEGY = {
   urlParam: 'lang',
-  cookieName: 'preferred-locale',
+  cookieName: 'NEXT_LOCALE',
   useAcceptLanguage: true,
   fallback: DEFAULT_LOCALE,
 } as const;

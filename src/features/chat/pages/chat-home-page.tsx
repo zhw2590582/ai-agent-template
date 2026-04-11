@@ -1,22 +1,66 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { useTranslations } from 'next-intl';
+import {
+  BlocksIcon,
+  BotIcon,
+  BrainIcon,
+  LogInIcon,
+  PlugIcon,
+  Settings2Icon,
+  ShieldEllipsisIcon,
+  WrenchIcon,
+} from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 
+import { Button } from '@/components/ui/button';
+import { AI_CONFIG } from '@/config/app';
+import { HEADER_NAV_ITEMS } from '@/config/navigation';
+import { type ModelId } from '@/config/models';
 import { ChatComposer } from '@/features/chat/components/chat-composer';
 import { ChatMessageList } from '@/features/chat/components/chat-message-list';
 import { ChatSidebar } from '@/features/chat/components/chat-sidebar';
-import { getInitialMessages, getStarterPrompts } from '@/features/chat/lib/chat-config';
+import { getInitialMessages } from '@/features/chat/lib/chat-config';
+import { cn } from '@/lib/utils';
+
+const NAV_ICONS = {
+  providers: PlugIcon,
+  agents: BotIcon,
+  plugins: BlocksIcon,
+  tools: WrenchIcon,
+  skills: ShieldEllipsisIcon,
+  memory: BrainIcon,
+  settings: Settings2Icon,
+} as const;
 
 export function ChatHomePage() {
   const t = useTranslations();
-  const starterPrompts = useMemo(() => getStarterPrompts(t), [t]);
+  const locale = useLocale();
   const initialMessages = useMemo(() => getInitialMessages(t), [t]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [selectedModel, setSelectedModel] = useState<ModelId>(AI_CONFIG.DEFAULT_MODEL);
   const [input, setInput] = useState('');
-  const { messages, sendMessage, status, stop, error, regenerate } = useChat({
-    transport: new DefaultChatTransport({ api: '/api/chat' }),
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: `/api/chat?lang=${locale}`,
+        prepareSendMessagesRequest: ({ messages, id, trigger, messageId }) => ({
+          body: {
+            id,
+            trigger,
+            messageId,
+            messages,
+            model: selectedModel,
+          },
+        }),
+      }),
+    [locale, selectedModel]
+  );
+  const { messages, sendMessage, setMessages, status, stop, error, regenerate } = useChat({
+    transport,
     messages: initialMessages,
   });
 
@@ -34,50 +78,80 @@ export function ChatHomePage() {
     setInput('');
   };
 
-  const handleQuickPrompt = (prompt: string) => {
+  const handleClearChat = () => {
     if (isBusy) {
-      return;
+      stop();
     }
 
-    sendMessage({ text: prompt });
+    setMessages(getInitialMessages(t));
+    setInput('');
+  };
+
+  const handleSelectHistory = (value: string) => {
+    setInput(value);
   };
 
   return (
     <main className="bg-background text-foreground h-screen">
-      <div className="grid h-full w-full grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <ChatSidebar
-          isBusy={isBusy}
-          messages={messages}
-          onQuickPrompt={handleQuickPrompt}
-          starterPrompts={starterPrompts}
-        />
+      <div className="flex h-full w-full overflow-hidden">
+        <div
+          className={cn(
+            'hidden overflow-hidden transition-[width] duration-300 ease-out lg:block',
+            isSidebarOpen ? 'w-[280px]' : 'w-16'
+          )}
+        >
+          <ChatSidebar
+            isOpen={isSidebarOpen}
+            messages={messages}
+            onClearChat={handleClearChat}
+            onSelectHistory={handleSelectHistory}
+            onToggleOpen={() => setIsSidebarOpen((value) => !value)}
+          />
+        </div>
 
-        <section className="bg-background flex min-h-0 flex-col">
+        <section className="bg-background flex min-h-0 flex-1 flex-col transition-[width] duration-300 ease-out">
           <div className="border-border border-b px-6 py-4">
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="text-muted-foreground text-[11px] tracking-[0.32em] uppercase">
-                  {t('chat.subtitle')}
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-wrap gap-2">
+                  {HEADER_NAV_ITEMS.map((item) => {
+                    const Icon = NAV_ICONS[item.id];
+
+                    return (
+                      <Button key={item.id} asChild size="sm" variant="ghost">
+                        <Link href={`/${locale}/${item.id}`}>
+                          <Icon data-icon="inline-start" />
+                          {t(item.translationKey)}
+                        </Link>
+                      </Button>
+                    );
+                  })}
                 </div>
-                <h2 className="mt-2 text-2xl font-semibold tracking-tight">{t('chat.title')}</h2>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="border-border bg-muted text-muted-foreground rounded-full border px-3 py-1 text-xs tracking-[0.22em] uppercase">
-                  {status === 'ready'
-                    ? t('chat.status.ready')
-                    : status === 'error'
-                      ? t('chat.status.error')
-                      : t('chat.status.thinking')}
+                <div className="flex items-center gap-3">
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={`/${locale}/login`}>
+                      <LogInIcon data-icon="inline-start" />
+                      {t('auth.sign_in')}
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </div>
           </div>
 
-          <ChatMessageList error={error} messages={messages} onRetry={() => regenerate()} />
+          <ChatMessageList
+            error={error}
+            isSidebarOpen={isSidebarOpen}
+            messages={messages}
+            onRetry={() => regenerate()}
+          />
 
           <ChatComposer
             input={input}
             isBusy={isBusy}
+            isSidebarOpen={isSidebarOpen}
+            model={selectedModel}
+            onModelChange={setSelectedModel}
             onStop={stop}
             onInputChange={setInput}
             onSubmit={handleSubmit}

@@ -10,6 +10,8 @@
  */
 
 import { createOpenAI } from '@ai-sdk/openai';
+import { AI_CONFIG } from '@/config/app';
+import type { ModelId } from '@/config/models';
 import { env } from '@/config/env';
 
 /**
@@ -37,8 +39,7 @@ export const openai = createOpenAI({
  * 在测试阶段使用 DeepSeek（成本更低）
  */
 export const defaultModel = {
-  // DeepSeek Chat 模型 - 使用 chat 方法
-  chat: deepseek.chat('deepseek-chat'),
+  chat: deepseek(AI_CONFIG.DEFAULT_MODEL),
 
   // 备选：OpenAI 模型
   // chat: openai.chat('gpt-4-turbo'),
@@ -61,3 +62,15 @@ export const availableModels = {
  * 导出类型定义
  */
 export type ModelName = keyof typeof availableModels;
+
+export function isModelName(value: string): value is ModelName {
+  return value in availableModels;
+}
+
+export function getChatModel(modelName?: string) {
+  if (modelName && isModelName(modelName)) {
+    return availableModels[modelName];
+  }
+
+  return availableModels[AI_CONFIG.DEFAULT_MODEL as ModelId];
+}

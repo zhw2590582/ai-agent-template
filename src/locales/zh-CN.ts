@@ -20,6 +20,7 @@ const zhCN = {
     delete: '删除',
     edit: '编辑',
     back: '返回',
+    back_to_chat: '返回聊天',
     next: '下一步',
     previous: '上一步',
     search: '搜索',
@@ -45,15 +46,20 @@ const zhCN = {
     composer: {
       placeholder: '给 AI Agent 发送消息',
       workspace_hint: '宽屏工作区，支持流式回复与工具调用',
+      model_label: '模型',
       enter_hint: 'Enter 发送，Shift + Enter 换行',
+    },
+    header: {
+      show_sidebar: '显示侧边栏',
+      hide_sidebar: '隐藏侧边栏',
     },
     sidebar: {
       agent_workspace: 'Agent 工作区',
       messages: '{count} 条消息',
       new_chat: '新对话',
-      workspace: '工作区',
-      workspace_desc: '宽屏聊天工作区，支持流式回复和工具调用。',
-      view_ai_sdk_docs: '查看 AI SDK 文档',
+      history: '历史记录',
+      history_item: '记录 {index}',
+      no_history: '还没有历史记录。先发一条消息，之后会出现在这里。',
       dark_mode_only: '仅支持暗色模式',
     },
     empty_state: {
@@ -67,21 +73,16 @@ const zhCN = {
       thinking: '思考中',
       error: '错误',
     },
-    quick_prompts: {
-      title: '快速提示',
-      items: {
-        time: '现在上海时间几点？',
-        calculate: '帮我算一下 (24 * 8) / 3',
-        weather: '北京今天适合出门吗？',
-        todo: '给我一份今天的工作启动清单',
-      },
-    },
     errors: {
       network: '网络错误，请重试',
       rate_limit: '请求过于频繁',
       server: '服务器错误',
       request_failed: '请求失败。请检查 DEEPSEEK_API_KEY 配置，或稍后重试。',
       unknown: '未知错误',
+    },
+    models: {
+      deepseek_chat: 'DeepSeek Chat',
+      deepseek_coder: 'DeepSeek Coder',
     },
   },
 
@@ -105,6 +106,54 @@ const zhCN = {
     language: '语言',
     theme: '主题',
     // 未来扩展
+  },
+
+  auth: {
+    sign_in: '登录',
+    title: '登录入口',
+    description: '认证流程还未接入，这里预留为后续接入登录系统的入口页面。',
+    back_to_chat: '返回聊天',
+  },
+
+  navigation: {
+    providers: 'Providers',
+    agents: 'Agents',
+    plugins: 'Plugins',
+    tools: 'Tools',
+    skills: 'Skills',
+    memory: 'Memory',
+    settings: 'Settings',
+  },
+
+  placeholders: {
+    providers: {
+      title: 'Providers 页面',
+      description: '这里先保留为空页面，后续用于管理模型提供商和连接配置。',
+    },
+    agents: {
+      title: 'Agents 页面',
+      description: '这里先保留为空页面，后续用于管理 agent 角色、策略和执行配置。',
+    },
+    plugins: {
+      title: 'Plugins 页面',
+      description: '这里先保留为空页面，后续用于浏览和管理插件能力。',
+    },
+    tools: {
+      title: 'Tools 页面',
+      description: '这里先保留为空页面，后续用于查看和配置可调用工具。',
+    },
+    skills: {
+      title: 'Skills 页面',
+      description: '这里先保留为空页面，后续用于管理技能包和工作流。',
+    },
+    memory: {
+      title: 'Memory 页面',
+      description: '这里先保留为空页面，后续用于查看和控制记忆策略与存储。',
+    },
+    settings: {
+      title: 'Settings 页面',
+      description: '这里先保留为空页面，后续用于应用级设置和偏好配置。',
+    },
   },
 
   errors: {

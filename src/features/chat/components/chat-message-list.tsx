@@ -27,12 +27,13 @@ import {
 import { cn } from '@/lib/utils';
 
 interface ChatMessageListProps {
+  isSidebarOpen: boolean;
   error?: Error;
   messages: UIMessage[];
   onRetry: () => void;
 }
 
-export function ChatMessageList({ error, messages, onRetry }: ChatMessageListProps) {
+export function ChatMessageList({ isSidebarOpen, error, messages, onRetry }: ChatMessageListProps) {
   const t = useTranslations();
   const lastAssistantMessageId = [...messages]
     .reverse()
@@ -47,7 +48,12 @@ export function ChatMessageList({ error, messages, onRetry }: ChatMessageListPro
 
   return (
     <Conversation className="min-h-0 flex-1">
-      <ConversationContent className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-8">
+      <ConversationContent
+        className={cn(
+          'mx-auto flex w-full flex-col gap-6 px-6 py-8 transition-[max-width] duration-300 ease-out',
+          isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl'
+        )}
+      >
         {messages.length === 1 ? (
           <div className="flex min-h-[42vh] items-center justify-center">
             <div className="max-w-2xl text-center">
@@ -81,7 +87,7 @@ export function ChatMessageList({ error, messages, onRetry }: ChatMessageListPro
               ) : null}
 
               {toolParts.length > 0 ? (
-                <div className="mt-3 ml-0 max-w-3xl">
+                <div className={cn('mt-3 ml-0', isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl')}>
                   {toolParts.map((part) => {
                     const toolName = part.type.replace('tool-', '');
 
