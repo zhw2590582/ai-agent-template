@@ -41,7 +41,6 @@ export function ChatSidebar({
   const t = useTranslations();
   const locale = useLocale();
   const pathname = usePathname();
-  const totalMessages = Math.max(0, messages.length - 1);
   const homeHref = `/${locale}`;
   const historyItems = useMemo(
     () =>
@@ -147,13 +146,6 @@ export function ChatSidebar({
             </Empty>
           )}
         </div>
-      </div>
-
-      <div className="text-muted-foreground mt-auto px-5 py-4 text-xs">
-        <div className="mb-2 text-[11px]">
-          {t('chat.sidebar.messages', { count: totalMessages })}
-        </div>
-        {t('chat.sidebar.dark_mode_only')}
       </div>
     </aside>
   );

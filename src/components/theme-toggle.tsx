@@ -4,16 +4,14 @@ import { useEffect, useState } from 'react';
 import { MoonIcon, SunIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { THEME_STORAGE_KEY, type ThemeMode } from '@/config/theme';
 import { Button } from '@/components/ui/button';
-
-type ThemeMode = 'dark' | 'light';
-
-const STORAGE_KEY = 'theme-preference';
 
 function applyTheme(theme: ThemeMode) {
   const root = document.documentElement;
   root.classList.toggle('dark', theme === 'dark');
   root.classList.toggle('light', theme === 'light');
+  root.style.colorScheme = theme;
 }
 
 export function ThemeToggle() {
@@ -23,7 +21,11 @@ export function ThemeToggle() {
       return 'dark';
     }
 
-    return window.localStorage.getItem(STORAGE_KEY) === 'light' ? 'light' : 'dark';
+    if (document.documentElement.classList.contains('light')) {
+      return 'light';
+    }
+
+    return window.localStorage.getItem(THEME_STORAGE_KEY) === 'light' ? 'light' : 'dark';
   });
 
   useEffect(() => {
@@ -33,8 +35,7 @@ export function ThemeToggle() {
   const toggleTheme = () => {
     const nextTheme: ThemeMode = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
-    applyTheme(nextTheme);
-    window.localStorage.setItem(STORAGE_KEY, nextTheme);
+    window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
   };
 
   return (
