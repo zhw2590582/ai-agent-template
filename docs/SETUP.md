@@ -52,6 +52,12 @@ bun dev              # 启动开发服务器
 bun run build        # 生产构建
 bun start            # 运行生产服务器
 
+# 测试
+bun test             # 运行测试（监听模式）
+bun run test:run     # 运行测试（单次）
+bun run test:ui      # 测试 UI 界面
+bun run test:coverage # 测试覆盖率
+
 # 代码质量
 bun run format       # Prettier 格式化（自动修复）
 bun run format:check # 检查格式（不修改）
@@ -67,6 +73,7 @@ bun run ci           # 完整 CI 检查（提交前运行）
 1. `format:check` - 检查代码格式
 2. `lint` - 检查代码质量
 3. `typecheck` - 检查类型安全
+4. `test:run` - 运行所有测试
 
 建议在提交代码前运行此命令。
 
@@ -77,6 +84,14 @@ bun run ci           # 完整 CI 检查（提交前运行）
 - **翻译文件**: `src/locales/zh-CN.ts` 和 `src/locales/en-US.ts`
 - **语言切换**: 使用 `<LanguageSwitcher />` 组件
 - **详细文档**: [i18n-guide.md](i18n-guide.md)
+
+## 测试
+
+项目使用 **Vitest** 作为测试框架：
+
+- **运行测试**: `bun test`
+- **测试覆盖率**: `bun run test:coverage`
+- **详细文档**: [testing.md](testing.md)
 
 ## 项目结构
 

@@ -32,6 +32,9 @@ jobs:
       - name: TypeScript type check
         run: bun run typecheck
 
+      - name: Run tests
+        run: bun run test:run
+
   build:
     name: Build Check
     runs-on: ubuntu-latest
