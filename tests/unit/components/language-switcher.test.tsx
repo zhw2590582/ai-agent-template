@@ -24,7 +24,7 @@ describe('LanguageSwitcher', () => {
   it('should render language selector', () => {
     render(<LanguageSwitcher />);
 
-    expect(screen.getByRole('combobox')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /简体中文/i })).toBeInTheDocument();
   });
 
   it('should display current language', () => {

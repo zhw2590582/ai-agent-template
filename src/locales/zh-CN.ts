@@ -54,11 +54,12 @@ const zhCN = {
       hide_sidebar: '隐藏侧边栏',
     },
     sidebar: {
-      agent_workspace: 'Agent 工作区',
+      agent_workspace: 'AI Agent',
       messages: '{count} 条消息',
       new_chat: '新对话',
       history: '历史记录',
       history_item: '记录 {index}',
+      history_empty_title: '还没有历史记录',
       no_history: '还没有历史记录。先发一条消息，之后会出现在这里。',
       dark_mode_only: '仅支持暗色模式',
     },
@@ -106,6 +107,11 @@ const zhCN = {
     language: '语言',
     theme: '主题',
     // 未来扩展
+  },
+
+  theme: {
+    switch_to_light: '切换到浅色模式',
+    switch_to_dark: '切换到深色模式',
   },
 
   auth: {

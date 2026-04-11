@@ -1,17 +1,26 @@
 'use client';
 
+import Link from 'next/link';
 import type { UIMessage } from 'ai';
 import {
+  HouseIcon,
   MenuIcon,
   MessageSquarePlusIcon,
   MessageSquareTextIcon,
   PanelLeftCloseIcon,
-  PanelLeftIcon,
 } from 'lucide-react';
 import { useMemo } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { usePathname } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty';
 import { getTextContent } from '@/features/chat/lib/message-utils';
 
 interface ChatSidebarProps {
@@ -30,7 +39,10 @@ export function ChatSidebar({
   onToggleOpen,
 }: ChatSidebarProps) {
   const t = useTranslations();
+  const locale = useLocale();
+  const pathname = usePathname();
   const totalMessages = Math.max(0, messages.length - 1);
+  const homeHref = `/${locale}`;
   const historyItems = useMemo(
     () =>
       messages
@@ -44,6 +56,12 @@ export function ChatSidebar({
         .reverse(),
     [messages]
   );
+
+  const handleReturnHome = () => {
+    if (pathname === homeHref) {
+      onClearChat();
+    }
+  };
 
   if (!isOpen) {
     return (
@@ -64,10 +82,15 @@ export function ChatSidebar({
   return (
     <aside className="border-border bg-muted/30 flex h-full flex-col border-r">
       <div className="flex items-center justify-between px-4 py-4">
-        <div className="text-foreground flex items-center gap-2 text-sm font-medium">
-          <PanelLeftIcon className="size-4" />
-          {t('chat.sidebar.agent_workspace')}
-        </div>
+        <Button asChild className="h-auto px-0" variant="ghost">
+          <Link
+            className="text-foreground flex items-center gap-2 text-sm font-medium"
+            href={homeHref}
+          >
+            <HouseIcon className="size-4" />
+            {t('chat.sidebar.agent_workspace')}
+          </Link>
+        </Button>
         <Button
           aria-label={t('chat.header.hide_sidebar')}
           onClick={onToggleOpen}
@@ -80,14 +103,11 @@ export function ChatSidebar({
       </div>
 
       <div className="px-3">
-        <Button
-          className="w-full justify-start gap-2 rounded-2xl"
-          size="lg"
-          onClick={onClearChat}
-          type="button"
-        >
-          <MessageSquarePlusIcon data-icon="inline-start" />
-          {t('chat.sidebar.new_chat')}
+        <Button asChild className="w-full justify-start gap-2" size="default" variant="ghost">
+          <Link href={homeHref} onClick={handleReturnHome}>
+            <MessageSquarePlusIcon data-icon="inline-start" />
+            {t('chat.sidebar.new_chat')}
+          </Link>
         </Button>
       </div>
 
@@ -116,9 +136,15 @@ export function ChatSidebar({
               </button>
             ))
           ) : (
-            <div className="bg-background text-muted-foreground rounded-2xl px-4 py-4 text-sm leading-6">
-              {t('chat.sidebar.no_history')}
-            </div>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <MessageSquareTextIcon className="size-4" />
+                </EmptyMedia>
+                <EmptyTitle>{t('chat.sidebar.history_empty_title')}</EmptyTitle>
+                <EmptyDescription>{t('chat.sidebar.no_history')}</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           )}
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import type { ChatStatus } from 'ai';
+import { ChevronDownIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import {
@@ -13,12 +14,13 @@ import {
 } from '@/components/ai-elements/prompt-input';
 import { MODEL_OPTIONS, type ModelId } from '@/config/models';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 interface ChatComposerProps {
   input: string;
@@ -63,26 +65,32 @@ export function ChatComposer({
           <PromptInputFooter>
             <PromptInputTools>
               <div className="flex flex-wrap items-center gap-2">
-                <div className="text-muted-foreground px-2 text-xs">
-                  {t('chat.composer.workspace_hint')}
-                </div>
-                <Select value={model} onValueChange={(value) => onModelChange(value as ModelId)}>
-                  <SelectTrigger className="min-w-44" size="sm">
-                    <SelectValue aria-label={t('chat.composer.model_label')}>
-                      {t(
-                        MODEL_OPTIONS.find((option) => option.id === model)?.translationKey ??
-                          MODEL_OPTIONS[0].translationKey
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent align="start">
-                    {MODEL_OPTIONS.map((option) => (
-                      <SelectItem key={option.id} value={option.id}>
-                        {t(option.translationKey)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" type="button" variant="outline">
+                      {t('chat.composer.model_label')}
+                      <span className="text-muted-foreground">
+                        {t(
+                          MODEL_OPTIONS.find((option) => option.id === model)?.translationKey ??
+                            MODEL_OPTIONS[0].translationKey
+                        )}
+                      </span>
+                      <ChevronDownIcon data-icon="inline-end" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="min-w-52">
+                    <DropdownMenuRadioGroup
+                      onValueChange={(value) => onModelChange(value as ModelId)}
+                      value={model}
+                    >
+                      {MODEL_OPTIONS.map((option) => (
+                        <DropdownMenuRadioItem key={option.id} value={option.id}>
+                          {t(option.translationKey)}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </PromptInputTools>
             <PromptInputSubmit

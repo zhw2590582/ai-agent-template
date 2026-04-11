@@ -56,11 +56,12 @@ export const enUS: Translations = {
       hide_sidebar: 'Hide sidebar',
     },
     sidebar: {
-      agent_workspace: 'Agent Workspace',
+      agent_workspace: 'AI Agent',
       messages: '{count} messages',
       new_chat: 'New chat',
       history: 'History',
       history_item: 'Item {index}',
+      history_empty_title: 'No history yet',
       no_history: 'No history yet. Send a message and it will appear here.',
       dark_mode_only: 'Dark mode only',
     },
@@ -108,6 +109,11 @@ export const enUS: Translations = {
     title: 'Settings',
     language: 'Language',
     theme: 'Theme',
+  },
+
+  theme: {
+    switch_to_light: 'Switch to light mode',
+    switch_to_dark: 'Switch to dark mode',
   },
 
   auth: {

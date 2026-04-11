@@ -8,25 +8,29 @@
 
 'use client';
 
+import { LanguagesIcon } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import { SUPPORTED_LOCALES, LOCALE_CONFIG } from '@/config/i18n';
 import type { Locale } from '@/config/i18n';
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  triggerClassName?: string;
+}
+
+export function LanguageSwitcher({ triggerClassName }: LanguageSwitcherProps) {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
 
   const handleLanguageChange = (newLocale: string) => {
-    // 移除当前 locale 前缀并添加新的
     const currentLocale = locale;
     const pathWithoutLocale = pathname.replace(`/${currentLocale}`, '');
     const newPath = `/${newLocale}${pathWithoutLocale}`;
@@ -35,25 +39,24 @@ export function LanguageSwitcher() {
   };
 
   return (
-    <Select value={locale} onValueChange={handleLanguageChange}>
-      <SelectTrigger className="w-36">
-        <SelectValue>
-          <span className="flex items-center gap-2">
-            <span>{LOCALE_CONFIG[locale as Locale].flag}</span>
-            <span>{LOCALE_CONFIG[locale as Locale].name}</span>
-          </span>
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button className={triggerClassName ?? 'min-w-28'} size="sm" variant="outline">
+          <LanguagesIcon data-icon="inline-start" />
+          <span>{LOCALE_CONFIG[locale as Locale].flag}</span>
+          <span>{LOCALE_CONFIG[locale as Locale].name}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-40">
         {SUPPORTED_LOCALES.map((loc) => (
-          <SelectItem key={loc} value={loc}>
+          <DropdownMenuItem key={loc} onClick={() => handleLanguageChange(loc)}>
             <span className="flex items-center gap-2">
               <span>{LOCALE_CONFIG[loc].flag}</span>
               <span>{LOCALE_CONFIG[loc].name}</span>
             </span>
-          </SelectItem>
+          </DropdownMenuItem>
         ))}
-      </SelectContent>
-    </Select>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

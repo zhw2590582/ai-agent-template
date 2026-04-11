@@ -8,7 +8,6 @@ import {
   BlocksIcon,
   BotIcon,
   BrainIcon,
-  LogInIcon,
   PlugIcon,
   Settings2Icon,
   ShieldEllipsisIcon,
@@ -16,9 +15,11 @@ import {
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { LanguageSwitcher } from '@/components/language-switcher';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { AI_CONFIG } from '@/config/app';
-import { HEADER_NAV_ITEMS } from '@/config/navigation';
+import { HEADER_NAV_ITEMS, type HeaderNavItemId } from '@/config/navigation';
 import { type ModelId } from '@/config/models';
 import { ChatComposer } from '@/features/chat/components/chat-composer';
 import { ChatMessageList } from '@/features/chat/components/chat-message-list';
@@ -36,7 +37,13 @@ const NAV_ICONS = {
   settings: Settings2Icon,
 } as const;
 
-export function ChatHomePage() {
+type WorkbenchView = 'chat' | HeaderNavItemId;
+
+interface ChatHomePageProps {
+  activeView?: WorkbenchView;
+}
+
+export function ChatHomePage({ activeView = 'chat' }: ChatHomePageProps) {
   const t = useTranslations();
   const locale = useLocale();
   const initialMessages = useMemo(() => getInitialMessages(t), [t]);
@@ -91,6 +98,51 @@ export function ChatHomePage() {
     setInput(value);
   };
 
+  const isChatView = activeView === 'chat';
+
+  const renderMainContent = () => {
+    if (isChatView) {
+      return (
+        <>
+          <ChatMessageList
+            error={error}
+            isSidebarOpen={isSidebarOpen}
+            messages={messages}
+            onRetry={() => regenerate()}
+          />
+
+          <ChatComposer
+            input={input}
+            isBusy={isBusy}
+            isSidebarOpen={isSidebarOpen}
+            model={selectedModel}
+            onModelChange={setSelectedModel}
+            onStop={stop}
+            onInputChange={setInput}
+            onSubmit={handleSubmit}
+            status={status}
+          />
+        </>
+      );
+    }
+
+    return (
+      <div className="flex min-h-0 flex-1 items-center justify-center px-6 py-8">
+        <section className="border-border bg-card/70 w-full max-w-2xl rounded-[2rem] border p-8 shadow-2xl shadow-black/10">
+          <div className="text-muted-foreground text-[11px] tracking-[0.28em] uppercase">
+            {t(`navigation.${activeView}`)}
+          </div>
+          <h2 className="mt-4 text-3xl font-semibold tracking-tight">
+            {t(`placeholders.${activeView}.title`)}
+          </h2>
+          <p className="text-muted-foreground mt-3 text-sm leading-7">
+            {t(`placeholders.${activeView}.description`)}
+          </p>
+        </section>
+      </div>
+    );
+  };
+
   return (
     <main className="bg-background text-foreground h-screen">
       <div className="flex h-full w-full overflow-hidden">
@@ -118,7 +170,12 @@ export function ChatHomePage() {
                     const Icon = NAV_ICONS[item.id];
 
                     return (
-                      <Button key={item.id} asChild size="sm" variant="ghost">
+                      <Button
+                        key={item.id}
+                        asChild
+                        size="sm"
+                        variant={activeView === item.id ? 'secondary' : 'ghost'}
+                      >
                         <Link href={`/${locale}/${item.id}`}>
                           <Icon data-icon="inline-start" />
                           {t(item.translationKey)}
@@ -127,36 +184,15 @@ export function ChatHomePage() {
                     );
                   })}
                 </div>
-                <div className="flex items-center gap-3">
-                  <Button asChild size="sm" variant="outline">
-                    <Link href={`/${locale}/login`}>
-                      <LogInIcon data-icon="inline-start" />
-                      {t('auth.sign_in')}
-                    </Link>
-                  </Button>
+                <div className="flex items-center gap-2">
+                  <LanguageSwitcher triggerClassName="w-32" />
+                  <ThemeToggle />
                 </div>
               </div>
             </div>
           </div>
 
-          <ChatMessageList
-            error={error}
-            isSidebarOpen={isSidebarOpen}
-            messages={messages}
-            onRetry={() => regenerate()}
-          />
-
-          <ChatComposer
-            input={input}
-            isBusy={isBusy}
-            isSidebarOpen={isSidebarOpen}
-            model={selectedModel}
-            onModelChange={setSelectedModel}
-            onStop={stop}
-            onInputChange={setInput}
-            onSubmit={handleSubmit}
-            status={status}
-          />
+          {renderMainContent()}
         </section>
       </div>
     </main>
