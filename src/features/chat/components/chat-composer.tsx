@@ -33,7 +33,7 @@ export function ChatComposer({
         <PromptInput className="w-full" onSubmit={(_, event) => onSubmit(event)}>
           <PromptInputBody>
             <PromptInputTextarea
-              className="min-h-[76px] border-0 bg-transparent text-base"
+              className="min-h-19 border-0 bg-transparent text-base"
               disabled={isBusy}
               value={input}
               onChange={(event) => onInputChange(event.target.value)}

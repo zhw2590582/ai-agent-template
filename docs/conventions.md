@@ -67,6 +67,66 @@
 - 默认使用语义 token：`bg-background`、`text-foreground`、`border-border`
 - 不在业务组件里散落硬编码亮色背景
 
+## Tailwind CSS 规范 ⚠️
+
+**严格要求**：所有 Tailwind 警告必须修复，不允许忽略。
+
+### 必须遵守的规则
+
+1. **使用标准类名而非任意值**
+   ```tsx
+   // ❌ 错误
+   className="min-w-[96px]"
+   
+   // ✅ 正确
+   className="min-w-24"
+   ```
+
+2. **important 修饰符位置**
+   ```tsx
+   // ❌ 错误
+   className="dark:!bg-[var(--color)]"
+   
+   // ✅ 正确
+   className="dark:bg-(--color)!"
+   ```
+
+3. **calc 表达式中的空格**
+   ```tsx
+   // ❌ 错误
+   className="translate-y-[calc(-50%_-_2px)]"
+   
+   // ✅ 正确
+   className="translate-y-[calc(-50%-2px)]"
+   ```
+
+4. **优先使用语义化尺寸**
+   ```tsx
+   // ❌ 避免自定义像素值
+   className="rounded-[2px]"
+   
+   // ✅ 使用预定义尺寸
+   className="rounded-xs"
+   ```
+
+### 检查方式
+
+```bash
+# 本地检查（会显示 Tailwind 警告）
+bun run lint
+
+# CI 中也会强制检查
+bun run ci
+```
+
+### 为什么严格要求
+
+- ✅ 保持代码一致性
+- ✅ 利用 Tailwind 的优化
+- ✅ 避免不必要的任意值
+- ✅ 更好的类型提示和自动补全
+- ✅ 减少打包体积
+
 ## Dependency Policy
 
 当前策略是“少而够用”。
