@@ -13,6 +13,15 @@ bun test
 # 运行一次所有测试（CI 使用）
 bun run test:run
 
+# 只运行单元测试
+bun run test:unit
+
+# 只运行集成测试
+bun run test:integration
+
+# E2E 测试目录约定
+bun run test:e2e
+
 # 带 UI 界面的测试
 bun run test:ui
 
@@ -24,7 +33,7 @@ bun run test:coverage
 
 ```bash
 # 运行特定文件
-bun test src/lib/errors.test.ts
+bun test tests/unit/lib/errors.test.ts
 
 # 运行匹配的测试
 bun test calculator
@@ -36,24 +45,23 @@ bun test calculator
 
 ### 目录结构
 
-测试文件与源文件放在同一目录，使用 `.test.ts` 或 `.test.tsx` 后缀：
+测试文件统一放在 `tests/` 目录，并按分层规范组织：
 
 ```
-src/
-├── lib/
-│   ├── errors.ts
-│   ├── errors.test.ts     # 单元测试
-│   ├── i18n.ts
-│   └── i18n.test.ts
-├── components/
-│   ├── language-switcher.tsx
-│   └── language-switcher.test.tsx  # 组件测试
-└── server/
-    └── ai/
-        └── tools/
-            ├── calculator.ts
-            └── calculator.test.ts
+tests/
+├── unit/                     # 单元测试
+│   ├── lib/
+│   ├── components/
+│   └── server/
+├── integration/              # 集成测试
+└── e2e/                      # 端到端测试
 ```
+
+说明：
+
+- `tests/unit`: 纯函数、工具类、组件行为测试
+- `tests/integration`: 多模块协作、API/流程级测试
+- `tests/e2e`: 浏览器端到端测试（建议 Playwright/Cypress）
 
 ### 命名约定
 
@@ -66,9 +74,9 @@ src/
 ### 单元测试示例
 
 ```typescript
-// src/lib/utils.test.ts
+// tests/unit/lib/utils.test.ts
 import { describe, it, expect } from 'vitest';
-import { formatDate } from './utils';
+import { formatDate } from '@/lib/utils';
 
 describe('formatDate', () => {
   it('should format date correctly', () => {
@@ -85,10 +93,10 @@ describe('formatDate', () => {
 ### 组件测试示例
 
 ```typescript
-// src/components/button.test.tsx
+// tests/unit/components/button.test.tsx
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { Button } from './button';
+import { Button } from '@/components/ui/button';
 
 describe('Button', () => {
   it('should render children', () => {
@@ -111,9 +119,9 @@ describe('Button', () => {
 ### 异步测试示例
 
 ```typescript
-// src/server/api.test.ts
+// tests/integration/server/api.test.ts
 import { describe, it, expect } from 'vitest';
-import { fetchData } from './api';
+import { fetchData } from '@/server/api';
 
 describe('fetchData', () => {
   it('should fetch data successfully', async () => {

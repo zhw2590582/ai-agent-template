@@ -29,8 +29,8 @@ export default defineConfig({
       ],
     },
 
-    // 测试文件匹配模式（统一放在 tests 目录）
-    include: ['tests/**/*.{test,spec}.{ts,tsx}'],
+    // 测试文件匹配模式（分层：unit / integration）
+    include: ['tests/{unit,integration}/**/*.{test,spec}.{ts,tsx}'],
 
     // 排除目录
     exclude: ['node_modules', 'dist', '.next', '.idea', '.git', 'build'],
