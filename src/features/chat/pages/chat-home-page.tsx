@@ -24,6 +24,7 @@ import { type ModelId } from '@/config/models';
 import { ChatComposer } from '@/features/chat/components/chat-composer';
 import { ChatMessageList } from '@/features/chat/components/chat-message-list';
 import { ChatSidebar } from '@/features/chat/components/chat-sidebar';
+import { AuthDialog } from '@/features/auth/components/auth-dialog';
 import { getInitialMessages } from '@/features/chat/lib/chat-config';
 import { cn } from '@/lib/utils';
 
@@ -162,8 +163,8 @@ export function ChatHomePage({ activeView = 'chat' }: ChatHomePageProps) {
         </div>
 
         <section className="bg-background flex min-h-0 flex-1 flex-col transition-[width] duration-300 ease-out">
-          <div className="border-border border-b px-6 py-4">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+          <div className="border-border border-b px-4 py-2">
+            <div className="flex w-full flex-col gap-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex flex-wrap gap-2">
                   {HEADER_NAV_ITEMS.map((item) => {
@@ -187,6 +188,18 @@ export function ChatHomePage({ activeView = 'chat' }: ChatHomePageProps) {
                 <div className="flex items-center gap-2">
                   <LanguageSwitcher triggerClassName="w-32" />
                   <ThemeToggle />
+                  <AuthDialog
+                    closeLabel={t('common.cancel')}
+                    configurationMissingDescription={t('auth.configuration_missing_description')}
+                    configurationMissingTitle={t('auth.configuration_missing_title')}
+                    description={t('auth.dialog_description')}
+                    githubLabel={t('auth.sign_in_with_github')}
+                    googleLabel={t('auth.sign_in_with_google')}
+                    signInLabel={t('auth.sign_in')}
+                    signOutLabel={t('auth.sign_out')}
+                    signedInAsLabel={t('auth.signed_in_as')}
+                    title={t('auth.title')}
+                  />
                 </div>
               </div>
             </div>

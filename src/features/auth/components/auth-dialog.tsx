@@ -1,0 +1,192 @@
+'use client';
+
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { CircleUserRoundIcon, LogInIcon, LogOutIcon } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useAuthUser } from '@/features/auth/components/auth-user-provider';
+import { OauthSignInButton } from '@/features/auth/components/oauth-sign-in-button';
+import { GithubMark, GoogleMark } from '@/features/auth/components/auth-provider-icons';
+import { toAuthUserSnapshot } from '@/features/auth/lib/auth-user';
+import { createClient, isSupabaseBrowserConfigured } from '@/lib/supabase/client';
+
+type AuthDialogProps = {
+  closeLabel: string;
+  configurationMissingDescription: string;
+  configurationMissingTitle: string;
+  description: string;
+  githubLabel: string;
+  googleLabel: string;
+  signInLabel: string;
+  signOutLabel: string;
+  signedInAsLabel: string;
+  title: string;
+};
+
+export function AuthDialog({
+  closeLabel,
+  configurationMissingDescription,
+  configurationMissingTitle,
+  description,
+  githubLabel,
+  googleLabel,
+  signInLabel,
+  signOutLabel,
+  signedInAsLabel,
+  title,
+}: AuthDialogProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const supabaseConfigured = isSupabaseBrowserConfigured();
+  const { user, setUser } = useAuthUser();
+
+  useEffect(() => {
+    if (!supabaseConfigured) {
+      return;
+    }
+
+    const supabase = createClient();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(toAuthUserSnapshot(session?.user ?? null));
+
+      if (session?.user) {
+        setIsOpen(false);
+      }
+
+      router.refresh();
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [router, setUser, supabaseConfigured]);
+
+  const handleSignOut = async () => {
+    if (!supabaseConfigured) {
+      return;
+    }
+
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    setIsOpen(false);
+    router.refresh();
+  };
+
+  const nextPath = pathname || '/';
+  const displayName = user?.fullName ?? user?.email ?? 'User';
+  const avatarUrl = user?.avatarUrl ?? null;
+  const initials = displayName.trim().charAt(0).toUpperCase() || 'U';
+
+  if (user) {
+    return (
+      <div className="flex items-center">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              aria-label={signedInAsLabel}
+              className="ring-ring/50 rounded-full outline-none focus-visible:ring-3"
+              type="button"
+            >
+              {avatarUrl ? (
+                <Image
+                  alt={displayName}
+                  className="border-border size-8 rounded-full border object-cover"
+                  height="32"
+                  src={avatarUrl}
+                  unoptimized
+                  width="32"
+                />
+              ) : (
+                <div className="bg-muted text-foreground border-border flex size-8 items-center justify-center rounded-full border text-xs font-semibold">
+                  {initials || <CircleUserRoundIcon className="size-4" />}
+                </div>
+              )}
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="end" className="min-w-56" sideOffset={6}>
+            <DropdownMenuLabel>{signedInAsLabel}</DropdownMenuLabel>
+            <div className="px-2 py-1.5">
+              <div className="truncate text-sm font-medium">{displayName}</div>
+              <div className="text-muted-foreground truncate text-xs">{user.email}</div>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut} variant="destructive">
+              <LogOutIcon data-icon="inline-start" />
+              {signOutLabel}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    );
+  }
+
+  return (
+    <Dialog onOpenChange={setIsOpen} open={isOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant={user ? 'secondary' : 'outline'}>
+          <LogInIcon data-icon="inline-start" />
+          {signInLabel}
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+
+        {!supabaseConfigured ? (
+          <div className="border-border bg-background/60 rounded-2xl border px-4 py-4 text-sm leading-7">
+            <div className="font-medium">{configurationMissingTitle}</div>
+            <p className="text-muted-foreground mt-2">{configurationMissingDescription}</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <OauthSignInButton
+              buttonLabel={googleLabel}
+              icon={<GoogleMark />}
+              nextPath={nextPath}
+              provider="google"
+            />
+            <OauthSignInButton
+              buttonLabel={githubLabel}
+              icon={<GithubMark />}
+              nextPath={nextPath}
+              provider="github"
+            />
+          </div>
+        )}
+
+        <div className="flex justify-end">
+          <Button onClick={() => setIsOpen(false)} variant="ghost">
+            {closeLabel}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

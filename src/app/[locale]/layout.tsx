@@ -5,9 +5,13 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { isSupabaseConfigured } from '@/config/env';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
+import { AuthUserProvider } from '@/features/auth/components/auth-user-provider';
+import { toAuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import { THEME_COOKIE_KEY, type ThemeMode } from '@/config/theme';
 import type { Locale } from '@/config/i18n';
+import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import '../globals.css';
 
 const geistSans = Geist({
@@ -47,6 +51,9 @@ export default async function LocaleLayout({ children, params }: Props) {
   const cookieStore = await cookies();
   const storedTheme = cookieStore.get(THEME_COOKIE_KEY)?.value;
   const theme: ThemeMode = storedTheme === 'light' ? 'light' : 'dark';
+  const authUser = isSupabaseConfigured()
+    ? toAuthUserSnapshot((await (await createSupabaseServerClient()).auth.getUser()).data.user)
+    : null;
 
   return (
     <html
@@ -57,7 +64,9 @@ export default async function LocaleLayout({ children, params }: Props) {
     >
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider messages={messages}>
-          <TooltipProvider>{children}</TooltipProvider>
+          <AuthUserProvider initialUser={authUser}>
+            <TooltipProvider>{children}</TooltipProvider>
+          </AuthUserProvider>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -10,9 +10,11 @@
  */
 
 import createMiddleware from 'next-intl/middleware';
+import { type NextRequest } from 'next/server';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/config/i18n';
+import { updateSession } from '@/lib/supabase/proxy';
 
-export default createMiddleware({
+const handleI18nRouting = createMiddleware({
   // 支持的语言列表
   locales: [...SUPPORTED_LOCALES],
 
@@ -26,7 +28,13 @@ export default createMiddleware({
   // localePrefix: 'as-needed',
 });
 
+export async function proxy(request: NextRequest) {
+  const response = handleI18nRouting(request);
+
+  return updateSession(request, response);
+}
+
 export const config = {
   // 匹配所有路径，除了 api, _next, static files
-  matcher: ['/((?!api|_next|.*\\..*).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)'],
 };

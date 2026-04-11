@@ -19,17 +19,26 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
   // AI 模型配置
-  DEEPSEEK_API_KEY: z.string().min(1, 'DEEPSEEK_API_KEY is required'),
+  DEEPSEEK_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
 
   // 应用配置（可选，有默认值）
-  NEXT_PUBLIC_APP_URL: z.string().url().optional(),
+  NEXT_PUBLIC_APP_URL: z.url().optional(),
 
-  // 未来扩展预留（Phase 2+）
-  // DATABASE_URL: z.string().url().optional(),
-  // REDIS_URL: z.string().url().optional(),
-  // UPSTASH_REDIS_REST_URL: z.string().url().optional(),
-  // UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  // Supabase
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1).optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+
+  // Upstash
+  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
+
+  // Sentry
+  SENTRY_ORG: z.string().min(1).optional(),
+  SENTRY_PROJECT: z.string().min(1).optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
+  SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
 });
 
 /**
@@ -57,6 +66,26 @@ const parseEnv = () => {
  * ```
  */
 export const env = parseEnv();
+
+export function isSupabaseConfigured() {
+  return Boolean(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+}
+
+export function getSupabaseEnv() {
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const publishableKey = env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!url || !publishableKey) {
+    throw new Error(
+      'Supabase environment variables are missing. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.'
+    );
+  }
+
+  return {
+    url,
+    publishableKey,
+  };
+}
 
 /**
  * 环境变量类型（供其他模块使用）
