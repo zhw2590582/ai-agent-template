@@ -1,5 +1,7 @@
 # AI Agent App
 
+[![CI](https://github.com/zhw2590582/ai-agent-template/workflows/CI/badge.svg)](https://github.com/zhw2590582/ai-agent-template/actions)
+
 一个面向长期扩展的 AI Agent Web App 骨架。
 
 当前版本聚焦三件事：
@@ -38,6 +40,40 @@ bun run dev
 默认入口：
 
 - App: `http://localhost:3000`
+
+详细设置说明见 [SETUP.md](./SETUP.md)
+
+## Development
+
+### 本地开发
+
+```bash
+# 启动开发服务器
+bun dev
+
+# 代码格式化
+bun run format
+
+# 快速 CI 检查（提交前运行）
+bun run ci
+
+# 完整检查
+bun run format:check  # 格式检查
+bun run lint          # 代码质量
+bun run typecheck     # 类型检查
+bun run build         # 构建验证
+```
+
+### CI/CD
+
+项目使用 GitHub Actions 进行自动化检查和部署：
+
+- ✅ 代码格式检查 (Prettier)
+- ✅ 代码质量检查 (ESLint)
+- ✅ TypeScript 类型检查
+- ✅ 构建验证
+
+详见 [.github/README.md](.github/README.md)
 
 ## Structure
 

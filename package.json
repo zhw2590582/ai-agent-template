@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "ci": "bun run format:check && bun run lint && bun run typecheck"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.52",
