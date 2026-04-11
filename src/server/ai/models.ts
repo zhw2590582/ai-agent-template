@@ -22,7 +22,7 @@ import { env } from '@/config/env';
  */
 export const deepseek = createOpenAI({
   name: 'deepseek',
-  baseURL: 'https://api.deepseek.com',
+  baseURL: 'https://api.deepseek.com/v1', // 必须带 /v1
   apiKey: env.DEEPSEEK_API_KEY,
 });
 
@@ -39,7 +39,7 @@ export const openai = createOpenAI({
  * 在测试阶段使用 DeepSeek（成本更低）
  */
 export const defaultModel = {
-  chat: deepseek(AI_CONFIG.DEFAULT_MODEL),
+  chat: deepseek.chat(AI_CONFIG.DEFAULT_MODEL),
 
   // 备选：OpenAI 模型
   // chat: openai.chat('gpt-4-turbo'),
@@ -50,12 +50,12 @@ export const defaultModel = {
  */
 export const availableModels = {
   // DeepSeek 模型
-  'deepseek-chat': deepseek('deepseek-chat'),
-  'deepseek-coder': deepseek('deepseek-coder'),
+  'deepseek-chat': deepseek.chat('deepseek-chat'),
+  'deepseek-coder': deepseek.chat('deepseek-coder'),
 
   // OpenAI 模型（需要配置 OPENAI_API_KEY）
-  // 'gpt-4-turbo': openai('gpt-4-turbo'),
-  // 'gpt-3.5-turbo': openai('gpt-3.5-turbo'),
+  // 'gpt-4-turbo': openai.chat('gpt-4-turbo'),
+  // 'gpt-3.5-turbo': openai.chat('gpt-3.5-turbo'),
 };
 
 /**
@@ -71,6 +71,5 @@ export function getChatModel(modelName?: string) {
   if (modelName && isModelName(modelName)) {
     return availableModels[modelName];
   }
-
   return availableModels[AI_CONFIG.DEFAULT_MODEL as ModelId];
 }
