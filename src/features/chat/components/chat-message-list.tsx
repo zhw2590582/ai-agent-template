@@ -54,7 +54,7 @@ export function ChatMessageList({ isSidebarOpen, error, messages, onRetry }: Cha
           isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl'
         )}
       >
-        {messages.length === 1 ? (
+        {messages.length === 0 ? (
           <div className="flex min-h-[42vh] items-center justify-center">
             <div className="max-w-2xl text-center">
               <h3 className="text-3xl font-semibold tracking-tight">

@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
+import { cookies } from 'next/headers';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
-import { THEME_STORAGE_KEY } from '@/config/theme';
+import { THEME_COOKIE_KEY, type ThemeMode } from '@/config/theme';
 import type { Locale } from '@/config/i18n';
 import '../globals.css';
 
@@ -44,24 +44,18 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   // 获取翻译消息
   const messages = await getMessages();
+  const cookieStore = await cookies();
+  const storedTheme = cookieStore.get(THEME_COOKIE_KEY)?.value;
+  const theme: ThemeMode = storedTheme === 'light' ? 'light' : 'dark';
 
   return (
     <html
       lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${theme} h-full antialiased`}
+      style={{ colorScheme: theme }}
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">
-        <Script id="theme-init" strategy="beforeInteractive">
-          {`(() => {
-            const storedTheme = window.localStorage.getItem('${THEME_STORAGE_KEY}');
-            const theme = storedTheme === 'light' ? 'light' : 'dark';
-            const root = document.documentElement;
-            root.classList.toggle('dark', theme === 'dark');
-            root.classList.toggle('light', theme === 'light');
-            root.style.colorScheme = theme;
-          })();`}
-        </Script>
         <NextIntlClientProvider messages={messages}>
           <TooltipProvider>{children}</TooltipProvider>
         </NextIntlClientProvider>

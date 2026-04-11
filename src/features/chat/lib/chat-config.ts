@@ -12,16 +12,6 @@ export function getStarterPrompts(t: TranslateFn): string[] {
 }
 
 export function getInitialMessages(t: TranslateFn): UIMessage[] {
-  return [
-    {
-      id: 'welcome-message',
-      role: 'assistant',
-      parts: [
-        {
-          type: 'text',
-          text: t('chat.welcome_message'),
-        },
-      ],
-    },
-  ];
+  void t;
+  return [];
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { MoonIcon, SunIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { THEME_STORAGE_KEY, type ThemeMode } from '@/config/theme';
+import { THEME_COOKIE_KEY, THEME_STORAGE_KEY, type ThemeMode } from '@/config/theme';
 import { Button } from '@/components/ui/button';
 
 function applyTheme(theme: ThemeMode) {
@@ -36,6 +36,7 @@ export function ThemeToggle() {
     const nextTheme: ThemeMode = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
     window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    document.cookie = `${THEME_COOKIE_KEY}=${nextTheme}; path=/; max-age=31536000; samesite=lax`;
   };
 
   return (
