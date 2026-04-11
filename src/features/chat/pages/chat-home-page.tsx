@@ -149,7 +149,7 @@ export function ChatHomePage({ activeView = 'chat' }: ChatHomePageProps) {
         <div
           className={cn(
             'hidden overflow-hidden transition-[width] duration-300 ease-out lg:block',
-            isSidebarOpen ? 'w-[280px]' : 'w-16'
+            isSidebarOpen ? 'w-70' : 'w-16'
           )}
         >
           <ChatSidebar
