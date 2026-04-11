@@ -131,4 +131,3 @@ User Input
 2. 把系统 prompt 从 `src/server/chat.ts` 抽到 `src/server/ai/prompts.ts`
 3. 给消息、工具输出、未来 memory/rag 结果定义共享类型
 4. 当有持久化需求时，再引入 `storage` 或 `repositories` 层
-

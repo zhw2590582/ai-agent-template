@@ -4,9 +4,10 @@
 
 如果你后面会持续实现更多 AI Agent 能力，建议按这个顺序阅读：
 
-1. [architecture.md](./architecture.md)
-2. [conventions.md](./conventions.md)
-3. [roadmap.md](./roadmap.md)
+1. [architecture.md](./architecture.md) - 系统架构和分层设计
+2. [conventions.md](./conventions.md) - 代码规范和实现原则
+3. [roadmap.md](./roadmap.md) - 功能演进路线图
+4. [capability-mapping.md](./capability-mapping.md) - 与教程内容的对照分析
 
 保留的参考资料：
 
@@ -23,5 +24,18 @@
 
 - [architecture.md](./architecture.md): 当前系统分层、职责边界和扩展入口
 - [conventions.md](./conventions.md): 代码组织、命名、文件职责和实现原则
-- [roadmap.md](./roadmap.md): 后续功能演进建议与推荐实现顺序
+- [roadmap.md](./roadmap.md): 后续功能演进建议与推荐实现顺序（Phase 1 已完成 ✅）
+- [capability-mapping.md](./capability-mapping.md): 与 `ai-agents-for-beginners` 的功能对照、实现难度分析和详细路径
 
+## 快速开始
+
+**如果你是新加入的开发者**，按这个顺序阅读：
+
+1. 先看 [architecture.md](./architecture.md) 了解整体结构
+2. 再看 [conventions.md](./conventions.md) 了解编码规范
+3. 准备开发新功能时看 [capability-mapping.md](./capability-mapping.md)
+
+**如果你想了解后续规划**：
+
+- 直接看 [roadmap.md](./roadmap.md)
+- 详细实现路径看 [capability-mapping.md](./capability-mapping.md)

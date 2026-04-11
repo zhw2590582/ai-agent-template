@@ -13,9 +13,10 @@
 当前已经具备：
 
 - 基于 `useChat` 的流式聊天
-- 服务端工具调用
+- 服务端工具调用（天气、计算器、时间查询）
 - 暗黑主题聊天界面
 - 功能域与服务端分层
+- **Phase 1 完成** ✅：工具拆分、Prompt 抽离、类型系统建立
 
 当前还没有做：
 
@@ -59,8 +60,14 @@ src/
 └── server/
     ├── ai/
     │   ├── models.ts
-    │   └── tools.ts
-    └── chat.ts
+    │   ├── prompts.ts      # ← 新增：系统 prompt 管理
+    │   └── tools/          # ← 重构：拆分为独立工具
+    │       ├── calculator.ts
+    │       ├── datetime.ts
+    │       ├── weather.ts
+    │       └── index.ts
+    ├── chat.ts
+    └── types.ts            # ← 新增：共享类型定义
 ```
 
 ## Docs
@@ -69,14 +76,15 @@ src/
 
 建议阅读顺序：
 
-1. [docs/architecture.md](./docs/architecture.md)
-2. [docs/conventions.md](./docs/conventions.md)
-3. [docs/roadmap.md](./docs/roadmap.md)
+1. [docs/architecture.md](./docs/architecture.md) - 系统架构
+2. [docs/conventions.md](./docs/conventions.md) - 编码规范
+3. [docs/roadmap.md](./docs/roadmap.md) - 演进路线（Phase 1 已完成 ✅）
+4. [docs/capability-mapping.md](./docs/capability-mapping.md) - 功能对照与实现分析
 
 保留的参考资料：
 
-- [docs/ai-agents-for-beginners](./docs/ai-agents-for-beginners)
-- [docs/mcp-for-beginners](./docs/mcp-for-beginners)
+- [docs/ai-agents-for-beginners](./docs/ai-agents-for-beginners) - AI Agent 理论与模式
+- [docs/mcp-for-beginners](./docs/mcp-for-beginners) - MCP 协议参考
 
 ## Stack
 
@@ -95,11 +103,25 @@ src/
 
 目标不是做一套完整主题系统，而是先把聊天产品体验和结构稳定下来。
 
-## Near-Term Direction
+## Recent Updates (2026-04-11)
 
-下一阶段推荐先做这些整理，再继续接功能：
+✅ **Phase 1 完成**：
+
+- 工具文件拆分到 `server/ai/tools/`
+- 系统 prompt 抽离到 `server/ai/prompts.ts`
+- 共享类型定义在 `server/types.ts`
+- 为 Memory、RAG、Planning、Multi-Agent 预留类型接口
+
+## Next Steps
+
+推荐按 [docs/roadmap.md](./docs/roadmap.md) 进行，优先级：
+
+1. **Phase 2A: Memory**（1-2 周）- 会话历史和用户偏好
+2. **Phase 2B: RAG**（2-3 周）- 知识库检索
+3. **Phase 3: Planning**（2-3 周）- 多步骤任务规划
+
+详细实现路径见 [docs/capability-mapping.md](./docs/capability-mapping.md)。
 
 1. 把 `src/server/ai/tools.ts` 拆成多个工具文件
 2. 把系统 prompt 抽离到 `src/server/ai/prompts.ts`
 3. 补充共享类型，给 memory / rag / planning 做准备
-

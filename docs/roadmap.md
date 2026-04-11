@@ -2,22 +2,40 @@
 
 这份路线图不是“教学步骤清单”，而是未来功能接入的推荐顺序。
 
-## Phase 1: Solidify Chat Core
+## Phase 1: Solidify Chat Core ✅
 
-目标：把当前聊天骨架稳定下来。
+**状态**: 已完成（2026-04-11）
 
-建议动作：
+**目标**: 把当前聊天骨架稳定下来。
 
-1. 拆分 `server/ai/tools.ts`
-2. 抽离 `server/ai/prompts.ts`
-3. 引入消息与工具结果的共享类型
-4. 明确错误处理和空状态策略
+**已完成的动作**:
 
-完成后你会得到：
+1. ✅ 拆分 `server/ai/tools.ts` → `server/ai/tools/`
+   - `weather.ts`: 天气查询工具
+   - `calculator.ts`: 数学计算工具
+   - `datetime.ts`: 时间查询工具
+   - `index.ts`: 统一导出
 
-- 更稳定的 chat handler
-- 更清晰的工具注册方式
-- 后续接 memory / rag 时更少重构
+2. ✅ 抽离 `server/ai/prompts.ts`
+   - `GENERAL_AGENT_SYSTEM_PROMPT`: 通用 agent prompt
+   - `DEFAULT_SYSTEM_PROMPT`: 默认 prompt
+   - 为多场景 prompt 预留扩展空间
+
+3. ✅ 引入共享类型 `server/types.ts`
+   - Memory 相关: `ConversationMetadata`, `BaseMessage`
+   - RAG 相关: `DocumentChunk`
+   - Planning 相关: `TaskStep`, `TaskPlan`
+   - Multi-Agent 相关: `AgentConfig`, `AgentContext`
+   - 工具相关: `ToolResult<T>`
+
+4. ✅ 更新 `server/chat.ts` 引用新结构
+
+**实际收益**:
+
+- 工具文件清晰，每个工具独立维护
+- Prompt 集中管理，易于版本控制和 A/B 测试
+- 类型系统为 Phase 2-6 做好准备，减少后续重构
+- 代码结构更符合 production 标准
 
 ## Phase 2: Memory
 
@@ -108,4 +126,3 @@
 3. 增加共享 types
 
 这是当前投入最小、后续收益最大的整理。
-

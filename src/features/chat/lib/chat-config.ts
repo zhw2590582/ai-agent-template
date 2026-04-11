@@ -19,4 +19,3 @@ export const INITIAL_MESSAGES: UIMessage[] = [
     ],
   },
 ];
-

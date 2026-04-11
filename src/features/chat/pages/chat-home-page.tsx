@@ -39,52 +39,38 @@ export function ChatHomePage() {
   };
 
   return (
-    <main className="h-screen bg-background text-foreground">
+    <main className="bg-background text-foreground h-screen">
       <div className="grid h-full w-full grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]">
-          <ChatSidebar
-            isBusy={isBusy}
-            messages={messages}
-            onQuickPrompt={handleQuickPrompt}
-          />
+        <ChatSidebar isBusy={isBusy} messages={messages} onQuickPrompt={handleQuickPrompt} />
 
-          <section className="flex min-h-0 flex-col bg-background">
-            <div className="border-b border-border px-6 py-4">
-              <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.32em] text-muted-foreground">
-                    chatgpt.com inspired
-                  </div>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                    通用 AI Agent
-                  </h2>
+        <section className="bg-background flex min-h-0 flex-col">
+          <div className="border-border border-b px-6 py-4">
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-muted-foreground text-[11px] tracking-[0.32em] uppercase">
+                  chatgpt.com inspired
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="rounded-full border border-border bg-muted px-3 py-1 text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                    {status === 'ready'
-                      ? 'Ready'
-                      : status === 'error'
-                        ? 'Error'
-                        : 'Thinking'}
-                  </div>
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight">通用 AI Agent</h2>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="border-border bg-muted text-muted-foreground rounded-full border px-3 py-1 text-xs tracking-[0.22em] uppercase">
+                  {status === 'ready' ? 'Ready' : status === 'error' ? 'Error' : 'Thinking'}
                 </div>
               </div>
             </div>
+          </div>
 
-            <ChatMessageList
-              error={error}
-              messages={messages}
-              onRetry={() => regenerate()}
-            />
+          <ChatMessageList error={error} messages={messages} onRetry={() => regenerate()} />
 
-            <ChatComposer
-              input={input}
-              isBusy={isBusy}
-              onStop={stop}
-              onInputChange={setInput}
-              onSubmit={handleSubmit}
-              status={status}
-            />
-          </section>
+          <ChatComposer
+            input={input}
+            isBusy={isBusy}
+            onStop={stop}
+            onInputChange={setInput}
+            onSubmit={handleSubmit}
+            status={status}
+          />
+        </section>
       </div>
     </main>
   );
