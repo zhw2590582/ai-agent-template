@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import type { UIMessage } from 'ai';
 import { MessageSquarePlusIcon, PanelLeftIcon, SparklesIcon } from 'lucide-react';
 
@@ -72,12 +71,6 @@ export function ChatSidebar({
               宽屏聊天工作区，支持流式回复和工具调用。
             </p>
           </div>
-          <Link
-            href="/test-deepseek"
-            className="rounded-2xl bg-background px-4 py-3 text-sm transition hover:bg-accent"
-          >
-            打开 DeepSeek 测试页
-          </Link>
           <a
             href="https://ai-sdk.dev/"
             target="_blank"
@@ -90,7 +83,7 @@ export function ChatSidebar({
       </div>
 
       <div className="mt-auto px-5 py-4 text-xs text-muted-foreground">
-        布局参考 chatgpt.com
+        Dark mode only
       </div>
     </aside>
   );

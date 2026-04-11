@@ -1,4 +1,4 @@
-import { handleChatPost, maxDuration } from '@/server/http/routes/chat-route';
+import { handleChatPost, maxDuration } from '@/server/chat';
 
 export { maxDuration };
 

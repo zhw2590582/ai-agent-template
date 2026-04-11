@@ -1,6 +1,6 @@
 import { convertToModelMessages, streamText, type UIMessage } from 'ai';
 
-import { defaultModel } from '@/server/ai/providers/models';
+import { defaultModel } from '@/server/ai/models';
 import { agentTools } from '@/server/ai/tools';
 
 export const maxDuration = 30;
@@ -33,4 +33,3 @@ export async function handleChatPost(request: Request) {
     return new Response('聊天失败', { status: 500 });
   }
 }
-
