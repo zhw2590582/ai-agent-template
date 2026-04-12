@@ -23,6 +23,7 @@ vi.mock('@/server/ai/tools', () => ({
 
 vi.mock('@/config/app', () => ({
   AI_CONFIG: { DEFAULT_MAX_TOKENS: 1024 },
+  DEV_CONFIG: { ENABLE_DEBUG_LOGS: false },
 }));
 
 describe('chat model integration', () => {

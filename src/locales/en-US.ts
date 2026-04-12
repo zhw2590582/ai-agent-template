@@ -58,11 +58,13 @@ export const enUS: Translations = {
     sidebar: {
       agent_workspace: 'AI Agent',
       messages: '{count} messages',
+      current: 'Current',
       new_chat: 'New chat',
       history: 'History',
       history_item: 'Item {index}',
       history_empty_title: 'No history yet',
       no_history: 'No history yet. Send a message and it will appear here.',
+      no_preview: 'This conversation does not have a preview yet.',
       dark_mode_only: 'Dark mode only',
     },
     empty_state: {

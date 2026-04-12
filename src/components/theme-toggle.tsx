@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { MoonIcon, SunIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { useTheme } from '@/components/theme-provider';
 import { THEME_COOKIE_KEY, THEME_STORAGE_KEY, type ThemeMode } from '@/config/theme';
 import { Button } from '@/components/ui/button';
 
@@ -16,13 +17,7 @@ function applyTheme(theme: ThemeMode) {
 
 export function ThemeToggle() {
   const t = useTranslations();
-  const [theme, setTheme] = useState<ThemeMode>(() => {
-    if (typeof window === 'undefined') {
-      return 'dark';
-    }
-
-    return document.documentElement.classList.contains('light') ? 'light' : 'dark';
-  });
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     applyTheme(theme);

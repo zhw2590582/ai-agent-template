@@ -27,3 +27,9 @@ vi.mock('next-intl', () => ({
     number: (num: number) => num.toString(),
   }),
 }));
+
+vi.mock('@sentry/nextjs', () => ({
+  captureException: vi.fn(),
+  captureRouterTransitionStart: vi.fn(),
+  init: vi.fn(),
+}));

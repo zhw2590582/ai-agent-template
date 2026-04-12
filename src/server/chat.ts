@@ -4,8 +4,10 @@ import { AI_CONFIG } from '@/config/app';
 import { LOCALE_DETECTION_STRATEGY } from '@/config/i18n';
 import { handleErrorWithLocale } from '@/lib/errors';
 import { t } from '@/lib/i18n';
+import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { defaultModel, getChatModel } from '@/server/ai/models';
 import { DEFAULT_SYSTEM_PROMPT } from '@/server/ai/prompts';
+import { saveConversationMessages } from '@/server/storage/conversations';
 import { agentTools } from '@/server/ai/tools';
 
 export const maxDuration = 30;
@@ -42,9 +44,11 @@ export async function handleChatPost(request: Request) {
 
   try {
     const {
+      conversationId,
       messages,
       model,
     }: {
+      conversationId?: string;
       messages: UIMessage[];
       model?: string;
     } = await request.json();
@@ -57,8 +61,32 @@ export async function handleChatPost(request: Request) {
       maxOutputTokens: AI_CONFIG.DEFAULT_MAX_TOKENS,
     });
 
+    result.consumeStream();
+
     return result.toUIMessageStreamResponse({
       originalMessages: messages,
+      onFinish: async ({ messages: responseMessages }) => {
+        if (!conversationId) {
+          return;
+        }
+
+        const supabase = await createSupabaseServerClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          return;
+        }
+
+        await saveConversationMessages(
+          {
+            conversationId,
+            messages: responseMessages,
+          },
+          supabase
+        );
+      },
       onError: () => t(locale, 'chat.errors.request_failed'),
     });
   } catch (error) {

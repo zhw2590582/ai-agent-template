@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
+import { DefaultChatTransport, type UIMessage } from 'ai';
 import {
   BlocksIcon,
   BotIcon,
@@ -14,18 +14,21 @@ import {
   WrenchIcon,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { AI_CONFIG } from '@/config/app';
 import { HEADER_NAV_ITEMS, type HeaderNavItemId } from '@/config/navigation';
+import { useAuthUser } from '@/features/auth/components/auth-user-provider';
 import { type ModelId } from '@/config/models';
 import { ChatComposer } from '@/features/chat/components/chat-composer';
 import { ChatMessageList } from '@/features/chat/components/chat-message-list';
 import { ChatSidebar } from '@/features/chat/components/chat-sidebar';
 import { AuthDialog } from '@/features/auth/components/auth-dialog';
 import { getInitialMessages } from '@/features/chat/lib/chat-config';
+import type { ConversationSummary } from '@/server/storage/types';
 import { cn } from '@/lib/utils';
 
 const NAV_ICONS = {
@@ -42,15 +45,27 @@ type WorkbenchView = 'chat' | HeaderNavItemId;
 
 interface ChatHomePageProps {
   activeView?: WorkbenchView;
+  initialConversationId?: string | null;
+  initialConversations?: ConversationSummary[];
+  initialMessages?: UIMessage[];
 }
 
-export function ChatHomePage({ activeView = 'chat' }: ChatHomePageProps) {
+export function ChatHomePage({
+  activeView = 'chat',
+  initialConversationId = null,
+  initialConversations = [],
+  initialMessages = [],
+}: ChatHomePageProps) {
   const t = useTranslations();
   const locale = useLocale();
-  const initialMessages = useMemo(() => getInitialMessages(t), [t]);
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user } = useAuthUser();
+  const starterMessages = useMemo(() => getInitialMessages(t), [t]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedModel, setSelectedModel] = useState<ModelId>(AI_CONFIG.DEFAULT_MODEL);
   const [input, setInput] = useState('');
+  const [conversationId, setConversationId] = useState<string | null>(initialConversationId);
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
@@ -62,28 +77,68 @@ export function ChatHomePage({ activeView = 'chat' }: ChatHomePageProps) {
             messageId,
             messages,
             model: selectedModel,
+            conversationId,
           },
         }),
       }),
-    [locale, selectedModel]
+    [conversationId, locale, selectedModel]
   );
   const { messages, sendMessage, setMessages, status, stop, error, regenerate } = useChat({
+    onFinish: () => {
+      router.refresh();
+    },
     transport,
-    messages: initialMessages,
+    messages: initialMessages.length > 0 ? initialMessages : starterMessages,
   });
 
   const isBusy = status === 'submitted' || status === 'streaming';
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const text = input.trim();
+  const createConversation = async (initialMessage: string) => {
+    const response = await fetch('/api/conversations', {
+      body: JSON.stringify({ initialMessage }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    });
 
-    if (!text || isBusy) {
-      return;
+    if (!response.ok) {
+      throw new Error('Failed to create conversation');
     }
 
-    sendMessage({ text });
-    setInput('');
+    const data: { conversation: { id: string } } = await response.json();
+    return data.conversation.id;
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    void (async () => {
+      event.preventDefault();
+      const text = input.trim();
+
+      if (!text || isBusy) {
+        return;
+      }
+
+      let nextConversationId = conversationId;
+
+      if (!nextConversationId && user) {
+        nextConversationId = await createConversation(text);
+        setConversationId(nextConversationId);
+        router.replace(`/${locale}?id=${nextConversationId}`);
+      }
+
+      await sendMessage(
+        { text },
+        nextConversationId
+          ? {
+              body: {
+                conversationId: nextConversationId,
+              },
+            }
+          : undefined
+      );
+      setInput('');
+    })();
   };
 
   const handleClearChat = () => {
@@ -93,10 +148,8 @@ export function ChatHomePage({ activeView = 'chat' }: ChatHomePageProps) {
 
     setMessages(getInitialMessages(t));
     setInput('');
-  };
-
-  const handleSelectHistory = (value: string) => {
-    setInput(value);
+    setConversationId(null);
+    router.push(pathname);
   };
 
   const isChatView = activeView === 'chat';
@@ -154,10 +207,10 @@ export function ChatHomePage({ activeView = 'chat' }: ChatHomePageProps) {
           )}
         >
           <ChatSidebar
+            activeConversationId={conversationId}
+            conversations={initialConversations}
             isOpen={isSidebarOpen}
-            messages={messages}
             onClearChat={handleClearChat}
-            onSelectHistory={handleSelectHistory}
             onToggleOpen={() => setIsSidebarOpen((value) => !value)}
           />
         </div>

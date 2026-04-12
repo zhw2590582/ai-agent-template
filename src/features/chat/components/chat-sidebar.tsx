@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import type { UIMessage } from 'ai';
 import {
   HouseIcon,
   MenuIcon,
@@ -9,7 +8,6 @@ import {
   MessageSquareTextIcon,
   PanelLeftCloseIcon,
 } from 'lucide-react';
-import { useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 
@@ -21,40 +19,28 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty';
-import { getTextContent } from '@/features/chat/lib/message-utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import type { ConversationSummary } from '@/server/storage/types';
 
 interface ChatSidebarProps {
+  activeConversationId: string | null;
+  conversations: ConversationSummary[];
   isOpen: boolean;
-  messages: UIMessage[];
   onClearChat: () => void;
-  onSelectHistory: (value: string) => void;
   onToggleOpen: () => void;
 }
 
 export function ChatSidebar({
+  activeConversationId,
+  conversations,
   isOpen,
-  messages,
   onClearChat,
-  onSelectHistory,
   onToggleOpen,
 }: ChatSidebarProps) {
   const t = useTranslations();
   const locale = useLocale();
   const pathname = usePathname();
   const homeHref = `/${locale}`;
-  const historyItems = useMemo(
-    () =>
-      messages
-        .filter((message) => message.role === 'user')
-        .map((message) => ({
-          id: message.id,
-          text: getTextContent(message).trim(),
-        }))
-        .filter((message) => message.text.length > 0)
-        .slice(-8)
-        .reverse(),
-    [messages]
-  );
 
   const handleReturnHome = () => {
     if (pathname === homeHref) {
@@ -114,38 +100,48 @@ export function ChatSidebar({
         <div className="text-muted-foreground px-2 text-[11px] tracking-[0.26em] uppercase">
           {t('chat.sidebar.history')}
         </div>
-        <div className="mt-3 flex flex-col gap-2">
-          {historyItems.length > 0 ? (
-            historyItems.map((item, index) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onSelectHistory(item.text)}
-                className="bg-background text-foreground hover:border-border hover:bg-accent rounded-2xl border border-transparent px-3 py-3 text-left transition"
-              >
-                <div className="flex items-start gap-2">
-                  <MessageSquareTextIcon className="text-muted-foreground mt-0.5 size-4 shrink-0" />
-                  <div className="min-w-0">
-                    <div className="text-muted-foreground text-[11px] tracking-[0.22em] uppercase">
-                      {t('chat.sidebar.history_item', { index: historyItems.length - index })}
+        <ScrollArea className="mt-3 h-[calc(100vh-12.5rem)] pr-1">
+          <div className="flex flex-col gap-2 pb-4">
+            {conversations.length > 0 ? (
+              conversations.map((item, index) => (
+                <Link
+                  key={item.id}
+                  href={`/${locale}?id=${item.id}`}
+                  className="bg-background text-foreground hover:border-border hover:bg-accent rounded-2xl border border-transparent px-3 py-3 text-left transition"
+                >
+                  <div className="flex items-start gap-2">
+                    <MessageSquareTextIcon className="text-muted-foreground mt-0.5 size-4 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-muted-foreground flex items-center gap-2 text-[11px] tracking-[0.22em] uppercase">
+                        <span>
+                          {t('chat.sidebar.history_item', { index: conversations.length - index })}
+                        </span>
+                        {activeConversationId === item.id ? (
+                          <span className="text-foreground tracking-normal normal-case">
+                            {t('chat.sidebar.current')}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="mt-1 line-clamp-1 text-sm leading-6 font-medium">
+                        {item.title}
+                      </div>
                     </div>
-                    <div className="mt-1 line-clamp-2 text-sm leading-6">{item.text}</div>
                   </div>
-                </div>
-              </button>
-            ))
-          ) : (
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <MessageSquareTextIcon className="size-4" />
-                </EmptyMedia>
-                <EmptyTitle>{t('chat.sidebar.history_empty_title')}</EmptyTitle>
-                <EmptyDescription>{t('chat.sidebar.no_history')}</EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          )}
-        </div>
+                </Link>
+              ))
+            ) : (
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <MessageSquareTextIcon className="size-4" />
+                  </EmptyMedia>
+                  <EmptyTitle>{t('chat.sidebar.history_empty_title')}</EmptyTitle>
+                  <EmptyDescription>{t('chat.sidebar.no_history')}</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            )}
+          </div>
+        </ScrollArea>
       </div>
     </aside>
   );

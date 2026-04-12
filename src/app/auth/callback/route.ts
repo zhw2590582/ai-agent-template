@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from '@/config/i18n';
 import { createClient } from '@/lib/supabase/server';
+import { upsertProfileFromAuthUser } from '@/server/storage/profiles';
 
 function getSafeNext(nextParam: string | null) {
   if (!nextParam || !nextParam.startsWith('/')) {
@@ -42,9 +43,13 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      if (data.user) {
+        await upsertProfileFromAuthUser(data.user, { locale: getLocaleFromPath(next) }, supabase);
+      }
+
       return NextResponse.redirect(new URL(next, origin));
     }
   }

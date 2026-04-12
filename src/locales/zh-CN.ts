@@ -56,11 +56,13 @@ const zhCN = {
     sidebar: {
       agent_workspace: 'AI Agent',
       messages: '{count} 条消息',
+      current: '当前',
       new_chat: '新对话',
       history: '历史记录',
       history_item: '记录 {index}',
       history_empty_title: '还没有历史记录',
       no_history: '还没有历史记录。先发一条消息，之后会出现在这里。',
+      no_preview: '这段会话还没有可展示的摘要。',
       dark_mode_only: '仅支持暗色模式',
     },
     empty_state: {
