@@ -108,6 +108,13 @@ export function ChatSidebar({
             <MenuIcon />
           </Button>
         </div>
+        <div className="px-3">
+          <Button asChild className="w-full justify-start gap-2" size="default" variant="ghost">
+            <Link href={homeHref} onClick={handleNewChatClick}>
+              <MessageSquarePlusIcon data-icon="inline-center" />
+            </Link>
+          </Button>
+        </div>
       </aside>
     );
   }
