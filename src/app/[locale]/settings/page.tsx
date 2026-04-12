@@ -1,5 +1,4 @@
-import { loadChatPageData } from '@/features/chat/lib/chat-page-data';
-import { ChatHomePage } from '@/features/chat/pages/chat-home-page';
+import { ChatShellPage } from '@/features/chat/pages/chat-shell-page';
 
 type SettingsPageProps = {
   searchParams: Promise<{
@@ -9,16 +8,5 @@ type SettingsPageProps = {
 };
 
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
-  const { conversation, id } = await searchParams;
-  const pageData = await loadChatPageData(id ?? conversation);
-
-  return (
-    <ChatHomePage
-      activeView="settings"
-      initialConversationId={pageData.conversationId}
-      initialConversations={pageData.conversations}
-      initialConversationsHasMore={pageData.conversationsHasMore}
-      initialMessages={pageData.messages}
-    />
-  );
+  return <ChatShellPage activeView="settings" searchParams={searchParams} />;
 }

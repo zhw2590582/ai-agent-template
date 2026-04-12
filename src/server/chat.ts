@@ -10,7 +10,7 @@ import { validateRequest } from '@/lib/validation';
 import { defaultModel, getChatModel } from '@/server/ai/models';
 import { getSystemPrompt } from '@/server/ai/prompts';
 import { chatPostSchema } from '@/server/schemas';
-import { saveConversationMessages } from '@/server/storage/conversations';
+import { saveConversationMessages } from '@/server/storage';
 import { agentTools } from '@/server/ai/tools';
 
 export const maxDuration = 30;

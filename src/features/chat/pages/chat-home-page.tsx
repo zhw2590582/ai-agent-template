@@ -1,16 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport, type UIMessage } from 'ai';
+import type { UIMessage } from 'ai';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { AI_CONFIG } from '@/config/app';
 import { type HeaderNavItemId } from '@/config/navigation';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
-import { type ModelId } from '@/config/models';
 import { ChatComposer } from '@/features/chat/components/chat-composer';
 import { ChatMessageList } from '@/features/chat/components/chat-message-list';
 import { ChatPlaceholder } from '@/features/chat/components/chat-placeholder';
@@ -18,6 +15,7 @@ import { ChatSidebar } from '@/features/chat/components/chat-sidebar';
 import { ChatTopBar } from '@/features/chat/components/chat-topbar';
 import { getInitialMessages } from '@/features/chat/lib/chat-config';
 import { useChatController } from '@/features/chat/lib/use-chat-controller';
+import { useChatSession } from '@/features/chat/lib/use-chat-session';
 import { useChatSync } from '@/features/chat/lib/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/lib/use-sidebar-conversations';
 import type { ConversationSummary } from '@/server/storage/types';
@@ -30,6 +28,7 @@ interface ChatHomePageProps {
   initialConversationId?: string | null;
   initialConversations?: ConversationSummary[];
   initialConversationsHasMore?: boolean;
+  invalidConversationId?: boolean;
   initialMessages?: UIMessage[];
 }
 
@@ -45,6 +44,7 @@ export function ChatHomePage({
   initialConversationId = null,
   initialConversations = [],
   initialConversationsHasMore = false,
+  invalidConversationId = false,
   initialMessages = [],
 }: ChatHomePageProps) {
   const t = useTranslations();
@@ -61,7 +61,6 @@ export function ChatHomePage({
   );
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [selectedModel, setSelectedModel] = useState<ModelId>(AI_CONFIG.DEFAULT_MODEL);
   const [input, setInput] = useState('');
   const [isStartingThread, setIsStartingThread] = useState(false);
   const [sidebarSearchQuery, setSidebarSearchQuery] = useState('');
@@ -85,32 +84,6 @@ export function ChatHomePage({
 
   /* ------ Transport ------ */
 
-  const transport = useMemo(
-    () =>
-      new DefaultChatTransport({
-        api: `/api/chat?lang=${locale}`,
-        prepareSendMessagesRequest: ({
-          messages,
-          id,
-          trigger,
-          messageId,
-          body: requestBody = {},
-        }) => ({
-          body: {
-            ...requestBody,
-            id,
-            trigger,
-            messageId,
-            messages,
-            model: selectedModel,
-            conversationId:
-              (requestBody.conversationId as string | undefined) ?? activeThreadId ?? undefined,
-          },
-        }),
-      }),
-    [activeThreadId, locale, selectedModel]
-  );
-
   /* ------ useChat ------ */
 
   const useChatInitialMessages =
@@ -120,12 +93,23 @@ export function ChatHomePage({
       ? initialMessages
       : starterMessages;
 
-  const { messages, sendMessage, setMessages, status, stop, error, regenerate } = useChat({
+  const {
+    messages,
+    sendMessage,
+    setMessages,
+    status,
+    stop,
+    error,
+    regenerate,
+    selectedModel,
+    setSelectedModel,
+  } = useChatSession({
+    activeThreadId,
+    initialMessages: useChatInitialMessages,
+    locale,
     onFinish: () => {
       router.refresh();
     },
-    transport,
-    messages: useChatInitialMessages,
   });
 
   const isBusy = status === 'submitted' || status === 'streaming';
@@ -204,17 +188,19 @@ export function ChatHomePage({
       return;
     }
 
-    if (initialConversationId) return;
+    if (!invalidConversationId) return;
     if (pendingThreadId || bootstrappingThreadId || isStartingThread || isBusy) return;
     if (invalidIdHandledRef.current) return;
 
     invalidIdHandledRef.current = true;
     toast.error(t('chat.errors.invalid_conversation'));
-    handleClearChat();
+    window.setTimeout(() => {
+      handleClearChat();
+    }, 350);
   }, [
     bootstrappingThreadId,
     handleClearChat,
-    initialConversationId,
+    invalidConversationId,
     isBusy,
     isStartingThread,
     pendingThreadId,

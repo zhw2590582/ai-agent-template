@@ -10,9 +10,9 @@ import {
   listConversationsForUserSearchPage,
   mapConversationSummary,
   saveConversationMessages,
-} from '@/server/storage/conversations';
+  upsertProfileFromAuthUser,
+} from '@/server/storage';
 import { createConversationSchema, patchConversationSchema } from '@/server/schemas';
-import { upsertProfileFromAuthUser } from '@/server/storage/profiles';
 
 /** Authenticate and return the Supabase user, or throw 401. */
 async function requireAuth() {

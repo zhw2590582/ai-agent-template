@@ -1,5 +1,4 @@
-import { loadChatPageData } from '@/features/chat/lib/chat-page-data';
-import { ChatHomePage } from '@/features/chat/pages/chat-home-page';
+import { ChatShellPage } from '@/features/chat/pages/chat-shell-page';
 
 type McpPageProps = {
   searchParams: Promise<{
@@ -9,16 +8,5 @@ type McpPageProps = {
 };
 
 export default async function McpPage({ searchParams }: McpPageProps) {
-  const { conversation, id } = await searchParams;
-  const pageData = await loadChatPageData(id ?? conversation);
-
-  return (
-    <ChatHomePage
-      activeView="mcp"
-      initialConversationId={pageData.conversationId}
-      initialConversations={pageData.conversations}
-      initialConversationsHasMore={pageData.conversationsHasMore}
-      initialMessages={pageData.messages}
-    />
-  );
+  return <ChatShellPage activeView="mcp" searchParams={searchParams} />;
 }
