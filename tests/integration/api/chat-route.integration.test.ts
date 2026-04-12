@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockHandleChatPost = vi.fn();
 
-vi.mock('@/server/chat', () => ({
+vi.mock('@/features/chat/server/chat', () => ({
   maxDuration: 123,
   handleChatPost: mockHandleChatPost,
 }));

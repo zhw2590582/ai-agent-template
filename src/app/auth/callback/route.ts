@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from '@/config/i18n';
 import { logger } from '@/lib/logger';
 import { createClient } from '@/lib/supabase/server';
-import { upsertProfileFromAuthUser } from '@/server/storage';
+import { upsertProfileFromAuthUser } from '@/features/chat/storage';
 
 function getSafeNext(nextParam: string | null) {
   if (!nextParam || !nextParam.startsWith('/')) {

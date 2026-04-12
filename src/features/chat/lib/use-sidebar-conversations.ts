@@ -9,7 +9,7 @@
 
 import { startTransition, useEffect, useMemo, useState } from 'react';
 
-import type { ConversationSummary } from '@/server/storage/types';
+import type { ConversationSummary } from '@/features/chat/storage/types';
 import { useSidebarPagination } from '@/features/chat/lib/use-sidebar-pagination';
 import { useSidebarSearch } from '@/features/chat/lib/use-sidebar-search';
 

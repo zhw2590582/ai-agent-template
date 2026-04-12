@@ -1,4 +1,4 @@
-import { handleChatPost, maxDuration } from '@/server/chat';
+import { handleChatPost, maxDuration } from '@/features/chat/server/chat';
 
 export { maxDuration };
 

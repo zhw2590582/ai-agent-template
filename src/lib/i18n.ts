@@ -9,9 +9,9 @@
 
 import type { Locale } from '@/config/i18n';
 import { DEFAULT_LOCALE } from '@/config/i18n';
-import { zhCN } from '@/locales/zh-CN';
-import { enUS } from '@/locales/en-US';
-import type { Translations } from '@/locales/zh-CN';
+import { zhCN } from '@/i18n/locales/zh-CN';
+import { enUS } from '@/i18n/locales/en-US';
+import type { Translations } from '@/i18n/locales/zh-CN';
 
 /**
  * 语言包映射

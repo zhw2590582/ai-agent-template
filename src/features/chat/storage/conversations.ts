@@ -1,11 +1,11 @@
 import type { UIMessage } from 'ai';
 
-import { generateConversationTitle } from '@/server/ai/title';
+import { generateConversationTitle } from '@/features/chat/ai/title';
 import type {
   ConversationAnalysis,
   ConversationRecord,
   ConversationSummary,
-} from '@/server/storage/types';
+} from '@/features/chat/storage/types';
 
 type SingleConversationResult = PromiseLike<{
   data: ConversationRecord | null;

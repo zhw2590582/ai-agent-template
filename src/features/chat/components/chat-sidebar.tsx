@@ -23,7 +23,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SidebarSearch } from '@/features/chat/components/sidebar-search';
-import type { ConversationSummary } from '@/server/storage/types';
+import type { ConversationSummary } from '@/features/chat/storage/types';
 import { cn } from '@/lib/utils';
 
 interface ChatSidebarProps {

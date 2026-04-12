@@ -1,7 +1,7 @@
 import type { UIMessage } from 'ai';
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
-import type { ConversationSummary } from '@/server/storage/types';
+import type { ConversationSummary } from '@/features/chat/storage/types';
 import {
   buildUserMessage,
   clearConversationUrl,

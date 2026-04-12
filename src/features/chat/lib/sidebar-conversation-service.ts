@@ -1,5 +1,5 @@
 import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/conversations';
-import type { ConversationSummary } from '@/server/storage/types';
+import type { ConversationSummary } from '@/features/chat/storage/types';
 
 export interface ConversationPageResult {
   conversations: ConversationSummary[];

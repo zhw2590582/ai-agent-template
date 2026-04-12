@@ -7,5 +7,5 @@ export {
   mapConversationSummary,
   saveConversationMessages,
   verifyConversationOwnership,
-} from '@/server/storage/conversations';
-export { upsertProfileFromAuthUser } from '@/server/storage/profiles';
+} from '@/features/chat/storage/conversations';
+export { upsertProfileFromAuthUser } from '@/features/auth/storage/profiles';

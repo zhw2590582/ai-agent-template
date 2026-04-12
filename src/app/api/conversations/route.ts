@@ -11,8 +11,8 @@ import {
   mapConversationSummary,
   saveConversationMessages,
   upsertProfileFromAuthUser,
-} from '@/server/storage';
-import { createConversationSchema, patchConversationSchema } from '@/server/schemas';
+} from '@/features/chat/storage';
+import { createConversationSchema, patchConversationSchema } from '@/features/chat/server/schemas';
 
 /** Authenticate and return the Supabase user, or throw 401. */
 async function requireAuth() {

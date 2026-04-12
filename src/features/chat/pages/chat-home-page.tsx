@@ -18,7 +18,7 @@ import { useChatController } from '@/features/chat/lib/use-chat-controller';
 import { useChatSession } from '@/features/chat/lib/use-chat-session';
 import { useChatSync } from '@/features/chat/lib/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/lib/use-sidebar-conversations';
-import type { ConversationSummary } from '@/server/storage/types';
+import type { ConversationSummary } from '@/features/chat/storage/types';
 import { cn } from '@/lib/utils';
 
 type WorkbenchView = 'chat' | HeaderNavItemId | 'settings';

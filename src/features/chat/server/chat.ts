@@ -7,11 +7,11 @@ import { t } from '@/lib/i18n';
 import { logger } from '@/lib/logger';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { validateRequest } from '@/lib/validation';
-import { defaultModel, getChatModel } from '@/server/ai/models';
-import { getSystemPrompt } from '@/server/ai/prompts';
-import { chatPostSchema } from '@/server/schemas';
-import { saveConversationMessages } from '@/server/storage';
-import { agentTools } from '@/server/ai/tools';
+import { defaultModel, getChatModel } from '@/features/chat/ai/models';
+import { getSystemPrompt } from '@/features/chat/ai/prompts';
+import { chatPostSchema } from '@/features/chat/server/schemas';
+import { saveConversationMessages } from '@/features/chat/storage';
+import { agentTools } from '@/features/chat/ai/tools';
 
 export const maxDuration = 30;
 

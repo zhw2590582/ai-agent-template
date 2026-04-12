@@ -1,6 +1,6 @@
 import { generateText } from 'ai';
 
-import { defaultModel } from '@/server/ai/models';
+import { defaultModel } from '@/features/chat/ai/models';
 
 function cleanTitle(value: string) {
   return value

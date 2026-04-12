@@ -7,8 +7,8 @@ import {
   getConversationById,
   listConversationsForUserPage,
   mapConversationSummary,
-} from '@/server/storage';
-import type { ConversationSummary } from '@/server/storage/types';
+} from '@/features/chat/storage';
+import type { ConversationSummary } from '@/features/chat/storage/types';
 
 export interface ChatPageData {
   conversationId: string | null;

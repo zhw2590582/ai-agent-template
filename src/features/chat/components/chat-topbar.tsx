@@ -11,8 +11,8 @@ import {
   GlobeIcon,
 } from 'lucide-react';
 
-import { LanguageSwitcher } from '@/components/language-switcher';
-import { ThemeToggle } from '@/components/theme-toggle';
+import { LanguageSwitcher } from '@/components/ui-settings/language-switcher';
+import { ThemeToggle } from '@/components/ui-settings/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { HEADER_NAV_ITEMS, type HeaderNavItemId } from '@/config/navigation';
 import { AuthDialog } from '@/features/auth/components/auth-dialog';
