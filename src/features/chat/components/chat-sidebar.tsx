@@ -96,23 +96,25 @@ export function ChatSidebar({
 
   if (!isOpen) {
     return (
-      <aside className="border-border bg-muted/30 flex h-full w-16 flex-col items-center border-r py-4">
-        <Button
-          aria-label={t('chat.header.show_sidebar')}
-          onClick={onToggleOpen}
-          size="icon"
-          type="button"
-          variant="ghost"
-        >
-          <MenuIcon />
-        </Button>
+      <aside className="border-border bg-muted/30 flex h-full flex-col border-r">
+        <div className="border-border mb-3 flex h-12 items-center justify-between border-b px-4">
+          <Button
+            aria-label={t('chat.header.show_sidebar')}
+            onClick={onToggleOpen}
+            size="icon"
+            type="button"
+            variant="ghost"
+          >
+            <MenuIcon />
+          </Button>
+        </div>
       </aside>
     );
   }
 
   return (
     <aside className="border-border bg-muted/30 flex h-full flex-col border-r">
-      <div className="border-border flex h-12 items-center justify-between border-b px-4">
+      <div className="border-border mb-3 flex h-12 items-center justify-between border-b px-4">
         <Button asChild className="h-auto px-0" variant="ghost">
           <Link
             className="text-foreground flex items-center gap-2 text-sm font-medium"
@@ -153,7 +155,7 @@ export function ChatSidebar({
                     href={`/${locale}?id=${item.id}`}
                     className={`text-foreground hover:bg-accent rounded-md p-1.5 text-sm transition ${item.id === activeConversationId ? 'bg-accent' : ''}`}
                   >
-                    <span className="line-clamp-2">{item.title}</span>
+                    <div className="max-w-56 truncate">{item.title}</div>
                   </Link>
                 ))}
                 {hasMoreConversations ? (
