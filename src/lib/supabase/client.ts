@@ -1,5 +1,7 @@
 import { createBrowserClient } from '@supabase/ssr';
 
+import type { Database } from '@/lib/supabase/database.types';
+
 function getSupabaseBrowserEnv() {
   return {
     url: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -22,5 +24,5 @@ export function createClient() {
     );
   }
 
-  return createBrowserClient(url, publishableKey);
+  return createBrowserClient<Database>(url, publishableKey);
 }

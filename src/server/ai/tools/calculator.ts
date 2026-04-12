@@ -1,9 +1,8 @@
 /**
- * 数学计算工具
+ * Math calculation tool — safe expression evaluator.
  *
- * 说明:
- * - 只允许数字、空格、括号和基础四则运算符
- * - 通过白名单校验降低表达式执行风险
+ * Uses a recursive-descent parser instead of Function()/eval().
+ * Supports: numbers, +, -, *, /, parentheses, unary minus.
  */
 
 import { tool } from 'ai';
@@ -15,17 +14,141 @@ export type CalculateResult = {
   formatted: string;
 };
 
+/* ------------------------------------------------------------------ */
+/*  Safe recursive-descent parser for arithmetic expressions           */
+/*  Grammar:                                                           */
+/*    expr   → term (('+' | '-') term)*                                */
+/*    term   → unary (('*' | '/') unary)*                              */
+/*    unary  → '-' unary | primary                                     */
+/*    primary→ '(' expr ')' | NUMBER                                   */
+/* ------------------------------------------------------------------ */
+
+class ParseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ParseError';
+  }
+}
+
+function evaluate(expression: string): number {
+  const tokens = tokenize(expression);
+  let pos = 0;
+
+  function peek() {
+    return tokens[pos] ?? null;
+  }
+
+  function consume(expected?: string) {
+    const tok = tokens[pos];
+    if (expected !== undefined && tok !== expected) {
+      throw new ParseError(`Expected '${expected}' but got '${tok ?? 'end of input'}'`);
+    }
+    pos++;
+    return tok;
+  }
+
+  function parseExpr(): number {
+    let left = parseTerm();
+    while (peek() === '+' || peek() === '-') {
+      const op = consume()!;
+      const right = parseTerm();
+      left = op === '+' ? left + right : left - right;
+    }
+    return left;
+  }
+
+  function parseTerm(): number {
+    let left = parseUnary();
+    while (peek() === '*' || peek() === '/') {
+      const op = consume()!;
+      const right = parseUnary();
+      if (op === '/') {
+        if (right === 0) throw new ParseError('Division by zero');
+        left = left / right;
+      } else {
+        left = left * right;
+      }
+    }
+    return left;
+  }
+
+  function parseUnary(): number {
+    if (peek() === '-') {
+      consume();
+      return -parseUnary();
+    }
+    return parsePrimary();
+  }
+
+  function parsePrimary(): number {
+    if (peek() === '(') {
+      consume('(');
+      const value = parseExpr();
+      consume(')');
+      return value;
+    }
+    const tok = consume();
+    if (tok == null) throw new ParseError('Unexpected end of expression');
+    const num = Number(tok);
+    if (Number.isNaN(num)) throw new ParseError(`Unexpected token: ${tok}`);
+    return num;
+  }
+
+  const result = parseExpr();
+
+  if (pos < tokens.length) {
+    throw new ParseError(`Unexpected token after expression: ${tokens[pos]}`);
+  }
+
+  return result;
+}
+
+/** Tokenize an arithmetic expression into numbers and operators. */
+function tokenize(expr: string): string[] {
+  const tokens: string[] = [];
+  let i = 0;
+
+  while (i < expr.length) {
+    const ch = expr[i]!;
+
+    if (/\s/.test(ch)) {
+      i++;
+      continue;
+    }
+
+    if ('+-*/()'.includes(ch)) {
+      tokens.push(ch);
+      i++;
+      continue;
+    }
+
+    if (/[\d.]/.test(ch)) {
+      let num = '';
+      while (i < expr.length && /[\d.]/.test(expr[i]!)) {
+        num += expr[i];
+        i++;
+      }
+      tokens.push(num);
+      continue;
+    }
+
+    throw new ParseError(`Invalid character: ${ch}`);
+  }
+
+  return tokens;
+}
+
 export function runCalculation(expression: string): CalculateResult {
   const normalized = expression.replace(/\s+/g, ' ').trim();
 
-  if (!/^[\d\s+\-*/().]+$/.test(normalized)) {
-    throw new Error('仅支持数字、括号和 + - * / 运算符。');
+  if (normalized.length === 0) {
+    throw new ParseError('Empty expression');
   }
 
-  const result = Function(`"use strict"; return (${normalized});`)();
+  const result = evaluate(normalized);
 
-  if (typeof result !== 'number' || !Number.isFinite(result)) {
-    throw new Error('计算结果无效，请检查表达式。');
+  if (!Number.isFinite(result)) {
+    throw new ParseError('Result is not a finite number');
   }
 
   return {
@@ -36,9 +159,9 @@ export function runCalculation(expression: string): CalculateResult {
 }
 
 export const calculate = tool({
-  description: '执行数学表达式计算，适合处理加减乘除、括号和小数运算。',
+  description: 'Evaluate a math expression (supports +, -, *, /, parentheses, decimals).',
   inputSchema: z.object({
-    expression: z.string().min(1).describe('需要计算的数学表达式，例如 (24 * 6) / 3。'),
+    expression: z.string().min(1).describe('Math expression, e.g. (24 * 6) / 3'),
   }),
   execute: async ({ expression }) => runCalculation(expression),
 });

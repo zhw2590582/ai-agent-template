@@ -97,7 +97,7 @@ export function mapConversationSummary(record: ConversationRecord): Conversation
   return {
     id: record.id,
     lastMessageAt: record.last_message_at,
-    preview: null,
+    preview: record.analysis?.last_message_preview ?? null,
     title: record.title,
   };
 }
@@ -149,6 +149,27 @@ export async function getConversationById(id: string, client: ConversationsClien
   }
 
   return data;
+}
+
+/**
+ * Verify conversation belongs to a specific user. Throws if not found or unauthorized.
+ */
+export async function verifyConversationOwnership(
+  conversationId: string,
+  userId: string,
+  client: ConversationsClient
+): Promise<ConversationRecord> {
+  const conversation = await getConversationById(conversationId, client);
+
+  if (!conversation) {
+    throw new Error('Conversation not found');
+  }
+
+  if (conversation.user_id !== userId) {
+    throw new Error('Unauthorized: conversation does not belong to user');
+  }
+
+  return conversation;
 }
 
 export async function listConversationsForUser(userId: string, client: ConversationsClient) {
@@ -210,11 +231,16 @@ export async function saveConversationMessages(
   input: {
     conversationId: string;
     messages: UIMessage[];
+    userId: string;
   },
   client: ConversationsClient
 ) {
   const conversations = client.from('conversations') as ConversationsTable;
-  const existingConversation = await getConversationById(input.conversationId, client);
+  const existingConversation = await verifyConversationOwnership(
+    input.conversationId,
+    input.userId,
+    client
+  );
   const analysis = buildConversationAnalysis(input.messages);
   analysis.title_generated = existingConversation?.analysis?.title_generated ?? false;
   let title =

@@ -83,6 +83,13 @@ const zhCN = {
       server: '服务器错误',
       request_failed: '请求失败。请检查 DEEPSEEK_API_KEY 配置，或稍后重试。',
       unknown: '未知错误',
+      create_conversation_failed: '创建对话失败，请重试',
+      send_message_failed: '发送消息失败，请重试',
+      load_more_failed: '加载更多对话失败',
+    },
+    toast: {
+      copied: '已复制到剪贴板',
+      copy_failed: '复制失败',
     },
     models: {
       deepseek_chat: 'DeepSeek Chat',
@@ -139,6 +146,11 @@ const zhCN = {
     errors: {
       oauth_callback:
         '登录回调失败，请检查 Supabase Redirect URL 以及 Google / GitHub OAuth 配置。',
+      sign_in_failed: '登录失败，请重试',
+      sign_out_failed: '退出登录失败，请重试',
+    },
+    toast: {
+      sign_out_success: '已退出登录',
     },
   },
 

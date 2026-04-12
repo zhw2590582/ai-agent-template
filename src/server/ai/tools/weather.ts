@@ -1,21 +1,38 @@
 /**
- * 天气查询工具
+ * Weather query tool (mock data).
  *
- * 说明:
- * - 这里返回模拟数据，避免学习阶段额外引入第三方天气 API
- * - 模拟数据已经足够展示工具调用、参数传递和结果渲染的完整链路
+ * Returns deterministic mock data based on city name hash.
+ * Sufficient for demonstrating tool calling, parameter passing, and result rendering.
  */
 
 import { tool } from 'ai';
 import { z } from 'zod';
 
+const CONDITIONS = {
+  'zh-CN': ['晴朗', '多云', '小雨', '阵风', '薄雾'],
+  'en-US': ['Clear', 'Cloudy', 'Light Rain', 'Gusty', 'Misty'],
+} as const;
+
+function getAdvice(temperature: number, locale: string) {
+  if (locale === 'en-US') {
+    if (temperature >= 28) return 'Avoid going out at noon and stay hydrated.';
+    if (temperature <= 18) return 'It may be cool in the morning and evening — bring a jacket.';
+    return 'Comfortable weather, suitable for going out.';
+  }
+  if (temperature >= 28) return '建议减少中午外出并注意补水。';
+  if (temperature <= 18) return '早晚偏凉，建议带一件外套。';
+  return '体感舒适，适合正常出行。';
+}
+
 export const getWeatherInformation = tool({
-  description: '查询指定城市的天气信息，适合回答天气、气温、体感和出行建议相关问题。',
+  description:
+    'Query weather information for a city. Useful for weather, temperature, and travel advice questions.',
   inputSchema: z.object({
-    city: z.string().min(1).describe('城市名称，例如北京、上海、Tokyo。'),
+    city: z.string().min(1).describe('City name, e.g. Beijing, Shanghai, Tokyo.'),
+    locale: z.string().optional().describe('Locale for the response (zh-CN or en-US).'),
   }),
-  execute: async ({ city }) => {
-    const conditions = ['晴朗', '多云', '小雨', '阵风', '薄雾'];
+  execute: async ({ city, locale = 'zh-CN' }) => {
+    const conditions = CONDITIONS[locale as keyof typeof CONDITIONS] ?? CONDITIONS['zh-CN'];
     const seed = city.split('').reduce((total, char) => total + char.charCodeAt(0), 0);
 
     const temperature = 16 + (seed % 13);
@@ -27,12 +44,7 @@ export const getWeatherInformation = tool({
       temperature,
       humidity,
       condition,
-      advice:
-        temperature >= 28
-          ? '建议减少中午外出并注意补水。'
-          : temperature <= 18
-            ? '早晚偏凉，建议带一件外套。'
-            : '体感舒适，适合正常出行。',
+      advice: getAdvice(temperature, locale),
     };
   },
 });

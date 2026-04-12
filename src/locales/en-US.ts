@@ -86,6 +86,13 @@ export const enUS: Translations = {
       server: 'Server error',
       request_failed: 'Request failed. Please check DEEPSEEK_API_KEY or try again later.',
       unknown: 'Unknown error',
+      create_conversation_failed: 'Failed to create conversation',
+      send_message_failed: 'Failed to send message',
+      load_more_failed: 'Failed to load more conversations',
+    },
+    toast: {
+      copied: 'Copied to clipboard',
+      copy_failed: 'Failed to copy',
     },
     models: {
       deepseek_chat: 'DeepSeek Chat',
@@ -144,6 +151,11 @@ export const enUS: Translations = {
     errors: {
       oauth_callback:
         'OAuth callback failed. Check your Supabase redirect URL and your Google / GitHub OAuth configuration.',
+      sign_in_failed: 'Sign in failed, please try again',
+      sign_out_failed: 'Sign out failed, please try again',
+    },
+    toast: {
+      sign_out_success: 'Signed out successfully',
     },
   },
 

@@ -5,6 +5,7 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { isSupabaseConfigured } from '@/config/env';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
@@ -68,6 +69,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           <ThemeProvider initialTheme={theme} key={theme}>
             <AuthUserProvider initialUser={authUser}>
               <TooltipProvider>{children}</TooltipProvider>
+              <Toaster richColors position="top-center" />
             </AuthUserProvider>
           </ThemeProvider>
         </NextIntlClientProvider>

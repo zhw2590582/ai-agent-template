@@ -2,27 +2,41 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 
 type SignOutButtonProps = {
   buttonLabel: string;
+  errorLabel?: string;
   redirectTo: string;
+  successLabel?: string;
 };
 
-export function SignOutButton({ buttonLabel, redirectTo }: SignOutButtonProps) {
+export function SignOutButton({
+  buttonLabel,
+  errorLabel,
+  redirectTo,
+  successLabel,
+}: SignOutButtonProps) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
 
   const handleSignOut = async () => {
     setIsPending(true);
 
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
 
-    router.replace(redirectTo);
-    router.refresh();
+      if (successLabel) toast.success(successLabel);
+      router.replace(redirectTo);
+      router.refresh();
+    } catch {
+      setIsPending(false);
+      if (errorLabel) toast.error(errorLabel);
+    }
   };
 
   return (

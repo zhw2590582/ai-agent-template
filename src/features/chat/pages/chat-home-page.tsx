@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import {
@@ -15,12 +15,12 @@ import {
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useLocale, useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/conversations';
 import { AI_CONFIG } from '@/config/app';
 import { HEADER_NAV_ITEMS, type HeaderNavItemId } from '@/config/navigation';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
@@ -30,6 +30,8 @@ import { ChatMessageList } from '@/features/chat/components/chat-message-list';
 import { ChatSidebar } from '@/features/chat/components/chat-sidebar';
 import { AuthDialog } from '@/features/auth/components/auth-dialog';
 import { getInitialMessages } from '@/features/chat/lib/chat-config';
+import { useChatSync } from '@/features/chat/lib/use-chat-sync';
+import { useSidebarConversations } from '@/features/chat/lib/use-sidebar-conversations';
 import type { ConversationSummary } from '@/server/storage/types';
 import { cn } from '@/lib/utils';
 
@@ -55,11 +57,10 @@ interface ChatHomePageProps {
 
 /**
  * Chat routing model:
- * - `?id=` in the URL is the source of truth for which conversation is open (or absent = new chat).
- * - `pendingThreadId` only covers the gap until `router.replace` updates search params.
- * - New thread (logged-in): await create conversation → set URL `?id=` → show the user message in the UI → then call `sendMessage` for the stream (no optimistic bubble before the row exists).
- * - `bootstrappingThreadIdRef` skips the sync effect for that id until the server has persisted messages, so an empty RSC payload does not wipe the first user message.
- * - Same-URL refresh: if the client list is longer than `initialMessages`, keep the client (save/refresh race).
+ * - `?id=` in the URL is the source of truth for which conversation is open.
+ * - `pendingThreadId` covers the gap until `router.replace` updates search params.
+ * - Message sync logic lives in useChatSync to avoid monolithic effects.
+ * - Sidebar state lives in useSidebarConversations.
  */
 export function ChatHomePage({
   activeView = 'chat',
@@ -85,22 +86,23 @@ export function ChatHomePage({
   const [selectedModel, setSelectedModel] = useState<ModelId>(AI_CONFIG.DEFAULT_MODEL);
   const [input, setInput] = useState('');
   const [isStartingThread, setIsStartingThread] = useState(false);
-  /** Until the router reflects POST /conversations, this supplies the active id for API + sidebar. */
   const [pendingThreadId, setPendingThreadId] = useState<string | null>(null);
-  /** One optimistic row at the top until refresh lists the new conversation. */
-  const [pendingSidebarHead, setPendingSidebarHead] = useState<ConversationSummary | null>(null);
-  const [sidebarExtra, setSidebarExtra] = useState<ConversationSummary[]>([]);
-  const [sidebarHasMore, setSidebarHasMore] = useState(initialConversationsHasMore);
-  const [sidebarLoadingMore, setSidebarLoadingMore] = useState(false);
-  const sidebarExtraRef = useRef<ConversationSummary[]>([]);
-  const sidebarLoadMoreInFlightRef = useRef(false);
+  const [bootstrappingThreadId, setBootstrappingThreadId] = useState<string | null>(null);
 
   const activeThreadId = urlConversationId ?? pendingThreadId;
 
-  const initialConversationIdsKey = useMemo(
-    () => initialConversations.map((c) => c.id).join(','),
-    [initialConversations]
-  );
+  /* ------ Sidebar state ------ */
+
+  const sidebar = useSidebarConversations({
+    initialConversations,
+    initialHasMore: initialConversationsHasMore,
+    isAuthenticated: !!user,
+    onLoadError: useCallback(() => {
+      toast.error(t('chat.errors.load_more_failed'));
+    }, [t]),
+  });
+
+  /* ------ Transport ------ */
 
   const transport = useMemo(
     () =>
@@ -128,6 +130,8 @@ export function ChatHomePage({
     [activeThreadId, locale, selectedModel]
   );
 
+  /* ------ useChat ------ */
+
   const useChatInitialMessages =
     urlConversationId != null &&
     initialConversationId === urlConversationId &&
@@ -144,166 +148,37 @@ export function ChatHomePage({
   });
 
   const isBusy = status === 'submitted' || status === 'streaming';
-  const prevUrlConversationIdRef = useRef<string | null>(null);
-  /** First turn after POST /conversations: ignore empty server payloads until messages are saved. */
-  const bootstrappingThreadIdRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (pendingThreadId != null && urlConversationId === pendingThreadId) {
-      setPendingThreadId(null);
-    }
-  }, [pendingThreadId, urlConversationId]);
+  /* ------ Sync pending thread ID with URL ------ */
 
-  useEffect(() => {
-    if (urlConversationId == null) {
-      setPendingThreadId(null);
-    }
-  }, [urlConversationId]);
+  // Clear pendingThreadId once URL reflects it
+  // (using a ref comparison to avoid extra effects)
+  if (pendingThreadId != null && urlConversationId === pendingThreadId) {
+    // Safe to call setState during render when the value actually changes
+    setPendingThreadId(null);
+  }
 
-  useEffect(() => {
-    if (
-      pendingSidebarHead != null &&
-      initialConversations.some((c) => c.id === pendingSidebarHead.id)
-    ) {
-      setPendingSidebarHead(null);
-    }
-  }, [initialConversations, pendingSidebarHead]);
+  if (urlConversationId == null && pendingThreadId != null) {
+    setPendingThreadId(null);
+  }
 
-  useEffect(() => {
-    setSidebarExtra([]);
-  }, [initialConversationIdsKey]);
+  /* ------ Message sync ------ */
 
-  useEffect(() => {
-    setSidebarHasMore(initialConversationsHasMore);
-  }, [initialConversationsHasMore]);
-
-  useEffect(() => {
-    sidebarExtraRef.current = sidebarExtra;
-  }, [sidebarExtra]);
-
-  const loadMoreConversations = useCallback(async () => {
-    if (!user || sidebarLoadMoreInFlightRef.current || !sidebarHasMore) {
-      return;
-    }
-
-    sidebarLoadMoreInFlightRef.current = true;
-    setSidebarLoadingMore(true);
-    const offset = initialConversations.length + sidebarExtraRef.current.length;
-
-    try {
-      const params = new URLSearchParams({
-        limit: String(CONVERSATION_SIDEBAR_PAGE_SIZE),
-        offset: String(offset),
-      });
-      const response = await fetch(`/api/conversations?${params.toString()}`);
-
-      if (!response.ok) {
-        return;
-      }
-
-      const data: { conversations: ConversationSummary[]; hasMore: boolean } =
-        await response.json();
-
-      setSidebarExtra((previous) => {
-        const seen = new Set<string>([
-          ...initialConversations.map((c) => c.id),
-          ...previous.map((c) => c.id),
-        ]);
-        const merged = [...previous];
-        for (const item of data.conversations) {
-          if (!seen.has(item.id)) {
-            seen.add(item.id);
-            merged.push(item);
-          }
-        }
-        return merged;
-      });
-      setSidebarHasMore(data.hasMore);
-    } finally {
-      sidebarLoadMoreInFlightRef.current = false;
-      setSidebarLoadingMore(false);
-    }
-  }, [user, sidebarHasMore, initialConversations]);
-
-  /** Keep message list aligned with URL + server; never trust stale props when the URL has no `id`. */
-  useEffect(() => {
-    if (urlConversationId == null) {
-      bootstrappingThreadIdRef.current = null;
-      if (pendingThreadId == null) {
-        prevUrlConversationIdRef.current = null;
-        startTransition(() => {
-          setMessages(starterMessages);
-        });
-      }
-      return;
-    }
-
-    const urlChanged = prevUrlConversationIdRef.current !== urlConversationId;
-    prevUrlConversationIdRef.current = urlConversationId;
-
-    if (initialConversationId !== urlConversationId) {
-      return;
-    }
-
-    if (urlChanged) {
-      if (bootstrappingThreadIdRef.current === urlConversationId) {
-        return;
-      }
-      if (isBusy) {
-        return;
-      }
-      if (initialMessages.length > 0) {
-        startTransition(() => {
-          setMessages(initialMessages);
-        });
-      } else {
-        startTransition(() => {
-          setMessages(starterMessages);
-        });
-      }
-      return;
-    }
-
-    if (initialMessages.length > 0) {
-      if (urlConversationId === bootstrappingThreadIdRef.current) {
-        bootstrappingThreadIdRef.current = null;
-      }
-      startTransition(() => {
-        setMessages((current) =>
-          current.length > initialMessages.length ? current : initialMessages
-        );
-      });
-      return;
-    }
-
-    if (isBusy) {
-      return;
-    }
-  }, [
+  useChatSync({
+    urlConversationId,
     initialConversationId,
     initialMessages,
+    starterMessages,
     isBusy,
     pendingThreadId,
     setMessages,
-    starterMessages,
-    urlConversationId,
-  ]);
+    bootstrappingThreadId,
+    clearBootstrapping: useCallback(() => {
+      setBootstrappingThreadId(null);
+    }, []),
+  });
 
-  const sidebarConversations = useMemo(() => {
-    const base =
-      pendingSidebarHead != null &&
-      !initialConversations.some((c) => c.id === pendingSidebarHead.id)
-        ? [pendingSidebarHead, ...initialConversations]
-        : initialConversations;
-
-    if (sidebarExtra.length === 0) {
-      return base;
-    }
-
-    const seen = new Set(base.map((c) => c.id));
-    const rest = sidebarExtra.filter((c) => !seen.has(c.id));
-    return [...base, ...rest];
-  }, [initialConversations, pendingSidebarHead, sidebarExtra]);
+  /* ------ Handlers ------ */
 
   const createConversation = async (initialMessage: string) => {
     const response = await fetch('/api/conversations', {
@@ -325,30 +200,29 @@ export function ChatHomePage({
       event.preventDefault();
       const text = input.trim();
 
-      if (!text || isBusy || isStartingThread) {
-        return;
-      }
+      if (!text || isBusy || isStartingThread) return;
 
+      // New thread for logged-in user
       if (!activeThreadId && user) {
         setIsStartingThread(true);
         let created: { id: string; title: string };
         try {
           created = await createConversation(text);
-        } catch (creationError) {
-          console.error(creationError);
+        } catch {
+          toast.error(t('chat.errors.create_conversation_failed'));
           setIsStartingThread(false);
           return;
         }
         setIsStartingThread(false);
 
         setPendingThreadId(created.id);
-        setPendingSidebarHead({
+        sidebar.setPendingSidebarHead({
           id: created.id,
           lastMessageAt: new Date().toISOString(),
           preview: null,
           title: created.title,
         });
-        bootstrappingThreadIdRef.current = created.id;
+        setBootstrappingThreadId(created.id);
         router.replace(`${pathname}?id=${created.id}`, { scroll: false });
 
         const userMessage: UIMessage = {
@@ -363,34 +237,29 @@ export function ChatHomePage({
           await sendMessage(undefined, {
             body: { conversationId: created.id },
           });
-        } catch (streamError) {
-          console.error(streamError);
-          bootstrappingThreadIdRef.current = null;
+        } catch {
+          toast.error(t('chat.errors.send_message_failed'));
+          setBootstrappingThreadId(null);
           setInput(text);
         }
 
         return;
       }
 
+      // Existing thread or anonymous chat
       setInput('');
       await sendMessage(
         { text },
-        activeThreadId
-          ? {
-              body: { conversationId: activeThreadId },
-            }
-          : undefined
+        activeThreadId ? { body: { conversationId: activeThreadId } } : undefined
       );
     })();
   };
 
   const handleClearChat = () => {
-    if (isBusy) {
-      stop();
-    }
+    if (isBusy) stop();
 
-    bootstrappingThreadIdRef.current = null;
-    setPendingSidebarHead(null);
+    setBootstrappingThreadId(null);
+    sidebar.setPendingSidebarHead(null);
     setPendingThreadId(null);
     setMessages(getInitialMessages(t));
     setInput('');
@@ -399,6 +268,8 @@ export function ChatHomePage({
     window.history.replaceState(window.history.state, '', cleanPath);
     router.replace(cleanPath, { scroll: false });
   };
+
+  /* ------ Render ------ */
 
   const isChatView = activeView === 'chat';
 
@@ -412,7 +283,6 @@ export function ChatHomePage({
             messages={messages}
             onRetry={() => regenerate()}
           />
-
           <ChatComposer
             input={input}
             isBusy={isBusy || isStartingThread}
@@ -457,13 +327,13 @@ export function ChatHomePage({
         >
           <ChatSidebar
             activeConversationId={activeThreadId}
-            conversations={sidebarConversations}
-            hasMoreConversations={sidebarHasMore}
-            isLoadingMoreConversations={sidebarLoadingMore}
+            conversations={sidebar.conversations}
+            hasMoreConversations={sidebar.hasMore}
+            isLoadingMoreConversations={sidebar.isLoadingMore}
             isOpen={isSidebarOpen}
             onClearChat={handleClearChat}
-            onLoadMoreConversations={loadMoreConversations}
-            onToggleOpen={() => setIsSidebarOpen((value) => !value)}
+            onLoadMoreConversations={sidebar.loadMore}
+            onToggleOpen={() => setIsSidebarOpen((v) => !v)}
           />
         </div>
 
@@ -474,7 +344,6 @@ export function ChatHomePage({
                 <div className="flex flex-wrap gap-2">
                   {HEADER_NAV_ITEMS.map((item) => {
                     const Icon = NAV_ICONS[item.id];
-
                     return (
                       <Button
                         key={item.id}
@@ -501,7 +370,10 @@ export function ChatHomePage({
                     githubLabel={t('auth.sign_in_with_github')}
                     googleLabel={t('auth.sign_in_with_google')}
                     signInLabel={t('auth.sign_in')}
+                    signInFailedLabel={t('auth.errors.sign_in_failed')}
                     signOutLabel={t('auth.sign_out')}
+                    signOutFailedLabel={t('auth.errors.sign_out_failed')}
+                    signOutSuccessLabel={t('auth.toast.sign_out_success')}
                     signedInAsLabel={t('auth.signed_in_as')}
                     title={t('auth.title')}
                   />

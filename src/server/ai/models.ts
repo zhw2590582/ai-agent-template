@@ -68,8 +68,15 @@ export function isModelName(value: string): value is ModelName {
 }
 
 export function getChatModel(modelName?: string) {
-  if (modelName && isModelName(modelName)) {
-    return availableModels[modelName];
+  if (!modelName) {
+    return availableModels[AI_CONFIG.DEFAULT_MODEL as ModelId];
   }
-  return availableModels[AI_CONFIG.DEFAULT_MODEL as ModelId];
+
+  if (!isModelName(modelName)) {
+    throw new Error(
+      `Invalid model name: ${modelName}. Available: ${Object.keys(availableModels).join(', ')}`
+    );
+  }
+
+  return availableModels[modelName];
 }

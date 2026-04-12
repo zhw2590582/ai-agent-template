@@ -4,9 +4,12 @@ import { AI_CONFIG } from '@/config/app';
 import { LOCALE_DETECTION_STRATEGY } from '@/config/i18n';
 import { handleErrorWithLocale } from '@/lib/errors';
 import { t } from '@/lib/i18n';
+import { logger } from '@/lib/logger';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
+import { validateRequest } from '@/lib/validation';
 import { defaultModel, getChatModel } from '@/server/ai/models';
-import { DEFAULT_SYSTEM_PROMPT } from '@/server/ai/prompts';
+import { getSystemPrompt } from '@/server/ai/prompts';
+import { chatPostSchema } from '@/server/schemas';
 import { saveConversationMessages } from '@/server/storage/conversations';
 import { agentTools } from '@/server/ai/tools';
 
@@ -25,7 +28,8 @@ function getLocaleFromRequest(request: Request): 'zh-CN' | 'en-US' {
     .split(';')
     .map((item) => item.trim())
     .find((item) => item.startsWith(`${LOCALE_DETECTION_STRATEGY.cookieName}=`))
-    ?.split('=')[1];
+    ?.split('=')[1]
+    ?.slice(0, 10); // Limit length to prevent abuse
 
   if (localeFromCookie === 'zh-CN' || localeFromCookie === 'en-US') {
     return localeFromCookie;
@@ -43,20 +47,12 @@ export async function handleChatPost(request: Request) {
   const locale = getLocaleFromRequest(request);
 
   try {
-    const {
-      conversationId,
-      messages,
-      model,
-    }: {
-      conversationId?: string;
-      messages: UIMessage[];
-      model?: string;
-    } = await request.json();
+    const { conversationId, messages, model } = await validateRequest(request, chatPostSchema);
 
     const result = streamText({
       model: model ? getChatModel(model) : defaultModel.chat,
-      system: DEFAULT_SYSTEM_PROMPT,
-      messages: await convertToModelMessages(messages),
+      system: getSystemPrompt(locale),
+      messages: await convertToModelMessages(messages as unknown as UIMessage[]),
       tools: agentTools,
       maxOutputTokens: AI_CONFIG.DEFAULT_MAX_TOKENS,
     });
@@ -64,28 +60,39 @@ export async function handleChatPost(request: Request) {
     result.consumeStream();
 
     return result.toUIMessageStreamResponse({
-      originalMessages: messages,
+      originalMessages: messages as unknown as UIMessage[],
       onFinish: async ({ messages: responseMessages }) => {
         if (!conversationId) {
           return;
         }
 
-        const supabase = await createSupabaseServerClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        try {
+          const supabase = await createSupabaseServerClient();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
 
-        if (!user) {
-          return;
-        }
+          if (!user) {
+            logger.warn('Chat onFinish: user not authenticated, messages not saved', {
+              conversationId,
+            });
+            return;
+          }
 
-        await saveConversationMessages(
-          {
+          await saveConversationMessages(
+            {
+              conversationId,
+              messages: responseMessages,
+              userId: user.id,
+            },
+            supabase
+          );
+        } catch (saveError) {
+          logger.error('Chat onFinish: failed to save messages', {
             conversationId,
-            messages: responseMessages,
-          },
-          supabase
-        );
+            error: saveError instanceof Error ? saveError.message : String(saveError),
+          });
+        }
       },
       onError: () => t(locale, 'chat.errors.request_failed'),
     });

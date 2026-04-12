@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import type { Provider } from '@supabase/supabase-js';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { createClient, isSupabaseBrowserConfigured } from '@/lib/supabase/client';
@@ -12,10 +13,12 @@ type OauthSignInButtonProps = {
   nextPath: string;
   provider: Provider;
   variant?: 'default' | 'outline';
+  errorLabel?: string;
 };
 
 export function OauthSignInButton({
   buttonLabel,
+  errorLabel,
   icon,
   nextPath,
   provider,
@@ -45,7 +48,7 @@ export function OauthSignInButton({
 
     if (error) {
       setIsPending(false);
-      throw error;
+      toast.error(errorLabel ?? error.message);
     }
   };
 

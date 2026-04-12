@@ -1,8 +1,10 @@
 'use client';
 
+import { memo, useCallback } from 'react';
 import type { UIMessage } from 'ai';
 import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 
 import { getTextContent, getToolParts } from '@/features/chat/lib/message-utils';
 import {
@@ -33,11 +35,117 @@ interface ChatMessageListProps {
   onRetry: () => void;
 }
 
+/* ---------- Single message row (memoized to reduce streaming re-renders) ---------- */
+
+interface ChatMessageRowProps {
+  message: UIMessage;
+  messageKey: string;
+  isLastAssistant: boolean;
+  isSidebarOpen: boolean;
+  getToolTitle: (toolName: string) => string;
+  onCopy: (text: string) => void;
+  onRetry: () => void;
+}
+
+const ChatMessageRow = memo(function ChatMessageRow({
+  message,
+  messageKey,
+  isLastAssistant,
+  isSidebarOpen,
+  getToolTitle,
+  onCopy,
+  onRetry,
+}: ChatMessageRowProps) {
+  const t = useTranslations();
+  const toolParts = getToolParts(message);
+  const textContent = getTextContent(message);
+
+  return (
+    <div className="w-full">
+      {textContent ? (
+        <Message from={message.role}>
+          <MessageContent
+            className={cn(message.role === 'user' ? 'max-w-[85%] rounded-[1.6rem]' : 'max-w-none')}
+          >
+            <MessageResponse>{textContent}</MessageResponse>
+          </MessageContent>
+        </Message>
+      ) : null}
+
+      {toolParts.length > 0 ? (
+        <div className={cn('mt-3 ml-0', isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl')}>
+          {toolParts.map((part, partIndex) => {
+            const toolName = part.type.replace('tool-', '');
+            const toolKey =
+              'toolCallId' in part &&
+              part.toolCallId != null &&
+              String(part.toolCallId).trim() !== ''
+                ? part.toolCallId
+                : `tool-${messageKey}-${partIndex}`;
+
+            return (
+              <Tool
+                key={toolKey}
+                className="border-border/80 bg-card/60"
+                defaultOpen={part.state !== 'output-available'}
+              >
+                <ToolHeader state={part.state} title={getToolTitle(toolName)} type={part.type} />
+                <ToolContent>
+                  {'input' in part && part.input !== undefined ? (
+                    <ToolInput input={part.input} />
+                  ) : null}
+                  <ToolOutput
+                    errorText={'errorText' in part ? part.errorText : undefined}
+                    output={'output' in part ? part.output : undefined}
+                  />
+                </ToolContent>
+              </Tool>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {message.role === 'assistant' && isLastAssistant && textContent ? (
+        <MessageActions className="mt-2">
+          <MessageAction
+            label={t('chat.actions.retry')}
+            onClick={onRetry}
+            tooltip={t('chat.actions.regenerate')}
+          >
+            <RefreshCcwIcon className="size-3.5" />
+          </MessageAction>
+          <MessageAction
+            label={t('chat.actions.copy')}
+            onClick={() => onCopy(textContent)}
+            tooltip={t('chat.actions.copy_response')}
+          >
+            <CopyIcon className="size-3.5" />
+          </MessageAction>
+        </MessageActions>
+      ) : null}
+    </div>
+  );
+});
+
+/* ---------- Message list container ---------- */
+
 export function ChatMessageList({ isSidebarOpen, error, messages, onRetry }: ChatMessageListProps) {
   const t = useTranslations();
   const lastAssistantMessageId = [...messages]
     .reverse()
     .find((message) => message.role === 'assistant')?.id;
+
+  const handleCopy = useCallback(
+    async (text: string) => {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast.success(t('chat.toast.copied'));
+      } catch {
+        toast.error(t('chat.toast.copy_failed'));
+      }
+    },
+    [t]
+  );
 
   const getToolTitle = (toolName: string) => {
     if (toolName === 'weather') return t('tools.weather.name');
@@ -68,84 +176,21 @@ export function ChatMessageList({ isSidebarOpen, error, messages, onRetry }: Cha
         ) : null}
 
         {messages.map((message, messageIndex) => {
-          const toolParts = getToolParts(message);
-          const textContent = getTextContent(message);
-          const isLastAssistantMessage = message.id === lastAssistantMessageId;
           const messageKey =
             message.id != null && String(message.id).trim() !== ''
               ? message.id
               : `message-${messageIndex}`;
 
           return (
-            <div key={messageKey} className="w-full">
-              {textContent ? (
-                <Message from={message.role}>
-                  <MessageContent
-                    className={cn(
-                      message.role === 'user' ? 'max-w-[85%] rounded-[1.6rem]' : 'max-w-none'
-                    )}
-                  >
-                    <MessageResponse>{textContent}</MessageResponse>
-                  </MessageContent>
-                </Message>
-              ) : null}
-
-              {toolParts.length > 0 ? (
-                <div className={cn('mt-3 ml-0', isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl')}>
-                  {toolParts.map((part, partIndex) => {
-                    const toolName = part.type.replace('tool-', '');
-                    const toolKey =
-                      'toolCallId' in part &&
-                      part.toolCallId != null &&
-                      String(part.toolCallId).trim() !== ''
-                        ? part.toolCallId
-                        : `tool-${messageKey}-${partIndex}`;
-
-                    return (
-                      <Tool
-                        key={toolKey}
-                        className="border-border/80 bg-card/60"
-                        defaultOpen={part.state !== 'output-available'}
-                      >
-                        <ToolHeader
-                          state={part.state}
-                          title={getToolTitle(toolName)}
-                          type={part.type}
-                        />
-                        <ToolContent>
-                          {'input' in part && part.input !== undefined ? (
-                            <ToolInput input={part.input} />
-                          ) : null}
-                          <ToolOutput
-                            errorText={'errorText' in part ? part.errorText : undefined}
-                            output={'output' in part ? part.output : undefined}
-                          />
-                        </ToolContent>
-                      </Tool>
-                    );
-                  })}
-                </div>
-              ) : null}
-
-              {message.role === 'assistant' && isLastAssistantMessage && textContent ? (
-                <MessageActions className="mt-2">
-                  <MessageAction
-                    label={t('chat.actions.retry')}
-                    onClick={onRetry}
-                    tooltip={t('chat.actions.regenerate')}
-                  >
-                    <RefreshCcwIcon className="size-3.5" />
-                  </MessageAction>
-                  <MessageAction
-                    label={t('chat.actions.copy')}
-                    onClick={() => navigator.clipboard.writeText(textContent)}
-                    tooltip={t('chat.actions.copy_response')}
-                  >
-                    <CopyIcon className="size-3.5" />
-                  </MessageAction>
-                </MessageActions>
-              ) : null}
-            </div>
+            <ChatMessageRow
+              key={messageKey}
+              getToolTitle={getToolTitle}
+              isLastAssistant={message.id === lastAssistantMessageId}
+              isSidebarOpen={isSidebarOpen}
+              message={message}
+              messageKey={messageKey}
+              onRetry={onRetry}
+            />
           );
         })}
 

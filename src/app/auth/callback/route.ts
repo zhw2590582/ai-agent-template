@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from '@/config/i18n';
+import { logger } from '@/lib/logger';
 import { createClient } from '@/lib/supabase/server';
 import { upsertProfileFromAuthUser } from '@/server/storage/profiles';
 
@@ -9,7 +10,17 @@ function getSafeNext(nextParam: string | null) {
     return `/${DEFAULT_LOCALE}`;
   }
 
-  return nextParam;
+  // Block protocol-relative URLs (e.g. //attacker.com) and embedded protocols
+  if (nextParam.startsWith('//') || nextParam.includes('://')) {
+    return `/${DEFAULT_LOCALE}`;
+  }
+
+  // Only allow paths under known locales
+  const isAllowed = SUPPORTED_LOCALES.some(
+    (locale) => nextParam === `/${locale}` || nextParam.startsWith(`/${locale}/`)
+  );
+
+  return isAllowed ? nextParam : `/${DEFAULT_LOCALE}`;
 }
 
 function getLocaleFromPath(pathname: string): Locale {
@@ -52,6 +63,8 @@ export async function GET(request: Request) {
 
       return NextResponse.redirect(new URL(next, origin));
     }
+
+    logger.error('OAuth code exchange failed', { error: error.message });
   }
 
   const locale = getLocaleFromPath(next);

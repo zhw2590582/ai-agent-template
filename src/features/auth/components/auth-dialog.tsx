@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { CircleUserRoundIcon, LogInIcon, LogOutIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -36,7 +37,10 @@ type AuthDialogProps = {
   githubLabel: string;
   googleLabel: string;
   signInLabel: string;
+  signInFailedLabel?: string;
   signOutLabel: string;
+  signOutFailedLabel?: string;
+  signOutSuccessLabel?: string;
   signedInAsLabel: string;
   title: string;
 };
@@ -49,7 +53,10 @@ export function AuthDialog({
   githubLabel,
   googleLabel,
   signInLabel,
+  signInFailedLabel,
   signOutLabel,
+  signOutFailedLabel,
+  signOutSuccessLabel,
   signedInAsLabel,
   title,
 }: AuthDialogProps) {
@@ -88,11 +95,16 @@ export function AuthDialog({
       return;
     }
 
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    setUser(null);
-    setIsOpen(false);
-    router.refresh();
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      setUser(null);
+      setIsOpen(false);
+      router.refresh();
+      if (signOutSuccessLabel) toast.success(signOutSuccessLabel);
+    } catch {
+      if (signOutFailedLabel) toast.error(signOutFailedLabel);
+    }
   };
 
   const nextPath = pathname || '/';
@@ -168,12 +180,14 @@ export function AuthDialog({
           <div className="flex flex-col gap-3">
             <OauthSignInButton
               buttonLabel={googleLabel}
+              errorLabel={signInFailedLabel}
               icon={<GoogleMark />}
               nextPath={nextPath}
               provider="google"
             />
             <OauthSignInButton
               buttonLabel={githubLabel}
+              errorLabel={signInFailedLabel}
               icon={<GithubMark />}
               nextPath={nextPath}
               provider="github"

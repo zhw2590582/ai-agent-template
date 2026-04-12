@@ -60,22 +60,25 @@ export function ChatSidebar({
     onClearChat();
   };
 
+  const loadMoreRef = useRef(onLoadMoreConversations);
+  useEffect(() => {
+    loadMoreRef.current = onLoadMoreConversations;
+  }, [onLoadMoreConversations]);
+
   useEffect(() => {
     if (!hasMoreConversations || isLoadingMoreConversations || !onLoadMoreConversations) {
       return;
     }
 
     const sentinel = sentinelRef.current;
-    if (!sentinel) {
-      return;
-    }
+    if (!sentinel) return;
 
     const root = sentinel.closest('[data-slot="scroll-area-viewport"]');
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
         if (entry?.isIntersecting) {
-          void onLoadMoreConversations();
+          void loadMoreRef.current?.();
         }
       },
       {
@@ -87,12 +90,9 @@ export function ChatSidebar({
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [
-    hasMoreConversations,
-    isLoadingMoreConversations,
-    onLoadMoreConversations,
-    conversations.length,
-  ]);
+    // Only re-create observer when loading state or availability changes
+    // — not on every conversations.length change
+  }, [hasMoreConversations, isLoadingMoreConversations, onLoadMoreConversations]);
 
   if (!isOpen) {
     return (
