@@ -6,17 +6,18 @@ import type { ConversationSummary } from '@/server/storage/types';
 
 interface UseChatControllerOptions {
   activeThreadId: string | null;
+  input: string;
   isBusy: boolean;
   isStartingThread: boolean;
-  locale: string;
   pathname: string;
   userId: string | null;
-  t: (key: string, values?: Record<string, string | number>) => string;
   onCreateConversation: (initialMessage: string) => Promise<{ id: string; title: string }>;
+  onCreateError: () => void;
   onSendMessage: (
     message?: { text: string },
     options?: { body?: { conversationId?: string } }
   ) => Promise<void>;
+  onSendError: () => void;
   onStop: () => void;
   router: AppRouterInstance;
   setBootstrappingThreadId: (value: string | null) => void;
@@ -32,14 +33,15 @@ interface UseChatControllerOptions {
 
 export function useChatController({
   activeThreadId,
+  input,
   isBusy,
   isStartingThread,
-  locale,
   pathname,
   userId,
-  t,
   onCreateConversation,
+  onCreateError,
   onSendMessage,
+  onSendError,
   onStop,
   router,
   setBootstrappingThreadId,
@@ -53,8 +55,7 @@ export function useChatController({
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     void (async () => {
       event.preventDefault();
-      const inputElement = event.currentTarget.querySelector('textarea');
-      const text = inputElement?.value.trim() ?? '';
+      const text = input.trim();
 
       if (!text || isBusy || isStartingThread) return;
 
@@ -65,6 +66,7 @@ export function useChatController({
         try {
           created = await onCreateConversation(text);
         } catch {
+          onCreateError();
           setIsStartingThread(false);
           return;
         }
@@ -93,6 +95,7 @@ export function useChatController({
             body: { conversationId: created.id },
           });
         } catch {
+          onSendError();
           setBootstrappingThreadId(null);
           setInput(text);
         }
@@ -102,10 +105,14 @@ export function useChatController({
 
       // Existing thread or anonymous chat
       setInput('');
-      await onSendMessage(
-        { text },
-        activeThreadId ? { body: { conversationId: activeThreadId } } : undefined
-      );
+      try {
+        await onSendMessage(
+          { text },
+          activeThreadId ? { body: { conversationId: activeThreadId } } : undefined
+        );
+      } catch {
+        onSendError();
+      }
     })();
   };
 

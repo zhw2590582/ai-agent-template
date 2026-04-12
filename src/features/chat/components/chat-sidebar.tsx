@@ -28,9 +28,9 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty';
-import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SidebarSearch } from '@/features/chat/components/sidebar-search';
 import type { ConversationSummary } from '@/server/storage/types';
 import { cn } from '@/lib/utils';
 
@@ -168,15 +168,12 @@ export function ChatSidebar({
         </Button>
       </div>
 
-      <div className="relative px-3 pt-3">
-        <Input
-          type="search"
-          aria-label={t('chat.sidebar.search_placeholder')}
-          placeholder={t('chat.sidebar.search_placeholder')}
-          value={searchQuery}
-          onChange={(event) => onSearchQueryChange?.(event.target.value)}
-        />
-      </div>
+      <SidebarSearch
+        ariaLabel={t('chat.sidebar.search_placeholder')}
+        placeholder={t('chat.sidebar.search_placeholder')}
+        value={searchQuery}
+        onChange={(value) => onSearchQueryChange?.(value)}
+      />
 
       <div className="pl-3">
         <ScrollArea className="mt-3 h-[calc(100vh-10.5rem)]">
@@ -233,15 +230,15 @@ export function ChatSidebar({
                 {isLoadingMoreConversations ? (
                   <div className="flex flex-col gap-1 py-2">
                     {Array.from({ length: 3 }).map((_, index) => (
-                      <Skeleton key={index} className="h-7 w-full rounded-md" />
+                      <Skeleton key={index} className="h-8 w-full rounded-md" />
                     ))}
                   </div>
                 ) : null}
               </>
             ) : isLoadingMoreConversations ? (
-              <div className="flex flex-col gap-1 py-2 pr-3">
+              <div className="flex flex-col gap-1 py-2">
                 {Array.from({ length: 4 }).map((_, index) => (
-                  <Skeleton key={index} className="h-7 w-full rounded-md" />
+                  <Skeleton key={index} className="h-8 w-full rounded-md" />
                 ))}
               </div>
             ) : (

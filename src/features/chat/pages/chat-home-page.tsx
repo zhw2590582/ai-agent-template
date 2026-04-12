@@ -3,7 +3,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
-import { nanoid } from 'nanoid';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -18,6 +17,7 @@ import { ChatPlaceholder } from '@/features/chat/components/chat-placeholder';
 import { ChatSidebar } from '@/features/chat/components/chat-sidebar';
 import { ChatTopBar } from '@/features/chat/components/chat-topbar';
 import { getInitialMessages } from '@/features/chat/lib/chat-config';
+import { useChatController } from '@/features/chat/lib/use-chat-controller';
 import { useChatSync } from '@/features/chat/lib/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/lib/use-sidebar-conversations';
 import type { ConversationSummary } from '@/server/storage/types';
@@ -175,79 +175,27 @@ export function ChatHomePage({
     return data.conversation;
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    void (async () => {
-      event.preventDefault();
-      const text = input.trim();
-
-      if (!text || isBusy || isStartingThread) return;
-
-      // New thread for logged-in user
-      if (!activeThreadId && user) {
-        setIsStartingThread(true);
-        let created: { id: string; title: string };
-        try {
-          created = await createConversation(text);
-        } catch {
-          toast.error(t('chat.errors.create_conversation_failed'));
-          setIsStartingThread(false);
-          return;
-        }
-        setIsStartingThread(false);
-
-        setPendingThreadId(created.id);
-        sidebar.setPendingSidebarHead({
-          id: created.id,
-          lastMessageAt: new Date().toISOString(),
-          preview: null,
-          title: created.title,
-        });
-        setBootstrappingThreadId(created.id);
-        router.replace(`${pathname}?id=${created.id}`, { scroll: false });
-
-        const userMessage: UIMessage = {
-          id: nanoid(),
-          role: 'user',
-          parts: [{ type: 'text', text }],
-        };
-        setMessages([userMessage]);
-        setInput('');
-
-        try {
-          await sendMessage(undefined, {
-            body: { conversationId: created.id },
-          });
-        } catch {
-          toast.error(t('chat.errors.send_message_failed'));
-          setBootstrappingThreadId(null);
-          setInput(text);
-        }
-
-        return;
-      }
-
-      // Existing thread or anonymous chat
-      setInput('');
-      await sendMessage(
-        { text },
-        activeThreadId ? { body: { conversationId: activeThreadId } } : undefined
-      );
-    })();
-  };
-
-  const handleClearChat = () => {
-    if (isBusy) stop();
-
-    setBootstrappingThreadId(null);
-    sidebar.setPendingSidebarHead(null);
-    setPendingThreadId(null);
-    setMessages(getInitialMessages(t));
-    setInput('');
-
-    const cleanPath = pathname;
-    window.history.replaceState(window.history.state, '', cleanPath);
-    router.replace(cleanPath, { scroll: false });
-  };
+  const { handleClearChat, handleSubmit } = useChatController({
+    activeThreadId,
+    input,
+    isBusy,
+    isStartingThread,
+    pathname,
+    userId: user?.id ?? null,
+    onCreateConversation: createConversation,
+    onCreateError: () => toast.error(t('chat.errors.create_conversation_failed')),
+    onSendMessage: sendMessage,
+    onSendError: () => toast.error(t('chat.errors.send_message_failed')),
+    onStop: stop,
+    router,
+    setBootstrappingThreadId,
+    setInput,
+    setIsStartingThread,
+    setMessages,
+    setPendingThreadId,
+    sidebar,
+    starterMessages,
+  });
 
   /* ------ Render ------ */
 

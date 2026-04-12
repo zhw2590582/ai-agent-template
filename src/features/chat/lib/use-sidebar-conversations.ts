@@ -35,6 +35,7 @@ export function useSidebarConversations({
   const [searchResults, setSearchResults] = useState<ConversationSummary[]>([]);
   const [searchHasMore, setSearchHasMore] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
+  const searchRequestIdRef = useRef(0);
 
   const inFlightRef = useRef(false);
   const extraRef = useRef<ConversationSummary[]>([]);
@@ -113,6 +114,10 @@ export function useSidebarConversations({
       return;
     }
 
+    const requestId = searchRequestIdRef.current + 1;
+    searchRequestIdRef.current = requestId;
+    setSearchResults([]);
+    setSearchHasMore(false);
     setSearchLoading(true);
     const controller = new AbortController();
     const timeout = window.setTimeout(async () => {
@@ -131,6 +136,7 @@ export function useSidebarConversations({
         }
         const data: { conversations: ConversationSummary[]; hasMore: boolean } =
           await response.json();
+        if (searchRequestIdRef.current !== requestId) return;
         setSearchResults(data.conversations);
         setSearchHasMore(data.hasMore);
       } catch (error) {
@@ -138,7 +144,9 @@ export function useSidebarConversations({
           onLoadError?.();
         }
       } finally {
-        setSearchLoading(false);
+        if (searchRequestIdRef.current === requestId) {
+          setSearchLoading(false);
+        }
       }
     }, 250);
 
