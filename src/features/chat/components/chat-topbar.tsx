@@ -17,7 +17,7 @@ import { HEADER_NAV_ITEMS, type HeaderNavItemId } from '@/config/navigation';
 import { AuthDialog } from '@/features/auth/components/auth-dialog';
 
 const NAV_ICONS = {
-  providers: PlugIcon,
+  models: PlugIcon,
   agents: BotIcon,
   sandbox: FlaskConicalIcon,
   mcp: ServerIcon,

@@ -37,7 +37,7 @@
 ### 仍是占位
 
 - Memory
-- Providers
+- Models
 - Agents
 - Sandbox
 - MCP 管理页
@@ -100,8 +100,8 @@ Chat UI
 ## 下一优先级
 
 1. Memory：profiles/memory 表、会话摘要压缩、长期偏好
-2. Providers：把模型/provider 配置从当前的半硬编码整理成可扩展抽象
-3. 页面去占位化：至少让 `Providers`、`Sandbox`、`MCP`、`Settings` 变成真实页面
+2. Models：把模型/provider 配置从当前的半硬编码整理成可扩展抽象
+3. 页面去占位化：至少让 `Models`、`Sandbox`、`MCP`、`Settings` 变成真实页面
 4. 测试补齐：补聊天主链路和 hydration 场景，之后再补 E2E
 5. 文档继续收敛：让 README 与代码现状保持一致
 

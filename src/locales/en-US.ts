@@ -163,7 +163,7 @@ export const enUS: Translations = {
   },
 
   navigation: {
-    providers: 'Providers',
+    models: 'Models',
     agents: 'Agents',
     sandbox: 'Sandbox',
     mcp: 'MCP',
@@ -174,10 +174,9 @@ export const enUS: Translations = {
   },
 
   placeholders: {
-    providers: {
-      title: 'Providers Page',
-      description:
-        'This is a placeholder for future provider management and model connection settings.',
+    models: {
+      title: 'Models Page',
+      description: 'This is a placeholder for future model management and connection settings.',
     },
     agents: {
       title: 'Agents Page',

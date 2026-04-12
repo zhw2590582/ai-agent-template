@@ -159,7 +159,7 @@ const zhCN = {
   },
 
   navigation: {
-    providers: 'Providers',
+    models: 'Models',
     agents: 'Agents',
     sandbox: 'Sandbox',
     mcp: 'MCP',
@@ -170,9 +170,9 @@ const zhCN = {
   },
 
   placeholders: {
-    providers: {
-      title: 'Providers 页面',
-      description: '这里先保留为空页面，后续用于管理模型提供商和连接配置。',
+    models: {
+      title: '模型页面',
+      description: '这里先保留为空页面，后续用于管理模型和连接配置。',
     },
     agents: {
       title: 'Agents 页面',
