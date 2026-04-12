@@ -53,7 +53,7 @@ const zhCN = {
       hide_sidebar: '隐藏侧边栏',
     },
     sidebar: {
-      agent_workspace: 'AI Agent',
+      agent_workspace: 'AI Agent Template',
       messages: '{count} 条消息',
       current: '当前',
       new_chat: '新对话',
@@ -160,7 +160,7 @@ const zhCN = {
 
   navigation: {
     models: 'Models',
-    agents: 'Agents',
+    subagent: 'Subagent',
     sandbox: 'Sandbox',
     mcp: 'MCP',
     skills: 'Skills',
@@ -175,9 +175,9 @@ const zhCN = {
       title: '模型页面',
       description: '这里先保留为空页面，后续用于管理模型和连接配置。',
     },
-    agents: {
-      title: 'Agents 页面',
-      description: '这里先保留为空页面，后续用于管理 agent 角色、策略和执行配置。',
+    subagent: {
+      title: 'Subagent 页面',
+      description: '这里先保留为空页面，后续用于管理 subagent 角色、策略和执行配置。',
     },
     sandbox: {
       title: 'Sandbox 页面',
@@ -193,7 +193,8 @@ const zhCN = {
     },
     rag: {
       title: 'RAG 页面',
-      description: '这里先保留为空页面，后续用于管理知识库索引、检索链路、召回策略与答案 grounding 配置。',
+      description:
+        '这里先保留为空页面，后续用于管理知识库索引、检索链路、召回策略与答案 grounding 配置。',
     },
     memory: {
       title: 'Memory 页面',

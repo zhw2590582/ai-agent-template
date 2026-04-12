@@ -1,6 +1,6 @@
 export const HEADER_NAV_ITEMS = [
   { id: 'models', translationKey: 'navigation.models' },
-  { id: 'agents', translationKey: 'navigation.agents' },
+  { id: 'subagent', translationKey: 'navigation.subagent' },
   { id: 'sandbox', translationKey: 'navigation.sandbox' },
   { id: 'mcp', translationKey: 'navigation.mcp' },
   { id: 'skills', translationKey: 'navigation.skills' },

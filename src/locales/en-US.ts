@@ -55,7 +55,7 @@ export const enUS: Translations = {
       hide_sidebar: 'Hide sidebar',
     },
     sidebar: {
-      agent_workspace: 'AI Agent',
+      agent_workspace: 'AI Agent Template',
       messages: '{count} messages',
       current: 'Current',
       new_chat: 'New chat',
@@ -164,7 +164,7 @@ export const enUS: Translations = {
 
   navigation: {
     models: 'Models',
-    agents: 'Agents',
+    subagent: 'Subagent',
     sandbox: 'Sandbox',
     mcp: 'MCP',
     skills: 'Skills',
@@ -179,10 +179,10 @@ export const enUS: Translations = {
       title: 'Models Page',
       description: 'This is a placeholder for future model management and connection settings.',
     },
-    agents: {
-      title: 'Agents Page',
+    subagent: {
+      title: 'Subagent Page',
       description:
-        'This is a placeholder for future agent roles, strategies, and execution settings.',
+        'This is a placeholder for future subagent roles, strategies, and execution settings.',
     },
     sandbox: {
       title: 'Sandbox Page',

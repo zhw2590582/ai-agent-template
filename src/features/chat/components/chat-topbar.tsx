@@ -19,7 +19,7 @@ import { AuthDialog } from '@/features/auth/components/auth-dialog';
 
 const NAV_ICONS = {
   models: PlugIcon,
-  agents: BotIcon,
+  subagent: BotIcon,
   sandbox: FlaskConicalIcon,
   mcp: ServerIcon,
   skills: ShieldEllipsisIcon,

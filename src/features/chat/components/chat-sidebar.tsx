@@ -4,12 +4,11 @@ import Link from 'next/link';
 import type { MouseEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
-  HouseIcon,
-  MenuIcon,
+  BotIcon,
   MessageSquarePlusIcon,
-  MessageSquareTextIcon,
   MoreHorizontalIcon,
   PanelLeftCloseIcon,
+  PanelRightCloseIcon,
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
@@ -21,13 +20,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/ui/empty';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SidebarSearch } from '@/features/chat/components/sidebar-search';
@@ -63,6 +55,7 @@ export function ChatSidebar({
   const locale = useLocale();
   const pathname = usePathname();
   const homeHref = `/${locale}`;
+  const subagentHref = `/${locale}/subagent`;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
@@ -121,8 +114,12 @@ export function ChatSidebar({
             size="icon"
             type="button"
             variant="ghost"
+            className="group"
           >
-            <MenuIcon />
+            <span className="relative inline-block">
+              <BotIcon className="size-4 transition-opacity duration-150 group-hover:opacity-0" />
+              <PanelRightCloseIcon className="absolute top-0 left-0 size-4 opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+            </span>
           </Button>
         </div>
         <div className="px-3">
@@ -139,15 +136,13 @@ export function ChatSidebar({
   return (
     <aside className="border-border bg-muted/30 flex h-full flex-col border-r">
       <div className="border-border mb-3 flex h-12 items-center justify-between border-b px-4">
-        <Button asChild className="h-auto px-0" variant="ghost">
-          <Link
-            className="text-foreground flex items-center gap-2 text-sm font-medium"
-            href={homeHref}
-          >
-            <HouseIcon className="size-4" />
-            {t('chat.sidebar.agent_workspace')}
-          </Link>
-        </Button>
+        <Link
+          className="text-foreground flex shrink-0 items-center gap-2 truncate text-sm font-medium"
+          href={homeHref}
+        >
+          <BotIcon className="size-4" />
+          {t('chat.sidebar.agent_workspace')}
+        </Link>
         <Button
           aria-label={t('chat.header.hide_sidebar')}
           onClick={onToggleOpen}
@@ -161,7 +156,7 @@ export function ChatSidebar({
 
       <div className="px-3">
         <Button asChild className="w-full justify-start gap-2" size="default" variant="ghost">
-          <Link href={homeHref} onClick={handleNewChatClick}>
+          <Link href={subagentHref} onClick={handleNewChatClick}>
             <MessageSquarePlusIcon data-icon="inline-start" />
             {t('chat.sidebar.new_chat')}
           </Link>
@@ -241,17 +236,7 @@ export function ChatSidebar({
                   <Skeleton key={index} className="h-8 w-full rounded-md" />
                 ))}
               </div>
-            ) : (
-              <Empty>
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <MessageSquareTextIcon className="size-4" />
-                  </EmptyMedia>
-                  <EmptyTitle>{t('chat.sidebar.history_empty_title')}</EmptyTitle>
-                  <EmptyDescription>{t('chat.sidebar.no_history')}</EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            )}
+            ) : null}
           </div>
         </ScrollArea>
       </div>
