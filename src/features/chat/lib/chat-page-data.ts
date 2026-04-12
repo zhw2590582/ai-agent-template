@@ -1,10 +1,11 @@
 import type { UIMessage } from 'ai';
 
+import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/conversations';
 import { isSupabaseConfigured } from '@/config/env';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import {
   getConversationById,
-  listConversationsForUser,
+  listConversationsForUserPage,
   mapConversationSummary,
 } from '@/server/storage/conversations';
 import type { ConversationSummary } from '@/server/storage/types';
@@ -12,6 +13,8 @@ import type { ConversationSummary } from '@/server/storage/types';
 export interface ChatPageData {
   conversationId: string | null;
   conversations: ConversationSummary[];
+  /** Whether more conversations exist beyond `conversations` (sidebar infinite scroll). */
+  conversationsHasMore: boolean;
   messages: UIMessage[];
 }
 
@@ -20,6 +23,7 @@ export async function loadChatPageData(conversationId?: string): Promise<ChatPag
     return {
       conversationId: null,
       conversations: [],
+      conversationsHasMore: false,
       messages: [],
     };
   }
@@ -33,19 +37,23 @@ export async function loadChatPageData(conversationId?: string): Promise<ChatPag
     return {
       conversationId: null,
       conversations: [],
+      conversationsHasMore: false,
       messages: [],
     };
   }
 
-  const conversations = (await listConversationsForUser(user.id, supabase)).map(
-    mapConversationSummary
-  );
+  const { hasMore, rows } = await listConversationsForUserPage(user.id, supabase, {
+    limit: CONVERSATION_SIDEBAR_PAGE_SIZE,
+    offset: 0,
+  });
+  const conversations = rows.map(mapConversationSummary);
   const activeConversation =
     conversationId != null ? await getConversationById(conversationId, supabase) : null;
 
   return {
     conversationId: activeConversation?.id ?? null,
     conversations,
+    conversationsHasMore: hasMore,
     messages: activeConversation?.messages ?? [],
   };
 }

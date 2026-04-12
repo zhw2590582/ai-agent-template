@@ -166,6 +166,46 @@ export async function listConversationsForUser(userId: string, client: Conversat
   return data;
 }
 
+const conversationListColumns =
+  'id, user_id, title, messages, analysis, last_message_at, created_at, updated_at';
+
+type RangeableListQuery = {
+  range: (
+    from: number,
+    to: number
+  ) => Promise<{ data: ConversationRecord[] | null; error: unknown }>;
+};
+
+/**
+ * One page of conversations for the sidebar (newest first). `hasMore` is true when the page is full.
+ */
+export async function listConversationsForUserPage(
+  userId: string,
+  client: ConversationsClient,
+  options: { limit: number; offset: number }
+): Promise<{ rows: ConversationRecord[]; hasMore: boolean }> {
+  const conversations = client.from('conversations') as ConversationsTable;
+  const limit = Math.min(50, Math.max(1, options.limit));
+  const offset = Math.max(0, options.offset);
+  const to = offset + limit - 1;
+
+  const ordered = conversations
+    .select(conversationListColumns)
+    .eq('user_id', userId)
+    .order('last_message_at', { ascending: false }) as unknown as RangeableListQuery;
+
+  const { data, error } = await ordered.range(offset, to);
+
+  if (error || !data) {
+    return { hasMore: false, rows: [] };
+  }
+
+  return {
+    hasMore: data.length === limit,
+    rows: data,
+  };
+}
+
 export async function saveConversationMessages(
   input: {
     conversationId: string;

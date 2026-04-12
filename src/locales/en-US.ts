@@ -66,6 +66,7 @@ export const enUS: Translations = {
       no_history: 'No history yet. Send a message and it will appear here.',
       no_preview: 'This conversation does not have a preview yet.',
       dark_mode_only: 'Dark mode only',
+      loading_more: 'Loading more…',
     },
     empty_state: {
       title: 'What do you want the agent to help with today?',

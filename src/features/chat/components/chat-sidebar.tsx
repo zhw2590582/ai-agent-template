@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import type { MouseEvent } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   HouseIcon,
   MenuIcon,
@@ -21,27 +22,35 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Spinner } from '@/components/ui/spinner';
 import type { ConversationSummary } from '@/server/storage/types';
 
 interface ChatSidebarProps {
   activeConversationId: string | null;
   conversations: ConversationSummary[];
+  hasMoreConversations?: boolean;
+  isLoadingMoreConversations?: boolean;
   isOpen: boolean;
   onClearChat: () => void;
+  onLoadMoreConversations?: () => void | Promise<void>;
   onToggleOpen: () => void;
 }
 
 export function ChatSidebar({
   activeConversationId,
   conversations,
+  hasMoreConversations = false,
+  isLoadingMoreConversations = false,
   isOpen,
   onClearChat,
+  onLoadMoreConversations,
   onToggleOpen,
 }: ChatSidebarProps) {
   const t = useTranslations();
   const locale = useLocale();
   const pathname = usePathname();
   const homeHref = `/${locale}`;
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const handleNewChatClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (pathname !== homeHref) {
@@ -50,6 +59,40 @@ export function ChatSidebar({
     event.preventDefault();
     onClearChat();
   };
+
+  useEffect(() => {
+    if (!hasMoreConversations || isLoadingMoreConversations || !onLoadMoreConversations) {
+      return;
+    }
+
+    const sentinel = sentinelRef.current;
+    if (!sentinel) {
+      return;
+    }
+
+    const root = sentinel.closest('[data-slot="scroll-area-viewport"]');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry?.isIntersecting) {
+          void onLoadMoreConversations();
+        }
+      },
+      {
+        root: root instanceof Element ? root : null,
+        rootMargin: '120px',
+        threshold: 0,
+      }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [
+    hasMoreConversations,
+    isLoadingMoreConversations,
+    onLoadMoreConversations,
+    conversations.length,
+  ]);
 
   if (!isOpen) {
     return (
@@ -103,15 +146,26 @@ export function ChatSidebar({
         <ScrollArea className="mt-3 h-[calc(100vh-8rem)]">
           <div className="flex flex-col gap-1.5 pr-3 pb-2">
             {conversations.length > 0 ? (
-              conversations.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/${locale}?id=${item.id}`}
-                  className={`text-foreground hover:bg-accent rounded-md p-1.5 text-sm transition ${item.id === activeConversationId ? 'bg-accent' : ''}`}
-                >
-                  {item.title}
-                </Link>
-              ))
+              <>
+                {conversations.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/${locale}?id=${item.id}`}
+                    className={`text-foreground hover:bg-accent rounded-md p-1.5 text-sm transition ${item.id === activeConversationId ? 'bg-accent' : ''}`}
+                  >
+                    <span className="line-clamp-2">{item.title}</span>
+                  </Link>
+                ))}
+                {hasMoreConversations ? (
+                  <div aria-hidden className="min-h-3 w-full shrink-0" ref={sentinelRef} />
+                ) : null}
+                {isLoadingMoreConversations ? (
+                  <div className="text-muted-foreground flex items-center justify-center gap-2 py-3 text-xs">
+                    <Spinner className="size-4" />
+                    {t('chat.sidebar.loading_more')}
+                  </div>
+                ) : null}
+              </>
             ) : (
               <Empty>
                 <EmptyHeader>

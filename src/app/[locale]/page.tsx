@@ -16,6 +16,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     <ChatHomePage
       initialConversationId={pageData.conversationId}
       initialConversations={pageData.conversations}
+      initialConversationsHasMore={pageData.conversationsHasMore}
       initialMessages={pageData.messages}
     />
   );

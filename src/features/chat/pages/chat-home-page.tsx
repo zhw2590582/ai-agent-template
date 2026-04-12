@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { startTransition, useEffect, useMemo, useRef, useState } from 'react';
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import {
@@ -20,6 +20,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
+import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/conversations';
 import { AI_CONFIG } from '@/config/app';
 import { HEADER_NAV_ITEMS, type HeaderNavItemId } from '@/config/navigation';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
@@ -48,6 +49,7 @@ interface ChatHomePageProps {
   activeView?: WorkbenchView;
   initialConversationId?: string | null;
   initialConversations?: ConversationSummary[];
+  initialConversationsHasMore?: boolean;
   initialMessages?: UIMessage[];
 }
 
@@ -63,6 +65,7 @@ export function ChatHomePage({
   activeView = 'chat',
   initialConversationId = null,
   initialConversations = [],
+  initialConversationsHasMore = false,
   initialMessages = [],
 }: ChatHomePageProps) {
   const t = useTranslations();
@@ -86,8 +89,18 @@ export function ChatHomePage({
   const [pendingThreadId, setPendingThreadId] = useState<string | null>(null);
   /** One optimistic row at the top until refresh lists the new conversation. */
   const [pendingSidebarHead, setPendingSidebarHead] = useState<ConversationSummary | null>(null);
+  const [sidebarExtra, setSidebarExtra] = useState<ConversationSummary[]>([]);
+  const [sidebarHasMore, setSidebarHasMore] = useState(initialConversationsHasMore);
+  const [sidebarLoadingMore, setSidebarLoadingMore] = useState(false);
+  const sidebarExtraRef = useRef<ConversationSummary[]>([]);
+  const sidebarLoadMoreInFlightRef = useRef(false);
 
   const activeThreadId = urlConversationId ?? pendingThreadId;
+
+  const initialConversationIdsKey = useMemo(
+    () => initialConversations.map((c) => c.id).join(','),
+    [initialConversations]
+  );
 
   const transport = useMemo(
     () =>
@@ -156,6 +169,62 @@ export function ChatHomePage({
     }
   }, [initialConversations, pendingSidebarHead]);
 
+  useEffect(() => {
+    setSidebarExtra([]);
+  }, [initialConversationIdsKey]);
+
+  useEffect(() => {
+    setSidebarHasMore(initialConversationsHasMore);
+  }, [initialConversationsHasMore]);
+
+  useEffect(() => {
+    sidebarExtraRef.current = sidebarExtra;
+  }, [sidebarExtra]);
+
+  const loadMoreConversations = useCallback(async () => {
+    if (!user || sidebarLoadMoreInFlightRef.current || !sidebarHasMore) {
+      return;
+    }
+
+    sidebarLoadMoreInFlightRef.current = true;
+    setSidebarLoadingMore(true);
+    const offset = initialConversations.length + sidebarExtraRef.current.length;
+
+    try {
+      const params = new URLSearchParams({
+        limit: String(CONVERSATION_SIDEBAR_PAGE_SIZE),
+        offset: String(offset),
+      });
+      const response = await fetch(`/api/conversations?${params.toString()}`);
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data: { conversations: ConversationSummary[]; hasMore: boolean } =
+        await response.json();
+
+      setSidebarExtra((previous) => {
+        const seen = new Set<string>([
+          ...initialConversations.map((c) => c.id),
+          ...previous.map((c) => c.id),
+        ]);
+        const merged = [...previous];
+        for (const item of data.conversations) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            merged.push(item);
+          }
+        }
+        return merged;
+      });
+      setSidebarHasMore(data.hasMore);
+    } finally {
+      sidebarLoadMoreInFlightRef.current = false;
+      setSidebarLoadingMore(false);
+    }
+  }, [user, sidebarHasMore, initialConversations]);
+
   /** Keep message list aligned with URL + server; never trust stale props when the URL has no `id`. */
   useEffect(() => {
     if (urlConversationId == null) {
@@ -221,14 +290,20 @@ export function ChatHomePage({
   ]);
 
   const sidebarConversations = useMemo(() => {
-    if (
-      pendingSidebarHead == null ||
-      initialConversations.some((c) => c.id === pendingSidebarHead.id)
-    ) {
-      return initialConversations;
+    const base =
+      pendingSidebarHead != null &&
+      !initialConversations.some((c) => c.id === pendingSidebarHead.id)
+        ? [pendingSidebarHead, ...initialConversations]
+        : initialConversations;
+
+    if (sidebarExtra.length === 0) {
+      return base;
     }
-    return [pendingSidebarHead, ...initialConversations];
-  }, [initialConversations, pendingSidebarHead]);
+
+    const seen = new Set(base.map((c) => c.id));
+    const rest = sidebarExtra.filter((c) => !seen.has(c.id));
+    return [...base, ...rest];
+  }, [initialConversations, pendingSidebarHead, sidebarExtra]);
 
   const createConversation = async (initialMessage: string) => {
     const response = await fetch('/api/conversations', {
@@ -383,8 +458,11 @@ export function ChatHomePage({
           <ChatSidebar
             activeConversationId={activeThreadId}
             conversations={sidebarConversations}
+            hasMoreConversations={sidebarHasMore}
+            isLoadingMoreConversations={sidebarLoadingMore}
             isOpen={isSidebarOpen}
             onClearChat={handleClearChat}
+            onLoadMoreConversations={loadMoreConversations}
             onToggleOpen={() => setIsSidebarOpen((value) => !value)}
           />
         </div>

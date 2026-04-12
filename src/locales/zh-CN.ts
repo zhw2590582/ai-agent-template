@@ -64,6 +64,7 @@ const zhCN = {
       no_history: '还没有历史记录。先发一条消息，之后会出现在这里。',
       no_preview: '这段会话还没有可展示的摘要。',
       dark_mode_only: '仅支持暗色模式',
+      loading_more: '加载更多…',
     },
     empty_state: {
       title: '今天想让 agent 帮你做什么？',
