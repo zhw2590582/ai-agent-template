@@ -1,8 +1,12 @@
 import type { UIMessage } from 'ai';
-import { nanoid } from 'nanoid';
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
 import type { ConversationSummary } from '@/server/storage/types';
+import {
+  buildUserMessage,
+  clearConversationUrl,
+  updateConversationUrl,
+} from '@/features/chat/lib/chat-controller';
 
 interface UseChatControllerOptions {
   activeThreadId: string | null;
@@ -80,13 +84,9 @@ export function useChatController({
           title: created.title,
         });
         setBootstrappingThreadId(created.id);
-        router.replace(`${pathname}?id=${created.id}`, { scroll: false });
+        updateConversationUrl(router, pathname, created.id);
 
-        const userMessage: UIMessage = {
-          id: nanoid(),
-          role: 'user',
-          parts: [{ type: 'text', text }],
-        };
+        const userMessage: UIMessage = buildUserMessage(text);
         setMessages([userMessage]);
         setInput('');
 
@@ -125,9 +125,7 @@ export function useChatController({
     setMessages(starterMessages);
     setInput('');
 
-    const cleanPath = pathname;
-    window.history.replaceState(window.history.state, '', cleanPath);
-    router.replace(cleanPath, { scroll: false });
+    clearConversationUrl(router, pathname);
   };
 
   return { handleClearChat, handleSubmit };

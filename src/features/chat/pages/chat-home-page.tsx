@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useLocale, useTranslations } from 'next-intl';
@@ -67,6 +67,7 @@ export function ChatHomePage({
   const [sidebarSearchQuery, setSidebarSearchQuery] = useState('');
   const [pendingThreadId, setPendingThreadId] = useState<string | null>(null);
   const [bootstrappingThreadId, setBootstrappingThreadId] = useState<string | null>(null);
+  const invalidIdHandledRef = useRef(false);
 
   const activeThreadId = urlConversationId ?? pendingThreadId;
 
@@ -196,6 +197,30 @@ export function ChatHomePage({
     sidebar,
     starterMessages,
   });
+
+  useEffect(() => {
+    if (!urlConversationId) {
+      invalidIdHandledRef.current = false;
+      return;
+    }
+
+    if (initialConversationId) return;
+    if (pendingThreadId || bootstrappingThreadId || isStartingThread || isBusy) return;
+    if (invalidIdHandledRef.current) return;
+
+    invalidIdHandledRef.current = true;
+    toast.error(t('chat.errors.invalid_conversation'));
+    handleClearChat();
+  }, [
+    bootstrappingThreadId,
+    handleClearChat,
+    initialConversationId,
+    isBusy,
+    isStartingThread,
+    pendingThreadId,
+    t,
+    urlConversationId,
+  ]);
 
   /* ------ Render ------ */
 

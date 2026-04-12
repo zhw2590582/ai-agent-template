@@ -88,6 +88,7 @@ export const enUS: Translations = {
       server: 'Server error',
       request_failed: 'Request failed. Please check DEEPSEEK_API_KEY or try again later.',
       unknown: 'Unknown error',
+      invalid_conversation: 'Conversation not found or has been deleted',
       create_conversation_failed: 'Failed to create conversation',
       send_message_failed: 'Failed to send message',
       load_more_failed: 'Failed to load more conversations',

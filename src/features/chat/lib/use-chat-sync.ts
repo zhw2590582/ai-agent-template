@@ -13,6 +13,15 @@
 import { startTransition, useEffect, useRef } from 'react';
 import type { UIMessage } from 'ai';
 
+import {
+  chooseMessagesForUrl,
+  hasUrlChanged,
+  pickNewMessages,
+  shouldMergeServerMessages,
+  shouldResetToStarter,
+  shouldSkipUrlSync,
+} from '@/features/chat/lib/chat-sync';
+
 interface UseChatSyncOptions {
   /** Conversation ID from the URL search params. null = new chat. */
   urlConversationId: string | null;
@@ -51,8 +60,7 @@ export function useChatSync({
 
   // Effect 1: Reset to starter messages when navigating to new chat (no URL id)
   useEffect(() => {
-    if (urlConversationId != null) return;
-    if (pendingThreadId != null) return; // Optimistic thread not yet reflected in URL
+    if (!shouldResetToStarter({ urlConversationId, pendingThreadId })) return;
 
     prevUrlIdRef.current = null;
     syncVersionRef.current++;
@@ -66,28 +74,25 @@ export function useChatSync({
   useEffect(() => {
     if (urlConversationId == null) return;
 
-    const urlChanged = prevUrlIdRef.current !== urlConversationId;
+    const urlChanged = hasUrlChanged(prevUrlIdRef.current, urlConversationId);
     prevUrlIdRef.current = urlConversationId;
 
     if (!urlChanged) return;
 
-    // Skip sync for a just-created thread until server persists messages
-    if (bootstrappingThreadId === urlConversationId) return;
-
-    // Don't interrupt an active stream
-    if (isBusy) return;
+    if (shouldSkipUrlSync({ urlConversationId, bootstrappingThreadId, isBusy })) return;
 
     syncVersionRef.current++;
 
-    if (initialConversationId === urlConversationId && initialMessages.length > 0) {
-      startTransition(() => {
-        setMessages(initialMessages);
-      });
-    } else {
-      startTransition(() => {
-        setMessages(starterMessages);
-      });
-    }
+    const nextMessages = chooseMessagesForUrl({
+      urlConversationId,
+      initialConversationId,
+      initialMessages,
+      starterMessages,
+    });
+
+    startTransition(() => {
+      setMessages(nextMessages);
+    });
   }, [
     urlConversationId,
     initialConversationId,
@@ -100,9 +105,9 @@ export function useChatSync({
 
   // Effect 3: Merge server-refreshed messages (e.g. after router.refresh())
   useEffect(() => {
-    if (urlConversationId == null) return;
-    if (initialConversationId !== urlConversationId) return;
-    if (initialMessages.length === 0) return;
+    if (!shouldMergeServerMessages({ urlConversationId, initialConversationId, initialMessages })) {
+      return;
+    }
 
     // Clear bootstrapping flag once server has the messages
     if (bootstrappingThreadId === urlConversationId) {
@@ -116,7 +121,7 @@ export function useChatSync({
         // Discard if a URL change happened after this effect was scheduled
         if (syncVersionRef.current !== capturedVersion) return current;
         // Keep client state if it has more messages (save/refresh race)
-        return current.length > initialMessages.length ? current : initialMessages;
+        return pickNewMessages({ current, server: initialMessages });
       });
     });
   }, [

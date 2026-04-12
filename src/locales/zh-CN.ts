@@ -86,6 +86,7 @@ const zhCN = {
       server: '服务器错误',
       request_failed: '请求失败。请检查 DEEPSEEK_API_KEY 配置，或稍后重试。',
       unknown: '未知错误',
+      invalid_conversation: '对话不存在或已被删除',
       create_conversation_failed: '创建对话失败，请重试',
       send_message_failed: '发送消息失败，请重试',
       load_more_failed: '加载更多对话失败',
