@@ -7,6 +7,7 @@ import {
   ServerIcon,
   SettingsIcon,
   ShieldEllipsisIcon,
+  GlobeIcon,
 } from 'lucide-react';
 
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -22,6 +23,7 @@ const NAV_ICONS = {
   mcp: ServerIcon,
   skills: ShieldEllipsisIcon,
   memory: BrainIcon,
+  search: GlobeIcon,
 } as const;
 
 type WorkbenchView = 'chat' | HeaderNavItemId | 'settings';

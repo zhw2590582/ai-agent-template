@@ -170,6 +170,7 @@ export const enUS: Translations = {
     skills: 'Skills',
     memory: 'Memory',
     settings: 'Settings',
+    search: 'Search',
   },
 
   placeholders: {
@@ -202,6 +203,10 @@ export const enUS: Translations = {
     settings: {
       title: 'Settings Page',
       description: 'This is a placeholder for future application preferences and settings.',
+    },
+    search: {
+      title: 'Search Page',
+      description: 'This is a placeholder for future search capabilities.',
     },
   },
 
