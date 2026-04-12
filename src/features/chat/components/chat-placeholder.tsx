@@ -1,4 +1,4 @@
-import type { HeaderNavItemId } from '@/config/navigation';
+import type { HeaderNavItemId } from '@/config/app';
 
 type WorkbenchView = 'chat' | HeaderNavItemId | 'settings';
 type TranslateFn = (key: string, values?: Record<string, string | number>) => string;

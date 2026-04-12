@@ -5,7 +5,7 @@ import { MoonIcon, SunIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useTheme } from '@/components/ui-settings/theme-provider';
-import { THEME_COOKIE_KEY, THEME_STORAGE_KEY, type ThemeMode } from '@/config/theme';
+import { THEME_COOKIE_KEY, THEME_STORAGE_KEY, type ThemeMode } from '@/config/app';
 import { Button } from '@/components/ui/button';
 
 function applyTheme(theme: ThemeMode) {

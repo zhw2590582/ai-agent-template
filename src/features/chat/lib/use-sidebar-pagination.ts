@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/conversations';
+import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/app';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { fetchConversationPage } from '@/features/chat/lib/sidebar-conversation-service';
 

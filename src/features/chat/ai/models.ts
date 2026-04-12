@@ -11,7 +11,7 @@
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { AI_CONFIG } from '@/config/app';
-import type { ModelId } from '@/config/models';
+import type { ModelId } from '@/config/app';
 import { env } from '@/config/env';
 
 /**

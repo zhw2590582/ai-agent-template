@@ -14,7 +14,7 @@ import {
 import { LanguageSwitcher } from '@/components/ui-settings/language-switcher';
 import { ThemeToggle } from '@/components/ui-settings/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { HEADER_NAV_ITEMS, type HeaderNavItemId } from '@/config/navigation';
+import { HEADER_NAV_ITEMS, type HeaderNavItemId } from '@/config/app';
 import { AuthDialog } from '@/features/auth/components/auth-dialog';
 
 const NAV_ICONS = {

@@ -12,7 +12,7 @@ import {
   PromptInputTextarea,
   PromptInputTools,
 } from '@/components/ai-elements/prompt-input';
-import { MODEL_OPTIONS, type ModelId } from '@/config/models';
+import { MODEL_OPTIONS, type ModelId } from '@/config/app';
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -1,6 +1,6 @@
 import type { UIMessage } from 'ai';
 
-import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/conversations';
+import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/app';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { validateRequest } from '@/lib/validation';

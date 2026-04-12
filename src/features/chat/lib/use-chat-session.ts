@@ -4,8 +4,7 @@ import { useMemo, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 
-import { AI_CONFIG } from '@/config/app';
-import { type ModelId } from '@/config/models';
+import { AI_CONFIG, type ModelId } from '@/config/app';
 
 interface UseChatSessionOptions {
   activeThreadId: string | null;

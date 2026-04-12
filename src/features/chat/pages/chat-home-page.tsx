@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { type HeaderNavItemId } from '@/config/navigation';
+import { type HeaderNavItemId } from '@/config/app';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
 import { ChatComposer } from '@/features/chat/components/chat-composer';
 import { ChatMessageList } from '@/features/chat/components/chat-message-list';
