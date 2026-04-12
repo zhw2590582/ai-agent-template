@@ -97,7 +97,7 @@ export function useSidebarConversations({
       inFlightRef.current = false;
       setSidebarLoadingMore(false);
     }
-  }, [isAuthenticated, sidebarHasMore, initialConversations]);
+  }, [isAuthenticated, sidebarHasMore, initialConversations, onLoadError]);
 
   const conversations = useMemo(() => {
     const base =

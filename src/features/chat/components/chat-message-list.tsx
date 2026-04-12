@@ -190,6 +190,7 @@ export function ChatMessageList({ isSidebarOpen, error, messages, onRetry }: Cha
               message={message}
               messageKey={messageKey}
               onRetry={onRetry}
+              onCopy={handleCopy}
             />
           );
         })}
