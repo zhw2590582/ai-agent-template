@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import type { ThemeMode } from '@/config/theme';
 
@@ -18,6 +18,10 @@ type ThemeProviderProps = {
 
 export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
   const [theme, setTheme] = useState<ThemeMode>(initialTheme);
+
+  useEffect(() => {
+    setTheme(initialTheme);
+  }, [initialTheme]);
 
   const value = useMemo(
     () => ({

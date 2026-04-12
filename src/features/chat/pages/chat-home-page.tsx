@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { startTransition, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import {
@@ -66,6 +66,7 @@ export function ChatHomePage({
   const [selectedModel, setSelectedModel] = useState<ModelId>(AI_CONFIG.DEFAULT_MODEL);
   const [input, setInput] = useState('');
   const [conversationId, setConversationId] = useState<string | null>(initialConversationId);
+  const needsBootstrapSyncRef = useRef(false);
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
@@ -110,6 +111,83 @@ export function ChatHomePage({
     return data.conversation.id;
   };
 
+  const syncConversationMessages = async (
+    nextConversationId: string,
+    nextMessages: UIMessage[]
+  ) => {
+    const response = await fetch('/api/conversations', {
+      body: JSON.stringify({
+        conversationId: nextConversationId,
+        messages: nextMessages,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'PATCH',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to save conversation messages');
+    }
+  };
+
+  useEffect(() => {
+    if (
+      !needsBootstrapSyncRef.current ||
+      !conversationId ||
+      status !== 'ready' ||
+      messages.length === 0
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        await syncConversationMessages(conversationId, messages);
+        if (!cancelled) {
+          needsBootstrapSyncRef.current = false;
+          router.refresh();
+        }
+      } catch (syncError) {
+        console.error(syncError);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [conversationId, messages, router, status]);
+
+  useEffect(() => {
+    if (conversationId !== initialConversationId) {
+      startTransition(() => {
+        setConversationId(initialConversationId);
+      });
+    }
+
+    if (
+      needsBootstrapSyncRef.current &&
+      initialConversationId &&
+      initialMessages.length === 0 &&
+      messages.length > 0
+    ) {
+      return;
+    }
+
+    startTransition(() => {
+      setMessages(initialMessages.length > 0 ? initialMessages : starterMessages);
+    });
+  }, [
+    conversationId,
+    initialConversationId,
+    initialMessages,
+    messages.length,
+    setMessages,
+    starterMessages,
+  ]);
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     void (async () => {
       event.preventDefault();
@@ -119,12 +197,20 @@ export function ChatHomePage({
         return;
       }
 
-      let nextConversationId = conversationId;
+      const nextConversationId = conversationId;
 
       if (!nextConversationId && user) {
-        nextConversationId = await createConversation(text);
-        setConversationId(nextConversationId);
-        router.replace(`/${locale}?id=${nextConversationId}`);
+        needsBootstrapSyncRef.current = true;
+        void (async () => {
+          try {
+            const createdConversationId = await createConversation(text);
+            setConversationId(createdConversationId);
+            router.replace(`/${locale}?id=${createdConversationId}`, { scroll: false });
+          } catch (creationError) {
+            console.error(creationError);
+            needsBootstrapSyncRef.current = false;
+          }
+        })();
       }
 
       await sendMessage(
@@ -146,6 +232,7 @@ export function ChatHomePage({
       stop();
     }
 
+    needsBootstrapSyncRef.current = false;
     setMessages(getInitialMessages(t));
     setInput('');
     setConversationId(null);

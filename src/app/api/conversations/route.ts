@@ -1,6 +1,8 @@
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
-import { createConversation } from '@/server/storage/conversations';
+import { createConversation, saveConversationMessages } from '@/server/storage/conversations';
+import { upsertProfileFromAuthUser } from '@/server/storage/profiles';
+import type { UIMessage } from 'ai';
 
 export async function POST(request: Request) {
   try {
@@ -18,6 +20,8 @@ export async function POST(request: Request) {
     if (!user) {
       throw new AppError(ErrorCode.INPUT_INVALID, 'Authentication required.', 401);
     }
+
+    await upsertProfileFromAuthUser(user, {}, supabase);
 
     const conversation = await createConversation(
       {
@@ -37,6 +41,48 @@ export async function POST(request: Request) {
         title: conversation.title,
       },
     });
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const {
+      conversationId,
+      messages,
+    }: {
+      conversationId?: string;
+      messages?: UIMessage[];
+    } = await request.json();
+
+    if (!conversationId) {
+      throw new AppError(ErrorCode.INPUT_INVALID, 'Conversation ID is required.', 400);
+    }
+
+    if (!Array.isArray(messages) || messages.length === 0) {
+      throw new AppError(ErrorCode.INPUT_INVALID, 'Messages are required.', 400);
+    }
+
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new AppError(ErrorCode.INPUT_INVALID, 'Authentication required.', 401);
+    }
+
+    await upsertProfileFromAuthUser(user, {}, supabase);
+    await saveConversationMessages(
+      {
+        conversationId,
+        messages,
+      },
+      supabase
+    );
+
+    return Response.json({ ok: true });
   } catch (error) {
     return handleError(error);
   }

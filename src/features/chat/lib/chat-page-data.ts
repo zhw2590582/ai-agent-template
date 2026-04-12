@@ -37,7 +37,9 @@ export async function loadChatPageData(conversationId?: string): Promise<ChatPag
     };
   }
 
-  const conversations = (await listConversationsForUser(user.id, supabase)).map(mapConversationSummary);
+  const conversations = (await listConversationsForUser(user.id, supabase)).map(
+    mapConversationSummary
+  );
   const activeConversation =
     conversationId != null ? await getConversationById(conversationId, supabase) : null;
 

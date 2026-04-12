@@ -65,7 +65,7 @@ export default async function LocaleLayout({ children, params }: Props) {
     >
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider initialTheme={theme}>
+          <ThemeProvider initialTheme={theme} key={theme}>
             <AuthUserProvider initialUser={authUser}>
               <TooltipProvider>{children}</TooltipProvider>
             </AuthUserProvider>

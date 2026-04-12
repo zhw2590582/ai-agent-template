@@ -7,6 +7,56 @@ import type {
   ConversationSummary,
 } from '@/server/storage/types';
 
+type SingleConversationResult = PromiseLike<{
+  data: ConversationRecord | null;
+  error: unknown;
+}>;
+
+type MultipleConversationsResult = PromiseLike<{
+  data: ConversationRecord[] | null;
+  error: unknown;
+}>;
+
+type ConversationSelectQuery = {
+  eq: {
+    (
+      column: 'id',
+      value: string
+    ): {
+      single: () => SingleConversationResult;
+    };
+    (
+      column: 'user_id',
+      value: string
+    ): {
+      order: (
+        column: 'last_message_at',
+        options: { ascending: boolean }
+      ) => MultipleConversationsResult;
+    };
+  };
+};
+
+type ConversationsClient = {
+  from: (table: 'conversations') => unknown;
+};
+
+type ConversationsTable = {
+  insert: (
+    values: Pick<ConversationRecord, 'analysis' | 'last_message_at' | 'title' | 'user_id'>
+  ) => {
+    select: () => {
+      single: () => SingleConversationResult;
+    };
+  };
+  select: (columns: string) => ConversationSelectQuery;
+  update: (
+    values: Pick<ConversationRecord, 'analysis' | 'last_message_at' | 'messages' | 'title'>
+  ) => {
+    eq: (column: 'id', value: string) => PromiseLike<{ error: unknown }>;
+  };
+};
+
 function getMessageText(message: UIMessage) {
   return message.parts
     .filter(
@@ -57,15 +107,13 @@ export async function createConversation(
     initialMessage: string;
     userId: string;
   },
-  client: {
-    from: (table: 'conversations') => any;
-  }
+  client: ConversationsClient
 ) {
+  const conversations = client.from('conversations') as ConversationsTable;
   const now = new Date().toISOString();
   const title = buildConversationTitleFromText(input.initialMessage);
 
-  const { data, error } = await client
-    .from('conversations')
+  const { data, error } = await conversations
     .insert({
       analysis: {
         first_user_message: truncateText(input.initialMessage),
@@ -88,14 +136,10 @@ export async function createConversation(
   return data;
 }
 
-export async function getConversationById(
-  id: string,
-  client: {
-    from: (table: 'conversations') => any;
-  }
-) {
-  const { data, error } = await client
-    .from('conversations')
+export async function getConversationById(id: string, client: ConversationsClient) {
+  const conversations = client.from('conversations') as ConversationsTable;
+
+  const { data, error } = await conversations
     .select('id, user_id, title, messages, analysis, last_message_at, created_at, updated_at')
     .eq('id', id)
     .single();
@@ -107,14 +151,10 @@ export async function getConversationById(
   return data;
 }
 
-export async function listConversationsForUser(
-  userId: string,
-  client: {
-    from: (table: 'conversations') => any;
-  }
-) {
-  const { data, error } = await client
-    .from('conversations')
+export async function listConversationsForUser(userId: string, client: ConversationsClient) {
+  const conversations = client.from('conversations') as ConversationsTable;
+
+  const { data, error } = await conversations
     .select('id, user_id, title, messages, analysis, last_message_at, created_at, updated_at')
     .eq('user_id', userId)
     .order('last_message_at', { ascending: false });
@@ -131,10 +171,9 @@ export async function saveConversationMessages(
     conversationId: string;
     messages: UIMessage[];
   },
-  client: {
-    from: (table: 'conversations') => any;
-  }
+  client: ConversationsClient
 ) {
+  const conversations = client.from('conversations') as ConversationsTable;
   const existingConversation = await getConversationById(input.conversationId, client);
   const analysis = buildConversationAnalysis(input.messages);
   analysis.title_generated = existingConversation?.analysis?.title_generated ?? false;
@@ -156,8 +195,7 @@ export async function saveConversationMessages(
     }
   }
 
-  const { error } = await client
-    .from('conversations')
+  const { error } = await conversations
     .update({
       analysis,
       last_message_at: new Date().toISOString(),
