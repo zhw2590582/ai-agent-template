@@ -1,0 +1,127 @@
+import type { UIMessage } from 'ai';
+import { nanoid } from 'nanoid';
+import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+
+import type { ConversationSummary } from '@/server/storage/types';
+
+interface UseChatControllerOptions {
+  activeThreadId: string | null;
+  isBusy: boolean;
+  isStartingThread: boolean;
+  locale: string;
+  pathname: string;
+  userId: string | null;
+  t: (key: string, values?: Record<string, string | number>) => string;
+  onCreateConversation: (initialMessage: string) => Promise<{ id: string; title: string }>;
+  onSendMessage: (
+    message?: { text: string },
+    options?: { body?: { conversationId?: string } }
+  ) => Promise<void>;
+  onStop: () => void;
+  router: AppRouterInstance;
+  setBootstrappingThreadId: (value: string | null) => void;
+  setInput: (value: string) => void;
+  setIsStartingThread: (value: boolean) => void;
+  setMessages: (messages: UIMessage[]) => void;
+  setPendingThreadId: (value: string | null) => void;
+  sidebar: {
+    setPendingSidebarHead: (value: ConversationSummary | null) => void;
+  };
+  starterMessages: UIMessage[];
+}
+
+export function useChatController({
+  activeThreadId,
+  isBusy,
+  isStartingThread,
+  locale,
+  pathname,
+  userId,
+  t,
+  onCreateConversation,
+  onSendMessage,
+  onStop,
+  router,
+  setBootstrappingThreadId,
+  setInput,
+  setIsStartingThread,
+  setMessages,
+  setPendingThreadId,
+  sidebar,
+  starterMessages,
+}: UseChatControllerOptions) {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    void (async () => {
+      event.preventDefault();
+      const inputElement = event.currentTarget.querySelector('textarea');
+      const text = inputElement?.value.trim() ?? '';
+
+      if (!text || isBusy || isStartingThread) return;
+
+      // New thread for logged-in user
+      if (!activeThreadId && userId) {
+        setIsStartingThread(true);
+        let created: { id: string; title: string };
+        try {
+          created = await onCreateConversation(text);
+        } catch {
+          setIsStartingThread(false);
+          return;
+        }
+        setIsStartingThread(false);
+
+        setPendingThreadId(created.id);
+        sidebar.setPendingSidebarHead({
+          id: created.id,
+          lastMessageAt: new Date().toISOString(),
+          preview: null,
+          title: created.title,
+        });
+        setBootstrappingThreadId(created.id);
+        router.replace(`${pathname}?id=${created.id}`, { scroll: false });
+
+        const userMessage: UIMessage = {
+          id: nanoid(),
+          role: 'user',
+          parts: [{ type: 'text', text }],
+        };
+        setMessages([userMessage]);
+        setInput('');
+
+        try {
+          await onSendMessage(undefined, {
+            body: { conversationId: created.id },
+          });
+        } catch {
+          setBootstrappingThreadId(null);
+          setInput(text);
+        }
+
+        return;
+      }
+
+      // Existing thread or anonymous chat
+      setInput('');
+      await onSendMessage(
+        { text },
+        activeThreadId ? { body: { conversationId: activeThreadId } } : undefined
+      );
+    })();
+  };
+
+  const handleClearChat = () => {
+    if (isBusy) onStop();
+
+    setBootstrappingThreadId(null);
+    sidebar.setPendingSidebarHead(null);
+    setPendingThreadId(null);
+    setMessages(starterMessages);
+    setInput('');
+
+    const cleanPath = pathname;
+    window.history.replaceState(window.history.state, '', cleanPath);
+    router.replace(cleanPath, { scroll: false });
+  };
+
+  return { handleClearChat, handleSubmit };
+}

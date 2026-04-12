@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import type { TFunction } from '@/types/i18n';
 import {
   BotIcon,
   BrainIcon,
@@ -26,11 +25,12 @@ const NAV_ICONS = {
 } as const;
 
 type WorkbenchView = 'chat' | HeaderNavItemId | 'settings';
+type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
 
 interface ChatTopBarProps {
   activeView: WorkbenchView;
   locale: string;
-  t: TFunction;
+  t: TranslateFn;
 }
 
 export function ChatTopBar({ activeView, locale, t }: ChatTopBarProps) {

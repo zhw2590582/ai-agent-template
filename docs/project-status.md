@@ -1,6 +1,6 @@
 # Project Status
 
-最后核对时间：2026-04-11
+最后核对时间：2026-04-12
 
 ## 项目定位
 
@@ -21,13 +21,16 @@
 - DeepSeek 模型接入，兼容 OpenAI SDK 方式调用
 - 工具调用骨架：天气、计算器、时间
 - 国际化：`zh-CN` / `en-US`
-- 主题切换
+- 主题切换（含 hydration 修复）
+- Supabase 社交登录（GitHub/Google）
+- 会话列表、标题生成、分页和搜索
+- 会话持久化（`conversations` 表）
 - 环境变量校验、错误处理、日志、CI
 - 测试基础：Vitest 单元测试和集成测试
 
 ### 半完成
 
-- 聊天工作台导航已经存在，但多数页面还不是独立业务模块
+- 聊天工作台导航已调整为 `Sandbox / MCP`，多数页面仍是占位视图
 - 模型选择 UI 已接入，但 provider abstraction 还比较浅
 - `server/types.ts` 已为 Memory / RAG / Planning / Multi-Agent 预留类型
 
@@ -36,13 +39,12 @@
 - Memory
 - Providers
 - Agents
-- Plugins
-- Tools 管理页
+- Sandbox
+- MCP 管理页
 - Skills 管理页
 - Settings
-- Login
 - E2E 自动化测试
-- 持久化存储层
+- Profiles / Memory / Settings 表结构
 
 ## 当前产品范围
 
@@ -50,9 +52,9 @@
 
 更准确地说：
 
-- 聊天页可用
-- 若干导航页存在
-- 多数导航页只是工作台占位视图
+- 聊天页可用（含会话列表、搜索、分页）
+- 若干导航页存在（多数仍是占位）
+- 登录可用，但账号设置与偏好管理未完成
 
 ## 当前代码结构
 
@@ -90,16 +92,16 @@ Chat UI
 ## 已知现实约束
 
 - `DEEPSEEK_API_KEY` 是当前运行必需项
-- 当前不是 memory-first 架构，消息不会持久化
-- 还没有数据库、用户系统、权限系统
+- 当前不是 memory-first 架构，只有 `conversations` 落库，profiles/memory 未完成
+- 数据库接入仅覆盖会话，不覆盖用户设置与长期记忆
 - 当前测试覆盖的是基础链路，不是完整产品行为
 - README 比代码更乐观，判断状态时以代码和本文件为准
 
 ## 下一优先级
 
-1. Memory：会话 ID、消息持久化、历史回放、摘要压缩
+1. Memory：profiles/memory 表、会话摘要压缩、长期偏好
 2. Providers：把模型/provider 配置从当前的半硬编码整理成可扩展抽象
-3. 页面去占位化：至少让 `Providers`、`Tools`、`Settings` 变成真实页面
+3. 页面去占位化：至少让 `Providers`、`Sandbox`、`MCP`、`Settings` 变成真实页面
 4. 测试补齐：补聊天主链路和 hydration 场景，之后再补 E2E
 5. 文档继续收敛：让 README 与代码现状保持一致
 

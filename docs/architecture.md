@@ -16,7 +16,8 @@
 src/
 ├── app/
 │   ├── [locale]/            # 路由和布局入口
-│   └── api/chat/route.ts    # API 入口，保持很薄
+│   ├── api/chat/route.ts    # API 入口，保持很薄
+│   └── api/conversations/   # 会话读写与分页/搜索
 ├── components/
 │   ├── ai-elements/         # AI Elements 组件源码
 │   ├── ui/                  # shadcn/ui 基础组件
@@ -34,6 +35,7 @@ src/
     │   ├── prompts.ts
     │   └── tools/
     ├── chat.ts
+    ├── storage/
     └── types.ts
 ```
 
@@ -52,8 +54,8 @@ src/
 当前唯一真实业务域。
 
 - `pages/`: 页面级组装
-- `components/`: 聊天相关 UI
-- `lib/`: 前端侧轻量 helper
+- `components/`: 聊天相关 UI（侧边栏、顶部栏、消息区）
+- `lib/`: 前端侧轻量 helper（同步、分页、搜索）
 
 注意：很多导航页虽然存在，但本质上仍是复用 chat workbench 的占位视图，不代表已经形成独立业务域。
 
@@ -90,6 +92,7 @@ src/
 - `ai/models.ts`: 模型/provider 封装
 - `ai/prompts.ts`: 系统 prompt
 - `ai/tools/`: 工具定义和注册
+- `storage/`: Supabase 会话读写与搜索
 - `types.ts`: 为后续 Memory / RAG / Planning / Multi-Agent 预留共享类型
 
 ## 当前请求链路
@@ -102,6 +105,11 @@ UI input
   -> model + tools
   -> stream response
   -> chat UI
+
+Sidebar list/search
+  -> /api/conversations
+  -> src/server/storage/conversations.ts
+  -> Supabase
 ```
 
 ## 当前架构判断

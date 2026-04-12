@@ -1,11 +1,11 @@
-import type { TFunction } from '@/types/i18n';
 import type { HeaderNavItemId } from '@/config/navigation';
 
 type WorkbenchView = 'chat' | HeaderNavItemId | 'settings';
+type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
 
 interface ChatPlaceholderProps {
   activeView: WorkbenchView;
-  t: TFunction;
+  t: TranslateFn;
 }
 
 export function ChatPlaceholder({ activeView, t }: ChatPlaceholderProps) {
