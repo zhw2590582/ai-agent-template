@@ -69,7 +69,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           <ThemeProvider initialTheme={theme} key={theme}>
             <AuthUserProvider initialUser={authUser}>
               <TooltipProvider>{children}</TooltipProvider>
-              <Toaster richColors position="top-center" />
+              <Toaster position="top-center" />
             </AuthUserProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
