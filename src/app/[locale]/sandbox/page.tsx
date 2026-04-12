@@ -1,20 +1,20 @@
 import { loadChatPageData } from '@/features/chat/lib/chat-page-data';
 import { ChatHomePage } from '@/features/chat/pages/chat-home-page';
 
-type SettingsPageProps = {
+type SandboxPageProps = {
   searchParams: Promise<{
     conversation?: string;
     id?: string;
   }>;
 };
 
-export default async function SettingsPage({ searchParams }: SettingsPageProps) {
+export default async function SandboxPage({ searchParams }: SandboxPageProps) {
   const { conversation, id } = await searchParams;
   const pageData = await loadChatPageData(id ?? conversation);
 
   return (
     <ChatHomePage
-      activeView="settings"
+      activeView="sandbox"
       initialConversationId={pageData.conversationId}
       initialConversations={pageData.conversations}
       initialConversationsHasMore={pageData.conversationsHasMore}

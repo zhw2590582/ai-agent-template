@@ -49,7 +49,6 @@ export const enUS: Translations = {
       placeholder: 'Send a message to AI Agent',
       workspace_hint: 'Wide workspace with streaming responses and tool calling',
       model_label: 'Model',
-      enter_hint: 'Press Enter to send, Shift + Enter for newline',
     },
     header: {
       show_sidebar: 'Show sidebar',
@@ -67,11 +66,14 @@ export const enUS: Translations = {
       no_preview: 'This conversation does not have a preview yet.',
       dark_mode_only: 'Dark mode only',
       loading_more: 'Loading more…',
+      search_placeholder: 'Search conversations…',
+      options_label: 'Conversation options',
+      rename: 'Rename',
+      delete: 'Delete',
     },
     empty_state: {
       title: 'What do you want the agent to help with today?',
-      description:
-        'You can chat directly, ask it to check time, do calculations, or trigger tools for more specific tasks.',
+      description: '',
     },
     retry: 'Retry',
     regenerate: 'Regenerate',
@@ -162,8 +164,8 @@ export const enUS: Translations = {
   navigation: {
     providers: 'Providers',
     agents: 'Agents',
-    plugins: 'Plugins',
-    tools: 'Tools',
+    sandbox: 'Sandbox',
+    mcp: 'MCP',
     skills: 'Skills',
     memory: 'Memory',
     settings: 'Settings',
@@ -180,13 +182,13 @@ export const enUS: Translations = {
       description:
         'This is a placeholder for future agent roles, strategies, and execution settings.',
     },
-    plugins: {
-      title: 'Plugins Page',
-      description: 'This is a placeholder for future plugin browsing and management.',
+    sandbox: {
+      title: 'Sandbox Page',
+      description: 'This is a placeholder for future testing and debugging capabilities.',
     },
-    tools: {
-      title: 'Tools Page',
-      description: 'This is a placeholder for future tool configuration and availability.',
+    mcp: {
+      title: 'MCP Page',
+      description: 'This is a placeholder for future MCP connections and tool management.',
     },
     skills: {
       title: 'Skills Page',

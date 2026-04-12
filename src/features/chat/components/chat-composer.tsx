@@ -103,10 +103,6 @@ export function ChatComposer({
             />
           </PromptInputFooter>
         </PromptInput>
-
-        <p className="text-muted-foreground mt-3 text-center text-xs">
-          {t('chat.composer.enter_hint')}
-        </p>
       </div>
     </div>
   );

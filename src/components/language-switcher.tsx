@@ -8,7 +8,6 @@
 
 'use client';
 
-import { LanguagesIcon } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -30,8 +29,10 @@ export function LanguageSwitcher({ triggerClassName }: LanguageSwitcherProps) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const currentLocale = locale as Locale;
+  const currentShortLabel = currentLocale.split('-')[1] ?? currentLocale.toUpperCase();
+
   const handleLanguageChange = (newLocale: string) => {
-    const currentLocale = locale;
     const pathWithoutLocale = pathname.replace(`/${currentLocale}`, '');
     const newPath = `/${newLocale}${pathWithoutLocale}`;
 
@@ -41,10 +42,8 @@ export function LanguageSwitcher({ triggerClassName }: LanguageSwitcherProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className={triggerClassName ?? 'min-w-28'} size="sm" variant="outline">
-          <LanguagesIcon data-icon="inline-start" />
-          <span>{LOCALE_CONFIG[locale as Locale].flag}</span>
-          <span>{LOCALE_CONFIG[locale as Locale].name}</span>
+        <Button className={triggerClassName ?? 'min-w-10'} size="sm" variant="outline">
+          <span className="text-xs font-semibold">{currentShortLabel}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-40">

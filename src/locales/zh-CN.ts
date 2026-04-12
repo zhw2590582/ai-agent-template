@@ -47,7 +47,6 @@ const zhCN = {
       placeholder: '给 AI Agent 发送消息',
       workspace_hint: '宽屏工作区，支持流式回复与工具调用',
       model_label: '模型',
-      enter_hint: 'Enter 发送，Shift + Enter 换行',
     },
     header: {
       show_sidebar: '显示侧边栏',
@@ -65,10 +64,14 @@ const zhCN = {
       no_preview: '这段会话还没有可展示的摘要。',
       dark_mode_only: '仅支持暗色模式',
       loading_more: '加载更多…',
+      search_placeholder: '搜索对话…',
+      options_label: '对话选项',
+      rename: '重命名',
+      delete: '删除',
     },
     empty_state: {
       title: '今天想让 agent 帮你做什么？',
-      description: '你可以直接聊天，也可以让它查时间、做计算，或者触发工具完成更具体的任务。',
+      description: '',
     },
     retry: '重试',
     regenerate: '重新生成',
@@ -157,8 +160,8 @@ const zhCN = {
   navigation: {
     providers: 'Providers',
     agents: 'Agents',
-    plugins: 'Plugins',
-    tools: 'Tools',
+    sandbox: 'Sandbox',
+    mcp: 'MCP',
     skills: 'Skills',
     memory: 'Memory',
     settings: 'Settings',
@@ -173,13 +176,13 @@ const zhCN = {
       title: 'Agents 页面',
       description: '这里先保留为空页面，后续用于管理 agent 角色、策略和执行配置。',
     },
-    plugins: {
-      title: 'Plugins 页面',
-      description: '这里先保留为空页面，后续用于浏览和管理插件能力。',
+    sandbox: {
+      title: 'Sandbox 页面',
+      description: '这里先保留为空页面，后续用于测试与调试能力。',
     },
-    tools: {
-      title: 'Tools 页面',
-      description: '这里先保留为空页面，后续用于查看和配置可调用工具。',
+    mcp: {
+      title: 'MCP 页面',
+      description: '这里先保留为空页面，后续用于管理 MCP 连接与工具。',
     },
     skills: {
       title: 'Skills 页面',

@@ -5,13 +5,13 @@ import { useCallback, useMemo, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import {
-  BlocksIcon,
   BotIcon,
   BrainIcon,
+  FlaskConicalIcon,
   PlugIcon,
-  Settings2Icon,
+  ServerIcon,
+  SettingsIcon,
   ShieldEllipsisIcon,
-  WrenchIcon,
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useLocale, useTranslations } from 'next-intl';
@@ -38,14 +38,13 @@ import { cn } from '@/lib/utils';
 const NAV_ICONS = {
   providers: PlugIcon,
   agents: BotIcon,
-  plugins: BlocksIcon,
-  tools: WrenchIcon,
+  sandbox: FlaskConicalIcon,
+  mcp: ServerIcon,
   skills: ShieldEllipsisIcon,
   memory: BrainIcon,
-  settings: Settings2Icon,
 } as const;
 
-type WorkbenchView = 'chat' | HeaderNavItemId;
+type WorkbenchView = 'chat' | HeaderNavItemId | 'settings';
 
 interface ChatHomePageProps {
   activeView?: WorkbenchView;
@@ -86,6 +85,7 @@ export function ChatHomePage({
   const [selectedModel, setSelectedModel] = useState<ModelId>(AI_CONFIG.DEFAULT_MODEL);
   const [input, setInput] = useState('');
   const [isStartingThread, setIsStartingThread] = useState(false);
+  const [sidebarSearchQuery, setSidebarSearchQuery] = useState('');
   const [pendingThreadId, setPendingThreadId] = useState<string | null>(null);
   const [bootstrappingThreadId, setBootstrappingThreadId] = useState<string | null>(null);
 
@@ -97,6 +97,7 @@ export function ChatHomePage({
     initialConversations,
     initialHasMore: initialConversationsHasMore,
     isAuthenticated: !!user,
+    searchQuery: sidebarSearchQuery,
     onLoadError: useCallback(() => {
       toast.error(t('chat.errors.load_more_failed'));
     }, [t]),
@@ -333,6 +334,8 @@ export function ChatHomePage({
             isOpen={isSidebarOpen}
             onClearChat={handleClearChat}
             onLoadMoreConversations={sidebar.loadMore}
+            onSearchQueryChange={setSidebarSearchQuery}
+            searchQuery={sidebarSearchQuery}
             onToggleOpen={() => setIsSidebarOpen((v) => !v)}
           />
         </div>
@@ -360,8 +363,13 @@ export function ChatHomePage({
                   })}
                 </div>
                 <div className="flex items-center gap-2">
-                  <LanguageSwitcher triggerClassName="w-32" />
+                  <LanguageSwitcher triggerClassName="w-10" />
                   <ThemeToggle />
+                  <Button asChild size="icon" type="button" variant="outline">
+                    <Link aria-label={t('navigation.settings')} href={`/${locale}/settings`}>
+                      <SettingsIcon />
+                    </Link>
+                  </Button>
                   <AuthDialog
                     closeLabel={t('common.cancel')}
                     configurationMissingDescription={t('auth.configuration_missing_description')}

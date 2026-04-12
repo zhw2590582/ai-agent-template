@@ -16,6 +16,7 @@ interface UseSidebarConversationsOptions {
   initialConversations: ConversationSummary[];
   initialHasMore: boolean;
   isAuthenticated: boolean;
+  searchQuery?: string;
   /** Called when loading more conversations fails. */
   onLoadError?: () => void;
 }
@@ -24,12 +25,16 @@ export function useSidebarConversations({
   initialConversations,
   initialHasMore,
   isAuthenticated,
+  searchQuery = '',
   onLoadError,
 }: UseSidebarConversationsOptions) {
   const [pendingSidebarHead, setPendingSidebarHead] = useState<ConversationSummary | null>(null);
   const [sidebarExtra, setSidebarExtra] = useState<ConversationSummary[]>([]);
   const [sidebarHasMore, setSidebarHasMore] = useState(initialHasMore);
   const [sidebarLoadingMore, setSidebarLoadingMore] = useState(false);
+  const [searchResults, setSearchResults] = useState<ConversationSummary[]>([]);
+  const [searchHasMore, setSearchHasMore] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const inFlightRef = useRef(false);
   const extraRef = useRef<ConversationSummary[]>([]);
@@ -61,7 +66,7 @@ export function useSidebarConversations({
   }, [initialConversations, pendingSidebarHead]);
 
   const loadMore = useCallback(async () => {
-    if (!isAuthenticated || inFlightRef.current || !sidebarHasMore) return;
+    if (!isAuthenticated || inFlightRef.current || !sidebarHasMore || searchQuery.trim()) return;
 
     inFlightRef.current = true;
     setSidebarLoadingMore(true);
@@ -97,9 +102,56 @@ export function useSidebarConversations({
       inFlightRef.current = false;
       setSidebarLoadingMore(false);
     }
-  }, [isAuthenticated, sidebarHasMore, initialConversations, onLoadError]);
+  }, [isAuthenticated, sidebarHasMore, initialConversations, onLoadError, searchQuery]);
+
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+    if (!isAuthenticated || trimmed.length === 0) {
+      setSearchResults([]);
+      setSearchHasMore(false);
+      setSearchLoading(false);
+      return;
+    }
+
+    setSearchLoading(true);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({
+          limit: String(CONVERSATION_SIDEBAR_PAGE_SIZE),
+          offset: '0',
+          query: trimmed,
+        });
+        const response = await fetch(`/api/conversations?${params.toString()}`, {
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          onLoadError?.();
+          return;
+        }
+        const data: { conversations: ConversationSummary[]; hasMore: boolean } =
+          await response.json();
+        setSearchResults(data.conversations);
+        setSearchHasMore(data.hasMore);
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          onLoadError?.();
+        }
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeout);
+    };
+  }, [isAuthenticated, onLoadError, searchQuery]);
 
   const conversations = useMemo(() => {
+    if (searchQuery.trim()) {
+      return searchResults;
+    }
     const base =
       pendingSidebarHead && !initialConversations.some((c) => c.id === pendingSidebarHead.id)
         ? [pendingSidebarHead, ...initialConversations]
@@ -109,12 +161,12 @@ export function useSidebarConversations({
 
     const seen = new Set(base.map((c) => c.id));
     return [...base, ...sidebarExtra.filter((c) => !seen.has(c.id))];
-  }, [initialConversations, pendingSidebarHead, sidebarExtra]);
+  }, [initialConversations, pendingSidebarHead, searchQuery, searchResults, sidebarExtra]);
 
   return {
     conversations,
-    hasMore: sidebarHasMore,
-    isLoadingMore: sidebarLoadingMore,
+    hasMore: searchQuery.trim() ? searchHasMore : sidebarHasMore,
+    isLoadingMore: searchQuery.trim() ? searchLoading : sidebarLoadingMore,
     loadMore,
     setPendingSidebarHead,
   };

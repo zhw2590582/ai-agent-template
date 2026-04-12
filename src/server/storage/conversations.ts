@@ -227,6 +227,50 @@ export async function listConversationsForUserPage(
   };
 }
 
+/**
+ * Search conversations by title for the sidebar (newest first).
+ */
+export async function listConversationsForUserSearchPage(
+  userId: string,
+  client: ConversationsClient,
+  options: { limit: number; offset: number; query: string }
+): Promise<{ rows: ConversationRecord[]; hasMore: boolean }> {
+  const conversations = client.from('conversations') as ConversationsTable;
+  const limit = Math.min(50, Math.max(1, options.limit));
+  const offset = Math.max(0, options.offset);
+  const to = offset + limit - 1;
+
+  const base = conversations.select(conversationListColumns) as unknown as {
+    eq: (
+      column: 'user_id',
+      value: string
+    ) => {
+      ilike: (
+        column: 'title',
+        pattern: string
+      ) => {
+        order: (column: 'last_message_at', options: { ascending: boolean }) => RangeableListQuery;
+      };
+    };
+  };
+
+  const filtered = base
+    .eq('user_id', userId)
+    .ilike('title', `%${options.query}%`)
+    .order('last_message_at', { ascending: false });
+
+  const { data, error } = await filtered.range(offset, to);
+
+  if (error || !data) {
+    return { hasMore: false, rows: [] };
+  }
+
+  return {
+    hasMore: data.length === limit,
+    rows: data,
+  };
+}
+
 export async function saveConversationMessages(
   input: {
     conversationId: string;

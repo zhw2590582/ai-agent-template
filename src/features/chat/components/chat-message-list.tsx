@@ -168,9 +168,11 @@ export function ChatMessageList({ isSidebarOpen, error, messages, onRetry }: Cha
               <h3 className="text-3xl font-semibold tracking-tight">
                 {t('chat.empty_state.title')}
               </h3>
-              <p className="text-muted-foreground mt-3 text-base leading-7">
-                {t('chat.empty_state.description')}
-              </p>
+              {t('chat.empty_state.description') ? (
+                <p className="text-muted-foreground mt-3 text-base leading-7">
+                  {t('chat.empty_state.description')}
+                </p>
+              ) : null}
             </div>
           </div>
         ) : null}

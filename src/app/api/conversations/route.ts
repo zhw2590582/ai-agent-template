@@ -7,6 +7,7 @@ import { validateRequest } from '@/lib/validation';
 import {
   createConversation,
   listConversationsForUserPage,
+  listConversationsForUserSearchPage,
   mapConversationSummary,
   saveConversationMessages,
 } from '@/server/storage/conversations';
@@ -32,6 +33,7 @@ const MAX_OFFSET = 10_000;
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+    const query = (searchParams.get('query') ?? '').trim();
     const offset = Math.min(
       MAX_OFFSET,
       Math.max(0, Number.parseInt(searchParams.get('offset') ?? '0', 10) || 0)
@@ -44,10 +46,16 @@ export async function GET(request: Request) {
     const { supabase, user } = await requireAuth();
     await upsertProfileFromAuthUser(user, {}, supabase);
 
-    const { hasMore, rows } = await listConversationsForUserPage(user.id, supabase, {
-      limit,
-      offset,
-    });
+    const { hasMore, rows } = query
+      ? await listConversationsForUserSearchPage(user.id, supabase, {
+          limit,
+          offset,
+          query,
+        })
+      : await listConversationsForUserPage(user.id, supabase, {
+          limit,
+          offset,
+        });
 
     return Response.json({
       conversations: rows.map(mapConversationSummary),
