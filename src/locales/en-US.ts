@@ -168,6 +168,7 @@ export const enUS: Translations = {
     sandbox: 'Sandbox',
     mcp: 'MCP',
     skills: 'Skills',
+    rag: 'RAG',
     memory: 'Memory',
     settings: 'Settings',
     search: 'Search',
@@ -194,6 +195,11 @@ export const enUS: Translations = {
     skills: {
       title: 'Skills Page',
       description: 'This is a placeholder for future skill packs and workflow management.',
+    },
+    rag: {
+      title: 'RAG Workspace',
+      description:
+        'This page is reserved for future retrieval pipelines, knowledge base indexing, recall controls, and grounding configuration.',
     },
     memory: {
       title: 'Memory Page',

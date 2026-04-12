@@ -164,6 +164,7 @@ const zhCN = {
     sandbox: 'Sandbox',
     mcp: 'MCP',
     skills: 'Skills',
+    rag: 'RAG',
     memory: 'Memory',
     settings: 'Settings',
     search: 'Search',
@@ -189,6 +190,10 @@ const zhCN = {
     skills: {
       title: 'Skills 页面',
       description: '这里先保留为空页面，后续用于管理技能包和工作流。',
+    },
+    rag: {
+      title: 'RAG 页面',
+      description: '这里先保留为空页面，后续用于管理知识库索引、检索链路、召回策略与答案 grounding 配置。',
     },
     memory: {
       title: 'Memory 页面',

@@ -4,6 +4,7 @@ export const HEADER_NAV_ITEMS = [
   { id: 'sandbox', translationKey: 'navigation.sandbox' },
   { id: 'mcp', translationKey: 'navigation.mcp' },
   { id: 'skills', translationKey: 'navigation.skills' },
+  { id: 'rag', translationKey: 'navigation.rag' },
   { id: 'memory', translationKey: 'navigation.memory' },
   { id: 'search', translationKey: 'navigation.search' },
 ] as const;

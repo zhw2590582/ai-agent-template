@@ -2,6 +2,7 @@ import Link from 'next/link';
 import {
   BotIcon,
   BrainIcon,
+  DatabaseIcon,
   FlaskConicalIcon,
   PlugIcon,
   ServerIcon,
@@ -22,6 +23,7 @@ const NAV_ICONS = {
   sandbox: FlaskConicalIcon,
   mcp: ServerIcon,
   skills: ShieldEllipsisIcon,
+  rag: DatabaseIcon,
   memory: BrainIcon,
   search: GlobeIcon,
 } as const;
