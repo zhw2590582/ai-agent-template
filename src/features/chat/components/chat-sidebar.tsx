@@ -112,7 +112,7 @@ export function ChatSidebar({
 
   return (
     <aside className="border-border bg-muted/30 flex h-full flex-col border-r">
-      <div className="flex items-center justify-between px-4 py-4">
+      <div className="border-border flex h-12 items-center justify-between border-b px-4">
         <Button asChild className="h-auto px-0" variant="ghost">
           <Link
             className="text-foreground flex items-center gap-2 text-sm font-medium"

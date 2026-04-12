@@ -338,7 +338,7 @@ export function ChatHomePage({
         </div>
 
         <section className="bg-background flex min-h-0 flex-1 flex-col transition-[width] duration-300 ease-out">
-          <div className="border-border border-b px-4 py-2">
+          <div className="border-border h-12 border-b px-4 py-2">
             <div className="flex w-full flex-col gap-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex flex-wrap gap-2">

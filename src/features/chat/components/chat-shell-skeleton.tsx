@@ -40,13 +40,13 @@ export function ChatShellSkeleton() {
 
           <div className="flex flex-1 flex-col gap-6 px-6 py-8">
             <div className="flex justify-end">
-              <Skeleton className="h-16 w-[42rem] max-w-[75%] rounded-[1.6rem]" />
+              <Skeleton className="h-16 w-2xl max-w-[75%] rounded-[1.6rem]" />
             </div>
             <div className="flex justify-start">
-              <Skeleton className="h-28 w-[52rem] max-w-[88%] rounded-[1.6rem]" />
+              <Skeleton className="h-28 w-208 max-w-[88%] rounded-[1.6rem]" />
             </div>
             <div className="flex justify-end">
-              <Skeleton className="h-14 w-[36rem] max-w-[70%] rounded-[1.6rem]" />
+              <Skeleton className="h-14 w-xl max-w-[70%] rounded-[1.6rem]" />
             </div>
           </div>
         </section>
