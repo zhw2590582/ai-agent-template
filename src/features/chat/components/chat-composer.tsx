@@ -25,6 +25,8 @@ import { Button } from '@/components/ui/button';
 interface ChatComposerProps {
   input: string;
   isBusy: boolean;
+  /** True while POST /conversations is in flight (before stream starts). */
+  isCreatingThread?: boolean;
   isSidebarOpen: boolean;
   model: ModelId;
   onModelChange: (value: ModelId) => void;
@@ -37,6 +39,7 @@ interface ChatComposerProps {
 export function ChatComposer({
   input,
   isBusy,
+  isCreatingThread = false,
   isSidebarOpen,
   model,
   onModelChange,
@@ -67,7 +70,7 @@ export function ChatComposer({
               <div className="flex flex-wrap items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button size="sm" type="button" variant="outline">
+                    <Button disabled={isBusy} size="sm" type="button" variant="outline">
                       {t('chat.composer.model_label')}
                       <span className="text-muted-foreground">
                         {t(
@@ -94,8 +97,8 @@ export function ChatComposer({
               </div>
             </PromptInputTools>
             <PromptInputSubmit
-              disabled={!isBusy && input.trim().length === 0}
-              onStop={onStop}
+              disabled={isCreatingThread || (!isBusy && input.trim().length === 0)}
+              onStop={isCreatingThread ? undefined : onStop}
               status={status}
             />
           </PromptInputFooter>

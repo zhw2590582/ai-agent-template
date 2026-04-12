@@ -13,8 +13,9 @@ import {
   ShieldEllipsisIcon,
   WrenchIcon,
 } from 'lucide-react';
+import { nanoid } from 'nanoid';
 import { useLocale, useTranslations } from 'next-intl';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -50,6 +51,14 @@ interface ChatHomePageProps {
   initialMessages?: UIMessage[];
 }
 
+/**
+ * Chat routing model:
+ * - `?id=` in the URL is the source of truth for which conversation is open (or absent = new chat).
+ * - `pendingThreadId` only covers the gap until `router.replace` updates search params.
+ * - New thread (logged-in): await create conversation → set URL `?id=` → show the user message in the UI → then call `sendMessage` for the stream (no optimistic bubble before the row exists).
+ * - `bootstrappingThreadIdRef` skips the sync effect for that id until the server has persisted messages, so an empty RSC payload does not wipe the first user message.
+ * - Same-URL refresh: if the client list is longer than `initialMessages`, keep the client (save/refresh race).
+ */
 export function ChatHomePage({
   activeView = 'chat',
   initialConversationId = null,
@@ -60,54 +69,171 @@ export function ChatHomePage({
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { user } = useAuthUser();
+
   const starterMessages = useMemo(() => getInitialMessages(t), [t]);
+  const urlConversationId = useMemo(
+    () => searchParams.get('id') ?? searchParams.get('conversation') ?? null,
+    [searchParams]
+  );
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedModel, setSelectedModel] = useState<ModelId>(AI_CONFIG.DEFAULT_MODEL);
   const [input, setInput] = useState('');
-  const [conversationId, setConversationId] = useState<string | null>(initialConversationId);
-  const needsBootstrapSyncRef = useRef(false);
-  const isBootstrapSyncingRef = useRef(false);
-  const latestMessagesRef = useRef<UIMessage[]>(
-    initialMessages.length > 0 ? initialMessages : starterMessages
-  );
+  const [isStartingThread, setIsStartingThread] = useState(false);
+  /** Until the router reflects POST /conversations, this supplies the active id for API + sidebar. */
+  const [pendingThreadId, setPendingThreadId] = useState<string | null>(null);
+  /** One optimistic row at the top until refresh lists the new conversation. */
+  const [pendingSidebarHead, setPendingSidebarHead] = useState<ConversationSummary | null>(null);
+
+  const activeThreadId = urlConversationId ?? pendingThreadId;
+
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: `/api/chat?lang=${locale}`,
-        prepareSendMessagesRequest: ({ messages, id, trigger, messageId }) => ({
+        prepareSendMessagesRequest: ({
+          messages,
+          id,
+          trigger,
+          messageId,
+          body: requestBody = {},
+        }) => ({
           body: {
+            ...requestBody,
             id,
             trigger,
             messageId,
             messages,
             model: selectedModel,
-            conversationId,
+            conversationId:
+              (requestBody.conversationId as string | undefined) ?? activeThreadId ?? undefined,
           },
         }),
       }),
-    [conversationId, locale, selectedModel]
+    [activeThreadId, locale, selectedModel]
   );
+
+  const useChatInitialMessages =
+    urlConversationId != null &&
+    initialConversationId === urlConversationId &&
+    initialMessages.length > 0
+      ? initialMessages
+      : starterMessages;
+
   const { messages, sendMessage, setMessages, status, stop, error, regenerate } = useChat({
     onFinish: () => {
-      if (needsBootstrapSyncRef.current) {
-        return;
-      }
-
       router.refresh();
     },
     transport,
-    messages: initialMessages.length > 0 ? initialMessages : starterMessages,
+    messages: useChatInitialMessages,
   });
 
   const isBusy = status === 'submitted' || status === 'streaming';
+  const prevUrlConversationIdRef = useRef<string | null>(null);
+  /** First turn after POST /conversations: ignore empty server payloads until messages are saved. */
+  const bootstrappingThreadIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (pendingThreadId != null && urlConversationId === pendingThreadId) {
+      setPendingThreadId(null);
+    }
+  }, [pendingThreadId, urlConversationId]);
+
+  useEffect(() => {
+    if (urlConversationId == null) {
+      setPendingThreadId(null);
+    }
+  }, [urlConversationId]);
+
+  useEffect(() => {
+    if (
+      pendingSidebarHead != null &&
+      initialConversations.some((c) => c.id === pendingSidebarHead.id)
+    ) {
+      setPendingSidebarHead(null);
+    }
+  }, [initialConversations, pendingSidebarHead]);
+
+  /** Keep message list aligned with URL + server; never trust stale props when the URL has no `id`. */
+  useEffect(() => {
+    if (urlConversationId == null) {
+      bootstrappingThreadIdRef.current = null;
+      if (pendingThreadId == null) {
+        prevUrlConversationIdRef.current = null;
+        startTransition(() => {
+          setMessages(starterMessages);
+        });
+      }
+      return;
+    }
+
+    const urlChanged = prevUrlConversationIdRef.current !== urlConversationId;
+    prevUrlConversationIdRef.current = urlConversationId;
+
+    if (initialConversationId !== urlConversationId) {
+      return;
+    }
+
+    if (urlChanged) {
+      if (bootstrappingThreadIdRef.current === urlConversationId) {
+        return;
+      }
+      if (isBusy) {
+        return;
+      }
+      if (initialMessages.length > 0) {
+        startTransition(() => {
+          setMessages(initialMessages);
+        });
+      } else {
+        startTransition(() => {
+          setMessages(starterMessages);
+        });
+      }
+      return;
+    }
+
+    if (initialMessages.length > 0) {
+      if (urlConversationId === bootstrappingThreadIdRef.current) {
+        bootstrappingThreadIdRef.current = null;
+      }
+      startTransition(() => {
+        setMessages((current) =>
+          current.length > initialMessages.length ? current : initialMessages
+        );
+      });
+      return;
+    }
+
+    if (isBusy) {
+      return;
+    }
+  }, [
+    initialConversationId,
+    initialMessages,
+    isBusy,
+    pendingThreadId,
+    setMessages,
+    starterMessages,
+    urlConversationId,
+  ]);
+
+  const sidebarConversations = useMemo(() => {
+    if (
+      pendingSidebarHead == null ||
+      initialConversations.some((c) => c.id === pendingSidebarHead.id)
+    ) {
+      return initialConversations;
+    }
+    return [pendingSidebarHead, ...initialConversations];
+  }, [initialConversations, pendingSidebarHead]);
 
   const createConversation = async (initialMessage: string) => {
     const response = await fetch('/api/conversations', {
       body: JSON.stringify({ initialMessage }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       method: 'POST',
     });
 
@@ -115,123 +241,71 @@ export function ChatHomePage({
       throw new Error('Failed to create conversation');
     }
 
-    const data: { conversation: { id: string } } = await response.json();
-    return data.conversation.id;
+    const data: { conversation: { id: string; title: string } } = await response.json();
+    return data.conversation;
   };
-
-  const syncConversationMessages = async (
-    nextConversationId: string,
-    nextMessages: UIMessage[]
-  ) => {
-    const response = await fetch('/api/conversations', {
-      body: JSON.stringify({
-        conversationId: nextConversationId,
-        messages: nextMessages,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'PATCH',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to save conversation messages');
-    }
-  };
-
-  useEffect(() => {
-    latestMessagesRef.current = messages;
-  }, [messages]);
-
-  useEffect(() => {
-    if (
-      !needsBootstrapSyncRef.current ||
-      !conversationId ||
-      status !== 'ready' ||
-      latestMessagesRef.current.length === 0 ||
-      isBootstrapSyncingRef.current
-    ) {
-      return;
-    }
-
-    let cancelled = false;
-    isBootstrapSyncingRef.current = true;
-
-    void (async () => {
-      try {
-        await syncConversationMessages(conversationId, latestMessagesRef.current);
-        if (!cancelled) {
-          needsBootstrapSyncRef.current = false;
-          isBootstrapSyncingRef.current = false;
-          router.refresh();
-        }
-      } catch (syncError) {
-        console.error(syncError);
-        isBootstrapSyncingRef.current = false;
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [conversationId, router, status]);
-
-  useEffect(() => {
-    if (
-      needsBootstrapSyncRef.current &&
-      initialConversationId &&
-      initialMessages.length === 0 &&
-      messages.length > 0
-    ) {
-      return;
-    }
-
-    startTransition(() => {
-      setConversationId(initialConversationId);
-      setMessages(initialMessages.length > 0 ? initialMessages : starterMessages);
-    });
-  }, [initialConversationId, initialMessages, messages.length, setMessages, starterMessages]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     void (async () => {
       event.preventDefault();
       const text = input.trim();
 
-      if (!text || isBusy) {
+      if (!text || isBusy || isStartingThread) {
         return;
       }
 
-      const nextConversationId = conversationId;
+      if (!activeThreadId && user) {
+        setIsStartingThread(true);
+        let created: { id: string; title: string };
+        try {
+          created = await createConversation(text);
+        } catch (creationError) {
+          console.error(creationError);
+          setIsStartingThread(false);
+          return;
+        }
+        setIsStartingThread(false);
 
-      if (!nextConversationId && user) {
-        needsBootstrapSyncRef.current = true;
-        void (async () => {
-          try {
-            const createdConversationId = await createConversation(text);
-            setConversationId(createdConversationId);
-            window.history.replaceState(
-              window.history.state,
-              '',
-              `${pathname}?id=${createdConversationId}`
-            );
-          } catch (creationError) {
-            console.error(creationError);
-            needsBootstrapSyncRef.current = false;
-          }
-        })();
+        setPendingThreadId(created.id);
+        setPendingSidebarHead({
+          id: created.id,
+          lastMessageAt: new Date().toISOString(),
+          preview: null,
+          title: created.title,
+        });
+        bootstrappingThreadIdRef.current = created.id;
+        router.replace(`${pathname}?id=${created.id}`, { scroll: false });
+
+        const userMessage: UIMessage = {
+          id: nanoid(),
+          role: 'user',
+          parts: [{ type: 'text', text }],
+        };
+        setMessages([userMessage]);
+        setInput('');
+
+        try {
+          await sendMessage(undefined, {
+            body: { conversationId: created.id },
+          });
+        } catch (streamError) {
+          console.error(streamError);
+          bootstrappingThreadIdRef.current = null;
+          setInput(text);
+        }
+
+        return;
       }
 
+      setInput('');
       await sendMessage(
         { text },
-        nextConversationId
+        activeThreadId
           ? {
-              body: {
-                conversationId: nextConversationId,
-              },
+              body: { conversationId: activeThreadId },
             }
           : undefined
       );
-      setInput('');
     })();
   };
 
@@ -240,12 +314,15 @@ export function ChatHomePage({
       stop();
     }
 
-    needsBootstrapSyncRef.current = false;
-    isBootstrapSyncingRef.current = false;
+    bootstrappingThreadIdRef.current = null;
+    setPendingSidebarHead(null);
+    setPendingThreadId(null);
     setMessages(getInitialMessages(t));
     setInput('');
-    setConversationId(null);
-    router.push(pathname);
+
+    const cleanPath = pathname;
+    window.history.replaceState(window.history.state, '', cleanPath);
+    router.replace(cleanPath, { scroll: false });
   };
 
   const isChatView = activeView === 'chat';
@@ -263,14 +340,15 @@ export function ChatHomePage({
 
           <ChatComposer
             input={input}
-            isBusy={isBusy}
+            isBusy={isBusy || isStartingThread}
+            isCreatingThread={isStartingThread}
             isSidebarOpen={isSidebarOpen}
             model={selectedModel}
             onModelChange={setSelectedModel}
             onStop={stop}
             onInputChange={setInput}
             onSubmit={handleSubmit}
-            status={status}
+            status={isStartingThread ? 'submitted' : status}
           />
         </>
       );
@@ -303,8 +381,8 @@ export function ChatHomePage({
           )}
         >
           <ChatSidebar
-            activeConversationId={conversationId}
-            conversations={initialConversations}
+            activeConversationId={activeThreadId}
+            conversations={sidebarConversations}
             isOpen={isSidebarOpen}
             onClearChat={handleClearChat}
             onToggleOpen={() => setIsSidebarOpen((value) => !value)}

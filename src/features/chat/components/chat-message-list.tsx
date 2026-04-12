@@ -67,13 +67,17 @@ export function ChatMessageList({ isSidebarOpen, error, messages, onRetry }: Cha
           </div>
         ) : null}
 
-        {messages.map((message) => {
+        {messages.map((message, messageIndex) => {
           const toolParts = getToolParts(message);
           const textContent = getTextContent(message);
           const isLastAssistantMessage = message.id === lastAssistantMessageId;
+          const messageKey =
+            message.id != null && String(message.id).trim() !== ''
+              ? message.id
+              : `message-${messageIndex}`;
 
           return (
-            <div key={message.id} className="w-full">
+            <div key={messageKey} className="w-full">
               {textContent ? (
                 <Message from={message.role}>
                   <MessageContent
@@ -88,12 +92,18 @@ export function ChatMessageList({ isSidebarOpen, error, messages, onRetry }: Cha
 
               {toolParts.length > 0 ? (
                 <div className={cn('mt-3 ml-0', isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl')}>
-                  {toolParts.map((part) => {
+                  {toolParts.map((part, partIndex) => {
                     const toolName = part.type.replace('tool-', '');
+                    const toolKey =
+                      'toolCallId' in part &&
+                      part.toolCallId != null &&
+                      String(part.toolCallId).trim() !== ''
+                        ? part.toolCallId
+                        : `tool-${messageKey}-${partIndex}`;
 
                     return (
                       <Tool
-                        key={part.toolCallId}
+                        key={toolKey}
                         className="border-border/80 bg-card/60"
                         defaultOpen={part.state !== 'output-available'}
                       >

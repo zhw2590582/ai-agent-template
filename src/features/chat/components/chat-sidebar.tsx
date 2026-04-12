@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { MouseEvent } from 'react';
 import {
   HouseIcon,
   MenuIcon,
@@ -42,10 +43,12 @@ export function ChatSidebar({
   const pathname = usePathname();
   const homeHref = `/${locale}`;
 
-  const handleReturnHome = () => {
-    if (pathname === homeHref) {
-      onClearChat();
+  const handleNewChatClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (pathname !== homeHref) {
+      return;
     }
+    event.preventDefault();
+    onClearChat();
   };
 
   if (!isOpen) {
@@ -89,44 +92,24 @@ export function ChatSidebar({
 
       <div className="px-3">
         <Button asChild className="w-full justify-start gap-2" size="default" variant="ghost">
-          <Link href={homeHref} onClick={handleReturnHome}>
+          <Link href={homeHref} onClick={handleNewChatClick}>
             <MessageSquarePlusIcon data-icon="inline-start" />
             {t('chat.sidebar.new_chat')}
           </Link>
         </Button>
       </div>
 
-      <div className="px-3 pt-5">
-        <div className="text-muted-foreground px-2 text-[11px] tracking-[0.26em] uppercase">
-          {t('chat.sidebar.history')}
-        </div>
-        <ScrollArea className="mt-3 h-[calc(100vh-12.5rem)] pr-1">
-          <div className="flex flex-col gap-2 pb-4">
+      <div className="pl-3">
+        <ScrollArea className="mt-3 h-[calc(100vh-8rem)]">
+          <div className="flex flex-col gap-1.5 pr-3 pb-2">
             {conversations.length > 0 ? (
-              conversations.map((item, index) => (
+              conversations.map((item) => (
                 <Link
                   key={item.id}
                   href={`/${locale}?id=${item.id}`}
-                  className="bg-background text-foreground hover:border-border hover:bg-accent rounded-2xl border border-transparent px-3 py-3 text-left transition"
+                  className={`text-foreground hover:bg-accent rounded-md p-1.5 text-sm transition ${item.id === activeConversationId ? 'bg-accent' : ''}`}
                 >
-                  <div className="flex items-start gap-2">
-                    <MessageSquareTextIcon className="text-muted-foreground mt-0.5 size-4 shrink-0" />
-                    <div className="min-w-0">
-                      <div className="text-muted-foreground flex items-center gap-2 text-[11px] tracking-[0.22em] uppercase">
-                        <span>
-                          {t('chat.sidebar.history_item', { index: conversations.length - index })}
-                        </span>
-                        {activeConversationId === item.id ? (
-                          <span className="text-foreground tracking-normal normal-case">
-                            {t('chat.sidebar.current')}
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="mt-1 line-clamp-1 text-sm leading-6 font-medium">
-                        {item.title}
-                      </div>
-                    </div>
-                  </div>
+                  {item.title}
                 </Link>
               ))
             ) : (
