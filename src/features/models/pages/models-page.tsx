@@ -14,9 +14,10 @@ export function ModelsPage() {
   const t = useTranslations();
   const { user } = useAuthUser();
   const {
+    addCustomProvider,
     isLoading,
-    presetProviders,
     profile,
+    providers,
     saveProviderEnabled,
     saveProfile,
     selectedProvider,
@@ -29,12 +30,6 @@ export function ModelsPage() {
   const hasInitializedAutoSaveRef = useRef(false);
   const suppressNextAutoSaveRef = useRef(false);
   const savedIndicatorTimeoutRef = useRef<number | null>(null);
-
-  const activePreset = useMemo(
-    () =>
-      presetProviders.find((provider) => provider.id === selectedProvider.id) ?? presetProviders[0],
-    [presetProviders, selectedProvider.id]
-  );
 
   const handleAddModel = (model: Pick<ProviderModelItem, 'id' | 'name'>) => {
     updateProvider(selectedProvider.id, (provider) => ({
@@ -213,9 +208,11 @@ export function ModelsPage() {
     <div className="bg-background text-foreground flex h-[calc(100vh-3rem)] overflow-hidden">
       <div className="shrink-0 border-r lg:w-80">
         <ProviderList
-          providers={presetProviders}
+          providers={providers}
           selectedProviderId={selectedProvider.id}
-          settings={profile.settings.models.providers}
+          onAddCustomProvider={(providerName) => {
+            addCustomProvider(providerName);
+          }}
           onSelectProvider={updateSelectedProviderId}
           onToggleProvider={(providerId) => {
             suppressNextAutoSaveRef.current = true;
@@ -229,7 +226,6 @@ export function ModelsPage() {
 
       <div className="max-w-4xl flex-1 overflow-y-auto">
         <ProviderSettingsPanel
-          activePreset={activePreset}
           autoSaveStatus={autoSaveStatus}
           isApiKeyVisible={isApiKeyVisible}
           isTestingConnection={isTestingConnection}

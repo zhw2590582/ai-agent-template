@@ -9,11 +9,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { ProviderIcon } from '@/features/models/components/provider-icon';
 import { ProviderModelList } from '@/features/models/components/provider-model-list';
-import type { ProviderModelItem, ProviderPreset, ProviderSettings } from '@/features/models/types';
+import type { ProviderModelItem, ProviderSettings } from '@/features/models/types';
 import { cn } from '@/lib/utils';
 
 interface ProviderSettingsPanelProps {
-  activePreset: ProviderPreset | undefined;
   autoSaveStatus?: 'idle' | 'saving' | 'saved';
   isApiKeyVisible: boolean;
   isTestingConnection: boolean;
@@ -29,7 +28,6 @@ interface ProviderSettingsPanelProps {
 }
 
 export function ProviderSettingsPanel({
-  activePreset,
   autoSaveStatus = 'idle',
   isApiKeyVisible,
   isTestingConnection,
@@ -45,27 +43,29 @@ export function ProviderSettingsPanel({
 }: ProviderSettingsPanelProps) {
   const t = useTranslations();
 
-  if (!activePreset) {
-    return null;
-  }
-
   return (
     <div className="bg-background flex flex-col">
       <header className="bg-background sticky top-0 z-10 flex items-center justify-between gap-4 border-b px-6 py-5">
         <div className="flex min-w-0 items-center gap-3">
           <ProviderIcon
+            docsUrl={provider.docsUrl}
             fallbackClassName="flex size-10 shrink-0 items-center justify-center border text-sm font-semibold"
-            providerId={activePreset.id}
+            logoId={provider.logoId}
+            monogram={provider.monogram}
+            name={provider.name}
+            providerId={provider.id}
           />
-          <h2 className="truncate text-xl font-semibold">{activePreset.name}</h2>
-          <a
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            href={activePreset.docsUrl}
-            rel="noreferrer"
-            target="_blank"
-          >
-            <LinkIcon className="size-4" />
-          </a>
+          <h2 className="truncate text-xl font-semibold">{provider.name}</h2>
+          {provider.docsUrl ? (
+            <a
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              href={provider.docsUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <LinkIcon className="size-4" />
+            </a>
+          ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {autoSaveStatus === 'saving' ? (
@@ -91,14 +91,16 @@ export function ProviderSettingsPanel({
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">{t('models_page.fields.api_key')}</label>
-            <a
-              className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-              href={activePreset.docsUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              {t('models_page.fields.get_api_key')}
-            </a>
+            {provider.docsUrl ? (
+              <a
+                className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+                href={provider.docsUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {t('models_page.fields.get_api_key')}
+              </a>
+            ) : null}
           </div>
           <InputGroup>
             <InputGroupInput
@@ -124,7 +126,7 @@ export function ProviderSettingsPanel({
           <InputGroup>
             <InputGroupInput
               className="h-10"
-              placeholder={activePreset.defaultBaseUrl}
+              placeholder={provider.defaultBaseUrl || 'https://api.example.com/v1'}
               value={provider.baseUrl}
               onChange={(event) => onBaseUrlChange(event.target.value)}
             />

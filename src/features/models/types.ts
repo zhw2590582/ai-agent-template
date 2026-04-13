@@ -23,9 +23,15 @@ export interface ProviderSettings {
   apiFormat: ModelApiFormat;
   apiKey: string;
   baseUrl: string;
+  defaultBaseUrl: string;
+  docsUrl: string | null;
   enabled: boolean;
   id: string;
+  isCustom?: boolean;
+  logoId?: string | null;
+  monogram: string;
   models: ProviderModelItem[];
+  name: string;
 }
 
 export interface ModelsSettings {

@@ -11,6 +11,26 @@ import type {
 } from '@/features/models/types';
 import type { ThemeMode } from '@/config/app';
 
+function slugifyProviderId(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+}
+
+function buildProviderMonogram(name: string) {
+  const letters = name
+    .trim()
+    .split(/\s+/)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('')
+    .slice(0, 2);
+
+  return letters || 'CP';
+}
+
 function buildProviderModels(existing?: ProviderModelItem[]) {
   if (!existing || existing.length === 0) {
     return [];
@@ -32,10 +52,68 @@ function buildProviderSettings(
     apiFormat: existing?.apiFormat ?? preset.apiFormat,
     apiKey: existing?.apiKey ?? '',
     baseUrl: existing?.baseUrl ?? preset.defaultBaseUrl,
+    defaultBaseUrl: existing?.defaultBaseUrl ?? preset.defaultBaseUrl,
+    docsUrl: existing?.docsUrl ?? preset.docsUrl,
     enabled: existing?.enabled ?? preset.id === 'deepseek',
     id: preset.id,
+    isCustom: false,
+    logoId: existing?.logoId ?? preset.logoId ?? null,
+    monogram: existing?.monogram ?? preset.monogram,
     models: buildProviderModels(existing?.models),
+    name: existing?.name ?? preset.name,
   };
+}
+
+export function buildCustomProviderSettings(options: {
+  existingIds?: string[];
+  existing?: Partial<ProviderSettings>;
+  name: string;
+}) {
+  const normalizedName = options.name.trim();
+  const requestedId = options.existing?.id?.trim();
+  const baseId = requestedId || slugifyProviderId(normalizedName) || 'custom-provider';
+  const existingIds = new Set(options.existingIds ?? []);
+  let nextId = baseId;
+  let index = 2;
+
+  if (!options.existing?.id) {
+    while (existingIds.has(nextId)) {
+      nextId = `${baseId}-${index}`;
+      index += 1;
+    }
+  }
+
+  return {
+    apiFormat: options.existing?.apiFormat ?? 'openai',
+    apiKey: options.existing?.apiKey ?? '',
+    baseUrl: options.existing?.baseUrl ?? '',
+    defaultBaseUrl: options.existing?.defaultBaseUrl ?? '',
+    docsUrl: options.existing?.docsUrl ?? null,
+    enabled: options.existing?.enabled ?? false,
+    id: options.existing?.id ?? nextId,
+    isCustom: true,
+    logoId: options.existing?.logoId ?? null,
+    monogram: options.existing?.monogram ?? buildProviderMonogram(normalizedName),
+    models: buildProviderModels(options.existing?.models),
+    name: normalizedName,
+  } satisfies ProviderSettings;
+}
+
+function readExistingProviders(input: unknown) {
+  if (
+    typeof input === 'object' &&
+    input != null &&
+    'models' in input &&
+    typeof input.models === 'object' &&
+    input.models != null &&
+    'providers' in input.models &&
+    typeof input.models.providers === 'object' &&
+    input.models.providers != null
+  ) {
+    return input.models.providers as Record<string, Partial<ProviderSettings>>;
+  }
+
+  return {};
 }
 
 function readExistingProviderSettings(input: unknown, providerId: string) {
@@ -91,12 +169,32 @@ function readSelectedChatModelId(input: unknown) {
 }
 
 export function normalizeProfileSettings(input?: unknown) {
+  const existingProviders = readExistingProviders(input);
   const providers = Object.fromEntries(
     MODEL_PROVIDER_PRESETS.map((preset) => [
       preset.id,
       buildProviderSettings(preset, readExistingProviderSettings(input, preset.id)),
     ])
-  );
+  ) as Record<string, ProviderSettings>;
+
+  for (const [providerId, provider] of Object.entries(existingProviders)) {
+    if (providers[providerId]) {
+      continue;
+    }
+
+    const providerName = provider.name?.trim();
+    if (!providerName) {
+      continue;
+    }
+
+    providers[providerId] = buildCustomProviderSettings({
+      existing: {
+        ...provider,
+        id: providerId,
+      },
+      name: providerName,
+    });
+  }
 
   const inputSelectedProviderId = readSelectedProviderId(input);
   const inputSelectedChatModelId = readSelectedChatModelId(input);
@@ -136,8 +234,14 @@ export function createProfileDraft(options: {
   };
 }
 
-function getProviderPreset(providerId: string) {
-  return MODEL_PROVIDER_PRESETS.find((preset) => preset.id === providerId);
+export function getOrderedProviders(settings: AppProfileSettings) {
+  const presetIds = new Set(MODEL_PROVIDER_PRESETS.map((preset) => preset.id));
+  const providers = settings.models.providers;
+
+  return [
+    ...MODEL_PROVIDER_PRESETS.map((preset) => providers[preset.id]).filter(Boolean),
+    ...Object.values(providers).filter((provider) => !presetIds.has(provider.id)),
+  ];
 }
 
 export function normalizeProviderBaseUrl(
@@ -173,14 +277,11 @@ export function getChatModelOptions(settings: AppProfileSettings): ChatModelOpti
       return [];
     }
 
-    const preset = getProviderPreset(provider.id);
-    const providerName = preset?.name ?? provider.id;
-
     return provider.models.filter(isModelConfigured).map((model) => ({
       id: `${provider.id}::${model.id.trim()}`,
       modelId: model.id.trim(),
       providerId: provider.id,
-      providerName,
+      providerName: provider.name.trim() || provider.id,
       title: model.name.trim() || model.id.trim(),
     }));
   });

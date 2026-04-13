@@ -5,10 +5,14 @@ import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { useTheme } from '@/components/ui-settings/theme-provider';
-import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import type { AppProfile, ModelsSettings, ProviderSettings } from '@/features/models/types';
-import { createProfileDraft, normalizeProfileSettings } from '@/features/models/utils/profile';
+import {
+  buildCustomProviderSettings,
+  createProfileDraft,
+  getOrderedProviders,
+  normalizeProfileSettings,
+} from '@/features/models/utils/profile';
 
 const LOCAL_MODEL_PROFILE_STORAGE_KEY = 'agent-model-profile';
 const profileCache = new Map<string, Partial<AppProfile>>();
@@ -153,9 +157,18 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     };
   }, [locale, t, theme, user]);
 
-  const selectedProvider = useMemo(() => {
-    return profile.settings.models.providers[profile.settings.models.selectedProviderId];
-  }, [profile]);
+  const orderedProviders = useMemo(() => getOrderedProviders(profile.settings), [profile.settings]);
+
+  const selectedProvider = useMemo(
+    () =>
+      profile.settings.models.providers[profile.settings.models.selectedProviderId] ??
+      orderedProviders[0],
+    [
+      orderedProviders,
+      profile.settings.models.providers,
+      profile.settings.models.selectedProviderId,
+    ]
+  );
 
   const buildNextProfile = useCallback(
     (current: AppProfile, nextModels: ModelsSettings) => ({
@@ -196,6 +209,28 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
       });
       profileRef.current = nextProfile;
       setProfile(nextProfile);
+    },
+    [buildNextProfile]
+  );
+
+  const addCustomProvider = useCallback(
+    (name: string) => {
+      const current = profileRef.current;
+      const nextProvider = buildCustomProviderSettings({
+        existingIds: Object.keys(current.settings.models.providers),
+        name,
+      });
+      const nextProfile = buildNextProfile(current, {
+        ...current.settings.models,
+        providers: {
+          ...current.settings.models.providers,
+          [nextProvider.id]: nextProvider,
+        },
+        selectedProviderId: nextProvider.id,
+      });
+      profileRef.current = nextProfile;
+      setProfile(nextProfile);
+      return nextProvider.id;
     },
     [buildNextProfile]
   );
@@ -345,9 +380,10 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
   );
 
   return {
+    addCustomProvider,
     isLoading,
     isSaving,
-    presetProviders: MODEL_PROVIDER_PRESETS,
+    providers: orderedProviders,
     profile,
     saveProviderEnabled,
     saveProfile,

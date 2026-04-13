@@ -8,14 +8,22 @@ import { cn } from '@/lib/utils';
 
 interface ProviderIconProps {
   className?: string;
+  docsUrl?: string | null;
   fallbackClassName?: string;
+  logoId?: string | null;
+  monogram?: string;
+  name?: string;
   plain?: boolean;
   providerId: string;
 }
 
 export function ProviderIcon({
   className,
+  docsUrl,
   fallbackClassName,
+  logoId: logoIdProp,
+  monogram: monogramProp,
+  name,
   plain = false,
   providerId,
 }: ProviderIconProps) {
@@ -26,10 +34,12 @@ export function ProviderIcon({
     [providerId]
   );
 
-  const logoId = preset?.logoId ?? providerId;
-  const monogram = preset?.monogram ?? providerId.slice(0, 2).toUpperCase();
+  const logoId = logoIdProp ?? preset?.logoId ?? providerId;
+  const monogram = monogramProp ?? preset?.monogram ?? providerId.slice(0, 2).toUpperCase();
+  const displayName = name ?? preset?.name ?? providerId;
+  const canUseRemoteLogo = Boolean((logoIdProp || preset?.logoId) && (docsUrl !== null || preset));
 
-  if (!logoId || hasError) {
+  if (!canUseRemoteLogo || !logoId || hasError) {
     return (
       <span
         className={cn(
@@ -54,7 +64,7 @@ export function ProviderIcon({
       )}
     >
       <Image
-        alt={`${preset?.name ?? providerId} logo`}
+        alt={`${displayName} logo`}
         className={cn('size-6 object-contain dark:invert', className)}
         height={16}
         src={`https://models.dev/logos/${logoId}.svg`}

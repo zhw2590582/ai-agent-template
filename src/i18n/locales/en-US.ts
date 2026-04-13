@@ -149,6 +149,14 @@ export const enUS: Translations = {
       description: 'Choose a provider first, then fill in API details and models.',
       toggle_provider: 'Toggle provider enabled state',
     },
+    providers: {
+      dialog_title: 'Add Custom Provider',
+      dialog_description:
+        'Create a provider entry first, then fill in the API details and test the connection on the right.',
+      name_label: 'Provider Name',
+      name_placeholder: 'For example My OpenAI Gateway',
+      duplicate_name: 'A provider with this name already exists.',
+    },
     detail: {
       title_suffix: 'Provider Settings',
       helper:
@@ -179,6 +187,7 @@ export const enUS: Translations = {
       import: 'Import',
       export: 'Export',
       add_model: 'Add Model',
+      add_provider: 'Add Custom Provider',
       edit_model: 'Edit Model',
       test_connection: 'Test Connection',
       testing_connection: 'Testing...',

@@ -147,6 +147,13 @@ const zhCN = {
       description: '先选择提供商，再填写 API 信息与模型列表。',
       toggle_provider: '切换提供商启用状态',
     },
+    providers: {
+      dialog_title: '添加自定义提供商',
+      dialog_description: '先添加一个提供商入口，再在右侧填写 API 信息并测试连接。',
+      name_label: '提供商名称',
+      name_placeholder: '例如 My OpenAI Gateway',
+      duplicate_name: '这个提供商名称已经存在。',
+    },
     detail: {
       title_suffix: '提供商设置',
       helper:
@@ -177,6 +184,7 @@ const zhCN = {
       import: '导入',
       export: '导出',
       add_model: '添加模型',
+      add_provider: '添加自定义提供商',
       edit_model: '编辑模型',
       test_connection: '测试连接',
       testing_connection: '测试中...',
