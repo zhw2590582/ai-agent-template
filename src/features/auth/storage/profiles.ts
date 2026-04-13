@@ -17,7 +17,10 @@ type ProfilesTable = {
     options: { onConflict: 'id' }
   ) => PromiseLike<unknown>;
   select: (columns: string) => {
-    eq: (column: 'id', value: string) => {
+    eq: (
+      column: 'id',
+      value: string
+    ) => {
       single: () => PromiseLike<{ data: ProfileRecord | null; error: unknown }>;
     };
   };

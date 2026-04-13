@@ -1,16 +1,14 @@
 'use client';
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle2Icon,
   CircleIcon,
   EyeIcon,
   EyeOffIcon,
-  ImportIcon,
   LinkIcon,
   PlusCircleIcon,
   Trash2Icon,
-  UploadIcon,
   XIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -19,7 +17,6 @@ import { toast } from 'sonner';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
 import { useModelProfile } from '@/features/models/hooks/use-model-profile';
 import type { ProviderModelItem, ProviderProbeResult } from '@/features/models/types';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
@@ -31,18 +28,13 @@ interface ModelsPageProps {
 
 export function ModelsPage({ embedded = false }: ModelsPageProps) {
   const t = useTranslations();
-  const importInputId = useId();
-  const importInputRef = useRef<HTMLInputElement | null>(null);
   const { user } = useAuthUser();
   const {
-    exportSettings,
-    importSettings,
     isLoading,
     isSaving,
     presetProviders,
     profile,
     saveProfile,
-    saveTarget,
     selectedProvider,
     updateProvider,
     updateSelectedProviderId,
@@ -56,36 +48,6 @@ export function ModelsPage({ embedded = false }: ModelsPageProps) {
       presetProviders.find((provider) => provider.id === selectedProvider.id) ?? presetProviders[0],
     [presetProviders, selectedProvider.id]
   );
-
-  const handleExport = () => {
-    const blob = new Blob([exportSettings()], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = 'agent-model-settings.json';
-    anchor.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const text = await file.text();
-      const parsed = JSON.parse(text) as { models?: unknown };
-      const payload =
-        typeof parsed === 'object' && parsed && 'models' in parsed ? parsed : { models: parsed };
-      importSettings(payload);
-      toast.success(t('models_page.toast.import_success'));
-    } catch {
-      toast.error(t('models_page.toast.import_failed'));
-    } finally {
-      if (importInputRef.current) {
-        importInputRef.current.value = '';
-      }
-    }
-  };
 
   const handleAddModel = () => {
     updateProvider(selectedProvider.id, (provider) => ({
@@ -229,44 +191,8 @@ export function ModelsPage({ embedded = false }: ModelsPageProps) {
       )}
     >
       <div className={cn('mx-auto', embedded ? 'max-w-none' : 'max-w-7xl')}>
-        <section className="border-border/70 bg-card/55 relative overflow-hidden rounded-[2rem] border shadow-[0_30px_120px_rgba(0,0,0,0.18)]">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(20,184,166,0.12),transparent_30%)]" />
-
+        <section className="border-border/70 bg-card rounded-[2rem] border">
           <div className="relative flex flex-col gap-8 p-6 lg:p-8">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <div className="text-muted-foreground text-xs tracking-[0.24em] uppercase">
-                  {t('models_page.eyebrow')}
-                </div>
-                <h1 className="mt-3 text-4xl font-semibold tracking-tight">
-                  {t('models_page.title')}
-                </h1>
-                <p className="text-muted-foreground mt-3 max-w-3xl text-sm leading-7">
-                  {t('models_page.description')}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="px-2.5 py-1">
-                  {saveTarget === 'database'
-                    ? t('models_page.storage.database')
-                    : t('models_page.storage.local')}
-                </Badge>
-                <Badge
-                  className={cn(
-                    'px-2.5 py-1',
-                    selectedProvider.enabled
-                      ? 'bg-emerald-500/15 text-emerald-300'
-                      : 'bg-muted text-muted-foreground'
-                  )}
-                  variant="secondary"
-                >
-                  {selectedProvider.enabled
-                    ? t('models_page.status.enabled')
-                    : t('models_page.status.disabled')}
-                </Badge>
-              </div>
-            </div>
-
             <div className="grid gap-8 lg:grid-cols-[340px_minmax(0,1fr)]">
               <div
                 className={cn(
@@ -275,35 +201,7 @@ export function ModelsPage({ embedded = false }: ModelsPageProps) {
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-medium">{t('models_page.sidebar.title')}</h2>
-                    <p className="text-muted-foreground mt-1 text-xs">
-                      {t('models_page.sidebar.description')}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      id={importInputId}
-                      ref={importInputRef}
-                      accept="application/json"
-                      className="hidden"
-                      type="file"
-                      onChange={handleImport}
-                    />
-                    <Button
-                      size="sm"
-                      type="button"
-                      variant="outline"
-                      onClick={() => importInputRef.current?.click()}
-                    >
-                      <ImportIcon data-icon="inline-start" />
-                      {t('models_page.actions.import')}
-                    </Button>
-                    <Button size="sm" type="button" variant="outline" onClick={handleExport}>
-                      <UploadIcon data-icon="inline-start" />
-                      {t('models_page.actions.export')}
-                    </Button>
-                  </div>
+                  <h2 className="text-lg font-medium">{t('models_page.sidebar.title')}</h2>
                 </div>
 
                 <div className="flex-1 space-y-3 overflow-y-auto pr-1">
@@ -324,12 +222,7 @@ export function ModelsPage({ embedded = false }: ModelsPageProps) {
                           type="button"
                           onClick={() => updateSelectedProviderId(provider.id)}
                         >
-                          <div
-                            className={cn(
-                              'flex size-12 shrink-0 items-center justify-center rounded-2xl border bg-gradient-to-br text-sm font-semibold ring-1',
-                              provider.accentClassName
-                            )}
-                          >
+                          <div className="border-border bg-muted text-foreground flex size-12 shrink-0 items-center justify-center rounded-2xl border text-sm font-semibold">
                             {provider.monogram}
                           </div>
                           <div className="min-w-0 flex-1">
@@ -374,7 +267,7 @@ export function ModelsPage({ embedded = false }: ModelsPageProps) {
 
               <div
                 className={cn(
-                  'border-border/70 bg-background/70 flex flex-col rounded-[1.75rem] border p-6',
+                  'border-border/70 bg-background flex flex-col rounded-[1.75rem] border p-6',
                   embedded ? 'min-h-[calc(100vh-16rem)]' : 'min-h-[640px]'
                 )}
               >
