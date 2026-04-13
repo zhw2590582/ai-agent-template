@@ -4,7 +4,7 @@
 
 ## 目标
 
-这份文档描述当前项目准备采用的 Memory 管理思路，以及 Memory V1 的实现流程。
+这份文档描述当前项目已经采用的 Memory 管理思路，以及 Memory V1 的实现流程。
 
 重点回答这几个问题：
 
@@ -149,6 +149,9 @@ memory: {
   enabled: boolean;
   autoWrite: boolean;
   crossConversation: boolean;
+  summaryMinMessages: number;
+  recentMessageWindow: number;
+  contextMaxItems: number;
 }
 ```
 
@@ -157,6 +160,9 @@ memory: {
 - 是否启用 memory
 - 是否允许自动写入长期记忆
 - 是否允许跨会话读回长期记忆
+- 何时开始生成/更新 summary
+- 注入上下文时保留多少最近消息
+- 最多向 prompt 注入多少条长期记忆
 
 ## 当前实现流程
 
@@ -243,6 +249,7 @@ guest 用户：
 
 当前归并策略：
 
+- 使用 AI SDK structured output，让模型直接返回 canonical memory kind 和内容
 - `manual` 永远保留，不会被自动覆盖
 - `preference / profile / workflow / fact` 会先做 canonical kind 归一化
 - 如果新旧记忆语义接近，会优先合并，而不是继续生成多条同义记录
@@ -278,19 +285,38 @@ guest 用户：
 - summaries 持久化
 - long-term memories 持久化
 - Memory 页面查看
+- Memory 页面编辑、删除、导出
+- cross-conversation memory injection
+
+## 长期记忆注入策略
+
+当前不是简单按更新时间截断，而是：
+
+1. 从最近几条用户消息构造 retrieval query
+2. 对当前用户的 `active` memories 做规则级相关性排序
+3. 对 `preference / profile / workflow` 做轻微权重提升
+4. 低于阈值的 memory 不注入
+5. 最终按 `contextMaxItems` 截断成 top-k
+
+这意味着当前 prompt 注入更接近：
+
+- relevant memory retrieval
+
+而不是：
+
+- blindly append recent memories
 
 ## 当前触发阈值
 
 当前 summary 触发逻辑是显式配置，不依赖 provider 返回的模型上下文长度。
 
-配置位置：
+默认配置位置：
 
 - `src/config/app.ts`
 
-当前参数：
+用户级配置位置：
 
-- `MEMORY_CONFIG.SUMMARY_MIN_MESSAGES`
-- `MEMORY_CONFIG.SUMMARY_RECENT_MESSAGE_WINDOW`
+- `profiles.settings.memory`
 
 为什么不依赖 provider `/models` 返回的 metadata：
 
@@ -322,6 +348,12 @@ Memory 页面不是 provider-first，而是 memory-first。
 - 用户关心的是“记住了什么”和“怎么记”
 - 而不是先关心底层 memory backend
 
+当前还支持：
+
+- 编辑单条 memory
+- 删除单条 memory
+- 导出 memory JSON
+
 ## 为什么不把所有 memory 都放进 `profiles.settings`
 
 因为长期记忆需要：
@@ -347,7 +379,6 @@ Memory 页面不是 provider-first，而是 memory-first。
 - vector retrieval
 - external memory provider integration
 - guest long-term memory
-- memory import/export
 - model-specific context window tuning
 
 ## 未来扩展顺序
@@ -366,8 +397,8 @@ Memory 页面不是 provider-first，而是 memory-first。
 
 ### Stage 3
 
-- memory import/export
 - manual memory editing
+- memory import
 - filtering / pinning / tagging
 
 ### Stage 4

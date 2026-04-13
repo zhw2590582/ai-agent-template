@@ -11,7 +11,8 @@
 - 流式聊天主链路
 - 用户自配置的模型/provider 接入
 - 登录、会话持久化、分页和搜索
-- 为 Memory、RAG、Planning、多代理预留结构边界
+- 已落地的 Memory V1
+- 为 RAG、Planning、多代理预留结构边界
 
 ## 当前真实状态
 
@@ -31,12 +32,14 @@
 - 会话列表、分页、搜索、标题生成
 - guest 本地会话线程、列表与标题生成
 - sidebar 的乐观插入 / 重命名 / 删除
+- Memory V1：会话摘要、长期记忆、跨会话注入
+- Memory 页面：控制项、编辑、删除、导出
+- API 频率限制与 429 错误提示
 - 环境变量校验、错误处理、日志、CI
 - Vitest 单元测试和集成测试
 
 仍未完成或仍是占位：
 
-- Memory
 - RAG
 - Planning
 - Multi-Agent
@@ -95,6 +98,7 @@ src/
 ├── features/
 │   ├── auth/             # 登录和 profile 同步
 │   ├── chat/             # 聊天工作台、消息链路、会话存储
+│   ├── memory/           # 长期记忆、摘要列表、Memory 页面
 │   └── models/           # provider 配置、模型同步、自定义 provider/model
 ├── i18n/                 # next-intl 请求配置
 ├── lib/                  # 通用工具、错误处理、日志、Supabase client

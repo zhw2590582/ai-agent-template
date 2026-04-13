@@ -4,22 +4,22 @@
 
 ## Now
 
-### 1. Memory
+### 1. Memory V1 收尾
 
-目标：让聊天从“可持久化演示骨架”变成“可持续使用”的助手。
+目标：把当前已落地的 Memory V1 打磨成可持续维护的能力。
 
 优先做：
 
-1. 会话摘要压缩
-2. 长期偏好和用户记忆
-3. 跨会话上下文注入
-4. 可控的记忆写入和读取策略
+1. memory import
+2. 进一步的记忆归并与规范化
+3. 更稳定的相关性检索
+4. Memory 行为测试补齐
 
 推荐落点：
 
+- `src/features/memory/`
 - `src/features/chat/server/`
 - `src/features/chat/storage/`
-- `src/features/memory/`
 
 ### 2. Provider / Models 整理
 
@@ -34,7 +34,7 @@
 
 推荐落点：
 
-- `src/features/chat/ai/models.ts`
+- `src/features/chat/ai/core/models.ts`
 - `src/config/app.ts`
 - 需要时再拆新的模型配置文件
 
@@ -74,7 +74,7 @@
 
 ### 7. Production Readiness
 
-目标：补齐 tracing、权限、限流、审计、E2E。
+目标：补齐 tracing、权限、审计、E2E，并在需要时把当前内存限流升级为集中式后端。
 
 ## 当前不建议优先做
 

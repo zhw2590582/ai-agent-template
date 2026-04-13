@@ -9,6 +9,7 @@
 - 让聊天主链路保持稳定
 - 让模型/provider 配置成为真实能力
 - 让登录与会话持久化清晰落地
+- 让 Memory 成为真实能力而不是占位
 - 让新能力能按边界逐步接入，而不是提前过度设计
 
 ## 当前结构
@@ -29,6 +30,7 @@ src/
 ├── features/
 │   ├── auth/                   # 登录 UI、用户快照、profile 同步
 │   ├── chat/                   # 聊天工作台与会话链路
+│   ├── memory/                 # 长期记忆、摘要与 Memory 页面
 │   └── models/                 # provider 配置、模型同步、自定义 provider/model
 ├── i18n/                       # next-intl 请求配置
 ├── lib/                        # 共享工具、错误处理、日志、Supabase client
@@ -56,7 +58,7 @@ src/
 - `server/`: 聊天请求 handler 和 schema
 - `storage/`: 已登录会话存储、guest 本地会话 store、标题生成
 - `utils/`: 轻量纯函数和配置辅助
-- `ai/`: 模型、prompt、工具、标题生成
+- `ai/`: 模型、prompt、记忆辅助生成、工具、workflow 入口
 
 当前已经形成的关键边界：
 
@@ -66,6 +68,26 @@ src/
 - `conversation-operations.ts`: guest / 已登录会话操作统一出口
 - `local-conversation-store.ts`: guest 本地线程存储和订阅
 - `local-conversation-title.ts`: guest 标题生成
+- `ai/core/*`: 运行时模型与默认 prompt
+- `ai/memory/*`: 标题和摘要生成
+
+### `src/features/memory`
+
+当前已经是第三个真实业务域。
+
+- `pages/`: Memory 页面
+- `components/`: controls、memory list、summary list、编辑弹窗
+- `hooks/`: 页面编排
+- `storage/`: repository、抽取、归并、检索、导出等 memory 管理逻辑
+- `types.ts`: canonical memory kinds 与结构定义
+
+当前已经形成的关键边界：
+
+- `use-memory-page.ts`: 页面级交互与 optimistic state
+- `memory-repository.ts`: Supabase 读写
+- `memory-extraction.ts`: AI SDK structured output 抽取
+- `memory-merge.ts`: dedupe / merge / canonical kind
+- `memory-retrieval.ts`: relevance top-k 检索和上下文拼接
 
 ### `src/features/models`
 
@@ -110,6 +132,7 @@ src/
 
 - `env.ts`: 环境变量校验
 - `app.ts`: 模型、导航、主题等应用配置
+- `api-rate-limit.ts`: API 频率限制配置
 - `i18n.ts`: locale 配置
 
 ### `src/lib`
@@ -119,6 +142,7 @@ src/
 - `errors.ts`: 错误分类与统一响应
 - `logger.ts`: 日志封装
 - `i18n.ts`: 翻译辅助
+- `rate-limit.ts`: route-level 频率限制
 - `supabase/*`: server/client/proxy 侧 Supabase 封装
 - `utils.ts`: 通用纯函数
 
@@ -149,6 +173,16 @@ Sidebar list/search/create
   -> src/features/chat/storage/conversations.ts or local-conversation-store.ts
   -> Supabase or localStorage
 
+Memory extraction / retrieval
+  -> src/features/chat/server/chat.ts
+  -> src/features/memory/storage/*
+  -> conversations.summary / public.memories
+
+API routes
+  -> src/lib/rate-limit.ts
+  -> src/config/api-rate-limit.ts
+  -> 429 + Retry-After
+
 OAuth sign-in
   -> Supabase auth
   -> /auth/callback
@@ -163,15 +197,16 @@ OAuth sign-in
 - 聊天主链路
 - 用户侧 provider / model 配置
 - prompt 抽离
+- Memory V1（summary + long-term memories + cross-conversation injection）
 - i18n 路由
 - locale 文件按领域分块聚合
 - 主题与 hydration 处理
 - Supabase 登录和会话持久化
+- route-level API rate limiting
 - 基础配置、错误处理、日志
 
 还没形成真实模块的部分：
 
-- memory
 - rag
 - agents / subagents
 - sandbox
