@@ -1,13 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { useTheme } from '@/components/ui-settings/theme-provider';
 import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
-import type { AppProfile, ProviderSettings } from '@/features/models/types';
+import type { AppProfile, ModelsSettings, ProviderSettings } from '@/features/models/types';
 import { createProfileDraft, normalizeProfileSettings } from '@/features/models/utils/profile';
 
 const LOCAL_MODEL_PROFILE_STORAGE_KEY = 'agent-model-profile';
@@ -84,6 +84,11 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
   });
   const [isLoading, setIsLoading] = useState(Boolean(user && !profileCache.has(user.id)));
   const [isSaving, setIsSaving] = useState(false);
+  const profileRef = useRef(profile);
+
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
 
   useEffect(() => {
     let cancelled = false;
@@ -147,44 +152,47 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     return profile.settings.models.providers[profile.settings.models.selectedProviderId];
   }, [profile]);
 
+  const buildNextProfile = useCallback(
+    (current: AppProfile, nextModels: ModelsSettings) => ({
+      ...current,
+      locale,
+      settings: normalizeProfileSettings({
+        models: nextModels,
+      }),
+      theme,
+      updated_at: new Date().toISOString(),
+    }),
+    [locale, theme]
+  );
+
   const updateSelectedProviderId = useCallback(
     (providerId: string) => {
-      setProfile((current) => ({
-        ...current,
-        locale,
-        settings: normalizeProfileSettings({
-          models: {
-            ...current.settings.models,
-            selectedChatModelId: current.settings.models.selectedChatModelId,
-            selectedProviderId: providerId,
-          },
-        }),
-        theme,
-        updated_at: new Date().toISOString(),
-      }));
+      const current = profileRef.current;
+      const nextProfile = buildNextProfile(current, {
+        ...current.settings.models,
+        selectedChatModelId: current.settings.models.selectedChatModelId,
+        selectedProviderId: providerId,
+      });
+      profileRef.current = nextProfile;
+      setProfile(nextProfile);
     },
-    [locale, theme]
+    [buildNextProfile]
   );
 
   const updateProvider = useCallback(
     (providerId: string, updater: (provider: ProviderSettings) => ProviderSettings) => {
-      setProfile((current) => ({
-        ...current,
-        locale,
-        settings: normalizeProfileSettings({
-          models: {
-            ...current.settings.models,
-            providers: {
-              ...current.settings.models.providers,
-              [providerId]: updater(current.settings.models.providers[providerId]),
-            },
-          },
-        }),
-        theme,
-        updated_at: new Date().toISOString(),
-      }));
+      const current = profileRef.current;
+      const nextProfile = buildNextProfile(current, {
+        ...current.settings.models,
+        providers: {
+          ...current.settings.models.providers,
+          [providerId]: updater(current.settings.models.providers[providerId]),
+        },
+      });
+      profileRef.current = nextProfile;
+      setProfile(nextProfile);
     },
-    [locale, theme]
+    [buildNextProfile]
   );
 
   const persistProfile = useCallback(
@@ -267,21 +275,48 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     [locale, persistProfile, profile, theme]
   );
 
-  const saveProfile = async () => {
-    const nextProfile = {
-      ...profile,
-      locale,
-      theme,
-      updated_at: new Date().toISOString(),
-    };
-    await persistProfile(nextProfile);
-  };
+  const saveProfile = useCallback(
+    async (
+      updater?: (models: ModelsSettings) => ModelsSettings,
+      options?: { silent?: boolean }
+    ) => {
+      const current = profileRef.current;
+      const nextProfile = buildNextProfile(
+        current,
+        updater ? updater(current.settings.models) : current.settings.models
+      );
+      profileRef.current = nextProfile;
+      setProfile(nextProfile);
+      return persistProfile(nextProfile, { silent: options?.silent });
+    },
+    [buildNextProfile, persistProfile]
+  );
+
+  const saveProviderEnabled = useCallback(
+    async (providerId: string, enabled: boolean) => {
+      return saveProfile(
+        (models) => ({
+          ...models,
+          providers: {
+            ...models.providers,
+            [providerId]: {
+              ...models.providers[providerId],
+              enabled,
+            },
+          },
+        }),
+        { silent: true }
+      );
+    },
+    [saveProfile]
+  );
 
   return {
     isLoading,
     isSaving,
     presetProviders: MODEL_PROVIDER_PRESETS,
     profile,
+    saveProviderEnabled,
     saveProfile,
     selectedProvider,
     updateSelectedChatModelId,

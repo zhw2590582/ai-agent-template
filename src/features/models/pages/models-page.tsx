@@ -18,6 +18,7 @@ export function ModelsPage() {
     isSaving,
     presetProviders,
     profile,
+    saveProviderEnabled,
     saveProfile,
     selectedProvider,
     updateProvider,
@@ -63,32 +64,30 @@ export function ModelsPage() {
     }));
   };
 
-  const applyProviderModels = useCallback(
-    (providerId: string, incomingModels: Array<Pick<ProviderModelItem, 'id' | 'name'>>) => {
+  const mergeProviderModels = useCallback(
+    (
+      provider: { models: ProviderModelItem[] },
+      incomingModels: Array<Pick<ProviderModelItem, 'id' | 'name'>>
+    ) => {
       if (incomingModels.length === 0) {
-        return;
+        return provider.models;
       }
 
-      updateProvider(providerId, (provider) => {
-        const existingModels = new Map(provider.models.map((model) => [model.id, model]));
-        const syncedModels: ProviderModelItem[] = incomingModels.map((model) => {
-          const existing = existingModels.get(model.id);
-          return {
-            enabled: existing?.enabled ?? true,
-            id: model.id,
-            name: model.name,
-          };
-        });
-
-        const customModels = provider.models.filter((model) => model.isCustom);
-
+      const existingModels = new Map(provider.models.map((model) => [model.id, model]));
+      const syncedModels: ProviderModelItem[] = incomingModels.map((model) => {
+        const existing = existingModels.get(model.id);
         return {
-          ...provider,
-          models: [...syncedModels, ...customModels],
+          enabled: existing?.enabled ?? true,
+          id: model.id,
+          name: model.name,
         };
       });
+
+      const customModels = provider.models.filter((model) => model.isCustom);
+
+      return [...syncedModels, ...customModels];
     },
-    [updateProvider]
+    []
   );
 
   const probeProvider = useCallback(
@@ -118,9 +117,12 @@ export function ModelsPage() {
       }
 
       const result = (await response.json()) as ProviderProbeResult;
-      applyProviderModels(selectedProvider.id, result.models);
 
       if (notifySuccess) {
+        updateProvider(selectedProvider.id, (provider) => ({
+          ...provider,
+          models: mergeProviderModels(provider, result.models),
+        }));
         toast.success(
           t('models_page.toast.test_connection_success', {
             count: String(result.models.length),
@@ -131,12 +133,13 @@ export function ModelsPage() {
       return result;
     },
     [
-      applyProviderModels,
+      mergeProviderModels,
       selectedProvider.apiFormat,
       selectedProvider.apiKey,
       selectedProvider.baseUrl,
       selectedProvider.id,
       t,
+      updateProvider,
     ]
   );
 
@@ -144,6 +147,31 @@ export function ModelsPage() {
     setIsTestingConnection(true);
     try {
       await probeProvider(true);
+    } finally {
+      setIsTestingConnection(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setIsTestingConnection(true);
+    try {
+      const probeResult =
+        selectedProvider.apiKey.trim() && selectedProvider.baseUrl.trim()
+          ? await probeProvider(false)
+          : null;
+
+      await saveProfile((models) => ({
+        ...models,
+        providers: {
+          ...models.providers,
+          [selectedProvider.id]: {
+            ...models.providers[selectedProvider.id],
+            models: probeResult
+              ? mergeProviderModels(models.providers[selectedProvider.id], probeResult.models)
+              : models.providers[selectedProvider.id].models,
+          },
+        },
+      }));
     } finally {
       setIsTestingConnection(false);
     }
@@ -158,10 +186,10 @@ export function ModelsPage() {
           settings={profile.settings.models.providers}
           onSelectProvider={updateSelectedProviderId}
           onToggleProvider={(providerId) =>
-            updateProvider(providerId, (current) => ({
-              ...current,
-              enabled: !current.enabled,
-            }))
+            void saveProviderEnabled(
+              providerId,
+              !profile.settings.models.providers[providerId].enabled
+            )
           }
         />
       </div>
@@ -209,7 +237,7 @@ export function ModelsPage() {
               apiKey: '',
             }))
           }
-          onSave={() => void saveProfile()}
+          onSave={() => void handleSave()}
           onTestConnection={() => void handleTestConnection()}
         />
       </div>
