@@ -51,9 +51,6 @@ export function createPersistProfile({
       if (options?.trackSavingState !== false) {
         setSaveStatus('saved');
       }
-      if (!options?.silent) {
-        toast.success(t('models_page.toast.save_local_success'));
-      }
       return true;
     }
 
@@ -106,9 +103,6 @@ export function createPersistProfile({
           })
         );
 
-        if (!options?.silent) {
-          toast.success(t('models_page.toast.save_success'));
-        }
         if (options?.trackSavingState !== false) {
           setSaveStatus('saved');
         }

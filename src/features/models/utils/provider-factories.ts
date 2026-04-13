@@ -110,10 +110,10 @@ export function createProfileDraft(options: {
     memory_summary: options.existing?.memory_summary ?? null,
     settings: (options.existing?.settings as AppProfile['settings'] | undefined) ?? {
       memory: {
-        autoWrite: false,
+        autoWrite: true,
         contextMaxItems: MEMORY_CONFIG.CONTEXT_MAX_ITEMS,
         crossConversation: true,
-        enabled: false,
+        enabled: true,
         recentMessageWindow: MEMORY_CONFIG.SUMMARY_RECENT_MESSAGE_WINDOW,
         summaryMinMessages: MEMORY_CONFIG.SUMMARY_MIN_MESSAGES,
       },

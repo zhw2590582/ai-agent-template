@@ -235,7 +235,7 @@ export function normalizeProfileSettings(input?: unknown) {
   };
   const existingMemory = readMemorySettings(input);
   const memory: MemorySettings = {
-    autoWrite: existingMemory?.autoWrite ?? false,
+    autoWrite: existingMemory?.autoWrite ?? true,
     contextMaxItems: clampMemoryNumber(
       existingMemory?.contextMaxItems,
       MEMORY_CONFIG.CONTEXT_MAX_ITEMS,
@@ -243,7 +243,7 @@ export function normalizeProfileSettings(input?: unknown) {
       20
     ),
     crossConversation: existingMemory?.crossConversation ?? true,
-    enabled: existingMemory?.enabled ?? false,
+    enabled: existingMemory?.enabled ?? true,
     recentMessageWindow: clampMemoryNumber(
       existingMemory?.recentMessageWindow,
       MEMORY_CONFIG.SUMMARY_RECENT_MESSAGE_WINDOW,
