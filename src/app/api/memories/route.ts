@@ -8,6 +8,7 @@ import {
   listMemoriesForUser,
   updateMemoryForUser,
 } from '@/features/memory/storage/memories';
+import { MEMORY_KINDS } from '@/features/memory/types';
 import { upsertProfileFromAuthUser } from '@/features/auth/storage/profiles';
 
 async function requireAuth() {
@@ -30,7 +31,7 @@ const deleteMemorySchema = z.object({
 const updateMemorySchema = z.object({
   content: z.string().trim().min(1).max(280),
   id: z.string().min(1),
-  kind: z.enum(['fact', 'manual', 'preference', 'profile', 'workflow']),
+  kind: z.enum(MEMORY_KINDS),
 });
 
 export async function GET() {

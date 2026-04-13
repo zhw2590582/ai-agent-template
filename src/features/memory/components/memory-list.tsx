@@ -4,12 +4,16 @@ import { Spinner } from '@/components/ui/spinner';
 import { PencilIcon, Trash2Icon } from 'lucide-react';
 import { EmptyMemoryState } from '@/features/memory/components/empty-memory-state';
 import { MemoryEditorDialog } from '@/features/memory/components/memory-editor-dialog';
-import type { MemoryListItem } from '@/features/memory/types';
+import type { MemoryKind, MemoryListItem } from '@/features/memory/types';
 import { useState } from 'react';
 
 interface MemoryListProps {
   locale: string;
-  onEditMemory?: (input: { content: string; id: string; kind: string }) => Promise<boolean> | void;
+  onEditMemory?: (input: {
+    content: string;
+    id: string;
+    kind: MemoryKind;
+  }) => Promise<boolean> | void;
   memories: MemoryListItem[];
   onDeleteMemory?: (memoryId: string) => Promise<boolean> | void;
   pendingEditId?: string | null;

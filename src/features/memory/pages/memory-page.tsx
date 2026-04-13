@@ -9,7 +9,7 @@ import type { ConversationSummary } from '@/features/chat/storage/types';
 import { MemoryControls } from '@/features/memory/components/memory-controls';
 import { MemoryList } from '@/features/memory/components/memory-list';
 import { MemorySummaryList } from '@/features/memory/components/memory-summary-list';
-import type { MemoryListItem } from '@/features/memory/types';
+import type { MemoryKind, MemoryListItem } from '@/features/memory/types';
 import type { MemorySettings } from '@/features/models/types';
 
 interface MemoryPageProps {
@@ -83,7 +83,7 @@ export function MemoryPage({
     }
   };
 
-  const handleEditMemory = async (input: { content: string; id: string; kind: string }) => {
+  const handleEditMemory = async (input: { content: string; id: string; kind: MemoryKind }) => {
     if (!isAuthenticated) {
       return false;
     }

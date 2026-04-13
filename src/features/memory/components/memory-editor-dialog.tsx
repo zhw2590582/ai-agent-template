@@ -21,14 +21,12 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
-import type { MemoryListItem } from '@/features/memory/types';
-
-const MEMORY_KIND_OPTIONS = ['preference', 'fact', 'profile', 'workflow', 'manual'] as const;
+import { MEMORY_KINDS, type MemoryKind, type MemoryListItem } from '@/features/memory/types';
 
 interface MemoryEditorDialogProps {
   memory: MemoryListItem | null;
   onOpenChange: (open: boolean) => void;
-  onSave: (input: { content: string; id: string; kind: string }) => Promise<boolean> | void;
+  onSave: (input: { content: string; id: string; kind: MemoryKind }) => Promise<boolean> | void;
   open: boolean;
   saving: boolean;
   t: (key: string) => string;
@@ -43,7 +41,7 @@ export function MemoryEditorDialog({
   t,
 }: MemoryEditorDialogProps) {
   const [content, setContent] = useState(() => memory?.content ?? '');
-  const [kind, setKind] = useState<string>(() => memory?.kind ?? 'preference');
+  const [kind, setKind] = useState<MemoryKind>(() => memory?.kind ?? 'preference');
 
   const isInvalid = useMemo(() => content.trim().length === 0, [content]);
 
@@ -76,12 +74,12 @@ export function MemoryEditorDialog({
             <label className="text-sm font-medium" htmlFor="memory-kind">
               {t('memory_page.saved_memories.kind_label')}
             </label>
-            <Select onValueChange={setKind} value={kind}>
+            <Select onValueChange={(value) => setKind(value as MemoryKind)} value={kind}>
               <SelectTrigger className="w-full" id="memory-kind">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {MEMORY_KIND_OPTIONS.map((option) => (
+                {MEMORY_KINDS.map((option) => (
                   <SelectItem key={option} value={option}>
                     {t(`memory_page.saved_memories.kind_${option}`)}
                   </SelectItem>

@@ -120,11 +120,16 @@ Memory V1 不绑定任何单一模型供应商，也不绑定外部 memory 平�
 当前字段语义：
 
 - `kind`
-  - `preference`
-  - `fact`
-  - `profile`
-  - `workflow`
   - `manual`
+    - user-authored memory that should never be auto-overwritten
+  - `preference`
+    - stable stylistic or behavioral preferences, such as response language or answer style
+  - `profile`
+    - durable identity/background information, such as role, name, or long-lived context
+  - `workflow`
+    - repeated working defaults, stacks, tools, or preferred execution patterns
+  - `fact`
+    - other stable facts that do not clearly fit the categories above
 - `source`
   - `auto`
   - `manual`
@@ -235,6 +240,13 @@ guest 用户：
 - 不记录临时请求
 - 不记录一次性任务内容
 - 最多提取少量条目
+
+当前归并策略：
+
+- `manual` 永远保留，不会被自动覆盖
+- `preference / profile / workflow / fact` 会先做 canonical kind 归一化
+- 如果新旧记忆语义接近，会优先合并，而不是继续生成多条同义记录
+- `fact` 是兜底类别，优先级低于 `preference / profile / workflow`
 
 ## guest 与已登录用户的分流
 

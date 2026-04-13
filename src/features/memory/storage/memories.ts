@@ -1,24 +1,29 @@
 import { z } from 'zod';
-import { generateText, type UIMessage } from 'ai';
+import { generateText, Output, type UIMessage } from 'ai';
 
 import { MEMORY_CONFIG } from '@/config/app';
 import type { Locale } from '@/config/i18n';
 import { getRuntimeChatModel } from '@/features/chat/ai/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';
 import type { ChatRuntimeModel, MemorySettings } from '@/features/models/types';
-import type { MemoryListItem, MemoryRecord } from '@/features/memory/types';
+import {
+  MEMORY_KINDS,
+  isMemoryKind,
+  type MemoryKind,
+  type MemoryListItem,
+  type MemoryRecord,
+} from '@/features/memory/types';
 
-const memoryExtractionSchema = z.array(
-  z.object({
-    content: z.string().min(1).max(280),
-    kind: z.enum(['fact', 'manual', 'preference', 'profile', 'workflow']).default('preference'),
-  })
-);
+const memoryExtractionItemSchema = z.object({
+  content: z.string().min(1).max(280),
+  kind: z.enum(MEMORY_KINDS),
+});
 
 const MEMORY_UPSERT_KINDS = new Set(['preference', 'profile', 'workflow']);
 const MEMORY_SIMILARITY_THRESHOLD = 0.6;
 const MEMORY_DUPLICATE_THRESHOLD = 0.9;
 const MEMORY_RELEVANCE_FLOOR = 0.08;
+const MEMORY_MERGEABLE_KINDS = new Set<MemoryKind>(['fact', 'preference', 'profile', 'workflow']);
 
 type MemoriesClient = {
   from: (table: 'memories') => unknown;
@@ -76,6 +81,25 @@ function getMemoriesTable(client: MemoriesClient) {
 
 function normalizeMemoryContent(value: string) {
   return value.replace(/\s+/g, ' ').trim();
+}
+
+function getMemoryKindPriority(kind: MemoryKind) {
+  switch (kind) {
+    case 'workflow':
+      return 4;
+    case 'preference':
+      return 3;
+    case 'profile':
+      return 2;
+    case 'fact':
+      return 1;
+    case 'manual':
+      return 0;
+  }
+}
+
+function chooseCanonicalMemoryKind(existing: MemoryKind, incoming: MemoryKind) {
+  return getMemoryKindPriority(incoming) >= getMemoryKindPriority(existing) ? incoming : existing;
 }
 
 function tokenizeMemoryContent(value: string) {
@@ -166,7 +190,7 @@ export async function listMemoriesForUser(userId: string, client: MemoriesClient
     content: memory.content,
     conversationId: memory.conversation_id,
     id: memory.id,
-    kind: memory.kind,
+    kind: isMemoryKind(memory.kind) ? memory.kind : 'fact',
     source: memory.source,
     updatedAt: memory.updated_at,
   }));
@@ -228,27 +252,32 @@ Context:
 - User locale: ${options.locale}
 
 Rules:
-- Return JSON only
-- Return an array
 - Keep only stable preferences, profile facts, or durable workflow defaults
 - Ignore temporary requests, one-off tasks, and transient debugging details
 - Prefer at most 3 memories
 - Each item must have: kind, content
-- Kinds: preference, fact, profile, workflow
+- Valid kinds only: ${MEMORY_KINDS.join(', ')}
+- Use:
+  - preference for stable stylistic or behavioral preferences
+  - profile for durable identity or background information
+  - workflow for repeated tools, stacks, defaults, or working patterns
+  - fact for other stable facts that do not fit the categories above
+  - manual should almost never be used for automatic extraction
 
 Conversation:
 ${transcript}`;
 
-  const { text } = await generateText({
+  const { output } = await generateText({
     model: getRuntimeChatModel(options.runtimeModel),
+    output: Output.array({
+      element: memoryExtractionItemSchema,
+    }),
     prompt,
     maxOutputTokens: 220,
   });
 
   try {
-    const parsed = JSON.parse(text) as unknown;
-    return memoryExtractionSchema
-      .parse(parsed)
+    return output
       .map((item) => ({
         content: normalizeMemoryContent(item.content),
         kind: item.kind,
@@ -307,7 +336,13 @@ export async function saveConversationMemories(
         return false;
       }
 
-      if (existingMemory.kind !== memory.kind) {
+      const canonicalExistingKind = existingMemory.kind as MemoryKind;
+      const canonicalIncomingKind = memory.kind;
+
+      if (
+        !MEMORY_MERGEABLE_KINDS.has(canonicalExistingKind) ||
+        !MEMORY_MERGEABLE_KINDS.has(canonicalIncomingKind)
+      ) {
         return false;
       }
 
@@ -317,7 +352,10 @@ export async function saveConversationMemories(
         return true;
       }
 
-      if (!MEMORY_UPSERT_KINDS.has(memory.kind)) {
+      if (
+        !MEMORY_UPSERT_KINDS.has(canonicalIncomingKind) &&
+        !MEMORY_UPSERT_KINDS.has(canonicalExistingKind)
+      ) {
         return false;
       }
 
@@ -337,7 +375,7 @@ export async function saveConversationMemories(
     updates.push({
       content: nextContent,
       id: mergeCandidate.id,
-      kind: memory.kind,
+      kind: chooseCanonicalMemoryKind(mergeCandidate.kind as MemoryKind, memory.kind),
     });
   }
 
