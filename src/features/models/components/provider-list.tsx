@@ -31,7 +31,7 @@ export function ProviderList({
   return (
     <div className="flex min-h-0 flex-col gap-4">
       <ScrollArea
-        className={cn('border', embedded ? 'max-h-[calc(100vh-14rem)]' : 'max-h-[42rem]')}
+        className={cn('overflow-hidden border', embedded ? 'h-[calc(100vh-14rem)]' : 'h-168')}
       >
         <div className="space-y-2 p-2">
           {providers.map((provider) => {

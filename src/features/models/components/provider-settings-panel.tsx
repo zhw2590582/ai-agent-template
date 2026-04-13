@@ -103,8 +103,8 @@ export function ProviderSettingsPanel({
           <Separator />
 
           <div className="flex flex-1 flex-col gap-6 px-6 py-5">
-            <div className="grid gap-6">
-              <div className="grid gap-2">
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium">{t('models_page.fields.api_key')}</label>
                   <a
@@ -145,7 +145,7 @@ export function ProviderSettingsPanel({
                 </InputGroup>
               </div>
 
-              <div className="grid gap-2">
+              <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">{t('models_page.fields.base_url')}</label>
                 <InputGroup>
                   <InputGroupInput
@@ -165,8 +165,8 @@ export function ProviderSettingsPanel({
                 </InputGroup>
               </div>
 
-              <div className="grid gap-5">
-                <div className="grid gap-2">
+              <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-2">
                   <label className="text-sm font-medium">
                     {t('models_page.fields.api_format')}
                   </label>
