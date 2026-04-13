@@ -50,6 +50,14 @@ type MemoriesTable = {
       ) => PromiseLike<{ data: MemoryRecord[] | null; error: unknown }>;
     };
   };
+  update: (values: Pick<MemoryRecord, 'status'>) => {
+    eq: (
+      column: 'id',
+      value: string
+    ) => {
+      eq: (column: 'user_id', value: string) => PromiseLike<{ error: unknown }>;
+    };
+  };
 };
 
 function getMemoriesTable(client: MemoriesClient) {
@@ -77,7 +85,9 @@ function formatMessages(messages: UIMessage[]) {
 export async function listMemoriesForUser(userId: string, client: MemoriesClient) {
   const memories = getMemoriesTable(client);
   const { data, error } = await memories
-    .select('id, user_id, conversation_id, kind, content, source, status, metadata, created_at, updated_at')
+    .select(
+      'id, user_id, conversation_id, kind, content, source, status, metadata, created_at, updated_at'
+    )
     .eq('user_id', userId)
     .eq('status', 'active')
     .order('updated_at', { ascending: false });
@@ -188,6 +198,24 @@ export async function saveConversationMemories(
       user_id: input.userId,
     }))
   );
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function deleteMemoryForUser(
+  input: {
+    id: string;
+    userId: string;
+  },
+  client: MemoriesClient
+) {
+  const memories = getMemoriesTable(client);
+  const { error } = await memories
+    .update({ status: 'deleted' })
+    .eq('id', input.id)
+    .eq('user_id', input.userId);
 
   if (error) {
     throw error;

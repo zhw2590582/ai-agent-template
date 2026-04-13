@@ -25,6 +25,11 @@ async function requireAuth() {
 
 const profilePatchSchema = z.object({
   settings: z.object({
+    memory: z.object({
+      autoWrite: z.boolean().optional(),
+      crossConversation: z.boolean().optional(),
+      enabled: z.boolean().optional(),
+    }),
     models: z.object({
       providers: z.record(z.string(), z.unknown()),
       selectedChatModelId: z.string().nullable().optional(),

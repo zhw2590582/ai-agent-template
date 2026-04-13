@@ -1,13 +1,18 @@
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
+import { Trash2Icon } from 'lucide-react';
 import { EmptyMemoryState } from '@/features/memory/components/empty-memory-state';
 import type { MemoryListItem } from '@/features/memory/types';
 
 interface MemoryListProps {
   memories: MemoryListItem[];
+  onDeleteMemory?: (memoryId: string) => Promise<boolean> | void;
+  pendingDeleteId?: string | null;
   t: (key: string) => string;
 }
 
-export function MemoryList({ memories, t }: MemoryListProps) {
+export function MemoryList({ memories, onDeleteMemory, pendingDeleteId, t }: MemoryListProps) {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
@@ -34,9 +39,25 @@ export function MemoryList({ memories, t }: MemoryListProps) {
                   <Badge variant="secondary">{memory.kind}</Badge>
                   <Badge variant="outline">{memory.source}</Badge>
                 </div>
-                <span className="text-muted-foreground text-xs">
-                  {new Date(memory.updatedAt).toLocaleDateString()}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-muted-foreground text-xs">
+                    {new Date(memory.updatedAt).toLocaleDateString()}
+                  </span>
+                  {onDeleteMemory ? (
+                    <Button
+                      onClick={() => void onDeleteMemory(memory.id)}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      {pendingDeleteId === memory.id ? (
+                        <Spinner data-icon="inline-start" />
+                      ) : (
+                        <Trash2Icon />
+                      )}
+                      {t('memory_page.saved_memories.delete')}
+                    </Button>
+                  ) : null}
+                </div>
               </div>
               <p className="text-sm leading-6">{memory.content}</p>
             </article>

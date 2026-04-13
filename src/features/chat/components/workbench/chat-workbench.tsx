@@ -104,6 +104,7 @@ export function ChatWorkbench({
             <MemoryPage
               isAuthenticated={workbench.isAuthenticated}
               memories={initialMemories}
+              onMemorySettingsChange={workbench.setMemorySettings}
               settings={workbench.memorySettings}
               summaries={workbench.sidebar.conversations}
             />

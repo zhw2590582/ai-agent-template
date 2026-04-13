@@ -46,7 +46,7 @@ export function useChatWorkbench({
   const { user } = useAuthUser();
   const models = useModelProfile(user);
   const persistedSelectedModelId = models.profile.settings.models.selectedChatModelId;
-  const { updateSelectedChatModelId } = models;
+  const { updateMemorySettings, updateSelectedChatModelId } = models;
 
   const starterMessages = useMemo(() => getInitialMessages(), []);
   const urlConversationId = useMemo(
@@ -254,6 +254,7 @@ export function useChatWorkbench({
     isSidebarOpen,
     isStartingThread,
     memorySettings: models.profile.settings.memory,
+    setMemorySettings: updateMemorySettings,
     isModelsLoading: models.isLoading,
     locale,
     messages,

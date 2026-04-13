@@ -190,6 +190,32 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     [buildNextProfile, persistProfile]
   );
 
+  const updateMemorySettings = useMemo(
+    () =>
+      async (
+        updater: (memory: AppProfile['settings']['memory']) => AppProfile['settings']['memory'],
+        options?: { silent?: boolean }
+      ) => {
+        const current = profileRef.current;
+        const nextProfile = {
+          ...current,
+          locale,
+          settings: normalizeProfileSettings({
+            ...current.settings,
+            memory: updater(current.settings.memory),
+          }),
+          theme,
+          updated_at: new Date().toISOString(),
+        };
+
+        profileRef.current = nextProfile;
+        setProfile(nextProfile);
+
+        return persistProfile(nextProfile, { silent: options?.silent });
+      },
+    [locale, persistProfile, theme]
+  );
+
   return {
     addCustomProvider: actions.addCustomProvider,
     isLoading,
@@ -200,6 +226,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     saveProfile: actions.saveProfile,
     saveProviderEnabled: actions.saveProviderEnabled,
     selectedProvider,
+    updateMemorySettings,
     updateProvider: actions.updateProvider,
     updateSelectedChatModelId: actions.updateSelectedChatModelId,
     updateSelectedProviderId: actions.updateSelectedProviderId,
