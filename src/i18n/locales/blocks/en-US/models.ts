@@ -53,6 +53,9 @@ export const enUSModelsMessages = {
       name_placeholder: 'Display name',
       id_placeholder: 'Model ID, for example gpt-4.1-mini',
       duplicate_id: 'This model ID already exists.',
+      delete_title: 'Delete Custom Model',
+      delete_description:
+        'Delete “{model}”? This custom model entry will be removed from the provider.',
       syncing: 'Syncing models...',
     },
     actions: {

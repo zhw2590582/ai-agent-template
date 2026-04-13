@@ -35,6 +35,8 @@ export const zhCNMemoryMessages = {
       edit_description: '更新这条记忆的内容和分类。',
       save: '保存',
       delete: '删除',
+      delete_title: '删除记忆',
+      delete_description: '确认删除这条记忆吗？删除后它将不再参与后续跨会话记忆召回。',
       content_label: '内容',
       kind_label: '类型',
       no_source: '没有来源会话',

@@ -50,6 +50,8 @@ export const zhCNModelsMessages = {
       name_placeholder: '模型显示名称',
       id_placeholder: '模型 ID，例如 gpt-4.1-mini',
       duplicate_id: '这个模型 ID 已经存在。',
+      delete_title: '删除自定义模型',
+      delete_description: '确认删除 “{model}” 吗？这条自定义模型配置会被移除。',
       syncing: '正在同步模型列表...',
     },
     actions: {

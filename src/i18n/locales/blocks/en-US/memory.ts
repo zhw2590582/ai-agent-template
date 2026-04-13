@@ -44,6 +44,9 @@ export const enUSMemoryMessages = {
       edit_description: 'Update the stored content and kind for this memory record.',
       save: 'Save',
       delete: 'Delete',
+      delete_title: 'Delete Memory',
+      delete_description:
+        'Delete this memory record? This action removes it from future cross-conversation recall.',
       content_label: 'Content',
       kind_label: 'Kind',
       no_source: 'No conversation source',
