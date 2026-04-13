@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { UIMessage } from 'ai';
 import { toast } from 'sonner';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -9,8 +9,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { normalizeLocale } from '@/config/i18n';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
 import { createConversationRecord } from '@/features/chat/data/conversation-operations';
+import { useChatBrowserTitle } from '@/features/chat/hooks/use-chat-browser-title';
 import { useChatController } from '@/features/chat/hooks/use-chat-controller';
+import { useChatModelSelection } from '@/features/chat/hooks/use-chat-model-selection';
 import { useConversationRecords } from '@/features/chat/hooks/use-conversation-records';
+import { useInvalidConversationGuard } from '@/features/chat/hooks/use-invalid-conversation-guard';
 import { useChatSession } from '@/features/chat/hooks/use-chat-session';
 import { useChatSync } from '@/features/chat/hooks/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/hooks/use-sidebar-conversations';
@@ -62,7 +65,6 @@ export function useChatWorkbench({
   const [sidebarSearchQuery, setSidebarSearchQuery] = useState('');
   const [pendingThreadId, setPendingThreadId] = useState<string | null>(null);
   const [bootstrappingThreadId, setBootstrappingThreadId] = useState<string | null>(null);
-  const invalidIdHandledRef = useRef(false);
 
   const effectivePendingThreadId = urlConversationId ? null : pendingThreadId;
   const activeThreadId = urlConversationId ?? effectivePendingThreadId;
@@ -168,23 +170,12 @@ export function useChatWorkbench({
     user,
   });
 
-  useEffect(() => {
-    if (models.isLoading || availableModels.length === 0) {
-      return;
-    }
-
-    const hasPersistedModel = availableModels.some(
-      (model) => model.id === persistedSelectedModelId
-    );
-
-    if (hasPersistedModel) {
-      return;
-    }
-
-    void updateSelectedChatModelId(availableModels[0]?.id ?? null, {
-      silent: true,
-    });
-  }, [availableModels, models.isLoading, persistedSelectedModelId, updateSelectedChatModelId]);
+  useChatModelSelection({
+    availableModels,
+    isLoading: models.isLoading,
+    persistedSelectedModelId,
+    updateSelectedChatModelId,
+  });
 
   const handleModelChange = useCallback(
     (value: string) => {
@@ -231,37 +222,19 @@ export function useChatWorkbench({
     [activeThreadId, sidebar.conversations]
   );
 
-  useEffect(() => {
-    const appName = t('common.app_name');
+  useChatBrowserTitle(t('common.app_name'), activeConversationTitle);
 
-    document.title = activeConversationTitle ? `${appName} - ${activeConversationTitle}` : appName;
-  }, [activeConversationTitle, t]);
-
-  useEffect(() => {
-    if (!urlConversationId) {
-      invalidIdHandledRef.current = false;
-      return;
-    }
-
-    if (!invalidConversationId) return;
-    if (effectivePendingThreadId || bootstrappingThreadId || isStartingThread || isBusy) return;
-    if (invalidIdHandledRef.current) return;
-
-    invalidIdHandledRef.current = true;
-    toast.error(t('chat.errors.invalid_conversation'));
-    window.setTimeout(() => {
-      handleClearChat();
-    }, 350);
-  }, [
+  useInvalidConversationGuard({
     bootstrappingThreadId,
+    effectivePendingThreadId,
     handleClearChat,
     invalidConversationId,
     isBusy,
     isStartingThread,
-    effectivePendingThreadId,
     t,
+    toastError: toast.error,
     urlConversationId,
-  ]);
+  });
 
   return {
     activeThreadId,
