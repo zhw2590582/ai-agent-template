@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { PencilIcon, PlusCircleIcon, Trash2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -36,6 +36,16 @@ export function ProviderModelList({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [draftModelName, setDraftModelName] = useState('');
   const [draftModelId, setDraftModelId] = useState('');
+  const normalizedDraftModelId = draftModelId.trim().toLowerCase();
+  const hasDuplicateModelId = useMemo(
+    () =>
+      normalizedDraftModelId.length > 0 &&
+      models.some(
+        (model, index) =>
+          index !== editingIndex && model.id.trim().toLowerCase() === normalizedDraftModelId
+      ),
+    [editingIndex, models, normalizedDraftModelId]
+  );
 
   const openCreateDialog = () => {
     setEditingIndex(null);
@@ -56,7 +66,7 @@ export function ProviderModelList({
     const modelId = draftModelId.trim();
     const modelName = draftModelName.trim() || modelId;
 
-    if (!modelId) {
+    if (!modelId || hasDuplicateModelId) {
       return;
     }
 
@@ -112,7 +122,13 @@ export function ProviderModelList({
               </DialogTitle>
               <DialogDescription>{t('models_page.models.description')}</DialogDescription>
             </DialogHeader>
-            <div className="flex flex-col gap-4">
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleSubmit();
+              }}
+            >
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">
                   {t('models_page.models.name_placeholder')}
@@ -132,15 +148,18 @@ export function ProviderModelList({
                   value={draftModelId}
                   onChange={(event) => setDraftModelId(event.target.value)}
                 />
+                {hasDuplicateModelId ? (
+                  <p className="text-sm text-red-500">{t('models_page.models.duplicate_id')}</p>
+                ) : null}
               </div>
-            </div>
-            <DialogFooter>
-              <Button disabled={!draftModelId.trim()} type="button" onClick={handleSubmit}>
-                {editingIndex == null
-                  ? t('models_page.actions.add_model')
-                  : t('models_page.actions.edit_model')}
-              </Button>
-            </DialogFooter>
+              <DialogFooter>
+                <Button disabled={!draftModelId.trim() || hasDuplicateModelId} type="submit">
+                  {editingIndex == null
+                    ? t('models_page.actions.add_model')
+                    : t('models_page.actions.edit_model')}
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>

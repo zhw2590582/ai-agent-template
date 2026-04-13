@@ -170,6 +170,7 @@ const zhCN = {
       description: '预置模型可以直接启用，也可以添加自己的自定义模型标识。',
       name_placeholder: '模型显示名称',
       id_placeholder: '模型 ID，例如 gpt-4.1-mini',
+      duplicate_id: '这个模型 ID 已经存在。',
       syncing: '正在同步模型列表...',
     },
     actions: {

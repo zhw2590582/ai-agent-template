@@ -172,6 +172,7 @@ export const enUS: Translations = {
       description: 'Preset models can be enabled directly, and you can add custom model IDs too.',
       name_placeholder: 'Display name',
       id_placeholder: 'Model ID, for example gpt-4.1-mini',
+      duplicate_id: 'This model ID already exists.',
       syncing: 'Syncing models...',
     },
     actions: {
