@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import type { MemoryKind, MemoryListItem } from '@/features/memory/types';
 import type { MemorySettings } from '@/features/models/types';
+import { getApiErrorToastMessage } from '@/lib/api-client';
 
 interface UseMemoryPageOptions {
   isAuthenticated: boolean;
@@ -66,7 +67,7 @@ export function useMemoryPage({
       });
 
       if (!response.ok) {
-        toast.error(t('memory_page.toast.delete_failed'));
+        toast.error(await getApiErrorToastMessage(response, t, 'memory_page.toast.delete_failed'));
         return false;
       }
 
@@ -93,7 +94,7 @@ export function useMemoryPage({
       });
 
       if (!response.ok) {
-        toast.error(t('memory_page.toast.update_failed'));
+        toast.error(await getApiErrorToastMessage(response, t, 'memory_page.toast.update_failed'));
         return false;
       }
 

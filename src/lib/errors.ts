@@ -62,6 +62,17 @@ export class AppError extends Error {
   toResponse(locale: Locale = DEFAULT_LOCALE): Response {
     const fallbackMessage = t(locale, `errors.${this.code.toLowerCase()}` as never);
     const message = this.message || fallbackMessage;
+    const headers = new Headers({ 'Content-Type': 'application/json' });
+
+    if (
+      this.code === ErrorCode.API_RATE_LIMIT &&
+      typeof this.details === 'object' &&
+      this.details != null &&
+      'retryAfterSeconds' in this.details &&
+      typeof this.details.retryAfterSeconds === 'number'
+    ) {
+      headers.set('Retry-After', String(this.details.retryAfterSeconds));
+    }
 
     return new Response(
       JSON.stringify({
@@ -73,7 +84,7 @@ export class AppError extends Error {
       }),
       {
         status: this.statusCode,
-        headers: { 'Content-Type': 'application/json' },
+        headers,
       }
     );
   }

@@ -1,7 +1,9 @@
 import type { UIMessage } from 'ai';
 
+import { API_RATE_LIMITS } from '@/config/api-rate-limit';
 import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/app';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
+import { enforceRateLimit } from '@/lib/rate-limit';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { validateRequest } from '@/lib/validation';
 import {
@@ -50,6 +52,11 @@ export async function GET(request: Request) {
       : CONVERSATION_SIDEBAR_PAGE_SIZE;
 
     const { supabase, user } = await requireAuth();
+    enforceRateLimit(request, {
+      config: API_RATE_LIMITS.CONVERSATIONS_READ,
+      identityKey: user.id,
+      namespace: 'api:conversations:read',
+    });
     await upsertProfileFromAuthUser(user, {}, supabase);
 
     const { hasMore, rows } = query
@@ -76,6 +83,11 @@ export async function POST(request: Request) {
   try {
     const { initialMessage } = await validateRequest(request, createConversationSchema);
     const { supabase, user } = await requireAuth();
+    enforceRateLimit(request, {
+      config: API_RATE_LIMITS.CONVERSATIONS_WRITE,
+      identityKey: user.id,
+      namespace: 'api:conversations:write',
+    });
     await upsertProfileFromAuthUser(user, {}, supabase);
 
     const conversation = await createConversation({ initialMessage, userId: user.id }, supabase);
@@ -102,6 +114,11 @@ export async function PATCH(request: Request) {
       patchConversationSchema
     );
     const { supabase, user } = await requireAuth();
+    enforceRateLimit(request, {
+      config: API_RATE_LIMITS.CONVERSATIONS_WRITE,
+      identityKey: user.id,
+      namespace: 'api:conversations:write',
+    });
     await upsertProfileFromAuthUser(user, {}, supabase);
 
     if (messages) {
@@ -134,6 +151,11 @@ export async function DELETE(request: Request) {
   try {
     const { conversationId } = await validateRequest(request, deleteConversationSchema);
     const { supabase, user } = await requireAuth();
+    enforceRateLimit(request, {
+      config: API_RATE_LIMITS.CONVERSATIONS_WRITE,
+      identityKey: user.id,
+      namespace: 'api:conversations:write',
+    });
     await upsertProfileFromAuthUser(user, {}, supabase);
 
     await deleteConversation(

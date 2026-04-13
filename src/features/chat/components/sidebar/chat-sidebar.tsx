@@ -246,7 +246,7 @@ export function ChatSidebar({
                     )}
                   >
                     <Link className="min-w-0 flex-1" href={`/${locale}?id=${item.id}`}>
-                      <div className="max-w-56 truncate">{item.title}</div>
+                      <div className="max-w-52 truncate">{item.title}</div>
                     </Link>
                     <DropdownMenu
                       open={openMenuId === item.id}

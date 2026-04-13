@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
+import { API_RATE_LIMITS } from '@/config/api-rate-limit';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
+import { enforceRateLimit } from '@/lib/rate-limit';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { validateRequest } from '@/lib/validation';
 import {
@@ -34,9 +36,14 @@ const updateMemorySchema = z.object({
   kind: z.enum(MEMORY_KINDS),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const { supabase, user } = await requireAuth();
+    enforceRateLimit(request, {
+      config: API_RATE_LIMITS.MEMORIES_READ,
+      identityKey: user.id,
+      namespace: 'api:memories:read',
+    });
     await upsertProfileFromAuthUser(user, {}, supabase);
     const memories = await listMemoriesForUser(user.id, supabase);
 
@@ -50,6 +57,11 @@ export async function DELETE(request: Request) {
   try {
     const { id } = await validateRequest(request, deleteMemorySchema);
     const { supabase, user } = await requireAuth();
+    enforceRateLimit(request, {
+      config: API_RATE_LIMITS.MEMORIES_WRITE,
+      identityKey: user.id,
+      namespace: 'api:memories:write',
+    });
     await upsertProfileFromAuthUser(user, {}, supabase);
     await deleteMemoryForUser({ id, userId: user.id }, supabase);
 
@@ -63,6 +75,11 @@ export async function PATCH(request: Request) {
   try {
     const input = await validateRequest(request, updateMemorySchema);
     const { supabase, user } = await requireAuth();
+    enforceRateLimit(request, {
+      config: API_RATE_LIMITS.MEMORIES_WRITE,
+      identityKey: user.id,
+      namespace: 'api:memories:write',
+    });
     await upsertProfileFromAuthUser(user, {}, supabase);
     await updateMemoryForUser({ ...input, userId: user.id }, supabase);
 

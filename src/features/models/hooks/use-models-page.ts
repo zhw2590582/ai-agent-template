@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
 import { useModelProfile } from '@/features/models/hooks/use-model-profile';
 import type { ProviderModelItem, ProviderProbeResult } from '@/features/models/types';
+import { getApiErrorToastMessage } from '@/lib/api-client';
 
 export function useModelsPage() {
   const t = useTranslations();
@@ -118,7 +119,9 @@ export function useModelsPage() {
 
       if (!response.ok) {
         if (notifySuccess) {
-          toast.error(t('models_page.toast.test_connection_failed'));
+          toast.error(
+            await getApiErrorToastMessage(response, t, 'models_page.toast.test_connection_failed')
+          );
         }
         return null;
       }

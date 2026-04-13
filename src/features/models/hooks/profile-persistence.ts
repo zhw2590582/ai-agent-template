@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import type { ThemeMode } from '@/config/app';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import type { AppProfile } from '@/features/models/types';
+import { getApiErrorToastMessage } from '@/lib/api-client';
 import {
   buildProfileFromSource,
   emitProfileUpdated,
@@ -86,7 +87,9 @@ export function createPersistProfile({
             setSaveStatus('idle');
           }
           if (!options?.silent) {
-            toast.error(t('models_page.toast.save_failed'));
+            toast.error(
+              await getApiErrorToastMessage(response, t, 'models_page.toast.save_failed')
+            );
           }
           return false;
         }

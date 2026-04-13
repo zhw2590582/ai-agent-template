@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
+import { API_RATE_LIMITS } from '@/config/api-rate-limit';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
+import { enforceRateLimit } from '@/lib/rate-limit';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { validateRequest } from '@/lib/validation';
 import {
@@ -41,9 +43,14 @@ const profilePatchSchema = z.object({
   }),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const { supabase, user } = await requireAuth();
+    enforceRateLimit(request, {
+      config: API_RATE_LIMITS.PROFILE_READ,
+      identityKey: user.id,
+      namespace: 'api:profile:read',
+    });
     await upsertProfileFromAuthUser(user, {}, supabase);
     const profile = await getProfileById(user.id, supabase);
 
@@ -64,6 +71,11 @@ export async function PATCH(request: Request) {
   try {
     const { settings } = await validateRequest(request, profilePatchSchema);
     const { supabase, user } = await requireAuth();
+    enforceRateLimit(request, {
+      config: API_RATE_LIMITS.PROFILE_WRITE,
+      identityKey: user.id,
+      namespace: 'api:profile:write',
+    });
     await upsertProfileFromAuthUser(user, {}, supabase);
 
     const normalizedSettings = normalizeProfileSettings(settings);
