@@ -7,17 +7,17 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
+import {
+  createConversationRecord,
+  deleteConversationRecord,
+  getConversationMessages,
+  persistConversationMessages,
+  renameConversationRecord,
+} from '@/features/chat/data/conversation-operations';
 import { useChatController } from '@/features/chat/hooks/use-chat-controller';
 import { useChatSession } from '@/features/chat/hooks/use-chat-session';
 import { useChatSync } from '@/features/chat/hooks/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/hooks/use-sidebar-conversations';
-import {
-  createLocalConversationThread,
-  deleteLocalConversationThread,
-  getLocalConversationThread,
-  renameLocalConversationThread,
-  upsertLocalConversationThread,
-} from '@/features/chat/storage/local-conversations';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { getInitialMessages } from '@/features/chat/utils/chat-config';
 import { useModelProfile } from '@/features/models/hooks/use-model-profile';
@@ -130,42 +130,24 @@ export function useChatWorkbench({
       return;
     }
 
-    const localConversation = getLocalConversationThread(urlConversationId);
-    if (!localConversation) {
+    const localMessages = getConversationMessages({
+      conversationId: urlConversationId,
+      user,
+    });
+    if (!localMessages) {
       return;
     }
 
-    setMessages(localConversation.messages);
+    setMessages(localMessages);
   }, [isBusy, setMessages, urlConversationId, user]);
 
   const createConversation = async (initialMessage: string) => {
-    if (!user) {
-      const localConversation = createLocalConversationThread(initialMessage);
-      void upsertLocalConversationThread({
-        id: localConversation.id,
-        locale: titleLocale,
-        messages: [],
-        runtimeModel,
-        title: localConversation.title,
-      });
-      return {
-        id: localConversation.id,
-        title: localConversation.title,
-      };
-    }
-
-    const response = await fetch('/api/conversations', {
-      body: JSON.stringify({ initialMessage }),
-      headers: { 'Content-Type': 'application/json' },
-      method: 'POST',
+    return createConversationRecord({
+      initialMessage,
+      locale: titleLocale,
+      runtimeModel,
+      user,
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to create conversation');
-    }
-
-    const data: { conversation: { id: string; title: string } } = await response.json();
-    return data.conversation;
   };
 
   const { handleClearChat, handleSubmit } = useChatController({
@@ -247,35 +229,21 @@ export function useChatWorkbench({
 
   const handleRenameConversation = useCallback(
     async (conversationId: string, title: string) => {
-      const nextTitle = title.trim();
-      if (!nextTitle) {
-        return false;
-      }
-
-      if (!user) {
-        return renameLocalConversationThread({
-          id: conversationId,
-          title: nextTitle,
-        });
-      }
-
-      const response = await fetch('/api/conversations', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          conversationId,
-          title: nextTitle,
-        }),
+      const success = await renameConversationRecord({
+        conversationId,
+        title,
+        user,
       });
 
-      if (!response.ok) {
+      if (!success) {
         toast.error(t('chat.errors.rename_conversation_failed'));
         return false;
       }
 
-      router.refresh();
+      if (user) {
+        router.refresh();
+      }
+
       return true;
     },
     [router, t, user]
@@ -283,30 +251,12 @@ export function useChatWorkbench({
 
   const handleDeleteConversation = useCallback(
     async (conversationId: string) => {
-      if (!user) {
-        const success = deleteLocalConversationThread(conversationId);
-        if (!success) {
-          return false;
-        }
-
-        if (activeThreadId === conversationId) {
-          handleClearChat();
-        }
-
-        return true;
-      }
-
-      const response = await fetch('/api/conversations', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          conversationId,
-        }),
+      const success = await deleteConversationRecord({
+        conversationId,
+        user,
       });
 
-      if (!response.ok) {
+      if (!success) {
         toast.error(t('chat.errors.delete_conversation_failed'));
         return false;
       }
@@ -315,7 +265,10 @@ export function useChatWorkbench({
         handleClearChat();
       }
 
-      router.refresh();
+      if (user) {
+        router.refresh();
+      }
+
       return true;
     },
     [activeThreadId, handleClearChat, router, t, user]
@@ -326,11 +279,12 @@ export function useChatWorkbench({
       return;
     }
 
-    void upsertLocalConversationThread({
-      id: activeThreadId,
+    persistConversationMessages({
+      conversationId: activeThreadId,
       locale: titleLocale,
       messages,
       runtimeModel,
+      user,
     });
   }, [activeThreadId, messages, runtimeModel, titleLocale, user]);
 

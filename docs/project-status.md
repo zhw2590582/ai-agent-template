@@ -37,6 +37,7 @@
 
 - 顶部工作台导航已存在，但除聊天和 Models 外大多仍是占位页面
 - 聊天模型选择已接入，但会话级模型偏好仍保存在 `profile.settings`
+- 默认系统提示词目前仍是内置配置，后续计划交给用户自定义
 - `/api/mcp` 已有占位 endpoint，但没有真实 MCP 管理能力
 - `server/types.ts` 已为 Memory / RAG / Planning / Multi-Agent 预留类型
 
