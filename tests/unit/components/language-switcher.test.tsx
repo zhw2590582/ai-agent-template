@@ -1,13 +1,12 @@
-/**
- * 语言切换组件测试
- */
+// @vitest-environment jsdom
 
-import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { LanguageSwitcher } from '@/components/language-switcher';
+import { describe, expect, it, vi } from 'vitest';
 
-// Mock next/navigation
+import { LanguageSwitcher } from '@/components/ui-settings/language-switcher';
+
 const mockPush = vi.fn();
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
@@ -15,25 +14,24 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/zh-CN/test',
 }));
 
-// Mock next-intl
 vi.mock('next-intl', () => ({
   useLocale: () => 'zh-CN',
 }));
 
 describe('LanguageSwitcher', () => {
-  it('should render language selector', () => {
+  it('renders the current locale trigger', () => {
     render(<LanguageSwitcher />);
 
-    expect(screen.getByRole('button', { name: /简体中文/i })).toBeInTheDocument();
+    expect(screen.getByRole('button')).toHaveTextContent('CN');
   });
 
-  it('should display current language', () => {
+  it('shows the locale options when opened', async () => {
     render(<LanguageSwitcher />);
 
-    // 当前应该显示中文
-    expect(screen.getByText('简体中文')).toBeInTheDocument();
-  });
+    const trigger = screen.getByRole('button');
+    trigger.click();
 
-  // Note: 复杂的交互测试在 jsdom 环境下可能不稳定
-  // 建议使用 Playwright/Cypress 进行 E2E 测试
+    expect(await screen.findByText('简体中文')).toBeInTheDocument();
+    expect(await screen.findByText('English')).toBeInTheDocument();
+  });
 });

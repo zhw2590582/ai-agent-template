@@ -8,22 +8,32 @@ vi.mock('ai', () => ({
   streamText: mockStreamText,
 }));
 
-vi.mock('@/server/ai/models', () => ({
+vi.mock('@/features/chat/ai/models', () => ({
   defaultModel: { chat: 'default-model' },
   getChatModel: vi.fn((model: string) => `resolved:${model}`),
 }));
 
-vi.mock('@/server/ai/prompts', () => ({
-  DEFAULT_SYSTEM_PROMPT: 'mock-system-prompt',
+vi.mock('@/features/chat/ai/prompts', () => ({
+  getSystemPrompt: vi.fn(() => 'mock-system-prompt'),
 }));
 
-vi.mock('@/server/ai/tools', () => ({
-  agentTools: [],
+vi.mock('@/features/chat/ai/tools', () => ({
+  agentTools: {},
 }));
 
 vi.mock('@/config/app', () => ({
   AI_CONFIG: { DEFAULT_MAX_TOKENS: 1024 },
   DEV_CONFIG: { ENABLE_DEBUG_LOGS: false },
+}));
+
+vi.mock('@/config/env', () => ({
+  env: { DEEPSEEK_API_KEY: 'test', NODE_ENV: 'test' },
+  getSupabaseEnv: () => ({
+    publishableKey: 'test-key',
+    url: 'https://example.supabase.co',
+  }),
+  isSupabaseConfigured: () => true,
+  isSentryConfigured: () => false,
 }));
 
 describe('chat model integration', () => {

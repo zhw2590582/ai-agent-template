@@ -35,6 +35,15 @@ interface ChatMessageListProps {
   onRetry: () => void;
 }
 
+function formatToolTitle(toolName: string) {
+  return toolName
+    .replace(/^get/, '')
+    .replace(/[-_]/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 interface ChatMessageRowProps {
   getToolTitle: (toolName: string) => string;
   isLastAssistant: boolean;
@@ -143,12 +152,7 @@ export function ChatMessageList({ error, isSidebarOpen, messages, onRetry }: Cha
     [t]
   );
 
-  const getToolTitle = (toolName: string) => {
-    if (toolName === 'weather') return t('tools.weather.name');
-    if (toolName === 'calculator') return t('tools.calculator.name');
-    if (toolName === 'datetime') return t('tools.datetime.name');
-    return toolName;
-  };
+  const getToolTitle = (toolName: string) => formatToolTitle(toolName);
 
   return (
     <Conversation className="min-h-0 flex-1">

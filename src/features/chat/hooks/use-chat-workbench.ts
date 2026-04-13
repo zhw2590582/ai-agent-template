@@ -36,7 +36,7 @@ export function useChatWorkbench({
   const searchParams = useSearchParams();
   const { user } = useAuthUser();
 
-  const starterMessages = useMemo(() => getInitialMessages(t), [t]);
+  const starterMessages = useMemo(() => getInitialMessages(), []);
   const urlConversationId = useMemo(
     () => searchParams.get('id') ?? searchParams.get('conversation') ?? null,
     [searchParams]

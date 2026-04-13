@@ -9,9 +9,9 @@ import { createClient as createSupabaseServerClient } from '@/lib/supabase/serve
 import { validateRequest } from '@/lib/validation';
 import { defaultModel, getChatModel } from '@/features/chat/ai/models';
 import { getSystemPrompt } from '@/features/chat/ai/prompts';
+import { agentTools } from '@/features/chat/ai/tools';
 import { chatPostSchema } from '@/features/chat/server/schemas';
 import { saveConversationMessages } from '@/features/chat/storage';
-import { agentTools } from '@/features/chat/ai/tools';
 
 export const maxDuration = 30;
 
@@ -43,6 +43,8 @@ function getLocaleFromRequest(request: Request): 'zh-CN' | 'en-US' {
   return 'zh-CN';
 }
 
+const hasAgentTools = Object.keys(agentTools).length > 0;
+
 export async function handleChatPost(request: Request) {
   const locale = getLocaleFromRequest(request);
 
@@ -53,7 +55,7 @@ export async function handleChatPost(request: Request) {
       model: model ? getChatModel(model) : defaultModel.chat,
       system: getSystemPrompt(locale),
       messages: await convertToModelMessages(messages as unknown as UIMessage[]),
-      tools: agentTools,
+      ...(hasAgentTools ? { tools: agentTools } : {}),
       maxOutputTokens: AI_CONFIG.DEFAULT_MAX_TOKENS,
     });
 

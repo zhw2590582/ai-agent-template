@@ -1,13 +1,14 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 // Mock all AI/model/env dependencies to avoid requiring real API keys or env
-vi.mock('@/server/ai/models', () => ({
+vi.mock('@/features/chat/ai/models', () => ({
   defaultModel: { chat: {} },
+  getChatModel: vi.fn(() => ({})),
 }));
-vi.mock('@/server/ai/prompts', () => ({
-  DEFAULT_SYSTEM_PROMPT: 'mock',
+vi.mock('@/features/chat/ai/prompts', () => ({
+  getSystemPrompt: vi.fn(() => 'mock'),
 }));
-vi.mock('@/server/ai/tools', () => ({
-  agentTools: [],
+vi.mock('@/features/chat/ai/tools', () => ({
+  agentTools: {},
 }));
 vi.mock('@/config/app', () => ({
   AI_CONFIG: { DEFAULT_MAX_TOKENS: 1024 },
@@ -15,14 +16,19 @@ vi.mock('@/config/app', () => ({
 }));
 vi.mock('@/config/env', () => ({
   env: { DEEPSEEK_API_KEY: 'test', NODE_ENV: 'test' },
+  getSupabaseEnv: () => ({
+    publishableKey: 'test-key',
+    url: 'https://example.supabase.co',
+  }),
+  isSupabaseConfigured: () => true,
+  isSentryConfigured: () => false,
 }));
 
 // Integration test for error i18n: ensures error responses are in English when requested
 
 describe('chat API error i18n integration', () => {
   beforeAll(() => {
-    // Reset modules to ensure mocks apply
-    vi.resetModules();
+    vi.clearAllMocks();
   });
   it('returns error message in English when lang=en-US', async () => {
     // Simulate a POST request with invalid body (missing messages)
@@ -42,7 +48,7 @@ describe('chat API error i18n integration', () => {
     expect(json).toHaveProperty('error');
     expect(json.error).toHaveProperty('message');
     // Should be English, not Chinese
-    expect(json.error.message).toMatch(/invalid|input|message|error/i);
+    expect(json.error.message).toMatch(/request|validation|invalid|input|message|error/i);
     // Should not contain Chinese characters
     expect(/[\u4e00-\u9fa5]/.test(json.error.message)).toBe(false);
   });
