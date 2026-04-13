@@ -161,71 +161,72 @@ export function ModelsPage({ embedded = false }: ModelsPageProps) {
         embedded ? 'h-full overflow-y-auto px-6 py-6' : 'min-h-screen px-6 py-8'
       )}
     >
-      <div className={cn('mx-auto', embedded ? 'max-w-none' : 'max-w-7xl')}>
-        <section className="">
-          <div className="grid gap-8 lg:grid-cols-[340px_minmax(0,1fr)]">
-            <ProviderList
-              embedded={embedded}
-              providers={presetProviders}
-              selectedProviderId={selectedProvider.id}
-              settings={profile.settings.models.providers}
-              onSelectProvider={updateSelectedProviderId}
-              onToggleProvider={(providerId) =>
-                updateProvider(providerId, (current) => ({
-                  ...current,
-                  enabled: !current.enabled,
-                }))
-              }
-            />
+      <div
+        className={cn(
+          'mx-auto grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]',
+          embedded ? 'max-w-none' : 'max-w-7xl'
+        )}
+      >
+        <ProviderList
+          embedded={embedded}
+          providers={presetProviders}
+          selectedProviderId={selectedProvider.id}
+          settings={profile.settings.models.providers}
+          onSelectProvider={updateSelectedProviderId}
+          onToggleProvider={(providerId) =>
+            updateProvider(providerId, (current) => ({
+              ...current,
+              enabled: !current.enabled,
+            }))
+          }
+        />
 
-            <ProviderSettingsPanel
-              activePreset={activePreset}
-              embedded={embedded}
-              isApiKeyVisible={isApiKeyVisible}
-              isLoading={isLoading}
-              isRefreshingModels={false}
-              isSaving={isSaving}
-              isTestingConnection={isTestingConnection}
-              provider={selectedProvider}
-              onAddModel={handleAddModel}
-              onApiKeyVisibilityChange={setIsApiKeyVisible}
-              onBaseUrlChange={(value) =>
-                updateProvider(selectedProvider.id, (provider) => ({
-                  ...provider,
-                  baseUrl: value,
-                }))
-              }
-              onBaseUrlReset={() =>
-                updateProvider(selectedProvider.id, (provider) => ({
-                  ...provider,
-                  baseUrl: activePreset?.defaultBaseUrl ?? provider.baseUrl,
-                }))
-              }
-              onFormatChange={(value) =>
-                updateProvider(selectedProvider.id, (provider) => ({
-                  ...provider,
-                  apiFormat: value,
-                }))
-              }
-              onModelRemove={removeModel}
-              onModelUpdate={updateModel}
-              onProviderApiKeyChange={(value) =>
-                updateProvider(selectedProvider.id, (provider) => ({
-                  ...provider,
-                  apiKey: value,
-                }))
-              }
-              onProviderApiKeyReset={() =>
-                updateProvider(selectedProvider.id, (provider) => ({
-                  ...provider,
-                  apiKey: '',
-                }))
-              }
-              onSave={() => void saveProfile()}
-              onTestConnection={() => void handleTestConnection()}
-            />
-          </div>
-        </section>
+        <ProviderSettingsPanel
+          activePreset={activePreset}
+          embedded={embedded}
+          isApiKeyVisible={isApiKeyVisible}
+          isLoading={isLoading}
+          isRefreshingModels={false}
+          isSaving={isSaving}
+          isTestingConnection={isTestingConnection}
+          provider={selectedProvider}
+          onAddModel={handleAddModel}
+          onApiKeyVisibilityChange={setIsApiKeyVisible}
+          onBaseUrlChange={(value) =>
+            updateProvider(selectedProvider.id, (provider) => ({
+              ...provider,
+              baseUrl: value,
+            }))
+          }
+          onBaseUrlReset={() =>
+            updateProvider(selectedProvider.id, (provider) => ({
+              ...provider,
+              baseUrl: activePreset?.defaultBaseUrl ?? provider.baseUrl,
+            }))
+          }
+          onFormatChange={(value) =>
+            updateProvider(selectedProvider.id, (provider) => ({
+              ...provider,
+              apiFormat: value,
+            }))
+          }
+          onModelRemove={removeModel}
+          onModelUpdate={updateModel}
+          onProviderApiKeyChange={(value) =>
+            updateProvider(selectedProvider.id, (provider) => ({
+              ...provider,
+              apiKey: value,
+            }))
+          }
+          onProviderApiKeyReset={() =>
+            updateProvider(selectedProvider.id, (provider) => ({
+              ...provider,
+              apiKey: '',
+            }))
+          }
+          onSave={() => void saveProfile()}
+          onTestConnection={() => void handleTestConnection()}
+        />
       </div>
     </div>
   );

@@ -1,10 +1,10 @@
 'use client';
 
-import { CheckCircle2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Switch } from '@/components/ui/switch';
 import { ProviderIcon } from '@/features/models/components/provider-icon';
 import type { ProviderPreset, ProviderSettings } from '@/features/models/types';
 import { cn } from '@/lib/utils';
@@ -29,18 +29,11 @@ export function ProviderList({
   const t = useTranslations();
 
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-4',
-        embedded ? 'min-h-[calc(100vh-16rem)]' : 'min-h-[640px]'
-      )}
-    >
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium">{t('models_page.sidebar.title')}</h2>
-      </div>
-
-      <ScrollArea className="flex-1 border">
-        <div className="space-y-2 p-1">
+    <div className="flex min-h-0 flex-col gap-4">
+      <ScrollArea
+        className={cn('border', embedded ? 'max-h-[calc(100vh-14rem)]' : 'max-h-[42rem]')}
+      >
+        <div className="space-y-2 p-2">
           {providers.map((provider) => {
             const providerSettings = settings[provider.id];
             const isSelected = provider.id === selectedProviderId;
@@ -49,12 +42,12 @@ export function ProviderList({
               <div
                 key={provider.id}
                 className={cn(
-                  'border-border flex items-center gap-3 border p-3',
-                  isSelected && 'border-primary bg-accent/40'
+                  'flex items-center gap-3 border px-4 py-3 transition-colors',
+                  isSelected && 'border-primary/35 bg-accent/25'
                 )}
               >
                 <Button
-                  className="h-auto flex-1 justify-start px-0 py-0 hover:bg-transparent"
+                  className="h-auto min-w-0 flex-1 justify-start px-0 py-0 hover:bg-transparent"
                   type="button"
                   variant="ghost"
                   onClick={() => onSelectProvider(provider.id)}
@@ -63,28 +56,16 @@ export function ProviderList({
                     fallbackClassName="flex size-10 shrink-0 items-center justify-center border text-sm font-semibold"
                     providerId={provider.id}
                   />
-                  <div className="min-w-0 text-left">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium">{provider.name}</span>
-                      {providerSettings.enabled ? (
-                        <CheckCircle2Icon className="size-4 text-emerald-500" />
-                      ) : null}
-                    </div>
-                    <div className="text-muted-foreground mt-1 line-clamp-2 text-xs">
-                      {provider.description}
-                    </div>
-                  </div>
+                  <span className="min-w-0 flex-1 truncate text-left text-sm font-medium">
+                    {provider.name}
+                  </span>
                 </Button>
-                <Button
-                  size="sm"
-                  type="button"
-                  variant={providerSettings.enabled ? 'default' : 'outline'}
-                  onClick={() => onToggleProvider(provider.id)}
-                >
-                  {providerSettings.enabled
-                    ? t('models_page.status.enabled')
-                    : t('models_page.status.disabled')}
-                </Button>
+                <Switch
+                  aria-label={`${provider.name} ${providerSettings.enabled ? t('models_page.status.enabled') : t('models_page.status.disabled')}`}
+                  checked={providerSettings.enabled}
+                  className="shrink-0"
+                  onCheckedChange={() => onToggleProvider(provider.id)}
+                />
               </div>
             );
           })}
