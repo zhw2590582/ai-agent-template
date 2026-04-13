@@ -162,8 +162,8 @@ export function ModelsPage({ embedded = false }: ModelsPageProps) {
       )}
     >
       <div className={cn('mx-auto', embedded ? 'max-w-none' : 'max-w-7xl')}>
-        <section className="border-border/70 bg-background border">
-          <div className="grid gap-8 p-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:p-8">
+        <section className="">
+          <div className="grid gap-8 lg:grid-cols-[340px_minmax(0,1fr)]">
             <ProviderList
               embedded={embedded}
               providers={presetProviders}
