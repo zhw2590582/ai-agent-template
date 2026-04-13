@@ -49,6 +49,7 @@ export const enUS: Translations = {
       placeholder: 'Send a message to AI Agent',
       workspace_hint: 'Wide workspace with streaming responses and tool calling',
       model_label: 'Model',
+      model_missing: 'Configure a model first',
     },
     header: {
       show_sidebar: 'Show sidebar',
@@ -86,12 +87,13 @@ export const enUS: Translations = {
       network: 'Network error, please retry',
       rate_limit: 'Too many requests',
       server: 'Server error',
-      request_failed: 'Request failed. Please check DEEPSEEK_API_KEY or try again later.',
+      request_failed: 'Request failed. Check the current model configuration or try again later.',
       unknown: 'Unknown error',
       invalid_conversation: 'Conversation not found or has been deleted',
       create_conversation_failed: 'Failed to create conversation',
       send_message_failed: 'Failed to send message',
       load_more_failed: 'Failed to load more conversations',
+      model_not_configured: 'No model is available yet. Configure one on the Models page first.',
     },
     toast: {
       copied: 'Copied to clipboard',
@@ -122,6 +124,74 @@ export const enUS: Translations = {
     title: 'Settings',
     language: 'Language',
     theme: 'Theme',
+  },
+
+  models_page: {
+    eyebrow: 'Models',
+    title: 'Model Providers',
+    description:
+      'Use this page to manage third-party model connections. Guest settings stay on the current device, while signed-in users write the same settings shape into profile.settings so chat, sandbox, and future agent surfaces can reuse it.',
+    storage: {
+      local: 'Local Draft',
+      database: 'Database Profile',
+    },
+    status: {
+      enabled: 'Enabled',
+      disabled: 'Disabled',
+    },
+    sidebar: {
+      title: 'Providers',
+      description: 'Choose a provider first, then fill in API details and models.',
+      toggle_provider: 'Toggle provider enabled state',
+    },
+    detail: {
+      title_suffix: 'Provider Settings',
+      helper:
+        'After entering the API key, base URL, and protocol format, you can test the connection and sync the latest models from the provider.',
+    },
+    fields: {
+      api_key: 'API Key',
+      get_api_key: 'Get API Key',
+      api_key_placeholder: 'Enter your API key',
+      base_url: 'API Base URL',
+      api_format: 'API Format',
+      api_format_hint:
+        'Choose the protocol format supported by the provider. This page currently focuses on OpenAI-compatible and Anthropic-compatible APIs.',
+    },
+    formats: {
+      anthropic: 'Anthropic Compatible',
+      openai: 'OpenAI Compatible',
+    },
+    models: {
+      title: 'Available Models',
+      description: 'Preset models can be enabled directly, and you can add custom model IDs too.',
+      name_placeholder: 'Display name',
+      id_placeholder: 'Model ID, for example gpt-4.1-mini',
+      syncing: 'Syncing models...',
+    },
+    actions: {
+      import: 'Import',
+      export: 'Export',
+      add_model: 'Add Model',
+      test_connection: 'Test Connection',
+      testing_connection: 'Testing...',
+      reset: 'Cancel',
+      save: 'Save',
+      saving: 'Saving...',
+      loading: 'Loading...',
+    },
+    toast: {
+      import_success: 'Settings imported successfully.',
+      import_failed: 'Failed to import settings. Check the JSON format.',
+      load_failed: 'Failed to load model settings.',
+      provider_config_required: 'Enter the API key and base URL first.',
+      save_local_success: 'Model settings saved locally.',
+      save_success: 'Model settings saved.',
+      save_failed: 'Failed to save model settings.',
+      test_connection_success: 'Connection succeeded and synced {count} models.',
+      test_connection_failed:
+        'Connection failed. Check the API key, base URL, and protocol format.',
+    },
   },
 
   theme: {

@@ -1,4 +1,5 @@
 import type { User } from '@supabase/supabase-js';
+import type { ProfileRecord } from '@/features/auth/storage/types';
 
 type ProfilesClient = {
   from: (table: 'profiles') => unknown;
@@ -15,6 +16,14 @@ type ProfilesTable = {
     },
     options: { onConflict: 'id' }
   ) => PromiseLike<unknown>;
+  select: (columns: string) => {
+    eq: (column: 'id', value: string) => {
+      single: () => PromiseLike<{ data: ProfileRecord | null; error: unknown }>;
+    };
+  };
+  update: (values: { settings: Record<string, unknown> }) => {
+    eq: (column: 'id', value: string) => PromiseLike<{ error: unknown }>;
+  };
 };
 
 export async function upsertProfileFromAuthUser(
@@ -38,4 +47,33 @@ export async function upsertProfileFromAuthUser(
     },
     { onConflict: 'id' }
   );
+}
+
+export async function getProfileById(id: string, client: ProfilesClient) {
+  const profiles = client.from('profiles') as ProfilesTable;
+  const { data, error } = await profiles
+    .select(
+      'id, email, display_name, avatar_url, locale, theme, settings, memory_summary, created_at, updated_at'
+    )
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function updateProfileSettings(
+  id: string,
+  settings: Record<string, unknown>,
+  client: ProfilesClient
+) {
+  const profiles = client.from('profiles') as ProfilesTable;
+  const { error } = await profiles.update({ settings }).eq('id', id);
+
+  if (error) {
+    throw error;
+  }
 }

@@ -9,8 +9,9 @@ vi.mock('ai', () => ({
 }));
 
 vi.mock('@/features/chat/ai/models', () => ({
-  defaultModel: { chat: 'default-model' },
-  getChatModel: vi.fn((model: string) => `resolved:${model}`),
+  getRuntimeChatModel: vi.fn(
+    (runtimeModel: { modelId: string }) => `runtime:${runtimeModel.modelId}`
+  ),
 }));
 
 vi.mock('@/features/chat/ai/prompts', () => ({
@@ -27,7 +28,7 @@ vi.mock('@/config/app', () => ({
 }));
 
 vi.mock('@/config/env', () => ({
-  env: { DEEPSEEK_API_KEY: 'test', NODE_ENV: 'test' },
+  env: { NODE_ENV: 'test' },
   getSupabaseEnv: () => ({
     publishableKey: 'test-key',
     url: 'https://example.supabase.co',
@@ -45,28 +46,7 @@ describe('chat model integration', () => {
     });
   });
 
-  it('uses the selected model from the request body', async () => {
-    const request = new Request('http://localhost/api/chat?lang=en-US', {
-      method: 'POST',
-      body: JSON.stringify({
-        messages: [{ id: '1', role: 'user', parts: [{ type: 'text', text: 'hello' }] }],
-        model: 'deepseek-coder',
-      }),
-      headers: {
-        'content-type': 'application/json',
-      },
-    });
-
-    const { POST } = await import('@/app/api/chat/route');
-    await POST(request);
-
-    expect(mockStreamText).toHaveBeenCalledTimes(1);
-    expect(mockStreamText.mock.calls[0]?.[0]).toMatchObject({
-      model: 'resolved:deepseek-coder',
-    });
-  });
-
-  it('falls back to the default model when no model is provided', async () => {
+  it('returns a validation error when runtime model config is missing', async () => {
     const request = new Request('http://localhost/api/chat', {
       method: 'POST',
       body: JSON.stringify({
@@ -78,11 +58,36 @@ describe('chat model integration', () => {
     });
 
     const { POST } = await import('@/app/api/chat/route');
+    const response = await POST(request);
+
+    expect(response.status).toBe(400);
+    expect(mockStreamText).not.toHaveBeenCalled();
+  });
+
+  it('uses the runtime model when provider config is provided', async () => {
+    const request = new Request('http://localhost/api/chat?lang=en-US', {
+      method: 'POST',
+      body: JSON.stringify({
+        messages: [{ id: '1', role: 'user', parts: [{ type: 'text', text: 'hello' }] }],
+        runtimeModel: {
+          apiFormat: 'openai',
+          apiKey: 'test-key',
+          baseUrl: 'https://example.com/v1',
+          modelId: 'gpt-4.1-mini',
+          providerId: 'openai',
+        },
+      }),
+      headers: {
+        'content-type': 'application/json',
+      },
+    });
+
+    const { POST } = await import('@/app/api/chat/route');
     await POST(request);
 
     expect(mockStreamText).toHaveBeenCalledTimes(1);
     expect(mockStreamText.mock.calls[0]?.[0]).toMatchObject({
-      model: 'default-model',
+      model: 'runtime:gpt-4.1-mini',
     });
   });
 });

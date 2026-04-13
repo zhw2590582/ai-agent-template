@@ -20,22 +20,24 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MODEL_OPTIONS, type ModelId } from '@/config/app';
+import type { ChatModelOption } from '@/features/models/types';
 
 interface ChatComposerProps {
+  availableModels: ChatModelOption[];
   input: string;
   isBusy: boolean;
   isCreatingThread?: boolean;
   isSidebarOpen: boolean;
-  model: ModelId;
+  model: string;
   onInputChange: (value: string) => void;
-  onModelChange: (value: ModelId) => void;
+  onModelChange: (value: string) => void;
   onStop: () => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   status: ChatStatus;
 }
 
 export function ChatComposer({
+  availableModels,
   input,
   isBusy,
   isCreatingThread = false,
@@ -69,25 +71,25 @@ export function ChatComposer({
               <div className="flex flex-wrap items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button disabled={isBusy} size="sm" type="button" variant="outline">
+                    <Button
+                      disabled={isBusy || availableModels.length === 0}
+                      size="sm"
+                      type="button"
+                      variant="outline"
+                    >
                       {t('chat.composer.model_label')}
                       <span className="text-muted-foreground">
-                        {t(
-                          MODEL_OPTIONS.find((option) => option.id === model)?.translationKey ??
-                            MODEL_OPTIONS[0].translationKey
-                        )}
+                        {availableModels.find((option) => option.id === model)?.title ??
+                          t('chat.composer.model_missing')}
                       </span>
                       <ChevronDownIcon data-icon="inline-end" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="min-w-52">
-                    <DropdownMenuRadioGroup
-                      onValueChange={(value) => onModelChange(value as ModelId)}
-                      value={model}
-                    >
-                      {MODEL_OPTIONS.map((option) => (
+                    <DropdownMenuRadioGroup onValueChange={onModelChange} value={model}>
+                      {availableModels.map((option) => (
                         <DropdownMenuRadioItem key={option.id} value={option.id}>
-                          {t(option.translationKey)}
+                          {option.title}
                         </DropdownMenuRadioItem>
                       ))}
                     </DropdownMenuRadioGroup>
@@ -96,7 +98,11 @@ export function ChatComposer({
               </div>
             </PromptInputTools>
             <PromptInputSubmit
-              disabled={isCreatingThread || (!isBusy && input.trim().length === 0)}
+              disabled={
+                isCreatingThread ||
+                availableModels.length === 0 ||
+                (!isBusy && input.trim().length === 0)
+              }
               onStop={isCreatingThread ? undefined : onStop}
               status={status}
             />

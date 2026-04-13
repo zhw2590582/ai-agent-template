@@ -29,7 +29,15 @@ const messageSchema = z
 export const chatPostSchema = z.object({
   conversationId: z.string().min(1).optional(),
   messages: z.array(messageSchema).min(1),
-  model: z.string().optional(),
+  runtimeModel: z
+    .object({
+      apiFormat: z.enum(['anthropic', 'openai']),
+      apiKey: z.string().min(1),
+      baseUrl: z.string().min(1),
+      modelId: z.string().min(1),
+      providerId: z.string().min(1),
+    })
+    .optional(),
 });
 
 export type ChatPostInput = z.infer<typeof chatPostSchema>;

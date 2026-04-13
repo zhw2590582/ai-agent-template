@@ -107,7 +107,7 @@ Sidebar list/search/create
 
 ## 已知现实约束
 
-- `DEEPSEEK_API_KEY` 是当前聊天能力的最低运行依赖
+- 聊天能力依赖用户在 `/models` 页面先完成 provider 和模型配置
 - 未配置 Supabase 时，登录和会话持久化不可用
 - 当前只有 `profiles` 和 `conversations` 表真正接上了业务
 - 当前不是 memory-first 架构，也没有长期上下文压缩链路

@@ -20,6 +20,7 @@
     "ci": "bun run format:check && bun run lint && bun run typecheck && bun run test:run"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.69",
     "@ai-sdk/openai": "^3.0.52",
     "@ai-sdk/react": "^3.0.160",
     "@sentry/nextjs": "^10.48.0",

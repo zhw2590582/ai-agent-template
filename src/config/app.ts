@@ -1,7 +1,6 @@
 // 集中管理所有应用级配置（AI、聊天、主题、模型、导航、特性开关、API等）
 
 export const AI_CONFIG = {
-  DEFAULT_MODEL: 'deepseek-chat',
   DEFAULT_MAX_TOKENS: 800,
   DEFAULT_TEMPERATURE: 0.7,
   STREAM_TIMEOUT: 30000,
@@ -17,18 +16,6 @@ export const CHAT_CONFIG = {
 } as const;
 
 export const CONVERSATION_SIDEBAR_PAGE_SIZE = 20;
-
-export const MODEL_OPTIONS = [
-  {
-    id: 'deepseek-chat',
-    translationKey: 'chat.models.deepseek_chat',
-  },
-  {
-    id: 'deepseek-coder',
-    translationKey: 'chat.models.deepseek_coder',
-  },
-] as const;
-export type ModelId = (typeof MODEL_OPTIONS)[number]['id'];
 
 export const HEADER_NAV_ITEMS = [
   { id: 'models', translationKey: 'navigation.models' },

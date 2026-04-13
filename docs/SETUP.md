@@ -18,7 +18,9 @@ bun run dev
 
 最低可运行配置：
 
-- `DEEPSEEK_API_KEY`
+- 无
+
+聊天模型改为在应用内 `/models` 页面配置，默认不再依赖服务端预置模型 API Key。
 
 如果要启用登录和会话持久化，还需要：
 
@@ -27,7 +29,6 @@ bun run dev
 
 如果要启用额外平台能力，还预留了这些变量：
 
-- `OPENAI_API_KEY`
 - `SENTRY_ORG`
 - `SENTRY_PROJECT`
 - `NEXT_PUBLIC_SENTRY_DSN`
@@ -37,7 +38,7 @@ bun run dev
 - `E2B_API_KEY`
 - `TAVILY_API_KEY`
 
-环境变量会在应用启动时由 [src/config/env.ts](../src/config/env.ts) 校验；但注意，当前代码真正接入的核心仍是 DeepSeek 和 Supabase。
+环境变量会在应用启动时由 [src/config/env.ts](../src/config/env.ts) 校验；当前核心依赖是 Supabase，模型接入由用户自行填写 provider 配置。
 
 ## 常用命令
 

@@ -13,6 +13,8 @@ import { useChatSync } from '@/features/chat/hooks/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/hooks/use-sidebar-conversations';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { getInitialMessages } from '@/features/chat/utils/chat-config';
+import { useModelProfile } from '@/features/models/hooks/use-model-profile';
+import { getChatModelOptions } from '@/features/models/utils/profile';
 
 interface UseChatWorkbenchOptions {
   initialConversationId: string | null;
@@ -35,12 +37,21 @@ export function useChatWorkbench({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user } = useAuthUser();
+  const models = useModelProfile(user);
+  const persistedSelectedModelId = models.profile.settings.models.selectedChatModelId;
+  const { updateSelectedChatModelId } = models;
 
   const starterMessages = useMemo(() => getInitialMessages(), []);
   const urlConversationId = useMemo(
     () => searchParams.get('id') ?? searchParams.get('conversation') ?? null,
     [searchParams]
   );
+
+  const availableModels = useMemo(
+    () => getChatModelOptions(models.profile.settings),
+    [models.profile.settings]
+  );
+  const missingModelConfigHandledRef = useRef(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [input, setInput] = useState('');
@@ -79,13 +90,16 @@ export function useChatWorkbench({
     regenerate,
     selectedModel,
     setSelectedModel,
+    runtimeModel,
   } = useChatSession({
     activeThreadId,
+    availableModels,
     initialMessages: useChatInitialMessages,
     locale,
     onFinish: () => {
       router.refresh();
     },
+    profileSettings: models.profile.settings,
   });
 
   const isBusy = status === 'submitted' || status === 'streaming';
@@ -149,6 +163,74 @@ export function useChatWorkbench({
     starterMessages,
   });
 
+  const redirectToModels = useCallback(() => {
+    router.replace(`/${locale}/models`);
+  }, [locale, router]);
+
+  useEffect(() => {
+    if (models.isLoading) {
+      return;
+    }
+
+    if (availableModels.length > 0) {
+      missingModelConfigHandledRef.current = false;
+      return;
+    }
+
+    if (missingModelConfigHandledRef.current) {
+      return;
+    }
+
+    missingModelConfigHandledRef.current = true;
+    toast.error(t('chat.errors.model_not_configured'));
+    redirectToModels();
+  }, [availableModels.length, models.isLoading, redirectToModels, t]);
+
+  useEffect(() => {
+    if (models.isLoading || availableModels.length === 0) {
+      return;
+    }
+
+    const hasPersistedModel = availableModels.some(
+      (model) => model.id === persistedSelectedModelId
+    );
+
+    if (hasPersistedModel) {
+      return;
+    }
+
+    void updateSelectedChatModelId(availableModels[0]?.id ?? null, {
+      silent: true,
+    });
+  }, [availableModels, models.isLoading, persistedSelectedModelId, updateSelectedChatModelId]);
+
+  const handleModelChange = useCallback(
+    (value: string) => {
+      setSelectedModel(value);
+      void updateSelectedChatModelId(value, {
+        silent: true,
+      });
+    },
+    [setSelectedModel, updateSelectedChatModelId]
+  );
+
+  const guardedSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      if (models.isLoading) {
+        return;
+      }
+
+      if (!runtimeModel) {
+        toast.error(t('chat.errors.model_not_configured'));
+        redirectToModels();
+        return;
+      }
+
+      handleSubmit(event);
+    },
+    [handleSubmit, models.isLoading, redirectToModels, runtimeModel, t]
+  );
+
   useEffect(() => {
     if (!urlConversationId) {
       invalidIdHandledRef.current = false;
@@ -179,18 +261,20 @@ export function useChatWorkbench({
     activeThreadId,
     error,
     handleClearChat,
-    handleSubmit,
+    handleSubmit: guardedSubmit,
     input,
     isBusy,
     isSidebarOpen,
     isStartingThread,
+    isModelsLoading: models.isLoading,
     locale,
     messages,
     regenerate,
+    availableModels,
     selectedModel,
+    setSelectedModel: handleModelChange,
     setInput,
     setIsSidebarOpen,
-    setSelectedModel,
     setSidebarSearchQuery,
     sidebar,
     sidebarSearchQuery,

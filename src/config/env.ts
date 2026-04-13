@@ -18,10 +18,6 @@ const envSchema = z.object({
   // Node 环境
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-  // AI 模型配置
-  DEEPSEEK_API_KEY: z.string().optional(),
-  OPENAI_API_KEY: z.string().optional(),
-
   // 应用配置（可选，有默认值）
   NEXT_PUBLIC_APP_URL: z.url().optional(),
 
@@ -62,7 +58,7 @@ const parseEnv = () => {
  * 使用方式：
  * ```ts
  * import { env } from '@/config/env';
- * const apiKey = env.DEEPSEEK_API_KEY; // 类型安全
+ * const appUrl = env.NEXT_PUBLIC_APP_URL; // 类型安全
  * ```
  */
 export const env = parseEnv();

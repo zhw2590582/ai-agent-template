@@ -7,6 +7,6 @@ type ModelsPageProps = {
   }>;
 };
 
-export default async function ModelsPage({ searchParams }: ModelsPageProps) {
+export default async function ModelsRoutePage({ searchParams }: ModelsPageProps) {
   return <ChatShellPage activeView="models" searchParams={searchParams} />;
 }

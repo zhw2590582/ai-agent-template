@@ -2,12 +2,12 @@ import { convertToModelMessages, streamText, type UIMessage } from 'ai';
 
 import { AI_CONFIG } from '@/config/app';
 import { LOCALE_DETECTION_STRATEGY } from '@/config/i18n';
-import { handleErrorWithLocale } from '@/lib/errors';
+import { AppError, ErrorCode, handleErrorWithLocale } from '@/lib/errors';
 import { t } from '@/lib/i18n';
 import { logger } from '@/lib/logger';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { validateRequest } from '@/lib/validation';
-import { defaultModel, getChatModel } from '@/features/chat/ai/models';
+import { getRuntimeChatModel } from '@/features/chat/ai/models';
 import { getSystemPrompt } from '@/features/chat/ai/prompts';
 import { agentTools } from '@/features/chat/ai/tools';
 import { chatPostSchema } from '@/features/chat/server/schemas';
@@ -49,10 +49,21 @@ export async function handleChatPost(request: Request) {
   const locale = getLocaleFromRequest(request);
 
   try {
-    const { conversationId, messages, model } = await validateRequest(request, chatPostSchema);
+    const { conversationId, messages, runtimeModel } = await validateRequest(
+      request,
+      chatPostSchema
+    );
+
+    if (!runtimeModel) {
+      throw new AppError(
+        ErrorCode.INPUT_INVALID,
+        'A runtime model configuration is required for chat requests.',
+        400
+      );
+    }
 
     const result = streamText({
-      model: model ? getChatModel(model) : defaultModel.chat,
+      model: getRuntimeChatModel(runtimeModel),
       system: getSystemPrompt(locale),
       messages: await convertToModelMessages(messages as unknown as UIMessage[]),
       ...(hasAgentTools ? { tools: agentTools } : {}),

@@ -1,17 +1,6 @@
 import type { UIMessage } from 'ai';
 
-export interface ProfileRecord {
-  avatar_url: string | null;
-  created_at: string;
-  display_name: string | null;
-  email: string | null;
-  id: string;
-  locale: string | null;
-  memory_summary: string | null;
-  settings: Record<string, unknown>;
-  theme: string | null;
-  updated_at: string;
-}
+export type { ProfileRecord } from '@/features/auth/storage/types';
 
 export interface ConversationAnalysis {
   first_user_message: string | null;

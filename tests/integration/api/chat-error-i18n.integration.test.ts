@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 // Mock all AI/model/env dependencies to avoid requiring real API keys or env
 vi.mock('@/features/chat/ai/models', () => ({
-  defaultModel: { chat: {} },
-  getChatModel: vi.fn(() => ({})),
+  getRuntimeChatModel: vi.fn(() => ({})),
 }));
 vi.mock('@/features/chat/ai/prompts', () => ({
   getSystemPrompt: vi.fn(() => 'mock'),
@@ -15,7 +14,7 @@ vi.mock('@/config/app', () => ({
   DEV_CONFIG: { ENABLE_DEBUG_LOGS: false, SHOW_PERFORMANCE_METRICS: false },
 }));
 vi.mock('@/config/env', () => ({
-  env: { DEEPSEEK_API_KEY: 'test', NODE_ENV: 'test' },
+  env: { NODE_ENV: 'test' },
   getSupabaseEnv: () => ({
     publishableKey: 'test-key',
     url: 'https://example.supabase.co',

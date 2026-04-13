@@ -11,6 +11,7 @@ import { ChatTopBar } from '@/features/chat/components/workbench/chat-topbar';
 import { useChatWorkbench } from '@/features/chat/hooks/use-chat-workbench';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import type { WorkbenchView } from '@/features/chat/types';
+import { ModelsPage } from '@/features/models/pages/models-page';
 import { cn } from '@/lib/utils';
 
 interface ChatWorkbenchProps {
@@ -40,6 +41,7 @@ export function ChatWorkbench({
   });
 
   const isChatView = activeView === 'chat';
+  const isModelsView = activeView === 'models';
 
   return (
     <main className="bg-background text-foreground h-screen">
@@ -76,6 +78,7 @@ export function ChatWorkbench({
                 onRetry={() => workbench.regenerate()}
               />
               <ChatComposer
+                availableModels={workbench.availableModels}
                 input={workbench.input}
                 isBusy={workbench.isBusy || workbench.isStartingThread}
                 isCreatingThread={workbench.isStartingThread}
@@ -88,6 +91,8 @@ export function ChatWorkbench({
                 status={workbench.isStartingThread ? 'submitted' : workbench.status}
               />
             </>
+          ) : isModelsView ? (
+            <ModelsPage embedded />
           ) : (
             <ChatPlaceholder activeView={activeView} t={t} />
           )}

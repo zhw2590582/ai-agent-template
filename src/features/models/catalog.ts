@@ -1,0 +1,184 @@
+import type { ProviderPreset } from '@/features/models/types';
+
+export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
+  {
+    accentClassName: 'from-sky-500/30 via-blue-500/20 to-cyan-400/10 text-sky-300 ring-sky-400/20',
+    apiFormat: 'openai',
+    defaultBaseUrl: 'https://api.deepseek.com/v1',
+    description: 'Reasoning and general chat models from DeepSeek.',
+    docsUrl: 'https://platform.deepseek.com/',
+    id: 'deepseek',
+    models: [
+      { id: 'deepseek-chat', name: 'DeepSeek Chat' },
+      { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner' },
+    ],
+    monogram: 'DS',
+    name: 'DeepSeek',
+  },
+  {
+    accentClassName:
+      'from-emerald-500/30 via-green-500/20 to-lime-400/10 text-emerald-300 ring-emerald-400/20',
+    apiFormat: 'openai',
+    defaultBaseUrl: 'https://api.openai.com/v1',
+    description: 'GPT series via the standard OpenAI-compatible API.',
+    docsUrl: 'https://platform.openai.com/docs',
+    id: 'openai',
+    models: [
+      { id: 'gpt-4.1', name: 'GPT-4.1' },
+      { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini' },
+      { id: 'gpt-4o-mini', name: 'GPT-4o Mini' },
+    ],
+    monogram: 'OA',
+    name: 'OpenAI',
+  },
+  {
+    accentClassName:
+      'from-violet-500/30 via-fuchsia-500/20 to-pink-400/10 text-violet-300 ring-violet-400/20',
+    apiFormat: 'anthropic',
+    defaultBaseUrl: 'https://api.anthropic.com/v1',
+    description: 'Claude models using the Anthropic protocol.',
+    docsUrl: 'https://docs.anthropic.com/',
+    id: 'anthropic',
+    models: [
+      { id: 'claude-sonnet-4-0', name: 'Claude Sonnet 4' },
+      { id: 'claude-3-7-sonnet-latest', name: 'Claude 3.7 Sonnet' },
+    ],
+    monogram: 'CL',
+    name: 'Anthropic',
+  },
+  {
+    accentClassName:
+      'from-amber-500/30 via-yellow-500/20 to-orange-400/10 text-amber-300 ring-amber-400/20',
+    apiFormat: 'openai',
+    defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    description: 'Gemini models through the OpenAI-compatible endpoint.',
+    docsUrl: 'https://ai.google.dev/gemini-api/docs/openai',
+    id: 'google',
+    models: [
+      { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
+      { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+    ],
+    monogram: 'GM',
+    name: 'Google',
+  },
+  {
+    accentClassName:
+      'from-neutral-400/30 via-zinc-400/20 to-slate-400/10 text-zinc-200 ring-zinc-400/20',
+    apiFormat: 'openai',
+    defaultBaseUrl: 'https://api.x.ai/v1',
+    description: 'Grok models from xAI via OpenAI-compatible API.',
+    docsUrl: 'https://docs.x.ai/',
+    id: 'xai',
+    models: [
+      { id: 'grok-3-beta', name: 'Grok 3 Beta' },
+      { id: 'grok-3-mini-beta', name: 'Grok 3 Mini Beta' },
+    ],
+    monogram: 'x',
+    name: 'xAI',
+  },
+  {
+    accentClassName:
+      'from-orange-500/30 via-rose-500/20 to-red-400/10 text-orange-300 ring-orange-400/20',
+    apiFormat: 'openai',
+    defaultBaseUrl: 'https://api.groq.com/openai/v1',
+    description: 'Fast inference for open-weight and hosted models.',
+    docsUrl: 'https://console.groq.com/docs/overview',
+    id: 'groq',
+    models: [
+      { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B' },
+      { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B' },
+    ],
+    monogram: 'GQ',
+    name: 'Groq',
+  },
+  {
+    accentClassName:
+      'from-indigo-500/30 via-blue-500/20 to-cyan-400/10 text-indigo-300 ring-indigo-400/20',
+    apiFormat: 'openai',
+    defaultBaseUrl: 'https://openrouter.ai/api/v1',
+    description: 'Single endpoint for multiple commercial and open providers.',
+    docsUrl: 'https://openrouter.ai/docs',
+    id: 'openrouter',
+    models: [
+      { id: 'openai/gpt-4.1-mini', name: 'GPT-4.1 Mini' },
+      { id: 'anthropic/claude-3.7-sonnet', name: 'Claude 3.7 Sonnet' },
+    ],
+    monogram: 'OR',
+    name: 'OpenRouter',
+  },
+  {
+    accentClassName:
+      'from-indigo-500/30 via-purple-500/20 to-violet-400/10 text-indigo-200 ring-indigo-400/20',
+    apiFormat: 'openai',
+    defaultBaseUrl: 'https://api.mistral.ai/v1',
+    description: 'Mistral-hosted frontier and open-weight models.',
+    docsUrl: 'https://docs.mistral.ai/',
+    id: 'mistral',
+    models: [
+      { id: 'mistral-large-latest', name: 'Mistral Large' },
+      { id: 'codestral-latest', name: 'Codestral' },
+    ],
+    monogram: 'MS',
+    name: 'Mistral',
+  },
+  {
+    accentClassName:
+      'from-cyan-500/30 via-teal-500/20 to-emerald-400/10 text-cyan-300 ring-cyan-400/20',
+    apiFormat: 'openai',
+    defaultBaseUrl: 'https://api.cohere.ai/compatibility/v1',
+    description: 'Command models through the OpenAI compatibility API.',
+    docsUrl: 'https://docs.cohere.com/docs/compatibility-api',
+    id: 'cohere',
+    models: [
+      { id: 'command-a-03-2025', name: 'Command A' },
+      { id: 'command-r-plus', name: 'Command R+' },
+    ],
+    monogram: 'CH',
+    name: 'Cohere',
+  },
+  {
+    accentClassName:
+      'from-slate-400/30 via-zinc-400/20 to-neutral-400/10 text-slate-200 ring-slate-400/20',
+    apiFormat: 'openai',
+    defaultBaseUrl: 'https://api.moonshot.cn/v1',
+    description: 'Moonshot and Kimi models.',
+    docsUrl: 'https://platform.moonshot.cn/docs',
+    id: 'moonshot',
+    models: [
+      { id: 'kimi-k2-0711-preview', name: 'Kimi K2 Preview' },
+      { id: 'moonshot-v1-8k', name: 'Moonshot v1 8K' },
+    ],
+    monogram: 'K',
+    name: 'Moonshot',
+  },
+  {
+    accentClassName:
+      'from-purple-500/30 via-indigo-500/20 to-violet-400/10 text-purple-300 ring-purple-400/20',
+    apiFormat: 'openai',
+    defaultBaseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    description: 'Qwen family via DashScope compatibility API.',
+    docsUrl: 'https://help.aliyun.com/zh/model-studio/compatibility-of-openai-with-dashscope',
+    id: 'qwen',
+    models: [
+      { id: 'qwen-plus', name: 'Qwen Plus' },
+      { id: 'qwen-max', name: 'Qwen Max' },
+    ],
+    monogram: 'QW',
+    name: 'Qwen',
+  },
+  {
+    accentClassName:
+      'from-blue-500/30 via-indigo-500/20 to-violet-400/10 text-blue-300 ring-blue-400/20',
+    apiFormat: 'openai',
+    defaultBaseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+    description: 'GLM models from Zhipu AI.',
+    docsUrl: 'https://open.bigmodel.cn/dev/howuse/introduction',
+    id: 'zhipu',
+    models: [
+      { id: 'glm-4-plus', name: 'GLM-4 Plus' },
+      { id: 'glm-4.5', name: 'GLM-4.5' },
+    ],
+    monogram: 'ZP',
+    name: 'Zhipu',
+  },
+];
