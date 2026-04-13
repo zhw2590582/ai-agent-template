@@ -24,9 +24,7 @@ export async function createConversationRecord(options: {
     const localConversation = createLocalConversationThread(options.initialMessage);
     void upsertLocalConversationThread({
       id: localConversation.id,
-      locale: options.locale,
       messages: [],
-      runtimeModel: options.runtimeModel,
       title: localConversation.title,
     });
 
@@ -74,9 +72,7 @@ export function persistConversationMessages(options: {
 
   void upsertLocalConversationThread({
     id: options.conversationId,
-    locale: options.locale,
     messages: options.messages,
-    runtimeModel: options.runtimeModel,
   });
 }
 
