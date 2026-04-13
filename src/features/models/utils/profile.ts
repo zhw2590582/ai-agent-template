@@ -11,10 +11,7 @@ import type {
 } from '@/features/models/types';
 import type { ThemeMode } from '@/config/app';
 
-function buildProviderModels(
-  models: Array<Pick<ProviderModelItem, 'id' | 'name'>>,
-  existing?: ProviderModelItem[]
-) {
+function buildProviderModels(existing?: ProviderModelItem[]) {
   if (!existing || existing.length === 0) {
     return [];
   }
@@ -37,7 +34,7 @@ function buildProviderSettings(
     baseUrl: existing?.baseUrl ?? preset.defaultBaseUrl,
     enabled: existing?.enabled ?? preset.id === 'deepseek',
     id: preset.id,
-    models: buildProviderModels(preset.models, existing?.models),
+    models: buildProviderModels(existing?.models),
   };
 }
 

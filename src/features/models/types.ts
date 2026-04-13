@@ -12,11 +12,9 @@ export interface ProviderModelItem {
 export interface ProviderPreset {
   apiFormat: ModelApiFormat;
   defaultBaseUrl: string;
-  description: string;
   docsUrl: string;
   id: string;
   logoId?: string;
-  models: Array<Pick<ProviderModelItem, 'id' | 'name'>>;
   monogram: string;
   name: string;
 }

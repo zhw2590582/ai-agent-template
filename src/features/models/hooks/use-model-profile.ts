@@ -288,19 +288,12 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
       selectedChatModelId: string | null,
       options?: { persist?: boolean; silent?: boolean }
     ) => {
-      const nextProfile = {
-        ...profile,
-        locale,
-        settings: normalizeProfileSettings({
-          models: {
-            ...profile.settings.models,
-            selectedChatModelId,
-          },
-        }),
-        theme,
-        updated_at: new Date().toISOString(),
-      };
-
+      const current = profileRef.current;
+      const nextProfile = buildNextProfile(current, {
+        ...current.settings.models,
+        selectedChatModelId,
+      });
+      profileRef.current = nextProfile;
       setProfile(nextProfile);
 
       if (options?.persist === false) {
@@ -309,7 +302,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
 
       return persistProfile(nextProfile, { silent: options?.silent });
     },
-    [locale, persistProfile, profile, theme]
+    [buildNextProfile, persistProfile]
   );
 
   const saveProfile = useCallback(

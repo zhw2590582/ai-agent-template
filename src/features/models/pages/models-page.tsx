@@ -232,7 +232,6 @@ export function ModelsPage() {
           activePreset={activePreset}
           autoSaveStatus={autoSaveStatus}
           isApiKeyVisible={isApiKeyVisible}
-          isRefreshingModels={false}
           isTestingConnection={isTestingConnection}
           provider={selectedProvider}
           onAddModel={handleAddModel}
