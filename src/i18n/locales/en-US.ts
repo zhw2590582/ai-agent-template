@@ -50,6 +50,11 @@ export const enUS: Translations = {
       workspace_hint: 'Wide workspace with streaming responses and tool calling',
       model_label: 'Model',
       model_missing: 'Configure a model first',
+      model_selector_title: 'Select Model',
+      model_selector_description:
+        'Search providers and models to switch the current conversation model.',
+      model_selector_search: 'Search models or providers',
+      model_selector_empty: 'No matching models',
     },
     header: {
       show_sidebar: 'Show sidebar',

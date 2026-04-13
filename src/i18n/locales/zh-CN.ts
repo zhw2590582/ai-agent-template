@@ -48,6 +48,10 @@ const zhCN = {
       workspace_hint: '宽屏工作区，支持流式回复与工具调用',
       model_label: '模型',
       model_missing: '先配置模型',
+      model_selector_title: '选择模型',
+      model_selector_description: '按提供商和模型名称搜索并切换当前会话使用的模型。',
+      model_selector_search: '搜索模型或提供商',
+      model_selector_empty: '没有匹配的模型',
     },
     header: {
       show_sidebar: '显示侧边栏',

@@ -66,7 +66,7 @@ export function ProviderSettingsPanel({
     <div
       className={cn(
         'border-border/70 bg-background flex flex-col border p-6',
-        embedded ? 'min-h-[calc(100vh-16rem)]' : 'min-h-[640px]'
+        embedded ? 'min-h-[calc(100vh-16rem)]' : 'min-h-160'
       )}
     >
       {activePreset ? (

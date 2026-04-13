@@ -1,7 +1,6 @@
 'use client';
 
 import type { ChatStatus } from 'ai';
-import { ChevronDownIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import {
@@ -12,14 +11,7 @@ import {
   PromptInputTextarea,
   PromptInputTools,
 } from '@/components/ai-elements/prompt-input';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { ChatModelSelector } from '@/features/chat/components/composer/chat-model-selector';
 import type { ChatModelOption } from '@/features/models/types';
 
 interface ChatComposerProps {
@@ -69,32 +61,12 @@ export function ChatComposer({
           <PromptInputFooter>
             <PromptInputTools>
               <div className="flex flex-wrap items-center gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      disabled={isBusy || availableModels.length === 0}
-                      size="sm"
-                      type="button"
-                      variant="outline"
-                    >
-                      {t('chat.composer.model_label')}
-                      <span className="text-muted-foreground">
-                        {availableModels.find((option) => option.id === model)?.title ??
-                          t('chat.composer.model_missing')}
-                      </span>
-                      <ChevronDownIcon data-icon="inline-end" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="min-w-52">
-                    <DropdownMenuRadioGroup onValueChange={onModelChange} value={model}>
-                      {availableModels.map((option) => (
-                        <DropdownMenuRadioItem key={option.id} value={option.id}>
-                          {option.title}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <ChatModelSelector
+                  disabled={isBusy}
+                  models={availableModels}
+                  value={model}
+                  onValueChange={onModelChange}
+                />
               </div>
             </PromptInputTools>
             <PromptInputSubmit
