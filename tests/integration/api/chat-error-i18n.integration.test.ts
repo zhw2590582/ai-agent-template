@@ -29,7 +29,6 @@ vi.mock('@/config/env', () => ({
     url: 'https://example.supabase.co',
   }),
   isSupabaseConfigured: () => true,
-  isSentryConfigured: () => false,
 }));
 
 // Integration test for error i18n: ensures error responses are in English when requested

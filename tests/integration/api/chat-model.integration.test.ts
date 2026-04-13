@@ -39,7 +39,6 @@ vi.mock('@/config/env', () => ({
     url: 'https://example.supabase.co',
   }),
   isSupabaseConfigured: () => true,
-  isSentryConfigured: () => false,
 }));
 
 vi.mock('@/lib/supabase/server', () => ({

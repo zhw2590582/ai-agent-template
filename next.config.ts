@@ -2,9 +2,8 @@ import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
 
-import { isSentryConfigured } from '@/config/env';
-
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+const isSentryConfigured = Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN);
 
 const nextConfig: NextConfig = {
   images: {
@@ -31,7 +30,7 @@ const nextConfig: NextConfig = {
 
 const configuredNextConfig = withNextIntl(nextConfig);
 
-export default isSentryConfigured()
+export default isSentryConfigured
   ? withSentryConfig(configuredNextConfig, {
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
