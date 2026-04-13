@@ -1,21 +1,21 @@
 'use client';
 
+import { CheckIcon, ChevronDownIcon, SearchIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { CheckIcon, ChevronDownIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/components/ui/button';
+import { PromptInputButton } from '@/components/ai-elements/prompt-input';
 import {
-  Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from '@/components/ui/command';
-import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { ProviderIcon } from '@/features/models/components/provider-icon';
 import type { ChatModelOption } from '@/features/models/types';
 import { cn } from '@/lib/utils';
 
@@ -33,98 +33,127 @@ export function ChatModelSelector({
   onValueChange,
 }: ChatModelSelectorProps) {
   const t = useTranslations();
+  const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
 
   const selectedModel = models.find((option) => option.id === value);
+  const filteredModels = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) {
+      return models;
+    }
+
+    return models.filter((model) =>
+      [model.providerName, model.title, model.modelId].some((field) =>
+        field.toLowerCase().includes(query)
+      )
+    );
+  }, [models, search]);
+
   const groupedModels = useMemo(() => {
     const groups = new Map<string, ChatModelOption[]>();
 
-    for (const model of models) {
+    for (const model of filteredModels) {
       const existing = groups.get(model.providerName) ?? [];
       existing.push(model);
       groups.set(model.providerName, existing);
     }
 
     return Array.from(groups.entries());
-  }, [models]);
+  }, [filteredModels]);
 
   return (
-    <>
-      <Button
-        disabled={disabled || models.length === 0}
-        size="sm"
-        type="button"
-        variant="outline"
-        className="h-8 gap-2 rounded-full px-2.5"
-        onClick={() => setOpen(true)}
-      >
-        <span className="bg-muted text-foreground flex size-5 items-center justify-center rounded-full text-[10px] font-semibold">
-          {selectedModel?.providerName.slice(0, 2).toUpperCase() ?? 'AI'}
-        </span>
-        <span className="text-muted-foreground">
-          {selectedModel?.title ?? t('chat.composer.model_missing')}
-        </span>
-        <ChevronDownIcon data-icon="inline-end" />
-      </Button>
+    <DropdownMenu
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) {
+          setSearch('');
+        }
+      }}
+    >
+      <DropdownMenuTrigger asChild>
+        <PromptInputButton disabled={disabled || models.length === 0}>
+          {selectedModel ? (
+            <ProviderIcon
+              className="size-3.5"
+              fallbackClassName="size-5 rounded-full"
+              providerId={selectedModel.providerId}
+            />
+          ) : (
+            <span className="bg-muted text-foreground flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold">
+              AI
+            </span>
+          )}
+          <span className="truncate">
+            {selectedModel?.title ?? t('chat.composer.model_missing')}
+          </span>
+          <ChevronDownIcon className="size-4 shrink-0" />
+        </PromptInputButton>
+      </DropdownMenuTrigger>
 
-      <CommandDialog
-        className="max-w-2xl border p-0 sm:max-w-2xl"
-        description={t('chat.composer.model_selector_description')}
-        open={open}
-        showCloseButton
-        title={t('chat.composer.model_selector_title')}
-        onOpenChange={setOpen}
-      >
-        <DialogTitle className="sr-only">{t('chat.composer.model_selector_title')}</DialogTitle>
-        <DialogDescription className="sr-only">
-          {t('chat.composer.model_selector_description')}
-        </DialogDescription>
-
-        <Command className="rounded-none bg-transparent p-0">
-          <div className="border-b px-3 py-3">
-            <CommandInput placeholder={t('chat.composer.model_selector_search')} />
+      <DropdownMenuContent align="start" className="w-80 p-0">
+        <div className="border-b p-2">
+          <div className="relative">
+            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+            <Input
+              className="pl-8"
+              placeholder={t('chat.composer.model_selector_search')}
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              onKeyDown={(event) => {
+                event.stopPropagation();
+              }}
+            />
           </div>
-          <CommandList className="max-h-[420px] p-2">
-            <CommandEmpty>{t('chat.composer.model_selector_empty')}</CommandEmpty>
-            {groupedModels.map(([providerName, providerModels], index) => (
+        </div>
+
+        <div className="max-h-80 overflow-y-auto p-1">
+          {groupedModels.length === 0 ? (
+            <div className="text-muted-foreground px-2 py-6 text-center text-sm">
+              {t('chat.composer.model_selector_empty')}
+            </div>
+          ) : (
+            groupedModels.map(([providerName, providerModels], index) => (
               <div key={providerName}>
-                {index > 0 ? <CommandSeparator /> : null}
-                <CommandGroup className="px-1 py-2" heading={providerName}>
+                {index > 0 ? <DropdownMenuSeparator /> : null}
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>{providerName}</DropdownMenuLabel>
                   {providerModels.map((option) => (
-                    <CommandItem
-                      className={cn(
-                        'rounded-xl px-3 py-3',
-                        option.id === value && 'bg-accent text-accent-foreground'
-                      )}
+                    <DropdownMenuItem
                       key={option.id}
-                      value={`${option.providerName} ${option.title} ${option.modelId}`}
-                      onSelect={() => {
+                      className="gap-3 py-2"
+                      onClick={() => {
                         onValueChange(option.id);
                         setOpen(false);
                       }}
                     >
-                      <div className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-lg text-xs font-semibold">
-                        {option.providerName.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                        <span className="truncate text-sm font-medium">{option.title}</span>
-                        <span className="text-muted-foreground truncate text-xs">
+                      <ProviderIcon
+                        className="size-4"
+                        fallbackClassName="size-8 shrink-0 rounded-md"
+                        providerId={option.providerId}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm">{option.title}</div>
+                        <div className="text-muted-foreground truncate text-xs">
                           {option.modelId}
-                        </span>
-                      </div>
-                      {option.id === value ? (
-                        <div className="bg-primary text-primary-foreground flex size-5 items-center justify-center rounded-full">
-                          <CheckIcon className="size-3.5" />
                         </div>
-                      ) : null}
-                    </CommandItem>
+                      </div>
+                      <CheckIcon
+                        className={cn(
+                          'size-4 shrink-0',
+                          option.id === value ? 'opacity-100' : 'opacity-0'
+                        )}
+                      />
+                    </DropdownMenuItem>
                   ))}
-                </CommandGroup>
+                </DropdownMenuGroup>
               </div>
-            ))}
-          </CommandList>
-        </Command>
-      </CommandDialog>
-    </>
+            ))
+          )}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

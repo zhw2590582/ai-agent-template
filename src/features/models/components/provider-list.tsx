@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ProviderIcon } from '@/features/models/components/provider-icon';
 import type { ProviderPreset, ProviderSettings } from '@/features/models/types';
 import { cn } from '@/lib/utils';
 
@@ -58,9 +59,10 @@ export function ProviderList({
                   variant="ghost"
                   onClick={() => onSelectProvider(provider.id)}
                 >
-                  <div className="bg-muted text-foreground flex size-10 shrink-0 items-center justify-center border text-sm font-semibold">
-                    {provider.monogram}
-                  </div>
+                  <ProviderIcon
+                    fallbackClassName="flex size-10 shrink-0 items-center justify-center border text-sm font-semibold"
+                    providerId={provider.id}
+                  />
                   <div className="min-w-0 text-left">
                     <div className="flex items-center gap-2">
                       <span className="truncate text-sm font-medium">{provider.name}</span>

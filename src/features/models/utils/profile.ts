@@ -188,7 +188,7 @@ export function getChatModelOptions(settings: AppProfileSettings): ChatModelOpti
       modelId: model.id.trim(),
       providerId: provider.id,
       providerName,
-      title: `${providerName} / ${model.name.trim() || model.id.trim()}`,
+      title: model.name.trim() || model.id.trim(),
     }));
   });
 }

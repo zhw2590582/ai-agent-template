@@ -7,6 +7,7 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     description: 'Reasoning and general chat models from DeepSeek.',
     docsUrl: 'https://platform.deepseek.com/',
     id: 'deepseek',
+    logoId: 'deepseek',
     models: [
       { id: 'deepseek-chat', name: 'DeepSeek Chat' },
       { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner' },
@@ -20,6 +21,7 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     description: 'GPT series via the standard OpenAI-compatible API.',
     docsUrl: 'https://platform.openai.com/docs',
     id: 'openai',
+    logoId: 'openai',
     models: [
       { id: 'gpt-4.1', name: 'GPT-4.1' },
       { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini' },
@@ -34,6 +36,7 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     description: 'Claude models using the Anthropic protocol.',
     docsUrl: 'https://docs.anthropic.com/',
     id: 'anthropic',
+    logoId: 'anthropic',
     models: [
       { id: 'claude-sonnet-4-0', name: 'Claude Sonnet 4' },
       { id: 'claude-3-7-sonnet-latest', name: 'Claude 3.7 Sonnet' },
@@ -47,6 +50,7 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     description: 'Gemini models through the OpenAI-compatible endpoint.',
     docsUrl: 'https://ai.google.dev/gemini-api/docs/openai',
     id: 'google',
+    logoId: 'google',
     models: [
       { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
       { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
@@ -60,6 +64,7 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     description: 'Grok models from xAI via OpenAI-compatible API.',
     docsUrl: 'https://docs.x.ai/',
     id: 'xai',
+    logoId: 'xai',
     models: [
       { id: 'grok-3-beta', name: 'Grok 3 Beta' },
       { id: 'grok-3-mini-beta', name: 'Grok 3 Mini Beta' },
@@ -73,6 +78,7 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     description: 'Fast inference for open-weight and hosted models.',
     docsUrl: 'https://console.groq.com/docs/overview',
     id: 'groq',
+    logoId: 'groq',
     models: [
       { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B' },
       { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B' },
@@ -86,6 +92,7 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     description: 'Single endpoint for multiple commercial and open providers.',
     docsUrl: 'https://openrouter.ai/docs',
     id: 'openrouter',
+    logoId: 'openrouter',
     models: [
       { id: 'openai/gpt-4.1-mini', name: 'GPT-4.1 Mini' },
       { id: 'anthropic/claude-3.7-sonnet', name: 'Claude 3.7 Sonnet' },
@@ -99,6 +106,7 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     description: 'Mistral-hosted frontier and open-weight models.',
     docsUrl: 'https://docs.mistral.ai/',
     id: 'mistral',
+    logoId: 'mistral',
     models: [
       { id: 'mistral-large-latest', name: 'Mistral Large' },
       { id: 'codestral-latest', name: 'Codestral' },
@@ -112,6 +120,7 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     description: 'Command models through the OpenAI compatibility API.',
     docsUrl: 'https://docs.cohere.com/docs/compatibility-api',
     id: 'cohere',
+    logoId: 'cohere',
     models: [
       { id: 'command-a-03-2025', name: 'Command A' },
       { id: 'command-r-plus', name: 'Command R+' },
@@ -125,6 +134,7 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     description: 'Moonshot and Kimi models.',
     docsUrl: 'https://platform.moonshot.cn/docs',
     id: 'moonshot',
+    logoId: 'moonshotai',
     models: [
       { id: 'kimi-k2-0711-preview', name: 'Kimi K2 Preview' },
       { id: 'moonshot-v1-8k', name: 'Moonshot v1 8K' },
@@ -138,6 +148,7 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     description: 'Qwen family via DashScope compatibility API.',
     docsUrl: 'https://help.aliyun.com/zh/model-studio/compatibility-of-openai-with-dashscope',
     id: 'qwen',
+    logoId: 'alibaba',
     models: [
       { id: 'qwen-plus', name: 'Qwen Plus' },
       { id: 'qwen-max', name: 'Qwen Max' },
@@ -151,6 +162,7 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     description: 'GLM models from Zhipu AI.',
     docsUrl: 'https://open.bigmodel.cn/dev/howuse/introduction',
     id: 'zhipu',
+    logoId: 'zhipuai',
     models: [
       { id: 'glm-4-plus', name: 'GLM-4 Plus' },
       { id: 'glm-4.5', name: 'GLM-4.5' },

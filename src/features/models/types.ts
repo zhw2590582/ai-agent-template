@@ -15,6 +15,7 @@ export interface ProviderPreset {
   description: string;
   docsUrl: string;
   id: string;
+  logoId?: string;
   models: Array<Pick<ProviderModelItem, 'id' | 'name'>>;
   monogram: string;
   name: string;

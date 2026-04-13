@@ -48,11 +48,13 @@ export function ChatComposer({
       <div
         className={`mx-auto w-full transition-[max-width] duration-300 ease-out ${isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl'}`}
       >
-        <PromptInput className="w-full" onSubmit={(_, event) => onSubmit(event)}>
+        <PromptInput
+          className="w-full [&_[data-slot=input-group]]:has-disabled:bg-transparent [&_[data-slot=input-group]]:has-disabled:opacity-100 dark:[&_[data-slot=input-group]]:has-disabled:bg-transparent"
+          onSubmit={(_, event) => onSubmit(event)}
+        >
           <PromptInputBody>
             <PromptInputTextarea
               className="min-h-19 border-0 bg-transparent text-base"
-              disabled={isBusy}
               onChange={(event) => onInputChange(event.target.value)}
               placeholder={t('chat.composer.placeholder')}
               value={input}
@@ -62,7 +64,6 @@ export function ChatComposer({
             <PromptInputTools>
               <div className="flex flex-wrap items-center gap-2">
                 <ChatModelSelector
-                  disabled={isBusy}
                   models={availableModels}
                   value={model}
                   onValueChange={onModelChange}
