@@ -15,6 +15,25 @@ export const CHAT_CONFIG = {
   MAX_INPUT_LENGTH: 4000,
 } as const;
 
+export const MEMORY_CONFIG = {
+  SUMMARY_MIN_MESSAGES: 8,
+  SUMMARY_RECENT_MESSAGE_WINDOW: 10,
+} as const;
+
+export const MODEL_SYNC_CONFIG = {
+  EXCLUDED_MODEL_ID_SEGMENTS: [
+    'realtime',
+    'audio',
+    'speech',
+    'transcription',
+    'tts',
+    'embedding',
+    'moderation',
+    'image',
+    'vision-preview',
+  ],
+} as const;
+
 export const CONVERSATION_SIDEBAR_PAGE_SIZE = 20;
 
 export const HEADER_NAV_ITEMS = [

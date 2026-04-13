@@ -21,6 +21,8 @@ import {
 import { agentTools } from '@/features/chat/ai/tools';
 import { chatPostSchema } from '@/features/chat/server/schemas';
 import { saveConversationMessages, verifyConversationOwnership } from '@/features/chat/storage';
+import { getProfileById } from '@/features/auth/storage/profiles';
+import { saveConversationMemories } from '@/features/memory/storage/memories';
 
 export const maxDuration = 30;
 
@@ -141,6 +143,32 @@ export async function handleChatPost(request: Request) {
             },
             supabase
           );
+
+          const profile = await getProfileById(user.id, supabase);
+          const memorySettings =
+            typeof profile?.settings === 'object' &&
+            profile.settings != null &&
+            'memory' in profile.settings &&
+            typeof profile.settings.memory === 'object' &&
+            profile.settings.memory != null
+              ? (profile.settings.memory as {
+                  autoWrite?: boolean;
+                  enabled?: boolean;
+                })
+              : null;
+
+          if (memorySettings?.enabled && memorySettings.autoWrite) {
+            await saveConversationMemories(
+              {
+                conversationId,
+                locale,
+                messages: responseMessages,
+                runtimeModel,
+                userId: user.id,
+              },
+              supabase
+            );
+          }
         } catch (saveError) {
           logger.error('Chat onFinish: failed to save messages', {
             conversationId,

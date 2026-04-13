@@ -5,6 +5,7 @@ import type { UIMessage } from 'ai';
 import { ChatWorkbench } from '@/features/chat/components/workbench/chat-workbench';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import type { WorkbenchView } from '@/features/chat/types';
+import type { MemoryListItem } from '@/features/memory/types';
 
 interface ChatHomePageProps {
   activeView?: WorkbenchView;
@@ -12,6 +13,7 @@ interface ChatHomePageProps {
   initialConversations?: ConversationSummary[];
   initialConversationsHasMore?: boolean;
   invalidConversationId?: boolean;
+  initialMemories?: MemoryListItem[];
   initialMessages?: UIMessage[];
 }
 
@@ -21,6 +23,7 @@ export function ChatHomePage({
   initialConversations = [],
   initialConversationsHasMore = false,
   invalidConversationId = false,
+  initialMemories = [],
   initialMessages = [],
 }: ChatHomePageProps) {
   return (
@@ -29,6 +32,7 @@ export function ChatHomePage({
       initialConversationId={initialConversationId}
       initialConversations={initialConversations}
       initialConversationsHasMore={initialConversationsHasMore}
+      initialMemories={initialMemories}
       initialMessages={initialMessages}
       invalidConversationId={invalidConversationId}
     />

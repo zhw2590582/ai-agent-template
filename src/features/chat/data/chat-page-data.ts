@@ -8,6 +8,8 @@ import {
   listConversationsForUserPage,
   mapConversationSummary,
 } from '@/features/chat/storage';
+import { listMemoriesForUser } from '@/features/memory/storage/memories';
+import type { MemoryListItem } from '@/features/memory/types';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 
 export interface ChatPageData {
@@ -16,6 +18,7 @@ export interface ChatPageData {
   /** Whether more conversations exist beyond `conversations` (sidebar infinite scroll). */
   conversationsHasMore: boolean;
   invalidConversationId: boolean;
+  memories: MemoryListItem[];
   messages: UIMessage[];
 }
 
@@ -26,6 +29,7 @@ export async function loadChatPageData(conversationId?: string): Promise<ChatPag
       conversations: [],
       conversationsHasMore: false,
       invalidConversationId: false,
+      memories: [],
       messages: [],
     };
   }
@@ -41,6 +45,7 @@ export async function loadChatPageData(conversationId?: string): Promise<ChatPag
       conversations: [],
       conversationsHasMore: false,
       invalidConversationId: false,
+      memories: [],
       messages: [],
     };
   }
@@ -49,6 +54,7 @@ export async function loadChatPageData(conversationId?: string): Promise<ChatPag
     limit: CONVERSATION_SIDEBAR_PAGE_SIZE,
     offset: 0,
   });
+  const memories = await listMemoriesForUser(user.id, supabase);
   const conversations = rows.map(mapConversationSummary);
   const activeConversation =
     conversationId != null ? await getConversationById(conversationId, supabase) : null;
@@ -58,6 +64,7 @@ export async function loadChatPageData(conversationId?: string): Promise<ChatPag
     conversations,
     conversationsHasMore: hasMore,
     invalidConversationId: Boolean(conversationId && !activeConversation),
+    memories,
     messages: activeConversation?.messages ?? [],
   };
 }

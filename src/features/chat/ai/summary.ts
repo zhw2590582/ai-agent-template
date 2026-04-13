@@ -1,13 +1,15 @@
 import type { UIMessage } from 'ai';
 import { generateText } from 'ai';
 
+import { MEMORY_CONFIG } from '@/config/app';
 import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
 import { getRuntimeChatModel } from '@/features/chat/ai/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
-export const CONVERSATION_SUMMARY_MIN_MESSAGES = 8;
-export const CONVERSATION_SUMMARY_RECENT_MESSAGE_WINDOW = 10;
+export const CONVERSATION_SUMMARY_MIN_MESSAGES = MEMORY_CONFIG.SUMMARY_MIN_MESSAGES;
+export const CONVERSATION_SUMMARY_RECENT_MESSAGE_WINDOW =
+  MEMORY_CONFIG.SUMMARY_RECENT_MESSAGE_WINDOW;
 
 function trimSummary(value: string) {
   return value.replace(/\s+/g, ' ').trim().slice(0, 1200);

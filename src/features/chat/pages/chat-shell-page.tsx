@@ -20,6 +20,7 @@ export async function ChatShellPage({ activeView, searchParams }: ChatShellPageP
       initialConversations={pageData.conversations}
       initialConversationsHasMore={pageData.conversationsHasMore}
       invalidConversationId={pageData.invalidConversationId}
+      initialMemories={pageData.memories}
       initialMessages={pageData.messages}
     />
   );

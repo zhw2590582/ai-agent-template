@@ -1,4 +1,6 @@
+import { MODEL_SYNC_CONFIG } from '@/config/app';
 import { AppError, ErrorCode } from '@/lib/errors';
+import { logger } from '@/lib/logger';
 import type { ModelApiFormat, ProviderProbeResult } from '@/features/models/types';
 import { normalizeProviderBaseUrl } from '@/features/models/utils/profile';
 
@@ -53,6 +55,14 @@ function normalizeModelName(id: string) {
     .join(' ');
 }
 
+function isChatCapableModelId(id: string) {
+  const normalizedId = id.trim().toLowerCase();
+
+  return !MODEL_SYNC_CONFIG.EXCLUDED_MODEL_ID_SEGMENTS.some((segment) =>
+    normalizedId.includes(segment)
+  );
+}
+
 function parseModelsPayload(payload: unknown) {
   if (
     typeof payload !== 'object' ||
@@ -90,7 +100,8 @@ export async function probeProviderModels({
   baseUrl,
 }: ProbeProviderOptions): Promise<ProviderProbeResult> {
   const startedAt = Date.now();
-  const response = await fetch(getProbeUrl(apiFormat, baseUrl), {
+  const probeUrl = getProbeUrl(apiFormat, baseUrl);
+  const response = await fetch(probeUrl, {
     headers: getProbeHeaders(apiFormat, apiKey),
     method: 'GET',
     cache: 'no-store',
@@ -107,10 +118,22 @@ export async function probeProviderModels({
   }
 
   const payload = (await response.json()) as unknown;
-  const models = parseModelsPayload(payload);
+  const rawModels = parseModelsPayload(payload);
+  const models = rawModels.filter((model) => isChatCapableModelId(model.id));
+  const latencyMs = Date.now() - startedAt;
+
+  logger.info('Provider models probed', {
+    apiFormat,
+    filteredModelCount: models.length,
+    latencyMs,
+    modelCount: rawModels.length,
+    modelsPreview: models.slice(0, 10),
+    probeUrl,
+    responseStatus: response.status,
+  });
 
   return {
-    latencyMs: Date.now() - startedAt,
+    latencyMs,
     models,
   };
 }

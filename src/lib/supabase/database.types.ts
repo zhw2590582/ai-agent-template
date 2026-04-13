@@ -1,7 +1,8 @@
 /**
  * Supabase Database type definitions.
  *
- * Derived from the SQL schema in supabase/migrations/20260412_profiles_conversations.sql.
+ * Derived from the SQL schema in supabase/migrations/20260412_profiles_conversations.sql
+ * and supabase/migrations/20260413_memory_v1.sql.
  * When the schema changes, update this file to match.
  * If supabase CLI is configured, regenerate with: npx supabase gen types typescript --local
  */
@@ -54,6 +55,8 @@ export interface Database {
           title: string;
           messages: unknown[]; // UIMessage[] at runtime
           analysis: Record<string, unknown>;
+          summary: string | null;
+          summary_updated_at: string | null;
           last_message_at: string;
           created_at: string;
           updated_at: string;
@@ -64,6 +67,8 @@ export interface Database {
           title: string;
           messages?: unknown[];
           analysis?: Record<string, unknown>;
+          summary?: string | null;
+          summary_updated_at?: string | null;
           last_message_at?: string;
           created_at?: string;
           updated_at?: string;
@@ -74,7 +79,47 @@ export interface Database {
           title?: string;
           messages?: unknown[];
           analysis?: Record<string, unknown>;
+          summary?: string | null;
+          summary_updated_at?: string | null;
           last_message_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      memories: {
+        Row: {
+          id: string;
+          user_id: string;
+          conversation_id: string | null;
+          kind: string;
+          content: string;
+          source: string;
+          status: string;
+          metadata: Record<string, unknown>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          conversation_id?: string | null;
+          kind: string;
+          content: string;
+          source?: string;
+          status?: string;
+          metadata?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          conversation_id?: string | null;
+          kind?: string;
+          content?: string;
+          source?: string;
+          status?: string;
+          metadata?: Record<string, unknown>;
           created_at?: string;
           updated_at?: string;
         };

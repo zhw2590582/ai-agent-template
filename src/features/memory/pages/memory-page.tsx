@@ -7,15 +7,17 @@ import type { ConversationSummary } from '@/features/chat/storage/types';
 import { MemoryControls } from '@/features/memory/components/memory-controls';
 import { MemoryList } from '@/features/memory/components/memory-list';
 import { MemorySummaryList } from '@/features/memory/components/memory-summary-list';
+import type { MemoryListItem } from '@/features/memory/types';
 import type { MemorySettings } from '@/features/models/types';
 
 interface MemoryPageProps {
   isAuthenticated: boolean;
+  memories: MemoryListItem[];
   settings: MemorySettings;
   summaries: ConversationSummary[];
 }
 
-export function MemoryPage({ isAuthenticated, settings, summaries }: MemoryPageProps) {
+export function MemoryPage({ isAuthenticated, memories, settings, summaries }: MemoryPageProps) {
   const t = useTranslations();
 
   return (
@@ -23,7 +25,7 @@ export function MemoryPage({ isAuthenticated, settings, summaries }: MemoryPageP
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-8">
         <MemoryControls isAuthenticated={isAuthenticated} settings={settings} t={t} />
         <Separator />
-        <MemoryList t={t} />
+        <MemoryList memories={memories} t={t} />
         <Separator />
         <MemorySummaryList summaries={summaries} t={t} />
       </div>
