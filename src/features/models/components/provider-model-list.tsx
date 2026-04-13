@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import type { ProviderModelItem } from '@/features/models/types';
 
@@ -37,7 +36,7 @@ export function ProviderModelList({
         </Button>
       </div>
 
-      <ScrollArea className="max-h-112">
+      <div>
         {models.map((model, index) => (
           <div
             key={`${model.id || 'custom'}-${index}`}
@@ -91,7 +90,7 @@ export function ProviderModelList({
             </div>
           </div>
         ))}
-      </ScrollArea>
+      </div>
     </div>
   );
 }

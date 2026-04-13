@@ -27,7 +27,7 @@ export function ProviderList({
   const t = useTranslations();
 
   return (
-    <ScrollArea className="h-[calc(100vh-14rem)] overflow-hidden">
+    <ScrollArea className="h-full overflow-hidden">
       <div className="space-y-2 p-2">
         {providers.map((provider) => {
           const providerSettings = settings[provider.id];

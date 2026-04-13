@@ -1,6 +1,6 @@
 'use client';
 
-import { EyeIcon, EyeOffIcon, LinkIcon, XIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, LinkIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -43,12 +43,10 @@ export function ProviderSettingsPanel({
   onAddModel,
   onApiKeyVisibilityChange,
   onBaseUrlChange,
-  onBaseUrlReset,
   onFormatChange,
   onModelRemove,
   onModelUpdate,
   onProviderApiKeyChange,
-  onProviderApiKeyReset,
   onSave,
   onTestConnection,
 }: ProviderSettingsPanelProps) {
@@ -59,16 +57,14 @@ export function ProviderSettingsPanel({
   }
 
   return (
-    <div className="bg-background flex min-h-[calc(100vh-16rem)] flex-col border">
-      <header className="flex items-start justify-between gap-4 px-6 py-5">
+    <div className="bg-background flex flex-col">
+      <header className="bg-background sticky top-0 z-10 flex items-center justify-between gap-4 border-b px-6 py-5">
         <div className="flex min-w-0 items-center gap-3">
           <ProviderIcon
             fallbackClassName="flex size-10 shrink-0 items-center justify-center border text-sm font-semibold"
             providerId={activePreset.id}
           />
-          <h2 className="truncate text-xl font-semibold">
-            {activePreset.name} {t('models_page.detail.title_suffix')}
-          </h2>
+          <h2 className="truncate text-xl font-semibold">{activePreset.name}</h2>
           <a
             className="text-muted-foreground hover:text-foreground transition-colors"
             href={activePreset.docsUrl}
@@ -92,8 +88,6 @@ export function ProviderSettingsPanel({
         </Button>
       </header>
 
-      <Separator />
-
       <div className="flex flex-1 flex-col gap-6 px-6 py-5">
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
@@ -115,16 +109,6 @@ export function ProviderSettingsPanel({
               value={provider.apiKey}
               onChange={(event) => onProviderApiKeyChange(event.target.value)}
             />
-            {provider.apiKey ? (
-              <InputGroupButton
-                size="icon-sm"
-                type="button"
-                variant="ghost"
-                onClick={onProviderApiKeyReset}
-              >
-                <XIcon />
-              </InputGroupButton>
-            ) : null}
             <InputGroupButton
               size="icon-sm"
               type="button"
@@ -145,9 +129,6 @@ export function ProviderSettingsPanel({
               value={provider.baseUrl}
               onChange={(event) => onBaseUrlChange(event.target.value)}
             />
-            <InputGroupButton size="icon-sm" type="button" variant="ghost" onClick={onBaseUrlReset}>
-              <XIcon />
-            </InputGroupButton>
           </InputGroup>
         </div>
 

@@ -150,7 +150,7 @@ export function ModelsPage() {
   };
 
   return (
-    <div className="bg-background text-foreground flex h-full flex-col gap-4 overflow-y-auto lg:flex-row lg:items-start">
+    <div className="bg-background text-foreground flex h-[calc(100vh-3rem)] overflow-hidden">
       <div className="shrink-0 border-r lg:w-80">
         <ProviderList
           providers={presetProviders}
@@ -166,7 +166,7 @@ export function ModelsPage() {
         />
       </div>
 
-      <div className="max-w-4xl flex-1">
+      <div className="max-w-4xl flex-1 overflow-y-auto">
         <ProviderSettingsPanel
           activePreset={activePreset}
           isApiKeyVisible={isApiKeyVisible}
