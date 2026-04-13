@@ -5,6 +5,7 @@ import type { Provider } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { createClient, isSupabaseBrowserConfigured } from '@/lib/supabase/client';
 
 type OauthSignInButtonProps = {
@@ -60,8 +61,8 @@ export function OauthSignInButton({
       size="lg"
       variant={variant}
     >
-      {icon}
-      {isPending ? `${buttonLabel}...` : buttonLabel}
+      {isPending ? <Spinner data-icon="inline-start" /> : icon}
+      {buttonLabel}
     </Button>
   );
 }

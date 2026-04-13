@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 
 type SignOutButtonProps = {
   buttonLabel: string;
@@ -41,7 +42,8 @@ export function SignOutButton({
 
   return (
     <Button disabled={isPending} onClick={handleSignOut} size="lg" variant="outline">
-      {isPending ? `${buttonLabel}...` : buttonLabel}
+      {isPending ? <Spinner data-icon="inline-start" /> : null}
+      {buttonLabel}
     </Button>
   );
 }
