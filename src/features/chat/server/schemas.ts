@@ -68,9 +68,21 @@ export const createConversationSchema = z.object({
 
 export type CreateConversationInput = z.infer<typeof createConversationSchema>;
 
-export const patchConversationSchema = z.object({
-  conversationId: z.string().min(1, 'Conversation ID is required'),
-  messages: z.array(messageSchema).min(1, 'Messages are required'),
-});
+export const patchConversationSchema = z
+  .object({
+    conversationId: z.string().min(1, 'Conversation ID is required'),
+    messages: z.array(messageSchema).min(1, 'Messages are required').optional(),
+    title: z.string().trim().min(1, 'Title is required').max(100, 'Title is too long').optional(),
+  })
+  .refine((value) => value.messages || value.title, {
+    message: 'Either messages or title is required',
+    path: ['messages'],
+  });
 
 export type PatchConversationInput = z.infer<typeof patchConversationSchema>;
+
+export const deleteConversationSchema = z.object({
+  conversationId: z.string().min(1, 'Conversation ID is required'),
+});
+
+export type DeleteConversationInput = z.infer<typeof deleteConversationSchema>;

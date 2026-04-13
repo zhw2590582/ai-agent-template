@@ -6,13 +6,19 @@ import { createClient as createSupabaseServerClient } from '@/lib/supabase/serve
 import { validateRequest } from '@/lib/validation';
 import {
   createConversation,
+  deleteConversation,
   listConversationsForUserPage,
   listConversationsForUserSearchPage,
   mapConversationSummary,
+  renameConversation,
   saveConversationMessages,
   upsertProfileFromAuthUser,
 } from '@/features/chat/storage';
-import { createConversationSchema, patchConversationSchema } from '@/features/chat/server/schemas';
+import {
+  createConversationSchema,
+  deleteConversationSchema,
+  patchConversationSchema,
+} from '@/features/chat/server/schemas';
 
 /** Authenticate and return the Supabase user, or throw 401. */
 async function requireAuth() {
@@ -91,14 +97,48 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const { conversationId, messages } = await validateRequest(request, patchConversationSchema);
+    const { conversationId, messages, title } = await validateRequest(
+      request,
+      patchConversationSchema
+    );
     const { supabase, user } = await requireAuth();
     await upsertProfileFromAuthUser(user, {}, supabase);
 
-    await saveConversationMessages(
+    if (messages) {
+      await saveConversationMessages(
+        {
+          conversationId,
+          messages: messages as unknown as UIMessage[],
+          userId: user.id,
+        },
+        supabase
+      );
+    } else if (title) {
+      await renameConversation(
+        {
+          conversationId,
+          title,
+          userId: user.id,
+        },
+        supabase
+      );
+    }
+
+    return Response.json({ ok: true });
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { conversationId } = await validateRequest(request, deleteConversationSchema);
+    const { supabase, user } = await requireAuth();
+    await upsertProfileFromAuthUser(user, {}, supabase);
+
+    await deleteConversation(
       {
         conversationId,
-        messages: messages as unknown as UIMessage[],
         userId: user.id,
       },
       supabase

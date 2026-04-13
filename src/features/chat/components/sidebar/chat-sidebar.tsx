@@ -15,11 +15,20 @@ import { usePathname } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SidebarSearch } from '@/features/chat/components/sidebar/sidebar-search';
@@ -33,7 +42,9 @@ interface ChatSidebarProps {
   isLoadingMoreConversations?: boolean;
   isOpen: boolean;
   onClearChat: () => void;
+  onDeleteConversation?: (conversationId: string) => Promise<boolean> | boolean;
   onLoadMoreConversations?: () => void | Promise<void>;
+  onRenameConversation?: (conversationId: string, title: string) => Promise<boolean> | boolean;
   onSearchQueryChange?: (value: string) => void;
   onToggleOpen: () => void;
   searchQuery?: string;
@@ -46,7 +57,9 @@ export function ChatSidebar({
   isLoadingMoreConversations = false,
   isOpen,
   onClearChat,
+  onDeleteConversation,
   onLoadMoreConversations,
+  onRenameConversation,
   onSearchQueryChange,
   onToggleOpen,
   searchQuery = '',
@@ -57,6 +70,10 @@ export function ChatSidebar({
   const homeHref = `/${locale}`;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [renameTarget, setRenameTarget] = useState<ConversationSummary | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<ConversationSummary | null>(null);
+  const [isMutating, setIsMutating] = useState(false);
 
   const handleNewChatClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (pathname !== homeHref) {
@@ -99,6 +116,44 @@ export function ChatSidebar({
   }, [hasMoreConversations, isLoadingMoreConversations, onLoadMoreConversations]);
 
   const isFiltering = searchQuery.trim().length > 0;
+
+  const handleRenameSubmit = async () => {
+    if (!renameTarget || !onRenameConversation) {
+      return;
+    }
+
+    const nextTitle = renameValue.trim();
+    if (!nextTitle) {
+      return;
+    }
+
+    setIsMutating(true);
+    try {
+      const success = await onRenameConversation(renameTarget.id, nextTitle);
+      if (success) {
+        setRenameTarget(null);
+        setRenameValue('');
+      }
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  const handleDeleteSubmit = async () => {
+    if (!deleteTarget || !onDeleteConversation) {
+      return;
+    }
+
+    setIsMutating(true);
+    try {
+      const success = await onDeleteConversation(deleteTarget.id);
+      if (success) {
+        setDeleteTarget(null);
+      }
+    } finally {
+      setIsMutating(false);
+    }
+  };
 
   if (!isOpen) {
     return (
@@ -207,8 +262,22 @@ export function ChatSidebar({
                         onEscapeKeyDown={() => setOpenMenuId(null)}
                         onInteractOutside={() => setOpenMenuId(null)}
                       >
-                        <DropdownMenuItem>{t('chat.sidebar.rename')}</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setRenameTarget(item);
+                            setRenameValue(item.title);
+                            setOpenMenuId(null);
+                          }}
+                        >
+                          {t('chat.sidebar.rename')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => {
+                            setDeleteTarget(item);
+                            setOpenMenuId(null);
+                          }}
+                        >
                           {t('chat.sidebar.delete')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -236,6 +305,85 @@ export function ChatSidebar({
           </div>
         </ScrollArea>
       </div>
+
+      <Dialog
+        open={renameTarget != null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRenameTarget(null);
+            setRenameValue('');
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('chat.sidebar.rename_title')}</DialogTitle>
+            <DialogDescription>{t('chat.sidebar.rename_description')}</DialogDescription>
+          </DialogHeader>
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handleRenameSubmit();
+            }}
+          >
+            <Input
+              autoFocus
+              maxLength={100}
+              value={renameValue}
+              onChange={(event) => setRenameValue(event.target.value)}
+            />
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  setRenameTarget(null);
+                  setRenameValue('');
+                }}
+                type="button"
+                variant="ghost"
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button disabled={isMutating || renameValue.trim().length === 0} type="submit">
+                {t('chat.sidebar.rename_confirm')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={deleteTarget != null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('chat.sidebar.delete_title')}</DialogTitle>
+            <DialogDescription>
+              {t('chat.sidebar.delete_description', {
+                title: deleteTarget?.title ?? '',
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setDeleteTarget(null)} type="button" variant="ghost">
+              {t('common.cancel')}
+            </Button>
+            <Button
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isMutating}
+              onClick={() => void handleDeleteSubmit()}
+              type="button"
+            >
+              {t('chat.sidebar.delete_confirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </aside>
   );
 }

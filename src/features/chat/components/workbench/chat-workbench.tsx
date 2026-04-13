@@ -59,7 +59,9 @@ export function ChatWorkbench({
             isLoadingMoreConversations={workbench.sidebar.isLoadingMore}
             isOpen={workbench.isSidebarOpen}
             onClearChat={workbench.handleClearChat}
+            onDeleteConversation={workbench.deleteConversation}
             onLoadMoreConversations={workbench.sidebar.loadMore}
+            onRenameConversation={workbench.renameConversation}
             onSearchQueryChange={workbench.setSidebarSearchQuery}
             onToggleOpen={() => workbench.setIsSidebarOpen((value) => !value)}
             searchQuery={workbench.sidebarSearchQuery}

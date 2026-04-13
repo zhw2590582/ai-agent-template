@@ -56,6 +56,9 @@ type ConversationsTable = {
   ) => {
     eq: (column: 'id', value: string) => PromiseLike<{ error: unknown }>;
   };
+  delete: () => {
+    eq: (column: 'id', value: string) => PromiseLike<{ error: unknown }>;
+  };
 };
 
 function getMessageText(message: UIMessage) {
@@ -317,6 +320,52 @@ export async function saveConversationMessages(
       title,
     })
     .eq('id', input.conversationId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function renameConversation(
+  input: {
+    conversationId: string;
+    title: string;
+    userId: string;
+  },
+  client: ConversationsClient
+) {
+  const conversations = client.from('conversations') as ConversationsTable;
+  const existingConversation = await verifyConversationOwnership(
+    input.conversationId,
+    input.userId,
+    client
+  );
+
+  const { error } = await conversations
+    .update({
+      analysis: existingConversation.analysis,
+      last_message_at: existingConversation.last_message_at,
+      messages: existingConversation.messages,
+      title: input.title.trim(),
+    })
+    .eq('id', input.conversationId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function deleteConversation(
+  input: {
+    conversationId: string;
+    userId: string;
+  },
+  client: ConversationsClient
+) {
+  const conversations = client.from('conversations') as ConversationsTable;
+  await verifyConversationOwnership(input.conversationId, input.userId, client);
+
+  const { error } = await conversations.delete().eq('id', input.conversationId);
 
   if (error) {
     throw error;

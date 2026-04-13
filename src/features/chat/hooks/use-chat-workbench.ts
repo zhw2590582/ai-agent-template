@@ -13,7 +13,9 @@ import { useChatSync } from '@/features/chat/hooks/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/hooks/use-sidebar-conversations';
 import {
   createLocalConversationThread,
+  deleteLocalConversationThread,
   getLocalConversationThread,
+  renameLocalConversationThread,
   upsertLocalConversationThread,
 } from '@/features/chat/storage/local-conversations';
 import type { ConversationSummary } from '@/features/chat/storage/types';
@@ -243,6 +245,82 @@ export function useChatWorkbench({
     void regenerate();
   }, [models.isLoading, regenerate, runtimeModel, t]);
 
+  const handleRenameConversation = useCallback(
+    async (conversationId: string, title: string) => {
+      const nextTitle = title.trim();
+      if (!nextTitle) {
+        return false;
+      }
+
+      if (!user) {
+        return renameLocalConversationThread({
+          id: conversationId,
+          title: nextTitle,
+        });
+      }
+
+      const response = await fetch('/api/conversations', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversationId,
+          title: nextTitle,
+        }),
+      });
+
+      if (!response.ok) {
+        toast.error(t('chat.errors.rename_conversation_failed'));
+        return false;
+      }
+
+      router.refresh();
+      return true;
+    },
+    [router, t, user]
+  );
+
+  const handleDeleteConversation = useCallback(
+    async (conversationId: string) => {
+      if (!user) {
+        const success = deleteLocalConversationThread(conversationId);
+        if (!success) {
+          return false;
+        }
+
+        if (activeThreadId === conversationId) {
+          handleClearChat();
+        }
+
+        return true;
+      }
+
+      const response = await fetch('/api/conversations', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversationId,
+        }),
+      });
+
+      if (!response.ok) {
+        toast.error(t('chat.errors.delete_conversation_failed'));
+        return false;
+      }
+
+      if (activeThreadId === conversationId) {
+        handleClearChat();
+      }
+
+      router.refresh();
+      return true;
+    },
+    [activeThreadId, handleClearChat, router, t, user]
+  );
+
   useEffect(() => {
     if (user || !activeThreadId || messages.length === 0) {
       return;
@@ -295,6 +373,7 @@ export function useChatWorkbench({
     locale,
     messages,
     regenerate: guardedRegenerate,
+    renameConversation: handleRenameConversation,
     availableModels,
     selectedModel,
     setSelectedModel: handleModelChange,
@@ -304,6 +383,7 @@ export function useChatWorkbench({
     sidebar,
     sidebarSearchQuery,
     status,
+    deleteConversation: handleDeleteConversation,
     stop,
   };
 }

@@ -245,3 +245,44 @@ export async function upsertLocalConversationThread(input: {
 
   return nextThread;
 }
+
+export function renameLocalConversationThread(input: { id: string; title: string }) {
+  const nextTitle = input.title.trim();
+  if (!nextTitle) {
+    return false;
+  }
+
+  const existingThreads = readLocalConversationThreads();
+  const targetThread = existingThreads.find((thread) => thread.id === input.id);
+
+  if (!targetThread) {
+    return false;
+  }
+
+  writeLocalConversationThreads(
+    existingThreads.map((thread) =>
+      thread.id === input.id
+        ? {
+            ...thread,
+            title: nextTitle,
+            titleGenerated: true,
+            titleGenerating: false,
+          }
+        : thread
+    )
+  );
+
+  return true;
+}
+
+export function deleteLocalConversationThread(id: string) {
+  const existingThreads = readLocalConversationThreads();
+  const nextThreads = existingThreads.filter((thread) => thread.id !== id);
+
+  if (nextThreads.length === existingThreads.length) {
+    return false;
+  }
+
+  writeLocalConversationThreads(nextThreads);
+  return true;
+}
