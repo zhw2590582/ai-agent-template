@@ -10,11 +10,9 @@ import { Separator } from '@/components/ui/separator';
 import { ProviderIcon } from '@/features/models/components/provider-icon';
 import { ProviderModelList } from '@/features/models/components/provider-model-list';
 import type { ProviderModelItem, ProviderPreset, ProviderSettings } from '@/features/models/types';
-import { cn } from '@/lib/utils';
 
 interface ProviderSettingsPanelProps {
   activePreset: ProviderPreset | undefined;
-  embedded?: boolean;
   isApiKeyVisible: boolean;
   isLoading: boolean;
   isRefreshingModels: boolean;
@@ -36,7 +34,6 @@ interface ProviderSettingsPanelProps {
 
 export function ProviderSettingsPanel({
   activePreset,
-  embedded = false,
   isApiKeyVisible,
   isLoading,
   isRefreshingModels,
@@ -58,12 +55,7 @@ export function ProviderSettingsPanel({
   const t = useTranslations();
 
   return (
-    <div
-      className={cn(
-        'bg-background flex min-h-0 flex-col border',
-        embedded ? 'min-h-[calc(100vh-16rem)]' : 'min-h-160'
-      )}
-    >
+    <div className="bg-background flex min-h-[calc(100vh-16rem)] flex-col border">
       {activePreset ? (
         <>
           <header className="flex items-start justify-between gap-4 px-6 py-5">

@@ -9,13 +9,8 @@ import { ProviderList } from '@/features/models/components/provider-list';
 import { ProviderSettingsPanel } from '@/features/models/components/provider-settings-panel';
 import { useModelProfile } from '@/features/models/hooks/use-model-profile';
 import type { ProviderModelItem, ProviderProbeResult } from '@/features/models/types';
-import { cn } from '@/lib/utils';
 
-interface ModelsPageProps {
-  embedded?: boolean;
-}
-
-export function ModelsPage({ embedded = false }: ModelsPageProps) {
+export function ModelsPage() {
   const t = useTranslations();
   const { user } = useAuthUser();
   const {
@@ -155,21 +150,10 @@ export function ModelsPage({ embedded = false }: ModelsPageProps) {
   };
 
   return (
-    <div
-      className={cn(
-        'bg-background text-foreground',
-        embedded ? 'h-full overflow-y-auto px-6 py-6' : 'min-h-screen px-6 py-8'
-      )}
-    >
-      <div
-        className={cn(
-          'mx-auto flex flex-col gap-4 lg:flex-row lg:items-start',
-          embedded ? 'max-w-none' : 'max-w-7xl'
-        )}
-      >
+    <div className="bg-background text-foreground h-full overflow-y-auto">
+      <div className="mx-auto flex max-w-none flex-col gap-4 lg:flex-row lg:items-start">
         <div className="shrink-0 lg:w-80">
           <ProviderList
-            embedded={embedded}
             providers={presetProviders}
             selectedProviderId={selectedProvider.id}
             settings={profile.settings.models.providers}
@@ -186,7 +170,6 @@ export function ModelsPage({ embedded = false }: ModelsPageProps) {
         <div className="min-w-0 flex-1">
           <ProviderSettingsPanel
             activePreset={activePreset}
-            embedded={embedded}
             isApiKeyVisible={isApiKeyVisible}
             isLoading={isLoading}
             isRefreshingModels={false}

@@ -92,7 +92,7 @@ export function ChatWorkbench({
               />
             </>
           ) : isModelsView ? (
-            <ModelsPage embedded />
+            <ModelsPage />
           ) : (
             <ChatPlaceholder activeView={activeView} t={t} />
           )}

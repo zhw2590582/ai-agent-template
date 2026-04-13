@@ -10,7 +10,6 @@ import type { ProviderPreset, ProviderSettings } from '@/features/models/types';
 import { cn } from '@/lib/utils';
 
 interface ProviderListProps {
-  embedded?: boolean;
   providers: ProviderPreset[];
   selectedProviderId: string;
   settings: Record<string, ProviderSettings>;
@@ -19,7 +18,6 @@ interface ProviderListProps {
 }
 
 export function ProviderList({
-  embedded = false,
   providers,
   selectedProviderId,
   settings,
@@ -30,9 +28,7 @@ export function ProviderList({
 
   return (
     <div className="flex min-h-0 flex-col gap-4">
-      <ScrollArea
-        className={cn('overflow-hidden border', embedded ? 'h-[calc(100vh-14rem)]' : 'h-168')}
-      >
+      <ScrollArea className="h-[calc(100vh-14rem)] overflow-hidden">
         <div className="space-y-2 p-2">
           {providers.map((provider) => {
             const providerSettings = settings[provider.id];
