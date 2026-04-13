@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { generateText, type UIMessage } from 'ai';
 
+import { MEMORY_CONFIG } from '@/config/app';
 import type { Locale } from '@/config/i18n';
 import { getRuntimeChatModel } from '@/features/chat/ai/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';
@@ -13,6 +14,10 @@ const memoryExtractionSchema = z.array(
     kind: z.enum(['fact', 'manual', 'preference', 'profile', 'workflow']).default('preference'),
   })
 );
+
+const MEMORY_UPSERT_KINDS = new Set(['preference', 'profile', 'workflow']);
+const MEMORY_SIMILARITY_THRESHOLD = 0.6;
+const MEMORY_DUPLICATE_THRESHOLD = 0.9;
 
 type MemoriesClient = {
   from: (table: 'memories') => unknown;
@@ -50,7 +55,11 @@ type MemoriesTable = {
       ) => PromiseLike<{ data: MemoryRecord[] | null; error: unknown }>;
     };
   };
-  update: (values: Pick<MemoryRecord, 'status'>) => {
+  update: (
+    values: Partial<
+      Pick<MemoryRecord, 'content' | 'conversation_id' | 'kind' | 'status' | 'updated_at'>
+    >
+  ) => {
     eq: (
       column: 'id',
       value: string
@@ -66,6 +75,36 @@ function getMemoriesTable(client: MemoriesClient) {
 
 function normalizeMemoryContent(value: string) {
   return value.replace(/\s+/g, ' ').trim();
+}
+
+function tokenizeMemoryContent(value: string) {
+  return normalizeMemoryContent(value)
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .filter((token) => token.length > 2);
+}
+
+function getMemorySimilarity(left: string, right: string) {
+  const leftTokens = new Set(tokenizeMemoryContent(left));
+  const rightTokens = new Set(tokenizeMemoryContent(right));
+
+  if (leftTokens.size === 0 || rightTokens.size === 0) {
+    return 0;
+  }
+
+  let intersection = 0;
+  for (const token of leftTokens) {
+    if (rightTokens.has(token)) {
+      intersection += 1;
+    }
+  }
+
+  return intersection / new Set([...leftTokens, ...rightTokens]).size;
+}
+
+function chooseCanonicalMemoryContent(existing: string, incoming: string) {
+  return incoming.length >= existing.length ? incoming : existing;
 }
 
 function formatMessages(messages: UIMessage[]) {
@@ -104,6 +143,25 @@ export async function listMemoriesForUser(userId: string, client: MemoriesClient
     source: memory.source,
     updatedAt: memory.updated_at,
   }));
+}
+
+export function buildMemoryContext(memories: MemoryListItem[]) {
+  if (memories.length === 0) {
+    return null;
+  }
+
+  const scopedMemories = memories
+    .slice(0, MEMORY_CONFIG.CONTEXT_MAX_ITEMS)
+    .map((memory) => `- [${memory.kind}] ${normalizeMemoryContent(memory.content)}`);
+
+  if (scopedMemories.length === 0) {
+    return null;
+  }
+
+  return `Use these memories only when they are relevant to the current request.
+Do not repeat them unless they help answer correctly.
+
+${scopedMemories.join('\n')}`;
 }
 
 export async function extractConversationMemories(
@@ -180,27 +238,105 @@ export async function saveConversationMemories(
 
   const memories = getMemoriesTable(client);
   const existing = await listMemoriesForUser(input.userId, client);
-  const existingContent = new Set(existing.map((memory) => normalizeMemoryContent(memory.content)));
-  const nextEntries = extracted.filter((memory) => !existingContent.has(memory.content));
+  const uniqueExtracted = extracted.filter((memory, index, all) => {
+    const normalized = normalizeMemoryContent(memory.content);
+    return (
+      all.findIndex((candidate) => normalizeMemoryContent(candidate.content) === normalized) ===
+      index
+    );
+  });
+  const existingByNormalizedContent = new Map(
+    existing.map((memory) => [normalizeMemoryContent(memory.content), memory] as const)
+  );
+  const updatableEntries = uniqueExtracted.filter((memory) => {
+    if (existingByNormalizedContent.has(normalizeMemoryContent(memory.content))) {
+      return false;
+    }
 
-  if (nextEntries.length === 0) {
+    return true;
+  });
+
+  const inserts: typeof uniqueExtracted = [];
+  const updates: Array<{ content: string; id: string; kind: string }> = [];
+
+  for (const memory of updatableEntries) {
+    const mergeCandidate = existing.find((existingMemory) => {
+      if (existingMemory.source === 'manual') {
+        return false;
+      }
+
+      if (existingMemory.kind !== memory.kind) {
+        return false;
+      }
+
+      const similarity = getMemorySimilarity(existingMemory.content, memory.content);
+
+      if (similarity >= MEMORY_DUPLICATE_THRESHOLD) {
+        return true;
+      }
+
+      if (!MEMORY_UPSERT_KINDS.has(memory.kind)) {
+        return false;
+      }
+
+      return similarity >= MEMORY_SIMILARITY_THRESHOLD;
+    });
+
+    if (!mergeCandidate) {
+      inserts.push(memory);
+      continue;
+    }
+
+    const nextContent = chooseCanonicalMemoryContent(mergeCandidate.content, memory.content);
+    if (normalizeMemoryContent(nextContent) === normalizeMemoryContent(mergeCandidate.content)) {
+      continue;
+    }
+
+    updates.push({
+      content: nextContent,
+      id: mergeCandidate.id,
+      kind: memory.kind,
+    });
+  }
+
+  if (inserts.length === 0 && updates.length === 0) {
     return;
   }
 
-  const { error } = await memories.insert(
-    nextEntries.map((memory) => ({
-      content: memory.content,
-      conversation_id: input.conversationId,
-      kind: memory.kind,
-      metadata: {},
-      source: 'auto',
-      status: 'active',
-      user_id: input.userId,
-    }))
-  );
+  if (updates.length > 0) {
+    for (const update of updates) {
+      const { error } = await memories
+        .update({
+          content: normalizeMemoryContent(update.content),
+          conversation_id: input.conversationId,
+          kind: update.kind,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', update.id)
+        .eq('user_id', input.userId);
 
-  if (error) {
-    throw error;
+      if (error) {
+        throw error;
+      }
+    }
+  }
+
+  if (inserts.length > 0) {
+    const { error } = await memories.insert(
+      inserts.map((memory) => ({
+        content: memory.content,
+        conversation_id: input.conversationId,
+        kind: memory.kind,
+        metadata: {},
+        source: 'auto',
+        status: 'active',
+        user_id: input.userId,
+      }))
+    );
+
+    if (error) {
+      throw error;
+    }
   }
 }
 
@@ -214,6 +350,31 @@ export async function deleteMemoryForUser(
   const memories = getMemoriesTable(client);
   const { error } = await memories
     .update({ status: 'deleted' })
+    .eq('id', input.id)
+    .eq('user_id', input.userId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function updateMemoryForUser(
+  input: {
+    content: string;
+    id: string;
+    kind: string;
+    userId: string;
+  },
+  client: MemoriesClient
+) {
+  const memories = getMemoriesTable(client);
+
+  const { error } = await memories
+    .update({
+      content: normalizeMemoryContent(input.content),
+      updated_at: new Date().toISOString(),
+      kind: input.kind,
+    })
     .eq('id', input.id)
     .eq('user_id', input.userId);
 

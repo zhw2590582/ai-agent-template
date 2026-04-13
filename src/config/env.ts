@@ -83,6 +83,26 @@ export function getSupabaseEnv() {
   };
 }
 
+export function hasSupabaseAdminEnv() {
+  return Boolean(env.NEXT_PUBLIC_SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+export function getSupabaseAdminEnv() {
+  const url = env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !serviceRoleKey) {
+    throw new Error(
+      'Supabase admin environment variables are missing. Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.'
+    );
+  }
+
+  return {
+    serviceRoleKey,
+    url,
+  };
+}
+
 export function isSentryConfigured() {
   return Boolean(env.NEXT_PUBLIC_SENTRY_DSN);
 }

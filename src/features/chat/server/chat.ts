@@ -22,7 +22,11 @@ import { agentTools } from '@/features/chat/ai/tools';
 import { chatPostSchema } from '@/features/chat/server/schemas';
 import { saveConversationMessages, verifyConversationOwnership } from '@/features/chat/storage';
 import { getProfileById } from '@/features/auth/storage/profiles';
-import { saveConversationMemories } from '@/features/memory/storage/memories';
+import {
+  buildMemoryContext,
+  listMemoriesForUser,
+  saveConversationMemories,
+} from '@/features/memory/storage/memories';
 
 export const maxDuration = 30;
 
@@ -55,6 +59,24 @@ function getLocaleFromRequest(request: Request): Locale {
 }
 
 const hasAgentTools = Object.keys(agentTools).length > 0;
+
+function getProfileMemorySettings(profile: Awaited<ReturnType<typeof getProfileById>>) {
+  if (
+    typeof profile?.settings === 'object' &&
+    profile.settings != null &&
+    'memory' in profile.settings &&
+    typeof profile.settings.memory === 'object' &&
+    profile.settings.memory != null
+  ) {
+    return profile.settings.memory as {
+      autoWrite?: boolean;
+      crossConversation?: boolean;
+      enabled?: boolean;
+    };
+  }
+
+  return null;
+}
 
 async function buildChatMessagesWithSummary(messages: UIMessage[], summary?: string | null) {
   const summaryMessage = summary ? buildConversationSummaryContext(summary) : null;
@@ -92,6 +114,18 @@ export async function handleChatPost(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
     let persistedConversationSummary: string | null = null;
+    let memoryContext: string | null = null;
+    let memorySettings: ReturnType<typeof getProfileMemorySettings> = null;
+
+    if (user) {
+      const profile = await getProfileById(user.id, supabase);
+      memorySettings = getProfileMemorySettings(profile);
+
+      if (memorySettings?.enabled && memorySettings.crossConversation) {
+        const memories = await listMemoriesForUser(user.id, supabase);
+        memoryContext = buildMemoryContext(memories);
+      }
+    }
 
     if (conversationId && user) {
       try {
@@ -107,7 +141,7 @@ export async function handleChatPost(request: Request) {
 
     const result = streamText({
       model: getRuntimeChatModel(runtimeModel),
-      system: getSystemPrompt(locale),
+      system: getSystemPrompt(locale, { memoryContext }),
       messages: await buildChatMessagesWithSummary(
         messages as unknown as UIMessage[],
         persistedConversationSummary ?? conversationSummary ?? null
@@ -120,45 +154,21 @@ export async function handleChatPost(request: Request) {
 
     return result.toUIMessageStreamResponse({
       originalMessages: messages as unknown as UIMessage[],
-      onFinish: async ({ messages: responseMessages }) => {
+      onFinish: ({ messages: responseMessages }) => {
         if (!conversationId) {
           return;
         }
 
-        try {
-          if (!user) {
-            logger.warn('Chat onFinish: user not authenticated, messages not saved', {
-              conversationId,
-            });
-            return;
-          }
+        void (async () => {
+          try {
+            if (!user) {
+              logger.warn('Chat onFinish: user not authenticated, messages not saved', {
+                conversationId,
+              });
+              return;
+            }
 
-          await saveConversationMessages(
-            {
-              conversationId,
-              locale,
-              messages: responseMessages,
-              runtimeModel,
-              userId: user.id,
-            },
-            supabase
-          );
-
-          const profile = await getProfileById(user.id, supabase);
-          const memorySettings =
-            typeof profile?.settings === 'object' &&
-            profile.settings != null &&
-            'memory' in profile.settings &&
-            typeof profile.settings.memory === 'object' &&
-            profile.settings.memory != null
-              ? (profile.settings.memory as {
-                  autoWrite?: boolean;
-                  enabled?: boolean;
-                })
-              : null;
-
-          if (memorySettings?.enabled && memorySettings.autoWrite) {
-            await saveConversationMemories(
+            await saveConversationMessages(
               {
                 conversationId,
                 locale,
@@ -168,13 +178,26 @@ export async function handleChatPost(request: Request) {
               },
               supabase
             );
+
+            if (memorySettings?.enabled && memorySettings.autoWrite) {
+              await saveConversationMemories(
+                {
+                  conversationId,
+                  locale,
+                  messages: responseMessages,
+                  runtimeModel,
+                  userId: user.id,
+                },
+                supabase
+              );
+            }
+          } catch (saveError) {
+            logger.error('Chat onFinish: failed to save messages', {
+              conversationId,
+              error: saveError instanceof Error ? saveError.message : String(saveError),
+            });
           }
-        } catch (saveError) {
-          logger.error('Chat onFinish: failed to save messages', {
-            conversationId,
-            error: saveError instanceof Error ? saveError.message : String(saveError),
-          });
-        }
+        })();
       },
       onError: () => t(locale, 'chat.errors.request_failed'),
     });

@@ -31,6 +31,7 @@ export function MemoryPage({
 }: MemoryPageProps) {
   const t = useTranslations();
   const [localMemories, setLocalMemories] = useState(memories);
+  const [pendingEditId, setPendingEditId] = useState<string | null>(null);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
@@ -80,11 +81,68 @@ export function MemoryPage({
     }
   };
 
+  const handleEditMemory = async (input: { content: string; id: string; kind: string }) => {
+    if (!isAuthenticated) {
+      return false;
+    }
+
+    setPendingEditId(input.id);
+    try {
+      const response = await fetch('/api/memories', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(input),
+      });
+
+      if (!response.ok) {
+        toast.error(t('memory_page.toast.update_failed'));
+        return false;
+      }
+
+      setLocalMemories((current) =>
+        current.map((memory) =>
+          memory.id === input.id
+            ? {
+                ...memory,
+                content: input.content,
+                kind: input.kind,
+                updatedAt: new Date().toISOString(),
+              }
+            : memory
+        )
+      );
+      return true;
+    } finally {
+      setPendingEditId(null);
+    }
+  };
+
+  const handleExport = () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      memories: localMemories,
+      settings,
+      summaries,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'memory-export.json';
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="flex min-h-0 flex-1 overflow-y-auto">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-8">
         <MemoryControls
           isAuthenticated={isAuthenticated}
+          onExport={handleExport}
           isSaving={isSavingSettings}
           onSettingsChange={handleSettingsChange}
           settings={settings}
@@ -93,7 +151,9 @@ export function MemoryPage({
         <Separator />
         <MemoryList
           memories={localMemories}
+          onEditMemory={handleEditMemory}
           onDeleteMemory={handleDeleteMemory}
+          pendingEditId={pendingEditId}
           pendingDeleteId={pendingDeleteId}
           t={t}
         />

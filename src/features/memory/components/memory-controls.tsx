@@ -1,9 +1,12 @@
+import { DownloadIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import type { MemorySettings } from '@/features/models/types';
 
 interface MemoryControlsProps {
+  onExport?: () => void;
   isAuthenticated: boolean;
   isSaving?: boolean;
   onSettingsChange: (
@@ -14,6 +17,7 @@ interface MemoryControlsProps {
 }
 
 export function MemoryControls({
+  onExport,
   isAuthenticated,
   isSaving = false,
   onSettingsChange,
@@ -28,6 +32,12 @@ export function MemoryControls({
           <p className="text-muted-foreground text-sm">{t('memory_page.controls.description')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {onExport ? (
+            <Button onClick={onExport} size="sm" type="button" variant="outline">
+              <DownloadIcon />
+              {t('memory_page.controls.export')}
+            </Button>
+          ) : null}
           <Badge variant={settings.enabled ? 'default' : 'secondary'}>
             {settings.enabled
               ? t('memory_page.controls.enabled')

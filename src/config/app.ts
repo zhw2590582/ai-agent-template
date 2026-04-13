@@ -16,6 +16,7 @@ export const CHAT_CONFIG = {
 } as const;
 
 export const MEMORY_CONFIG = {
+  CONTEXT_MAX_ITEMS: 8,
   SUMMARY_MIN_MESSAGES: 8,
   SUMMARY_RECENT_MESSAGE_WINDOW: 10,
 } as const;

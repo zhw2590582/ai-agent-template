@@ -1,4 +1,5 @@
 import type { UIMessage } from 'ai';
+import { unstable_noStore as noStore } from 'next/cache';
 
 import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/app';
 import { isSupabaseConfigured } from '@/config/env';
@@ -23,6 +24,8 @@ export interface ChatPageData {
 }
 
 export async function loadChatPageData(conversationId?: string): Promise<ChatPageData> {
+  noStore();
+
   if (!isSupabaseConfigured()) {
     return {
       conversationId: null,

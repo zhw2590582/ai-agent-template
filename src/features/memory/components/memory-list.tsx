@@ -1,18 +1,32 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { Trash2Icon } from 'lucide-react';
+import { PencilIcon, Trash2Icon } from 'lucide-react';
 import { EmptyMemoryState } from '@/features/memory/components/empty-memory-state';
+import { MemoryEditorDialog } from '@/features/memory/components/memory-editor-dialog';
 import type { MemoryListItem } from '@/features/memory/types';
+import { useState } from 'react';
 
 interface MemoryListProps {
+  onEditMemory?: (input: { content: string; id: string; kind: string }) => Promise<boolean> | void;
   memories: MemoryListItem[];
   onDeleteMemory?: (memoryId: string) => Promise<boolean> | void;
+  pendingEditId?: string | null;
   pendingDeleteId?: string | null;
   t: (key: string) => string;
 }
 
-export function MemoryList({ memories, onDeleteMemory, pendingDeleteId, t }: MemoryListProps) {
+export function MemoryList({
+  onEditMemory,
+  memories,
+  onDeleteMemory,
+  pendingEditId,
+  pendingDeleteId,
+  t,
+}: MemoryListProps) {
+  const [editingMemoryId, setEditingMemoryId] = useState<string | null>(null);
+  const editingMemory = memories.find((memory) => memory.id === editingMemoryId) ?? null;
+
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
@@ -43,6 +57,16 @@ export function MemoryList({ memories, onDeleteMemory, pendingDeleteId, t }: Mem
                   <span className="text-muted-foreground text-xs">
                     {new Date(memory.updatedAt).toLocaleDateString()}
                   </span>
+                  {onEditMemory ? (
+                    <Button onClick={() => setEditingMemoryId(memory.id)} size="sm" variant="ghost">
+                      {pendingEditId === memory.id ? (
+                        <Spinner data-icon="inline-start" />
+                      ) : (
+                        <PencilIcon />
+                      )}
+                      {t('memory_page.saved_memories.edit')}
+                    </Button>
+                  ) : null}
                   {onDeleteMemory ? (
                     <Button
                       onClick={() => void onDeleteMemory(memory.id)}
@@ -64,6 +88,20 @@ export function MemoryList({ memories, onDeleteMemory, pendingDeleteId, t }: Mem
           ))}
         </div>
       )}
+
+      <MemoryEditorDialog
+        key={editingMemory?.id ?? 'memory-editor'}
+        memory={editingMemory}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingMemoryId(null);
+          }
+        }}
+        onSave={onEditMemory ?? (async () => false)}
+        open={editingMemory != null}
+        saving={pendingEditId != null && pendingEditId === editingMemory?.id}
+        t={t}
+      />
     </section>
   );
 }

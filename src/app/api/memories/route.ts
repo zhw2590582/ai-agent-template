@@ -3,7 +3,11 @@ import { z } from 'zod';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { validateRequest } from '@/lib/validation';
-import { deleteMemoryForUser, listMemoriesForUser } from '@/features/memory/storage/memories';
+import {
+  deleteMemoryForUser,
+  listMemoriesForUser,
+  updateMemoryForUser,
+} from '@/features/memory/storage/memories';
 import { upsertProfileFromAuthUser } from '@/features/auth/storage/profiles';
 
 async function requireAuth() {
@@ -21,6 +25,12 @@ async function requireAuth() {
 
 const deleteMemorySchema = z.object({
   id: z.string().min(1),
+});
+
+const updateMemorySchema = z.object({
+  content: z.string().trim().min(1).max(280),
+  id: z.string().min(1),
+  kind: z.enum(['fact', 'manual', 'preference', 'profile', 'workflow']),
 });
 
 export async function GET() {
@@ -41,6 +51,19 @@ export async function DELETE(request: Request) {
     const { supabase, user } = await requireAuth();
     await upsertProfileFromAuthUser(user, {}, supabase);
     await deleteMemoryForUser({ id, userId: user.id }, supabase);
+
+    return Response.json({ ok: true });
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const input = await validateRequest(request, updateMemorySchema);
+    const { supabase, user } = await requireAuth();
+    await upsertProfileFromAuthUser(user, {}, supabase);
+    await updateMemoryForUser({ ...input, userId: user.id }, supabase);
 
     return Response.json({ ok: true });
   } catch (error) {

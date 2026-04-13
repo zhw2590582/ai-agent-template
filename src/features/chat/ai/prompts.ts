@@ -6,11 +6,23 @@ Prefer using the user's language when replying.
 Do not claim capabilities that are not available.
 If information is missing, say so directly instead of guessing.`;
 
-export function getSystemPrompt(locale: Locale = DEFAULT_LOCALE): string {
+export function getSystemPrompt(
+  locale: Locale = DEFAULT_LOCALE,
+  options?: {
+    memoryContext?: string | null;
+  }
+): string {
+  const memorySection = options?.memoryContext
+    ? `
+
+Long-term memory:
+${options.memoryContext}`
+    : '';
+
   return `${DEFAULT_SYSTEM_PROMPT}
 
 Context:
-- User locale: ${locale}`;
+- User locale: ${locale}${memorySection}`;
 }
 
 export { DEFAULT_SYSTEM_PROMPT };

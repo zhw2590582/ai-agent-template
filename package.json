@@ -17,7 +17,8 @@
     "test:integration": "vitest run tests/integration --passWithNoTests",
     "test:e2e": "echo \"E2E tests should be placed in tests/e2e and run with Playwright/Cypress\"",
     "test:coverage": "vitest run --coverage",
-    "ci": "bun run format:check && bun run lint && bun run typecheck && bun run test:run"
+    "ci": "bun run format:check && bun run lint && bun run typecheck && bun run test:run",
+    "inspect:supabase": "bun scripts/inspect-supabase.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.69",
