@@ -224,6 +224,19 @@ export function useChatWorkbench({
     void regenerate();
   }, [models.isLoading, regenerate, runtimeModel, t]);
 
+  const activeConversationTitle = useMemo(
+    () =>
+      sidebar.conversations.find((conversation) => conversation.id === activeThreadId)?.title ??
+      null,
+    [activeThreadId, sidebar.conversations]
+  );
+
+  useEffect(() => {
+    const appName = t('common.app_name');
+
+    document.title = activeConversationTitle ? `${appName} - ${activeConversationTitle}` : appName;
+  }, [activeConversationTitle, t]);
+
   useEffect(() => {
     if (!urlConversationId) {
       invalidIdHandledRef.current = false;

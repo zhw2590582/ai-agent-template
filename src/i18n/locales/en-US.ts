@@ -11,7 +11,7 @@ import type { Translations } from './zh-CN';
 
 export const enUS: Translations = {
   common: {
-    app_name: 'AI Agent App',
+    app_name: 'AI Agent Template',
     welcome: 'Welcome',
     loading: 'Loading...',
     error: 'Error',

@@ -42,10 +42,7 @@ export function useConversationListStore() {
   const insertConversation = useCallback((conversation: ConversationSummary) => {
     setState((current) => ({
       insertedConversation: conversation,
-      patches: {
-        ...current.patches,
-        [conversation.id]: conversation,
-      },
+      patches: current.patches,
       removedIds: current.removedIds.filter((id) => id !== conversation.id),
     }));
   }, []);

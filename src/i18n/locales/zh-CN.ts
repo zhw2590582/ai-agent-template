@@ -9,7 +9,7 @@
 
 const zhCN = {
   common: {
-    app_name: 'AI Agent 应用',
+    app_name: 'AI Agent Template',
     welcome: '欢迎',
     loading: '加载中...',
     error: '错误',

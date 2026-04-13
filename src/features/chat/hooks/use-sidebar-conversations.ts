@@ -67,19 +67,20 @@ export function useSidebarConversations({
     onLoadError,
   });
 
-  // Clear optimistic head once it appears in the server list
+  // Clear optimistic inserted conversation once the underlying source catches up.
   useEffect(() => {
     const insertedConversationId = listStore.state.insertedConversation?.id;
+    const baseConversations = isAuthenticated ? initialConversations : localConversations;
 
     if (
       insertedConversationId &&
-      initialConversations.some((conversation) => conversation.id === insertedConversationId)
+      baseConversations.some((conversation) => conversation.id === insertedConversationId)
     ) {
       startTransition(() => {
         listStore.clearInsertedConversation(insertedConversationId);
       });
     }
-  }, [initialConversations, listStore]);
+  }, [initialConversations, isAuthenticated, listStore, localConversations]);
 
   const conversations = useMemo(() => {
     if (!isAuthenticated) {
