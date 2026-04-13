@@ -5,7 +5,9 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 
 import type { AppProfileSettings, ChatModelOption } from '@/features/models/types';
+import { readApiError } from '@/lib/api-client';
 import { resolveChatRuntimeModel } from '@/features/models/utils/profile';
+import { CHAT_RATE_LIMIT_ERROR_CODE } from '@/features/chat/utils/chat-errors';
 
 interface UseChatSessionOptions {
   activeThreadId: string | null;
@@ -65,6 +67,19 @@ export function useChatSession({
     () =>
       new DefaultChatTransport({
         api: `/api/chat?lang=${locale}`,
+        fetch: async (input, init) => {
+          const response = await fetch(input, init);
+
+          if (response.status === 429) {
+            const error = await readApiError(response);
+
+            if (error.code === CHAT_RATE_LIMIT_ERROR_CODE) {
+              throw new Error(CHAT_RATE_LIMIT_ERROR_CODE);
+            }
+          }
+
+          return response;
+        },
         prepareSendMessagesRequest: ({
           messages,
           id,

@@ -25,6 +25,7 @@ import {
   ToolInput,
   ToolOutput,
 } from '@/components/ai-elements/tool';
+import { isChatRateLimitError } from '@/features/chat/utils/chat-errors';
 import { getTextContent, getToolParts } from '@/features/chat/utils/message-utils';
 import { cn } from '@/lib/utils';
 
@@ -136,6 +137,11 @@ const ChatMessageRow = memo(function ChatMessageRow({
 
 export function ChatMessageList({ error, isSidebarOpen, messages, onRetry }: ChatMessageListProps) {
   const t = useTranslations();
+  const errorMessage = error
+    ? isChatRateLimitError(error)
+      ? t('chat.errors.rate_limit')
+      : t('chat.errors.request_failed')
+    : null;
   const lastAssistantMessageId = [...messages]
     .reverse()
     .find((message) => message.role === 'assistant')?.id;
@@ -197,9 +203,9 @@ export function ChatMessageList({ error, isSidebarOpen, messages, onRetry }: Cha
           );
         })}
 
-        {error ? (
+        {errorMessage ? (
           <div className="border-destructive/20 bg-destructive/10 text-destructive rounded-2xl border px-5 py-4 text-sm">
-            {t('chat.errors.request_failed')}
+            {errorMessage}
           </div>
         ) : null}
       </ConversationContent>
