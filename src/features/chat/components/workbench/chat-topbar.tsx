@@ -11,9 +11,11 @@ import {
   ShieldEllipsisIcon,
 } from 'lucide-react';
 
+import { Badge } from '@/components/ui/badge';
 import { LanguageSwitcher } from '@/components/ui-settings/language-switcher';
 import { ThemeToggle } from '@/components/ui-settings/theme-toggle';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { HEADER_NAV_ITEMS } from '@/config/app';
 import { AuthDialog } from '@/features/auth/components/auth-dialog';
 import type { WorkbenchView } from '@/features/chat/types';
@@ -34,10 +36,16 @@ type TranslateFn = (key: string, values?: Record<string, string | number>) => st
 interface ChatTopBarProps {
   activeView: WorkbenchView;
   locale: string;
+  profileSaveStatus?: 'idle' | 'saved' | 'saving';
   t: TranslateFn;
 }
 
-export function ChatTopBar({ activeView, locale, t }: ChatTopBarProps) {
+export function ChatTopBar({
+  activeView,
+  locale,
+  profileSaveStatus = 'idle',
+  t,
+}: ChatTopBarProps) {
   return (
     <div className="border-border h-12 border-b px-4 py-2">
       <div className="flex w-full flex-col gap-4">
@@ -61,6 +69,14 @@ export function ChatTopBar({ activeView, locale, t }: ChatTopBarProps) {
             })}
           </div>
           <div className="flex items-center gap-2">
+            {profileSaveStatus === 'saving' ? (
+              <Badge variant="secondary">
+                <Spinner data-icon="inline-start" />
+                {t('models_page.actions.saving')}
+              </Badge>
+            ) : profileSaveStatus === 'saved' ? (
+              <Badge variant="secondary">{t('models_page.actions.saved')}</Badge>
+            ) : null}
             <LanguageSwitcher triggerClassName="w-10" />
             <ThemeToggle />
             <Button asChild size="icon" type="button" variant="outline">

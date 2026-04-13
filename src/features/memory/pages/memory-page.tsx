@@ -14,6 +14,7 @@ import type { MemorySettings } from '@/features/models/types';
 
 interface MemoryPageProps {
   isAuthenticated: boolean;
+  locale: string;
   memories: MemoryListItem[];
   onMemorySettingsChange: (
     updater: (settings: MemorySettings) => MemorySettings
@@ -24,6 +25,7 @@ interface MemoryPageProps {
 
 export function MemoryPage({
   isAuthenticated,
+  locale,
   memories,
   onMemorySettingsChange,
   settings,
@@ -150,6 +152,7 @@ export function MemoryPage({
         />
         <Separator />
         <MemoryList
+          locale={locale}
           memories={localMemories}
           onEditMemory={handleEditMemory}
           onDeleteMemory={handleDeleteMemory}
@@ -158,7 +161,7 @@ export function MemoryPage({
           t={t}
         />
         <Separator />
-        <MemorySummaryList summaries={summaries} t={t} />
+        <MemorySummaryList locale={locale} summaries={summaries} t={t} />
       </div>
     </div>
   );
