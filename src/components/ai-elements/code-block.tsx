@@ -55,7 +55,7 @@ const addKeysToTokens = (lines: ThemedToken[][]): KeyedLine[] =>
 // Token rendering component
 const TokenSpan = ({ token }: { token: ThemedToken }) => (
   <span
-    className="dark:bg-(--shiki-dark-bg)! dark:text-(--shiki-dark)!"
+    className="dark:!bg-[var(--shiki-dark-bg)] dark:!text-[var(--shiki-dark)]"
     style={
       {
         backgroundColor: token.bgColor,
@@ -261,7 +261,7 @@ const CodeBlockBody = memo(
     return (
       <pre
         className={cn(
-          'm-0 p-4 text-sm dark:bg-(--shiki-dark-bg)! dark:text-(--shiki-dark)!',
+          'm-0 p-4 text-sm dark:!bg-[var(--shiki-dark-bg)] dark:!text-[var(--shiki-dark)]',
           className
         )}
         style={preStyle}
@@ -373,27 +373,30 @@ export const CodeBlockContent = ({
   );
 
   // Async highlighting result (populated after shiki loads)
-  const asyncKey = `${language}:${code}`;
-  const [asyncResult, setAsyncResult] = useState<{
-    key: string;
-    tokens: TokenizedCode;
-  } | null>(null);
+  const [asyncTokens, setAsyncTokens] = useState<TokenizedCode | null>(null);
+  const asyncKeyRef = useRef({ code, language });
+
+  // Invalidate stale async tokens synchronously during render
+  if (asyncKeyRef.current.code !== code || asyncKeyRef.current.language !== language) {
+    asyncKeyRef.current = { code, language };
+    setAsyncTokens(null);
+  }
 
   useEffect(() => {
     let cancelled = false;
 
     highlightCode(code, language, (result) => {
       if (!cancelled) {
-        setAsyncResult({ key: asyncKey, tokens: result });
+        setAsyncTokens(result);
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [asyncKey, code, language]);
+  }, [code, language]);
 
-  const tokenized = asyncResult?.key === asyncKey ? asyncResult.tokens : syncTokens;
+  const tokenized = asyncTokens ?? syncTokens;
 
   return (
     <div className="relative overflow-auto">

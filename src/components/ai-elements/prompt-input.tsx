@@ -808,9 +808,7 @@ export const PromptInput = ({
       try {
         // Convert blob URLs to data URLs asynchronously
         const convertedFiles: FileUIPart[] = await Promise.all(
-          files.map(async (file) => {
-            const { id, ...item } = file;
-            void id;
+          files.map(async ({ id: _id, ...item }) => {
             if (item.url?.startsWith('blob:')) {
               const dataUrl = await convertBlobUrlToDataUrl(item.url);
               // If conversion failed, keep the original blob URL
