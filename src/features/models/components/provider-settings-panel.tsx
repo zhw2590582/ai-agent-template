@@ -1,6 +1,6 @@
 'use client';
 
-import { EyeIcon, EyeOffIcon, LinkIcon, PlugZapIcon, SaveIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, LinkIcon, PlugZapIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -13,31 +13,26 @@ import type { ProviderModelItem, ProviderPreset, ProviderSettings } from '@/feat
 
 interface ProviderSettingsPanelProps {
   activePreset: ProviderPreset | undefined;
+  autoSaveStatus?: 'idle' | 'saving' | 'saved';
   isApiKeyVisible: boolean;
-  isLoading: boolean;
   isRefreshingModels: boolean;
-  isSaving: boolean;
   isTestingConnection: boolean;
   provider: ProviderSettings;
   onAddModel: () => void;
   onApiKeyVisibilityChange: (nextVisible: boolean) => void;
   onBaseUrlChange: (value: string) => void;
-  onBaseUrlReset: () => void;
   onFormatChange: (value: 'anthropic' | 'openai') => void;
   onModelRemove: (index: number) => void;
   onModelUpdate: (index: number, nextModel: ProviderModelItem) => void;
   onProviderApiKeyChange: (value: string) => void;
-  onProviderApiKeyReset: () => void;
-  onSave: () => void;
   onTestConnection: () => void;
 }
 
 export function ProviderSettingsPanel({
   activePreset,
+  autoSaveStatus = 'idle',
   isApiKeyVisible,
-  isLoading,
   isRefreshingModels,
-  isSaving,
   isTestingConnection,
   provider,
   onAddModel,
@@ -47,7 +42,6 @@ export function ProviderSettingsPanel({
   onModelRemove,
   onModelUpdate,
   onProviderApiKeyChange,
-  onSave,
   onTestConnection,
 }: ProviderSettingsPanelProps) {
   const t = useTranslations();
@@ -75,6 +69,11 @@ export function ProviderSettingsPanel({
           </a>
         </div>
         <div className="flex shrink-0 items-center gap-3">
+          {autoSaveStatus === 'saving' ? (
+            <span className="text-muted-foreground text-sm">{t('models_page.actions.saving')}</span>
+          ) : autoSaveStatus === 'saved' ? (
+            <span className="text-muted-foreground text-sm">{t('models_page.actions.saved')}</span>
+          ) : null}
           <Button
             disabled={isTestingConnection || !provider.apiKey.trim() || !provider.baseUrl.trim()}
             type="button"
@@ -85,14 +84,6 @@ export function ProviderSettingsPanel({
             {isTestingConnection
               ? t('models_page.actions.testing_connection')
               : t('models_page.actions.test_connection')}
-          </Button>
-          <Button disabled={isSaving || isLoading} type="button" onClick={onSave}>
-            <SaveIcon data-icon="inline-start" />
-            {isLoading
-              ? t('models_page.actions.loading')
-              : isSaving
-                ? t('models_page.actions.saving')
-                : t('models_page.actions.save')}
           </Button>
         </div>
       </header>
@@ -145,15 +136,15 @@ export function ProviderSettingsPanel({
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">{t('models_page.fields.api_format')}</label>
             <RadioGroup
-              className="gap-3"
+              className="flex flex-wrap gap-3"
               value={provider.apiFormat}
               onValueChange={(value) => onFormatChange(value as 'anthropic' | 'openai')}
             >
-              <label className="flex items-center gap-3 border px-4 py-3 text-sm">
+              <label className="flex min-w-48 flex-1 items-center gap-3 rounded-lg border px-4 py-3 text-sm">
                 <RadioGroupItem id={`${provider.id}-format-anthropic`} value="anthropic" />
                 <span>{t('models_page.formats.anthropic')}</span>
               </label>
-              <label className="flex items-center gap-3 border px-4 py-3 text-sm">
+              <label className="flex min-w-48 flex-1 items-center gap-3 rounded-lg border px-4 py-3 text-sm">
                 <RadioGroupItem id={`${provider.id}-format-openai`} value="openai" />
                 <span>{t('models_page.formats.openai')}</span>
               </label>

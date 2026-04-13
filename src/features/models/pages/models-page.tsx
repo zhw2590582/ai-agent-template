@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -15,7 +15,6 @@ export function ModelsPage() {
   const { user } = useAuthUser();
   const {
     isLoading,
-    isSaving,
     presetProviders,
     profile,
     saveProviderEnabled,
@@ -26,6 +25,10 @@ export function ModelsPage() {
   } = useModelProfile(user);
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const hasInitializedAutoSaveRef = useRef(false);
+  const suppressNextAutoSaveRef = useRef(false);
+  const savedIndicatorTimeoutRef = useRef<number | null>(null);
 
   const activePreset = useMemo(
     () =>
@@ -152,30 +155,59 @@ export function ModelsPage() {
     }
   };
 
-  const handleSave = async () => {
-    setIsTestingConnection(true);
-    try {
-      const probeResult =
-        selectedProvider.apiKey.trim() && selectedProvider.baseUrl.trim()
-          ? await probeProvider(false)
-          : null;
+  const autoSaveKey = useMemo(
+    () =>
+      JSON.stringify({
+        providers: profile.settings.models.providers,
+        selectedChatModelId: profile.settings.models.selectedChatModelId,
+      }),
+    [profile.settings.models.providers, profile.settings.models.selectedChatModelId]
+  );
 
-      await saveProfile((models) => ({
-        ...models,
-        providers: {
-          ...models.providers,
-          [selectedProvider.id]: {
-            ...models.providers[selectedProvider.id],
-            models: probeResult
-              ? mergeProviderModels(models.providers[selectedProvider.id], probeResult.models)
-              : models.providers[selectedProvider.id].models,
-          },
-        },
-      }));
-    } finally {
-      setIsTestingConnection(false);
+  useEffect(() => {
+    if (isLoading) {
+      return;
     }
-  };
+
+    if (!hasInitializedAutoSaveRef.current) {
+      hasInitializedAutoSaveRef.current = true;
+      return;
+    }
+
+    if (suppressNextAutoSaveRef.current) {
+      suppressNextAutoSaveRef.current = false;
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setAutoSaveStatus('saving');
+      void saveProfile(undefined, { silent: true, trackSavingState: false }).then((success) => {
+        if (!success) {
+          setAutoSaveStatus('idle');
+          return;
+        }
+
+        setAutoSaveStatus('saved');
+        if (savedIndicatorTimeoutRef.current) {
+          window.clearTimeout(savedIndicatorTimeoutRef.current);
+        }
+        savedIndicatorTimeoutRef.current = window.setTimeout(() => {
+          setAutoSaveStatus('idle');
+          savedIndicatorTimeoutRef.current = null;
+        }, 1400);
+      });
+    }, 600);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [autoSaveKey, isLoading, saveProfile]);
+
+  useEffect(() => {
+    return () => {
+      if (savedIndicatorTimeoutRef.current) {
+        window.clearTimeout(savedIndicatorTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="bg-background text-foreground flex h-[calc(100vh-3rem)] overflow-hidden">
@@ -185,22 +217,22 @@ export function ModelsPage() {
           selectedProviderId={selectedProvider.id}
           settings={profile.settings.models.providers}
           onSelectProvider={updateSelectedProviderId}
-          onToggleProvider={(providerId) =>
+          onToggleProvider={(providerId) => {
+            suppressNextAutoSaveRef.current = true;
             void saveProviderEnabled(
               providerId,
               !profile.settings.models.providers[providerId].enabled
-            )
-          }
+            );
+          }}
         />
       </div>
 
       <div className="max-w-4xl flex-1 overflow-y-auto">
         <ProviderSettingsPanel
           activePreset={activePreset}
+          autoSaveStatus={autoSaveStatus}
           isApiKeyVisible={isApiKeyVisible}
-          isLoading={isLoading}
           isRefreshingModels={false}
-          isSaving={isSaving}
           isTestingConnection={isTestingConnection}
           provider={selectedProvider}
           onAddModel={handleAddModel}
@@ -209,12 +241,6 @@ export function ModelsPage() {
             updateProvider(selectedProvider.id, (provider) => ({
               ...provider,
               baseUrl: value,
-            }))
-          }
-          onBaseUrlReset={() =>
-            updateProvider(selectedProvider.id, (provider) => ({
-              ...provider,
-              baseUrl: activePreset?.defaultBaseUrl ?? provider.baseUrl,
             }))
           }
           onFormatChange={(value) =>
@@ -231,13 +257,6 @@ export function ModelsPage() {
               apiKey: value,
             }))
           }
-          onProviderApiKeyReset={() =>
-            updateProvider(selectedProvider.id, (provider) => ({
-              ...provider,
-              apiKey: '',
-            }))
-          }
-          onSave={() => void handleSave()}
           onTestConnection={() => void handleTestConnection()}
         />
       </div>

@@ -178,6 +178,7 @@ const zhCN = {
       add_model: '添加模型',
       test_connection: '测试连接',
       testing_connection: '测试中...',
+      saved: '已保存',
       reset: '取消',
       save: '保存',
       saving: '保存中...',

@@ -180,6 +180,7 @@ export const enUS: Translations = {
       add_model: 'Add Model',
       test_connection: 'Test Connection',
       testing_connection: 'Testing...',
+      saved: 'Saved',
       reset: 'Cancel',
       save: 'Save',
       saving: 'Saving...',
