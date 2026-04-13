@@ -2,7 +2,6 @@ import type { ProviderPreset } from '@/features/models/types';
 
 export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
   {
-    accentClassName: 'from-sky-500/30 via-blue-500/20 to-cyan-400/10 text-sky-300 ring-sky-400/20',
     apiFormat: 'openai',
     defaultBaseUrl: 'https://api.deepseek.com/v1',
     description: 'Reasoning and general chat models from DeepSeek.',
@@ -16,8 +15,6 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'DeepSeek',
   },
   {
-    accentClassName:
-      'from-emerald-500/30 via-green-500/20 to-lime-400/10 text-emerald-300 ring-emerald-400/20',
     apiFormat: 'openai',
     defaultBaseUrl: 'https://api.openai.com/v1',
     description: 'GPT series via the standard OpenAI-compatible API.',
@@ -32,8 +29,6 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'OpenAI',
   },
   {
-    accentClassName:
-      'from-violet-500/30 via-fuchsia-500/20 to-pink-400/10 text-violet-300 ring-violet-400/20',
     apiFormat: 'anthropic',
     defaultBaseUrl: 'https://api.anthropic.com/v1',
     description: 'Claude models using the Anthropic protocol.',
@@ -47,8 +42,6 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'Anthropic',
   },
   {
-    accentClassName:
-      'from-amber-500/30 via-yellow-500/20 to-orange-400/10 text-amber-300 ring-amber-400/20',
     apiFormat: 'openai',
     defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
     description: 'Gemini models through the OpenAI-compatible endpoint.',
@@ -62,8 +55,6 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'Google',
   },
   {
-    accentClassName:
-      'from-neutral-400/30 via-zinc-400/20 to-slate-400/10 text-zinc-200 ring-zinc-400/20',
     apiFormat: 'openai',
     defaultBaseUrl: 'https://api.x.ai/v1',
     description: 'Grok models from xAI via OpenAI-compatible API.',
@@ -77,8 +68,6 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'xAI',
   },
   {
-    accentClassName:
-      'from-orange-500/30 via-rose-500/20 to-red-400/10 text-orange-300 ring-orange-400/20',
     apiFormat: 'openai',
     defaultBaseUrl: 'https://api.groq.com/openai/v1',
     description: 'Fast inference for open-weight and hosted models.',
@@ -92,8 +81,6 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'Groq',
   },
   {
-    accentClassName:
-      'from-indigo-500/30 via-blue-500/20 to-cyan-400/10 text-indigo-300 ring-indigo-400/20',
     apiFormat: 'openai',
     defaultBaseUrl: 'https://openrouter.ai/api/v1',
     description: 'Single endpoint for multiple commercial and open providers.',
@@ -107,8 +94,6 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'OpenRouter',
   },
   {
-    accentClassName:
-      'from-indigo-500/30 via-purple-500/20 to-violet-400/10 text-indigo-200 ring-indigo-400/20',
     apiFormat: 'openai',
     defaultBaseUrl: 'https://api.mistral.ai/v1',
     description: 'Mistral-hosted frontier and open-weight models.',
@@ -122,8 +107,6 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'Mistral',
   },
   {
-    accentClassName:
-      'from-cyan-500/30 via-teal-500/20 to-emerald-400/10 text-cyan-300 ring-cyan-400/20',
     apiFormat: 'openai',
     defaultBaseUrl: 'https://api.cohere.ai/compatibility/v1',
     description: 'Command models through the OpenAI compatibility API.',
@@ -137,8 +120,6 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'Cohere',
   },
   {
-    accentClassName:
-      'from-slate-400/30 via-zinc-400/20 to-neutral-400/10 text-slate-200 ring-slate-400/20',
     apiFormat: 'openai',
     defaultBaseUrl: 'https://api.moonshot.cn/v1',
     description: 'Moonshot and Kimi models.',
@@ -152,8 +133,6 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'Moonshot',
   },
   {
-    accentClassName:
-      'from-purple-500/30 via-indigo-500/20 to-violet-400/10 text-purple-300 ring-purple-400/20',
     apiFormat: 'openai',
     defaultBaseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     description: 'Qwen family via DashScope compatibility API.',
@@ -167,8 +146,6 @@ export const MODEL_PROVIDER_PRESETS: ProviderPreset[] = [
     name: 'Qwen',
   },
   {
-    accentClassName:
-      'from-blue-500/30 via-indigo-500/20 to-violet-400/10 text-blue-300 ring-blue-400/20',
     apiFormat: 'openai',
     defaultBaseUrl: 'https://open.bigmodel.cn/api/paas/v4',
     description: 'GLM models from Zhipu AI.',

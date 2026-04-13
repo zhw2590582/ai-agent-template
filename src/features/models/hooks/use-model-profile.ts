@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { useTheme } from '@/components/ui-settings/theme-provider';
 import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
-import type { AppProfile, AppProfileSettings, ProviderSettings } from '@/features/models/types';
+import type { AppProfile, ProviderSettings } from '@/features/models/types';
 import { createProfileDraft, normalizeProfileSettings } from '@/features/models/utils/profile';
 
 const LOCAL_MODEL_PROFILE_STORAGE_KEY = 'agent-model-profile';
@@ -147,14 +147,18 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     return profile.settings.models.providers[profile.settings.models.selectedProviderId];
   }, [profile]);
 
-  const saveTarget = user ? 'database' : 'local';
-
-  const updateSettings = useCallback(
-    (nextSettings: AppProfileSettings) => {
+  const updateSelectedProviderId = useCallback(
+    (providerId: string) => {
       setProfile((current) => ({
         ...current,
         locale,
-        settings: normalizeProfileSettings(nextSettings),
+        settings: normalizeProfileSettings({
+          models: {
+            ...current.settings.models,
+            selectedChatModelId: current.settings.models.selectedChatModelId,
+            selectedProviderId: providerId,
+          },
+        }),
         theme,
         updated_at: new Date().toISOString(),
       }));
@@ -162,32 +166,25 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     [locale, theme]
   );
 
-  const updateSelectedProviderId = useCallback(
-    (providerId: string) => {
-      updateSettings({
-        models: {
-          ...profile.settings.models,
-          selectedChatModelId: profile.settings.models.selectedChatModelId,
-          selectedProviderId: providerId,
-        },
-      });
-    },
-    [profile.settings.models, updateSettings]
-  );
-
   const updateProvider = useCallback(
     (providerId: string, updater: (provider: ProviderSettings) => ProviderSettings) => {
-      updateSettings({
-        models: {
-          ...profile.settings.models,
-          providers: {
-            ...profile.settings.models.providers,
-            [providerId]: updater(profile.settings.models.providers[providerId]),
+      setProfile((current) => ({
+        ...current,
+        locale,
+        settings: normalizeProfileSettings({
+          models: {
+            ...current.settings.models,
+            providers: {
+              ...current.settings.models.providers,
+              [providerId]: updater(current.settings.models.providers[providerId]),
+            },
           },
-        },
-      });
+        }),
+        theme,
+        updated_at: new Date().toISOString(),
+      }));
     },
-    [profile.settings.models, updateSettings]
+    [locale, theme]
   );
 
   const persistProfile = useCallback(
@@ -270,14 +267,6 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     [locale, persistProfile, profile, theme]
   );
 
-  const importSettings = (incoming: unknown) => {
-    updateSettings(normalizeProfileSettings(incoming));
-  };
-
-  const exportSettings = () => {
-    return JSON.stringify(profile.settings, null, 2);
-  };
-
   const saveProfile = async () => {
     const nextProfile = {
       ...profile,
@@ -289,14 +278,11 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
   };
 
   return {
-    exportSettings,
-    importSettings,
     isLoading,
     isSaving,
     presetProviders: MODEL_PROVIDER_PRESETS,
     profile,
     saveProfile,
-    saveTarget,
     selectedProvider,
     updateSelectedChatModelId,
     updateProvider,

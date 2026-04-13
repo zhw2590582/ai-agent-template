@@ -55,7 +55,6 @@ export function ChatSidebar({
   const locale = useLocale();
   const pathname = usePathname();
   const homeHref = `/${locale}`;
-  const subagentHref = `/${locale}/subagent`;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
@@ -153,7 +152,7 @@ export function ChatSidebar({
 
       <div className="px-3">
         <Button asChild className="w-full justify-start gap-2" size="default" variant="ghost">
-          <Link href={subagentHref} onClick={handleNewChatClick}>
+          <Link href={homeHref} onClick={handleNewChatClick}>
             <MessageSquarePlusIcon data-icon="inline-start" />
             {t('chat.sidebar.new_chat')}
           </Link>

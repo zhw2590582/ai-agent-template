@@ -10,7 +10,6 @@ export interface ProviderModelItem {
 }
 
 export interface ProviderPreset {
-  accentClassName: string;
   apiFormat: ModelApiFormat;
   defaultBaseUrl: string;
   description: string;

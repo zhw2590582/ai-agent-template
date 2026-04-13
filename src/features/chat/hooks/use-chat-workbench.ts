@@ -51,7 +51,6 @@ export function useChatWorkbench({
     () => getChatModelOptions(models.profile.settings),
     [models.profile.settings]
   );
-  const missingModelConfigHandledRef = useRef(false);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [input, setInput] = useState('');
@@ -163,29 +162,6 @@ export function useChatWorkbench({
     starterMessages,
   });
 
-  const redirectToModels = useCallback(() => {
-    router.replace(`/${locale}/models`);
-  }, [locale, router]);
-
-  useEffect(() => {
-    if (models.isLoading) {
-      return;
-    }
-
-    if (availableModels.length > 0) {
-      missingModelConfigHandledRef.current = false;
-      return;
-    }
-
-    if (missingModelConfigHandledRef.current) {
-      return;
-    }
-
-    missingModelConfigHandledRef.current = true;
-    toast.error(t('chat.errors.model_not_configured'));
-    redirectToModels();
-  }, [availableModels.length, models.isLoading, redirectToModels, t]);
-
   useEffect(() => {
     if (models.isLoading || availableModels.length === 0) {
       return;
@@ -222,13 +198,12 @@ export function useChatWorkbench({
 
       if (!runtimeModel) {
         toast.error(t('chat.errors.model_not_configured'));
-        redirectToModels();
         return;
       }
 
       handleSubmit(event);
     },
-    [handleSubmit, models.isLoading, redirectToModels, runtimeModel, t]
+    [handleSubmit, models.isLoading, runtimeModel, t]
   );
 
   useEffect(() => {
