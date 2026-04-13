@@ -1,16 +1,26 @@
 'use client';
 
+import { useState } from 'react';
 import { PlusCircleIcon, Trash2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import type { ProviderModelItem } from '@/features/models/types';
 
 interface ProviderModelListProps {
   models: ProviderModelItem[];
-  onAddModel: () => void;
+  onAddModel: (model: Pick<ProviderModelItem, 'id' | 'name'>) => void;
   onRemoveModel: (index: number) => void;
   onUpdateModel: (index: number, nextModel: ProviderModelItem) => void;
 }
@@ -22,6 +32,26 @@ export function ProviderModelList({
   onUpdateModel,
 }: ProviderModelListProps) {
   const t = useTranslations();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [draftModelName, setDraftModelName] = useState('');
+  const [draftModelId, setDraftModelId] = useState('');
+
+  const handleAddModel = () => {
+    const modelId = draftModelId.trim();
+    const modelName = draftModelName.trim() || modelId;
+
+    if (!modelId) {
+      return;
+    }
+
+    onAddModel({
+      id: modelId,
+      name: modelName,
+    });
+    setDraftModelName('');
+    setDraftModelId('');
+    setIsAddDialogOpen(false);
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -30,13 +60,50 @@ export function ProviderModelList({
           <h3 className="text-base font-medium">{t('models_page.models.title')}</h3>
           <p className="text-muted-foreground text-sm">{t('models_page.models.description')}</p>
         </div>
-        <Button type="button" variant="ghost" onClick={onAddModel}>
-          <PlusCircleIcon data-icon="inline-start" />
-          {t('models_page.actions.add_model')}
-        </Button>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button type="button" variant="ghost">
+              <PlusCircleIcon data-icon="inline-start" />
+              {t('models_page.actions.add_model')}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t('models_page.actions.add_model')}</DialogTitle>
+              <DialogDescription>{t('models_page.models.description')}</DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">
+                  {t('models_page.models.name_placeholder')}
+                </label>
+                <Input
+                  placeholder={t('models_page.models.name_placeholder')}
+                  value={draftModelName}
+                  onChange={(event) => setDraftModelName(event.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">
+                  {t('models_page.models.id_placeholder')}
+                </label>
+                <Input
+                  placeholder={t('models_page.models.id_placeholder')}
+                  value={draftModelId}
+                  onChange={(event) => setDraftModelId(event.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button disabled={!draftModelId.trim()} type="button" onClick={handleAddModel}>
+                {t('models_page.actions.add_model')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <div className="divide-y border">
+      <div className="divide-y overflow-hidden rounded-lg border">
         {models.map((model, index) => (
           <div
             key={`${model.id || 'custom'}-${index}`}
@@ -44,7 +111,6 @@ export function ProviderModelList({
           >
             <div className="min-w-0 flex-1 space-y-1">
               <Input
-                className="h-8 border-0 px-0 text-sm font-medium shadow-none focus-visible:ring-0"
                 placeholder={t('models_page.models.name_placeholder')}
                 value={model.name}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -55,7 +121,6 @@ export function ProviderModelList({
                 }
               />
               <Input
-                className="text-muted-foreground h-7 border-0 px-0 text-sm shadow-none focus-visible:ring-0"
                 placeholder={t('models_page.models.id_placeholder')}
                 value={model.id}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) =>

@@ -36,16 +36,16 @@ export function ModelsPage() {
     [presetProviders, selectedProvider.id]
   );
 
-  const handleAddModel = () => {
+  const handleAddModel = (model: Pick<ProviderModelItem, 'id' | 'name'>) => {
     updateProvider(selectedProvider.id, (provider) => ({
       ...provider,
       models: [
         ...provider.models,
         {
           enabled: true,
-          id: '',
+          id: model.id,
           isCustom: true,
-          name: '',
+          name: model.name,
         },
       ],
     }));

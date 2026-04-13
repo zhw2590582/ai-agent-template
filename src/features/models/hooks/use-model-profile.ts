@@ -85,6 +85,11 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
   const [isLoading, setIsLoading] = useState(Boolean(user && !profileCache.has(user.id)));
   const [isSaving, setIsSaving] = useState(false);
   const profileRef = useRef(profile);
+  const saveInFlightRef = useRef<Promise<boolean> | null>(null);
+  const queuedSaveRef = useRef<{
+    nextProfile: AppProfile;
+    options?: { silent?: boolean; trackSavingState?: boolean };
+  } | null>(null);
 
   useEffect(() => {
     profileRef.current = profile;
@@ -205,45 +210,73 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
         return true;
       }
 
-      if (options?.trackSavingState !== false) {
-        setIsSaving(true);
+      if (saveInFlightRef.current) {
+        queuedSaveRef.current = { nextProfile, options };
+        await saveInFlightRef.current;
+        const queuedSave = queuedSaveRef.current;
+        if (!queuedSave || queuedSave.nextProfile.updated_at !== nextProfile.updated_at) {
+          return true;
+        }
+        queuedSaveRef.current = null;
+        return persistProfile(queuedSave.nextProfile, queuedSave.options);
       }
-      try {
-        const response = await fetch('/api/profile', {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            settings: nextProfile.settings,
-          }),
-        });
 
-        if (!response.ok) {
-          if (!options?.silent) {
-            toast.error(t('models_page.toast.save_failed'));
-          }
-          return false;
-        }
-
-        const data = (await response.json()) as { profile: Partial<AppProfile> };
-        profileCache.set(user.id, data.profile ?? nextProfile);
-        setProfile(
-          createProfileDraft({
-            existing: data.profile,
-            locale,
-            theme,
-            user,
-          })
-        );
-
-        if (!options?.silent) {
-          toast.success(t('models_page.toast.save_success'));
-        }
-        return true;
-      } finally {
+      const request = (async () => {
         if (options?.trackSavingState !== false) {
-          setIsSaving(false);
+          setIsSaving(true);
+        }
+        try {
+          const response = await fetch('/api/profile', {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              settings: nextProfile.settings,
+            }),
+          });
+
+          if (!response.ok) {
+            if (!options?.silent) {
+              toast.error(t('models_page.toast.save_failed'));
+            }
+            return false;
+          }
+
+          const data = (await response.json()) as { profile: Partial<AppProfile> };
+          profileCache.set(user.id, data.profile ?? nextProfile);
+          setProfile(
+            createProfileDraft({
+              existing: data.profile,
+              locale,
+              theme,
+              user,
+            })
+          );
+
+          if (!options?.silent) {
+            toast.success(t('models_page.toast.save_success'));
+          }
+          return true;
+        } finally {
+          if (options?.trackSavingState !== false) {
+            setIsSaving(false);
+          }
+        }
+      })();
+
+      saveInFlightRef.current = request;
+
+      try {
+        return await request;
+      } finally {
+        if (saveInFlightRef.current === request) {
+          saveInFlightRef.current = null;
+        }
+        const queuedSave = queuedSaveRef.current;
+        if (queuedSave) {
+          queuedSaveRef.current = null;
+          void persistProfile(queuedSave.nextProfile, queuedSave.options);
         }
       }
     },

@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { ProviderIcon } from '@/features/models/components/provider-icon';
 import { ProviderModelList } from '@/features/models/components/provider-model-list';
 import type { ProviderModelItem, ProviderPreset, ProviderSettings } from '@/features/models/types';
+import { cn } from '@/lib/utils';
 
 interface ProviderSettingsPanelProps {
   activePreset: ProviderPreset | undefined;
@@ -18,7 +19,7 @@ interface ProviderSettingsPanelProps {
   isRefreshingModels: boolean;
   isTestingConnection: boolean;
   provider: ProviderSettings;
-  onAddModel: () => void;
+  onAddModel: (model: Pick<ProviderModelItem, 'id' | 'name'>) => void;
   onApiKeyVisibilityChange: (nextVisible: boolean) => void;
   onBaseUrlChange: (value: string) => void;
   onFormatChange: (value: 'anthropic' | 'openai') => void;
@@ -140,12 +141,30 @@ export function ProviderSettingsPanel({
               value={provider.apiFormat}
               onValueChange={(value) => onFormatChange(value as 'anthropic' | 'openai')}
             >
-              <label className="flex min-w-48 flex-1 items-center gap-3 rounded-lg border px-4 py-3 text-sm">
-                <RadioGroupItem id={`${provider.id}-format-anthropic`} value="anthropic" />
+              <label
+                className={cn(
+                  'flex min-w-48 flex-1 items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors',
+                  provider.apiFormat === 'anthropic' && 'border-emerald-500/50 bg-emerald-500/10'
+                )}
+              >
+                <RadioGroupItem
+                  className="data-checked:border-emerald-500 data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
+                  id={`${provider.id}-format-anthropic`}
+                  value="anthropic"
+                />
                 <span>{t('models_page.formats.anthropic')}</span>
               </label>
-              <label className="flex min-w-48 flex-1 items-center gap-3 rounded-lg border px-4 py-3 text-sm">
-                <RadioGroupItem id={`${provider.id}-format-openai`} value="openai" />
+              <label
+                className={cn(
+                  'flex min-w-48 flex-1 items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors',
+                  provider.apiFormat === 'openai' && 'border-emerald-500/50 bg-emerald-500/10'
+                )}
+              >
+                <RadioGroupItem
+                  className="data-checked:border-emerald-500 data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
+                  id={`${provider.id}-format-openai`}
+                  value="openai"
+                />
                 <span>{t('models_page.formats.openai')}</span>
               </label>
             </RadioGroup>
