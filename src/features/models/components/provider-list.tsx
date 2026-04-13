@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { ProviderIcon } from '@/features/models/components/provider-icon';
@@ -37,16 +36,12 @@ export function ProviderList({
             <div
               key={provider.id}
               className={cn(
-                'flex items-center gap-3 border px-4 py-3 transition-colors',
-                isSelected && 'border-primary/35 bg-accent/25'
+                'hover:bg-accent/15 flex cursor-pointer items-center gap-3 rounded-md border px-4 py-3 transition-colors',
+                isSelected && 'border-primary/35 bg-accent hover:bg-accent'
               )}
+              onClick={() => onSelectProvider(provider.id)}
             >
-              <Button
-                className="h-auto min-w-0 flex-1 justify-start px-0 py-0 hover:bg-transparent"
-                type="button"
-                variant="ghost"
-                onClick={() => onSelectProvider(provider.id)}
-              >
+              <div className="flex h-auto min-w-0 flex-1 items-center justify-start gap-3 px-0 py-0 font-normal">
                 <ProviderIcon
                   fallbackClassName="flex size-10 shrink-0 items-center justify-center border text-sm font-semibold"
                   providerId={provider.id}
@@ -54,7 +49,7 @@ export function ProviderList({
                 <span className="min-w-0 flex-1 truncate text-left text-sm font-medium">
                   {provider.name}
                 </span>
-              </Button>
+              </div>
               <Switch
                 aria-label={`${provider.name} ${providerSettings.enabled ? t('models_page.status.enabled') : t('models_page.status.disabled')}`}
                 checked={providerSettings.enabled}
