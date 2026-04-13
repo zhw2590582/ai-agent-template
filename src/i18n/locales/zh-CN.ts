@@ -149,7 +149,9 @@ const zhCN = {
     },
     providers: {
       dialog_title: '添加自定义提供商',
-      dialog_description: '先添加一个提供商入口，再在右侧填写 API 信息并测试连接。',
+      dialog_description: '先创建一个提供商，再在右侧继续填写 API 信息并测试连接。',
+      delete_title: '删除自定义提供商',
+      delete_description: '确认删除 “{provider}” 吗？该提供商及其模型配置会一并移除。',
       name_label: '提供商名称',
       name_placeholder: '例如 My OpenAI Gateway',
       duplicate_name: '这个提供商名称已经存在。',
@@ -174,7 +176,7 @@ const zhCN = {
     },
     models: {
       title: '可用模型列表',
-      description: '预置模型可以直接启用，也可以添加自己的自定义模型标识。',
+      description: '同步到的模型可以直接启用，也可以补充自己的自定义模型。',
       name_placeholder: '模型显示名称',
       id_placeholder: '模型 ID，例如 gpt-4.1-mini',
       duplicate_id: '这个模型 ID 已经存在。',
@@ -185,6 +187,7 @@ const zhCN = {
       export: '导出',
       add_model: '添加模型',
       add_provider: '添加自定义提供商',
+      delete_provider: '删除提供商',
       edit_model: '编辑模型',
       test_connection: '测试连接',
       testing_connection: '测试中...',

@@ -152,7 +152,10 @@ export const enUS: Translations = {
     providers: {
       dialog_title: 'Add Custom Provider',
       dialog_description:
-        'Create a provider entry first, then fill in the API details and test the connection on the right.',
+        'Create a provider first, then continue with the API details and connection test on the right.',
+      delete_title: 'Delete Custom Provider',
+      delete_description:
+        'Delete “{provider}”? This will remove the provider and all of its model settings.',
       name_label: 'Provider Name',
       name_placeholder: 'For example My OpenAI Gateway',
       duplicate_name: 'A provider with this name already exists.',
@@ -177,7 +180,8 @@ export const enUS: Translations = {
     },
     models: {
       title: 'Available Models',
-      description: 'Preset models can be enabled directly, and you can add custom model IDs too.',
+      description:
+        'Synced models can be enabled directly, and you can add your own custom models too.',
       name_placeholder: 'Display name',
       id_placeholder: 'Model ID, for example gpt-4.1-mini',
       duplicate_id: 'This model ID already exists.',
@@ -188,6 +192,7 @@ export const enUS: Translations = {
       export: 'Export',
       add_model: 'Add Model',
       add_provider: 'Add Custom Provider',
+      delete_provider: 'Delete Provider',
       edit_model: 'Edit Model',
       test_connection: 'Test Connection',
       testing_connection: 'Testing...',

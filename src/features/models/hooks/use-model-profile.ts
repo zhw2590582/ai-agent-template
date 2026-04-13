@@ -213,28 +213,6 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     [buildNextProfile]
   );
 
-  const addCustomProvider = useCallback(
-    (name: string) => {
-      const current = profileRef.current;
-      const nextProvider = buildCustomProviderSettings({
-        existingIds: Object.keys(current.settings.models.providers),
-        name,
-      });
-      const nextProfile = buildNextProfile(current, {
-        ...current.settings.models,
-        providers: {
-          ...current.settings.models.providers,
-          [nextProvider.id]: nextProvider,
-        },
-        selectedProviderId: nextProvider.id,
-      });
-      profileRef.current = nextProfile;
-      setProfile(nextProfile);
-      return nextProvider.id;
-    },
-    [buildNextProfile]
-  );
-
   const persistProfile = useCallback(
     async (nextProfile: AppProfile, options?: { silent?: boolean; trackSavingState?: boolean }) => {
       if (!user) {
@@ -318,6 +296,75 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     [locale, t, theme, user]
   );
 
+  const addCustomProvider = useCallback(
+    async (name: string) => {
+      const current = profileRef.current;
+      const nextProvider = buildCustomProviderSettings({
+        existingIds: Object.keys(current.settings.models.providers),
+        name,
+      });
+      const nextProfile = buildNextProfile(current, {
+        ...current.settings.models,
+        providers: {
+          ...current.settings.models.providers,
+          [nextProvider.id]: nextProvider,
+        },
+        selectedProviderId: nextProvider.id,
+      });
+      profileRef.current = nextProfile;
+      setProfile(nextProfile);
+
+      const success = await persistProfile(nextProfile, {
+        silent: true,
+        trackSavingState: false,
+      });
+
+      return success ? nextProvider.id : null;
+    },
+    [buildNextProfile, persistProfile]
+  );
+
+  const removeCustomProvider = useCallback(
+    async (providerId: string) => {
+      const current = profileRef.current;
+      const provider = current.settings.models.providers[providerId];
+
+      if (!provider?.isCustom) {
+        return false;
+      }
+
+      const nextProviders = { ...current.settings.models.providers };
+      delete nextProviders[providerId];
+
+      const remainingProviders = Object.values(nextProviders);
+      const fallbackProviderId =
+        remainingProviders.find((item) => !item.isCustom)?.id ?? remainingProviders[0]?.id ?? '';
+      const selectedChatModelId = current.settings.models.selectedChatModelId?.startsWith(
+        `${providerId}::`
+      )
+        ? null
+        : current.settings.models.selectedChatModelId;
+      const nextProfile = buildNextProfile(current, {
+        ...current.settings.models,
+        providers: nextProviders,
+        selectedChatModelId,
+        selectedProviderId:
+          current.settings.models.selectedProviderId === providerId
+            ? fallbackProviderId
+            : current.settings.models.selectedProviderId,
+      });
+
+      profileRef.current = nextProfile;
+      setProfile(nextProfile);
+
+      return persistProfile(nextProfile, {
+        silent: true,
+        trackSavingState: false,
+      });
+    },
+    [buildNextProfile, persistProfile]
+  );
+
   const updateSelectedChatModelId = useCallback(
     async (
       selectedChatModelId: string | null,
@@ -385,6 +432,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     isSaving,
     providers: orderedProviders,
     profile,
+    removeCustomProvider,
     saveProviderEnabled,
     saveProfile,
     selectedProvider,

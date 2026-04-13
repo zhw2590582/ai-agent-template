@@ -58,7 +58,7 @@ export function ProviderList({
   return (
     <>
       <ScrollArea className="h-full overflow-hidden">
-        <div className="space-y-2 p-2">
+        <div className="mb-24 space-y-2 p-2">
           {providers.map((provider) => {
             const isSelected = provider.id === selectedProviderId;
 
@@ -95,7 +95,7 @@ export function ProviderList({
           })}
 
           <Button
-            className="w-full justify-start"
+            className="w-full justify-center"
             variant="outline"
             onClick={() => setIsDialogOpen(true)}
           >

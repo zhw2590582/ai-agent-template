@@ -18,6 +18,7 @@ export function ModelsPage() {
     isLoading,
     profile,
     providers,
+    removeCustomProvider,
     saveProviderEnabled,
     saveProfile,
     selectedProvider,
@@ -211,7 +212,8 @@ export function ModelsPage() {
           providers={providers}
           selectedProviderId={selectedProvider.id}
           onAddCustomProvider={(providerName) => {
-            addCustomProvider(providerName);
+            suppressNextAutoSaveRef.current = true;
+            void addCustomProvider(providerName);
           }}
           onSelectProvider={updateSelectedProviderId}
           onToggleProvider={(providerId) => {
@@ -252,6 +254,10 @@ export function ModelsPage() {
               apiKey: value,
             }))
           }
+          onDeleteProvider={() => {
+            suppressNextAutoSaveRef.current = true;
+            void removeCustomProvider(selectedProvider.id);
+          }}
           onTestConnection={() => void handleTestConnection()}
         />
       </div>

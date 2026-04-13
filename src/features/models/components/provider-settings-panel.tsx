@@ -1,9 +1,18 @@
 'use client';
 
-import { EyeIcon, EyeOffIcon, LinkIcon, PlugZapIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, LinkIcon, PlugZapIcon, Trash2Icon } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
@@ -24,6 +33,7 @@ interface ProviderSettingsPanelProps {
   onModelRemove: (index: number) => void;
   onModelUpdate: (index: number, nextModel: ProviderModelItem) => void;
   onProviderApiKeyChange: (value: string) => void;
+  onDeleteProvider: () => void;
   onTestConnection: () => void;
 }
 
@@ -39,148 +49,188 @@ export function ProviderSettingsPanel({
   onModelRemove,
   onModelUpdate,
   onProviderApiKeyChange,
+  onDeleteProvider,
   onTestConnection,
 }: ProviderSettingsPanelProps) {
   const t = useTranslations();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   return (
-    <div className="bg-background flex flex-col">
-      <header className="bg-background sticky top-0 z-10 flex items-center justify-between gap-4 border-b px-6 py-5">
-        <div className="flex min-w-0 items-center gap-3">
-          <ProviderIcon
-            docsUrl={provider.docsUrl}
-            fallbackClassName="flex size-10 shrink-0 items-center justify-center border text-sm font-semibold"
-            logoId={provider.logoId}
-            monogram={provider.monogram}
-            name={provider.name}
-            providerId={provider.id}
-          />
-          <h2 className="truncate text-xl font-semibold">{provider.name}</h2>
-          {provider.docsUrl ? (
-            <a
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              href={provider.docsUrl}
-              rel="noreferrer"
-              target="_blank"
-            >
-              <LinkIcon className="size-4" />
-            </a>
-          ) : null}
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-          {autoSaveStatus === 'saving' ? (
-            <span className="text-muted-foreground text-sm">{t('models_page.actions.saving')}</span>
-          ) : autoSaveStatus === 'saved' ? (
-            <span className="text-muted-foreground text-sm">{t('models_page.actions.saved')}</span>
-          ) : null}
-          <Button
-            disabled={isTestingConnection || !provider.apiKey.trim() || !provider.baseUrl.trim()}
-            type="button"
-            variant="outline"
-            onClick={onTestConnection}
-          >
-            <PlugZapIcon data-icon="inline-start" />
-            {isTestingConnection
-              ? t('models_page.actions.testing_connection')
-              : t('models_page.actions.test_connection')}
-          </Button>
-        </div>
-      </header>
-
-      <div className="flex flex-1 flex-col gap-6 px-6 py-5">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">{t('models_page.fields.api_key')}</label>
+    <>
+      <div className="bg-background mb-24 flex flex-col">
+        <header className="bg-background sticky top-0 z-10 flex items-center justify-between gap-4 border-b px-6 py-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <ProviderIcon
+              docsUrl={provider.docsUrl}
+              fallbackClassName="flex size-10 shrink-0 items-center justify-center border text-sm font-semibold"
+              logoId={provider.logoId}
+              monogram={provider.monogram}
+              name={provider.name}
+              providerId={provider.id}
+            />
+            <h2 className="truncate text-xl font-semibold">{provider.name}</h2>
             {provider.docsUrl ? (
               <a
-                className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
                 href={provider.docsUrl}
                 rel="noreferrer"
                 target="_blank"
               >
-                {t('models_page.fields.get_api_key')}
+                <LinkIcon className="size-4" />
               </a>
             ) : null}
           </div>
-          <InputGroup>
-            <InputGroupInput
-              className="h-10"
-              placeholder={t('models_page.fields.api_key_placeholder')}
-              type={isApiKeyVisible ? 'text' : 'password'}
-              value={provider.apiKey}
-              onChange={(event) => onProviderApiKeyChange(event.target.value)}
-            />
-            <InputGroupButton
-              size="icon-sm"
+          <div className="flex shrink-0 items-center gap-3">
+            {autoSaveStatus === 'saving' ? (
+              <span className="text-muted-foreground text-sm">
+                {t('models_page.actions.saving')}
+              </span>
+            ) : autoSaveStatus === 'saved' ? (
+              <span className="text-muted-foreground text-sm">
+                {t('models_page.actions.saved')}
+              </span>
+            ) : null}
+            {provider.isCustom ? (
+              <Button type="button" variant="outline" onClick={() => setIsDeleteDialogOpen(true)}>
+                <Trash2Icon data-icon="inline-start" />
+                {t('models_page.actions.delete_provider')}
+              </Button>
+            ) : null}
+            <Button
+              disabled={isTestingConnection || !provider.apiKey.trim() || !provider.baseUrl.trim()}
               type="button"
-              variant="ghost"
-              onClick={() => onApiKeyVisibilityChange(!isApiKeyVisible)}
+              variant="outline"
+              onClick={onTestConnection}
             >
-              {isApiKeyVisible ? <EyeOffIcon /> : <EyeIcon />}
-            </InputGroupButton>
-          </InputGroup>
-        </div>
+              <PlugZapIcon data-icon="inline-start" />
+              {isTestingConnection
+                ? t('models_page.actions.testing_connection')
+                : t('models_page.actions.test_connection')}
+            </Button>
+          </div>
+        </header>
 
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium">{t('models_page.fields.base_url')}</label>
-          <InputGroup>
-            <InputGroupInput
-              className="h-10"
-              placeholder={provider.defaultBaseUrl || 'https://api.example.com/v1'}
-              value={provider.baseUrl}
-              onChange={(event) => onBaseUrlChange(event.target.value)}
-            />
-          </InputGroup>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium">{t('models_page.fields.api_format')}</label>
-          <RadioGroup
-            className="flex flex-wrap gap-3"
-            value={provider.apiFormat}
-            onValueChange={(value) => onFormatChange(value as 'anthropic' | 'openai')}
-          >
-            <label
-              className={cn(
-                'flex min-w-48 flex-1 items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors',
-                provider.apiFormat === 'anthropic' && 'border-emerald-500/50 bg-emerald-500/10'
-              )}
-            >
-              <RadioGroupItem
-                className="data-checked:border-emerald-500 data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
-                id={`${provider.id}-format-anthropic`}
-                value="anthropic"
+        <div className="flex flex-1 flex-col gap-6 px-6 py-5">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">{t('models_page.fields.api_key')}</label>
+              {provider.docsUrl ? (
+                <a
+                  className="text-primary hover:text-primary/80 text-sm transition-colors"
+                  href={provider.docsUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  {t('models_page.fields.get_api_key')}
+                </a>
+              ) : null}
+            </div>
+            <InputGroup>
+              <InputGroupInput
+                className="h-10"
+                placeholder={t('models_page.fields.api_key_placeholder')}
+                type={isApiKeyVisible ? 'text' : 'password'}
+                value={provider.apiKey}
+                onChange={(event) => onProviderApiKeyChange(event.target.value)}
               />
-              <span>{t('models_page.formats.anthropic')}</span>
-            </label>
-            <label
-              className={cn(
-                'flex min-w-48 flex-1 items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors',
-                provider.apiFormat === 'openai' && 'border-emerald-500/50 bg-emerald-500/10'
-              )}
-            >
-              <RadioGroupItem
-                className="data-checked:border-emerald-500 data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
-                id={`${provider.id}-format-openai`}
-                value="openai"
+              <InputGroupButton
+                size="icon-sm"
+                type="button"
+                variant="ghost"
+                onClick={() => onApiKeyVisibilityChange(!isApiKeyVisible)}
+              >
+                {isApiKeyVisible ? <EyeOffIcon /> : <EyeIcon />}
+              </InputGroupButton>
+            </InputGroup>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">{t('models_page.fields.base_url')}</label>
+            <InputGroup>
+              <InputGroupInput
+                className="h-10"
+                placeholder={provider.defaultBaseUrl || 'https://api.example.com/v1'}
+                value={provider.baseUrl}
+                onChange={(event) => onBaseUrlChange(event.target.value)}
               />
-              <span>{t('models_page.formats.openai')}</span>
-            </label>
-          </RadioGroup>
-          <p className="text-muted-foreground max-w-2xl text-sm">
-            {t('models_page.fields.api_format_hint')}
-          </p>
+            </InputGroup>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">{t('models_page.fields.api_format')}</label>
+            <RadioGroup
+              className="flex flex-wrap gap-3"
+              value={provider.apiFormat}
+              onValueChange={(value) => onFormatChange(value as 'anthropic' | 'openai')}
+            >
+              <label
+                className={cn(
+                  'flex min-w-48 flex-1 items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors',
+                  provider.apiFormat === 'anthropic' && 'border-emerald-500/50 bg-emerald-500/10'
+                )}
+              >
+                <RadioGroupItem
+                  className="data-checked:border-emerald-500 data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
+                  id={`${provider.id}-format-anthropic`}
+                  value="anthropic"
+                />
+                <span>{t('models_page.formats.anthropic')}</span>
+              </label>
+              <label
+                className={cn(
+                  'flex min-w-48 flex-1 items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors',
+                  provider.apiFormat === 'openai' && 'border-emerald-500/50 bg-emerald-500/10'
+                )}
+              >
+                <RadioGroupItem
+                  className="data-checked:border-emerald-500 data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
+                  id={`${provider.id}-format-openai`}
+                  value="openai"
+                />
+                <span>{t('models_page.formats.openai')}</span>
+              </label>
+            </RadioGroup>
+            <p className="text-muted-foreground max-w-2xl text-sm">
+              {t('models_page.fields.api_format_hint')}
+            </p>
+          </div>
+
+          <Separator />
+
+          <ProviderModelList
+            models={provider.models}
+            onAddModel={onAddModel}
+            onRemoveModel={onModelRemove}
+            onUpdateModel={onModelUpdate}
+          />
         </div>
-
-        <Separator />
-
-        <ProviderModelList
-          models={provider.models}
-          onAddModel={onAddModel}
-          onRemoveModel={onModelRemove}
-          onUpdateModel={onModelUpdate}
-        />
       </div>
-    </div>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('models_page.providers.delete_title')}</DialogTitle>
+            <DialogDescription>
+              {t('models_page.providers.delete_description', {
+                provider: provider.name,
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                onDeleteProvider();
+                setIsDeleteDialogOpen(false);
+              }}
+            >
+              {t('common.delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
