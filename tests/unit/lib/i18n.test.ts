@@ -55,7 +55,7 @@ describe('i18n', () => {
 
       expect(messages).toHaveProperty('common');
       expect(messages).toHaveProperty('chat');
-      expect(messages).toHaveProperty('tools');
+      expect(messages).toHaveProperty('navigation');
       expect(messages).toHaveProperty('errors');
     });
 

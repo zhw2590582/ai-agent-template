@@ -2,41 +2,9 @@ export const enUSSharedMessages = {
   common: {
     app_name: 'AI Agent Template',
     welcome: 'Welcome',
-    loading: 'Loading...',
-    error: 'Error',
-    success: 'Success',
     cancel: 'Cancel',
     confirm: 'Confirm',
-    save: 'Save',
     delete: 'Delete',
-    edit: 'Edit',
-    back: 'Back',
-    back_to_chat: 'Back to chat',
-    next: 'Next',
-    previous: 'Previous',
-    search: 'Search',
-    filter: 'Filter',
-    reset: 'Reset',
-    submit: 'Submit',
-  },
-  tools: {
-    weather: {
-      name: 'Weather',
-      description: 'Get weather information',
-    },
-    calculator: {
-      name: 'Calculator',
-      description: 'Perform calculations',
-    },
-    datetime: {
-      name: 'Date & Time',
-      description: 'Get current time',
-    },
-  },
-  settings: {
-    title: 'Settings',
-    language: 'Language',
-    theme: 'Theme',
   },
   theme: {
     switch_to_light: 'Switch to light mode',

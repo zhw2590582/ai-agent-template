@@ -1,12 +1,5 @@
 export const enUSChatMessages = {
   chat: {
-    title: 'General AI Agent',
-    subtitle: 'chatgpt.com inspired',
-    welcome_message:
-      'I am a general AI Agent. You can chat directly, ask me to check time, do calculations, or call tools for richer answers.',
-    input_placeholder: 'Type a message...',
-    send: 'Send',
-    stop: 'Stop',
     actions: {
       retry: 'Retry',
       regenerate: 'Regenerate',
@@ -30,15 +23,7 @@ export const enUSChatMessages = {
     },
     sidebar: {
       agent_workspace: 'AI Agent Template',
-      messages: '{count} messages',
-      current: 'Current',
       new_chat: 'New chat',
-      history: 'History',
-      history_item: 'Item {index}',
-      history_empty_title: 'No history yet',
-      no_history: 'No history yet. Send a message and it will appear here.',
-      no_preview: 'This conversation does not have a preview yet.',
-      dark_mode_only: 'Dark mode only',
       loading_more: 'Loading more…',
       search_placeholder: 'Search conversations…',
       options_label: 'Conversation options',
@@ -55,19 +40,13 @@ export const enUSChatMessages = {
       title: 'What do you want the agent to help with today?',
       description: '',
     },
-    retry: 'Retry',
-    regenerate: 'Regenerate',
     status: {
       ready: 'Ready',
       thinking: 'Thinking',
-      error: 'Error',
     },
     errors: {
-      network: 'Network error, please retry',
       rate_limit: 'Too many requests',
-      server: 'Server error',
       request_failed: 'Request failed. Check the current model configuration or try again later.',
-      unknown: 'Unknown error',
       invalid_conversation: 'Conversation not found or has been deleted',
       create_conversation_failed: 'Failed to create conversation',
       delete_conversation_failed: 'Failed to delete conversation',
@@ -79,10 +58,6 @@ export const enUSChatMessages = {
     toast: {
       copied: 'Copied to clipboard',
       copy_failed: 'Failed to copy',
-    },
-    models: {
-      deepseek_chat: 'DeepSeek Chat',
-      deepseek_coder: 'DeepSeek Coder',
     },
   },
 } as const;

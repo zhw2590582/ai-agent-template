@@ -1,13 +1,5 @@
 export const enUSModelsMessages = {
   models_page: {
-    eyebrow: 'Models',
-    title: 'Model Providers',
-    description:
-      'Use this page to manage third-party model connections. Guest settings stay on the current device, while signed-in users write the same settings shape into profile.settings so chat, sandbox, and future agent surfaces can reuse it.',
-    storage: {
-      local: 'Local Draft',
-      database: 'Database Profile',
-    },
     status: {
       enabled: 'Enabled',
       disabled: 'Disabled',
@@ -27,11 +19,6 @@ export const enUSModelsMessages = {
       name_label: 'Provider Name',
       name_placeholder: 'For example My OpenAI Gateway',
       duplicate_name: 'A provider with this name already exists.',
-    },
-    detail: {
-      title_suffix: 'Provider Settings',
-      helper:
-        'After entering the API key, base URL, and protocol format, you can test the connection and sync the latest models from the provider.',
     },
     fields: {
       api_key: 'API Key',
@@ -59,8 +46,6 @@ export const enUSModelsMessages = {
       syncing: 'Syncing models...',
     },
     actions: {
-      import: 'Import',
-      export: 'Export',
       add_model: 'Add Model',
       add_provider: 'Add Custom Provider',
       delete_provider: 'Delete Provider',
@@ -68,18 +53,11 @@ export const enUSModelsMessages = {
       test_connection: 'Test Connection',
       testing_connection: 'Testing...',
       saved: 'Saved',
-      reset: 'Cancel',
-      save: 'Save',
       saving: 'Saving...',
-      loading: 'Loading...',
     },
     toast: {
-      import_success: 'Settings imported successfully.',
-      import_failed: 'Failed to import settings. Check the JSON format.',
       load_failed: 'Failed to load model settings.',
       provider_config_required: 'Enter the API key and base URL first.',
-      save_local_success: 'Model settings saved locally.',
-      save_success: 'Model settings saved.',
       save_failed: 'Failed to save model settings.',
       test_connection_success: 'Connection succeeded and synced {count} models.',
       test_connection_failed:

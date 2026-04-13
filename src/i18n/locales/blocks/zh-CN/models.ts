@@ -1,13 +1,5 @@
 export const zhCNModelsMessages = {
   models_page: {
-    eyebrow: '模型',
-    title: '模型提供商',
-    description:
-      '这个页面用于管理第三方模型接入信息。未登录时配置保存在本地设备，登录后则写入你的 profile.settings，后续聊天、沙盒和 agent 能力都可以复用这一份模型配置。',
-    storage: {
-      local: '本地草稿',
-      database: '数据库配置',
-    },
     status: {
       enabled: '已开启',
       disabled: '未开启',
@@ -25,11 +17,6 @@ export const zhCNModelsMessages = {
       name_label: '提供商名称',
       name_placeholder: '例如 My OpenAI Gateway',
       duplicate_name: '这个提供商名称已经存在。',
-    },
-    detail: {
-      title_suffix: '提供商设置',
-      helper:
-        '完成 API Key、Base URL 和协议格式配置后，可以直接测试连接，并从提供商同步最新模型列表。',
     },
     fields: {
       api_key: 'API Key',
@@ -55,8 +42,6 @@ export const zhCNModelsMessages = {
       syncing: '正在同步模型列表...',
     },
     actions: {
-      import: '导入',
-      export: '导出',
       add_model: '添加模型',
       add_provider: '添加自定义提供商',
       delete_provider: '删除提供商',
@@ -64,18 +49,11 @@ export const zhCNModelsMessages = {
       test_connection: '测试连接',
       testing_connection: '测试中...',
       saved: '已保存',
-      reset: '取消',
-      save: '保存',
       saving: '保存中...',
-      loading: '加载中...',
     },
     toast: {
-      import_success: '配置导入成功',
-      import_failed: '配置导入失败，请检查 JSON 格式',
       load_failed: '加载模型配置失败',
       provider_config_required: '请先填写 API Key 和 Base URL',
-      save_local_success: '模型配置已保存到本地',
-      save_success: '模型配置已保存',
       save_failed: '模型配置保存失败',
       test_connection_success: '连接成功，已同步 {count} 个模型。',
       test_connection_failed: '连接失败，请检查 API Key、Base URL 和协议格式。',

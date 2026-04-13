@@ -2,41 +2,9 @@ export const zhCNSharedMessages = {
   common: {
     app_name: 'AI Agent Template',
     welcome: '欢迎',
-    loading: '加载中...',
-    error: '错误',
-    success: '成功',
     cancel: '取消',
     confirm: '确认',
-    save: '保存',
     delete: '删除',
-    edit: '编辑',
-    back: '返回',
-    back_to_chat: '返回聊天',
-    next: '下一步',
-    previous: '上一步',
-    search: '搜索',
-    filter: '筛选',
-    reset: '重置',
-    submit: '提交',
-  },
-  tools: {
-    weather: {
-      name: '天气查询',
-      description: '查询城市天气信息',
-    },
-    calculator: {
-      name: '计算器',
-      description: '执行数学计算',
-    },
-    datetime: {
-      name: '时间查询',
-      description: '获取当前时间',
-    },
-  },
-  settings: {
-    title: '设置',
-    language: '语言',
-    theme: '主题',
   },
   theme: {
     switch_to_light: '切换到浅色模式',

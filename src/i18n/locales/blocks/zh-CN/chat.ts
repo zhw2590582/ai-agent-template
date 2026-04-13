@@ -1,12 +1,5 @@
 export const zhCNChatMessages = {
   chat: {
-    title: '通用 AI Agent',
-    subtitle: 'chatgpt.com inspired',
-    welcome_message:
-      '我是一个通用 AI Agent。你可以直接聊天，也可以让我查时间、做计算，或调用工具来辅助回答。',
-    input_placeholder: '输入消息...',
-    send: '发送',
-    stop: '停止',
     actions: {
       retry: '重试',
       regenerate: '重新生成',
@@ -29,15 +22,7 @@ export const zhCNChatMessages = {
     },
     sidebar: {
       agent_workspace: 'AI Agent Template',
-      messages: '{count} 条消息',
-      current: '当前',
       new_chat: '新对话',
-      history: '历史记录',
-      history_item: '记录 {index}',
-      history_empty_title: '还没有历史记录',
-      no_history: '还没有历史记录。先发一条消息，之后会出现在这里。',
-      no_preview: '这段会话还没有可展示的摘要。',
-      dark_mode_only: '仅支持暗色模式',
       loading_more: '加载更多…',
       search_placeholder: '搜索对话…',
       options_label: '对话选项',
@@ -54,19 +39,13 @@ export const zhCNChatMessages = {
       title: '今天想让 agent 帮你做什么？',
       description: '',
     },
-    retry: '重试',
-    regenerate: '重新生成',
     status: {
       ready: '就绪',
       thinking: '思考中',
-      error: '错误',
     },
     errors: {
-      network: '网络错误，请重试',
       rate_limit: '请求过于频繁',
-      server: '服务器错误',
       request_failed: '请求失败。请检查当前模型配置，或稍后重试。',
-      unknown: '未知错误',
       invalid_conversation: '对话不存在或已被删除',
       create_conversation_failed: '创建对话失败，请重试',
       delete_conversation_failed: '删除对话失败，请重试',
@@ -78,10 +57,6 @@ export const zhCNChatMessages = {
     toast: {
       copied: '已复制到剪贴板',
       copy_failed: '复制失败',
-    },
-    models: {
-      deepseek_chat: 'DeepSeek Chat',
-      deepseek_coder: 'DeepSeek Coder',
     },
   },
 } as const;
