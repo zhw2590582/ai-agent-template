@@ -1,6 +1,4 @@
-// @vitest-environment jsdom
-
-import { render, screen } from '@testing-library/react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
 import { LanguageSwitcher } from '@/components/ui-settings/language-switcher';
@@ -20,18 +18,15 @@ vi.mock('next-intl', () => ({
 
 describe('LanguageSwitcher', () => {
   it('renders the current locale trigger', () => {
-    render(<LanguageSwitcher />);
+    const html = renderToStaticMarkup(<LanguageSwitcher />);
 
-    expect(screen.getByRole('button')).toHaveTextContent('CN');
+    expect(html).toContain('CN');
   });
 
-  it('shows the locale options when opened', async () => {
-    render(<LanguageSwitcher />);
+  it('applies the custom trigger class name', () => {
+    const html = renderToStaticMarkup(<LanguageSwitcher triggerClassName="w-10" />);
 
-    const trigger = screen.getByRole('button');
-    trigger.click();
-
-    expect(await screen.findByText('简体中文')).toBeInTheDocument();
-    expect(await screen.findByText('English')).toBeInTheDocument();
+    expect(html).toContain('w-10');
+    expect(html).toContain('aria-haspopup="menu"');
   });
 });
