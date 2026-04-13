@@ -141,7 +141,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     return () => {
       cancelled = true;
     };
-  }, [locale, theme, user]);
+  }, [locale, t, theme, user]);
 
   const selectedProvider = useMemo(() => {
     return profile.settings.models.providers[profile.settings.models.selectedProviderId];

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 
@@ -24,32 +24,30 @@ export function useChatSession({
   onFinish,
   profileSettings,
 }: UseChatSessionOptions) {
-  const [selectedModel, setSelectedModel] = useState(
+  const [rawSelectedModel, setSelectedModel] = useState(
     profileSettings?.models.selectedChatModelId ?? ''
   );
 
-  useEffect(() => {
+  const selectedModel = useMemo(() => {
     const profileSelectedModel = profileSettings?.models.selectedChatModelId ?? '';
 
-    if (!selectedModel && profileSelectedModel) {
-      setSelectedModel(profileSelectedModel);
-    }
-  }, [profileSettings?.models.selectedChatModelId, selectedModel]);
-
-  useEffect(() => {
     if (availableModels.length === 0) {
-      if (selectedModel) {
-        setSelectedModel('');
-      }
-      return;
+      return '';
     }
 
-    if (availableModels.some((model) => model.id === selectedModel)) {
-      return;
+    if (availableModels.some((model) => model.id === rawSelectedModel)) {
+      return rawSelectedModel;
     }
 
-    setSelectedModel(availableModels[0]?.id ?? '');
-  }, [availableModels, selectedModel]);
+    if (
+      profileSelectedModel &&
+      availableModels.some((model) => model.id === profileSelectedModel)
+    ) {
+      return profileSelectedModel;
+    }
+
+    return availableModels[0]?.id ?? '';
+  }, [availableModels, profileSettings?.models.selectedChatModelId, rawSelectedModel]);
 
   const runtimeModel = useMemo(() => {
     if (!profileSettings) {
@@ -82,7 +80,7 @@ export function useChatSession({
           },
         }),
       }),
-    [activeThreadId, locale, runtimeModel, selectedModel]
+    [activeThreadId, locale, runtimeModel]
   );
 
   const chat = useChat({

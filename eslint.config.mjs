@@ -24,6 +24,16 @@ const eslintConfig = defineConfig([
       'prettier/prettier': 'warn',
     },
   },
+  {
+    files: ['src/components/ai-elements/**/*.{ts,tsx}'],
+    rules: {
+      '@next/next/no-img-element': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/static-components': 'off',
+    },
+  },
   // Disable rules that conflict with Prettier (must be last)
   prettierConfig,
 ]);

@@ -49,6 +49,23 @@ src/
 
 避免在 `features/chat` 再造一套平行基础组件。
 
+同时，这两层视为原子组件层：
+
+- `src/components/ui/*` 是 `shadcn/ui` 原子组件
+- `src/components/ai-elements/*` 是 `AI Elements` 原子组件
+
+默认禁止直接修改这两个目录中的文件。
+
+允许的例外只有：
+
+- 使用官方 CLI 重新生成或覆盖
+- 极少数必须的编译兼容修复
+
+项目自己的样式、布局、业务组合和交互调整，必须放在：
+
+- `src/features/*/components/*`
+- 或新的 wrapper 层，例如 `src/components/app-ui/*`
+
 ### 3. Keep the theme dark-only
 
 - 当前只支持暗黑主题

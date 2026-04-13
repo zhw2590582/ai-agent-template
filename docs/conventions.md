@@ -29,6 +29,9 @@
 - `components/ui`: 基础 UI
 - `components/ai-elements`: AI 聊天相关组件
 - 业务域优先组合这些已有组件，不重复造基础控件
+- 这两个目录视为原子组件层，默认禁止直接修改
+- 允许的例外只有官方 CLI 重新生成/覆盖，或极少数必须的编译兼容修复
+- 项目自己的样式、布局、动画和业务组合，放到 `features/*/components/*` 或额外 wrapper 层，不要回写到原子组件里
 
 ### `src/server`
 
