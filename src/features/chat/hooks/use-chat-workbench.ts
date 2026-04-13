@@ -7,14 +7,9 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
-import {
-  createConversationRecord,
-  deleteConversationRecord,
-  getConversationMessages,
-  persistConversationMessages,
-  renameConversationRecord,
-} from '@/features/chat/data/conversation-operations';
+import { createConversationRecord } from '@/features/chat/data/conversation-operations';
 import { useChatController } from '@/features/chat/hooks/use-chat-controller';
+import { useConversationRecords } from '@/features/chat/hooks/use-conversation-records';
 import { useChatSession } from '@/features/chat/hooks/use-chat-session';
 import { useChatSync } from '@/features/chat/hooks/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/hooks/use-sidebar-conversations';
@@ -125,30 +120,16 @@ export function useChatWorkbench({
     }, []),
   });
 
-  useEffect(() => {
-    if (user || !urlConversationId || isBusy) {
-      return;
-    }
-
-    const localMessages = getConversationMessages({
-      conversationId: urlConversationId,
-      user,
-    });
-    if (!localMessages) {
-      return;
-    }
-
-    setMessages(localMessages);
-  }, [isBusy, setMessages, urlConversationId, user]);
-
-  const createConversation = async (initialMessage: string) => {
-    return createConversationRecord({
-      initialMessage,
-      locale: titleLocale,
-      runtimeModel,
-      user,
-    });
-  };
+  const createConversation = useCallback(
+    async (initialMessage: string) =>
+      createConversationRecord({
+        initialMessage,
+        locale: titleLocale,
+        runtimeModel,
+        user,
+      }),
+    [runtimeModel, titleLocale, user]
+  );
 
   const { handleClearChat, handleSubmit } = useChatController({
     activeThreadId,
@@ -169,6 +150,19 @@ export function useChatWorkbench({
     setPendingThreadId,
     sidebar,
     starterMessages,
+  });
+
+  const conversationRecordActions = useConversationRecords({
+    activeThreadId,
+    handleClearChat,
+    isBusy,
+    locale: titleLocale,
+    messages,
+    router,
+    runtimeModel,
+    setMessages,
+    urlConversationId,
+    user,
   });
 
   useEffect(() => {
@@ -227,67 +221,6 @@ export function useChatWorkbench({
     void regenerate();
   }, [models.isLoading, regenerate, runtimeModel, t]);
 
-  const handleRenameConversation = useCallback(
-    async (conversationId: string, title: string) => {
-      const success = await renameConversationRecord({
-        conversationId,
-        title,
-        user,
-      });
-
-      if (!success) {
-        toast.error(t('chat.errors.rename_conversation_failed'));
-        return false;
-      }
-
-      if (user) {
-        router.refresh();
-      }
-
-      return true;
-    },
-    [router, t, user]
-  );
-
-  const handleDeleteConversation = useCallback(
-    async (conversationId: string) => {
-      const success = await deleteConversationRecord({
-        conversationId,
-        user,
-      });
-
-      if (!success) {
-        toast.error(t('chat.errors.delete_conversation_failed'));
-        return false;
-      }
-
-      if (activeThreadId === conversationId) {
-        handleClearChat();
-      }
-
-      if (user) {
-        router.refresh();
-      }
-
-      return true;
-    },
-    [activeThreadId, handleClearChat, router, t, user]
-  );
-
-  useEffect(() => {
-    if (user || !activeThreadId || messages.length === 0) {
-      return;
-    }
-
-    persistConversationMessages({
-      conversationId: activeThreadId,
-      locale: titleLocale,
-      messages,
-      runtimeModel,
-      user,
-    });
-  }, [activeThreadId, messages, runtimeModel, titleLocale, user]);
-
   useEffect(() => {
     if (!urlConversationId) {
       invalidIdHandledRef.current = false;
@@ -327,7 +260,7 @@ export function useChatWorkbench({
     locale,
     messages,
     regenerate: guardedRegenerate,
-    renameConversation: handleRenameConversation,
+    renameConversation: conversationRecordActions.renameConversation,
     availableModels,
     selectedModel,
     setSelectedModel: handleModelChange,
@@ -337,7 +270,7 @@ export function useChatWorkbench({
     sidebar,
     sidebarSearchQuery,
     status,
-    deleteConversation: handleDeleteConversation,
+    deleteConversation: conversationRecordActions.deleteConversation,
     stop,
   };
 }
