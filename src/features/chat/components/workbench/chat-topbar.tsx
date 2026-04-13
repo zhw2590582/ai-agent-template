@@ -69,18 +69,20 @@ export function ChatTopBar({ activeView, locale, t }: ChatTopBarProps) {
               </Link>
             </Button>
             <AuthDialog
-              closeLabel={t('common.cancel')}
               configurationMissingDescription={t('auth.configuration_missing_description')}
               configurationMissingTitle={t('auth.configuration_missing_title')}
-              description={t('auth.dialog_description')}
+              description={t('auth.description')}
               githubLabel={t('auth.sign_in_with_github')}
               googleLabel={t('auth.sign_in_with_google')}
+              privacyPolicyLabel={t('auth.privacy_policy')}
               signInFailedLabel={t('auth.errors.sign_in_failed')}
               signInLabel={t('auth.sign_in')}
               signOutFailedLabel={t('auth.errors.sign_out_failed')}
               signOutLabel={t('auth.sign_out')}
               signOutSuccessLabel={t('auth.toast.sign_out_success')}
               signedInAsLabel={t('auth.signed_in_as')}
+              termsAgreementLabel={t('auth.terms_agreement')}
+              termsOfServiceLabel={t('auth.terms_of_service')}
               title={t('auth.title')}
             />
           </div>

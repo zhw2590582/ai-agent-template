@@ -234,11 +234,12 @@ export const enUS: Translations = {
     title: 'Sign in to AI Agent',
     description:
       'Supabase social sign-in is now wired in. Once you authenticate, upcoming session persistence and memory features will build on your account.',
-    dialog_description:
-      'Use a social account to sign in quickly. The dialog currently supports Google and GitHub.',
     back_to_chat: 'Back to chat',
     sign_in_with_google: 'Continue with Google',
     sign_in_with_github: 'Continue with GitHub',
+    terms_agreement: 'By signing up, you agree to our',
+    terms_of_service: 'Terms of Service',
+    privacy_policy: 'Privacy Policy',
     github_description:
       'You will be redirected to GitHub to authorize and then sent back to this app.',
     oauth_description:

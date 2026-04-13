@@ -54,7 +54,7 @@ export function OauthSignInButton({
 
   return (
     <Button
-      className="w-full justify-start gap-3"
+      className="w-full justify-center gap-3"
       disabled={isPending}
       onClick={handleSignIn}
       size="lg"

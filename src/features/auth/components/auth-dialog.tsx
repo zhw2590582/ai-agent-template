@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { CircleUserRoundIcon, LogInIcon, LogOutIcon } from 'lucide-react';
@@ -31,34 +32,38 @@ import { toAuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import { createClient, isSupabaseBrowserConfigured } from '@/lib/supabase/client';
 
 type AuthDialogProps = {
-  closeLabel: string;
   configurationMissingDescription: string;
   configurationMissingTitle: string;
   description: string;
   githubLabel: string;
   googleLabel: string;
+  privacyPolicyLabel: string;
   signInLabel: string;
   signInFailedLabel?: string;
   signOutLabel: string;
   signOutFailedLabel?: string;
   signOutSuccessLabel?: string;
   signedInAsLabel: string;
+  termsAgreementLabel: string;
+  termsOfServiceLabel: string;
   title: string;
 };
 
 export function AuthDialog({
-  closeLabel,
   configurationMissingDescription,
   configurationMissingTitle,
   description,
   githubLabel,
   googleLabel,
+  privacyPolicyLabel,
   signInLabel,
   signInFailedLabel,
   signOutLabel,
   signOutFailedLabel,
   signOutSuccessLabel,
   signedInAsLabel,
+  termsAgreementLabel,
+  termsOfServiceLabel,
   title,
 }: AuthDialogProps) {
   const pathname = usePathname();
@@ -170,39 +175,54 @@ export function AuthDialog({
 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle className="text-center text-xl">{title}</DialogTitle>
+          <DialogDescription className="sr-only">{description}</DialogDescription>
         </DialogHeader>
 
         {!supabaseConfigured ? (
-          <div className="border-border bg-background/60 rounded-2xl border px-4 py-4 text-sm leading-7">
+          <div className="border-border bg-background/60 rounded-xl border px-4 py-4 text-sm leading-7">
             <div className="font-medium">{configurationMissingTitle}</div>
             <p className="text-muted-foreground mt-2">{configurationMissingDescription}</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
-            <OauthSignInButton
-              buttonLabel={googleLabel}
-              errorLabel={signInFailedLabel}
-              icon={<GoogleMark />}
-              nextPath={nextPath}
-              provider="google"
-            />
-            <OauthSignInButton
-              buttonLabel={githubLabel}
-              errorLabel={signInFailedLabel}
-              icon={<GithubMark />}
-              nextPath={nextPath}
-              provider="github"
-            />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
+              <OauthSignInButton
+                buttonLabel={googleLabel}
+                errorLabel={signInFailedLabel}
+                icon={<GoogleMark />}
+                nextPath={nextPath}
+                provider="google"
+              />
+              <OauthSignInButton
+                buttonLabel={githubLabel}
+                errorLabel={signInFailedLabel}
+                icon={<GithubMark />}
+                nextPath={nextPath}
+                provider="github"
+              />
+            </div>
+
+            <p className="text-muted-foreground text-center text-xs leading-5">
+              {termsAgreementLabel}{' '}
+              <Link
+                className="text-primary hover:text-primary/80 underline underline-offset-4"
+                href={`/${locale}/terms`}
+                onClick={() => setIsOpen(false)}
+              >
+                {termsOfServiceLabel}
+              </Link>{' '}
+              and{' '}
+              <Link
+                className="text-primary hover:text-primary/80 underline underline-offset-4"
+                href={`/${locale}/privacy`}
+                onClick={() => setIsOpen(false)}
+              >
+                {privacyPolicyLabel}
+              </Link>
+            </p>
           </div>
         )}
-
-        <div className="flex justify-end">
-          <Button onClick={() => setIsOpen(false)} variant="ghost">
-            {closeLabel}
-          </Button>
-        </div>
       </DialogContent>
     </Dialog>
   );

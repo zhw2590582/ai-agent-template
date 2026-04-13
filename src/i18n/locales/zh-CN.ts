@@ -228,10 +228,12 @@ const zhCN = {
     title: '登录到 AI Agent',
     description:
       '当前已接入 Supabase 社交登录。登录后，后续会话持久化和 memory 能力会基于你的账号展开。',
-    dialog_description: '使用社交账号快速登录。当前弹窗支持 Google 和 GitHub。',
     back_to_chat: '返回聊天',
     sign_in_with_google: '使用 Google 登录',
     sign_in_with_github: '使用 GitHub 登录',
+    terms_agreement: '注册即表示你同意我们的',
+    terms_of_service: '服务条款',
+    privacy_policy: '隐私政策',
     github_description: '将跳转到 GitHub 完成授权，然后回到当前应用。',
     oauth_description: '将跳转到对应平台完成授权，然后回到当前应用。',
     signed_in_as: '当前登录账号',

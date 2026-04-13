@@ -17,6 +17,10 @@ import {
 } from '@/features/chat/data/conversation-operations';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
+function isLocalConversationId(conversationId: string | null) {
+  return Boolean(conversationId?.startsWith('local-'));
+}
+
 interface UseConversationRecordsOptions {
   activeThreadId: string | null;
   handleClearChat: () => void;
@@ -57,7 +61,7 @@ export function useConversationRecords({
   const t = useTranslations();
 
   useEffect(() => {
-    if (user || !urlConversationId || isBusy) {
+    if (user || !urlConversationId || !isLocalConversationId(urlConversationId) || isBusy) {
       return;
     }
 
@@ -73,7 +77,12 @@ export function useConversationRecords({
   }, [isBusy, setMessages, urlConversationId, user]);
 
   useEffect(() => {
-    if (user || !activeThreadId || messages.length === 0) {
+    if (
+      user ||
+      !activeThreadId ||
+      !isLocalConversationId(activeThreadId) ||
+      messages.length === 0
+    ) {
       return;
     }
 
@@ -87,7 +96,14 @@ export function useConversationRecords({
   }, [activeThreadId, locale, messages, runtimeModel, user]);
 
   useEffect(() => {
-    if (user || isBusy || !activeThreadId || messages.length === 0 || !runtimeModel) {
+    if (
+      user ||
+      isBusy ||
+      !activeThreadId ||
+      !isLocalConversationId(activeThreadId) ||
+      messages.length === 0 ||
+      !runtimeModel
+    ) {
       return;
     }
 
