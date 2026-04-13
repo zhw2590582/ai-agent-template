@@ -1,0 +1,85 @@
+'use client';
+
+import type { ThemeMode } from '@/config/app';
+import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
+import type { AppProfile } from '@/features/models/types';
+import { createProfileDraft } from '@/features/models/utils/profile';
+
+export const LOCAL_MODEL_PROFILE_STORAGE_KEY = 'agent-model-profile';
+export const MODEL_PROFILE_UPDATED_EVENT = 'agent-model-profile-updated';
+
+export const profileCache = new Map<string, Partial<AppProfile>>();
+export const profileRequestCache = new Map<string, Promise<Partial<AppProfile> | null>>();
+
+export function emitProfileUpdated(profile: Partial<AppProfile>) {
+  if (typeof window === 'undefined') return;
+
+  window.dispatchEvent(
+    new CustomEvent<Partial<AppProfile>>(MODEL_PROFILE_UPDATED_EVENT, {
+      detail: profile,
+    })
+  );
+}
+
+export function readLocalProfile() {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.localStorage.getItem(LOCAL_MODEL_PROFILE_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as Partial<AppProfile>;
+  } catch {
+    return null;
+  }
+}
+
+export function writeLocalProfile(profile: AppProfile) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(LOCAL_MODEL_PROFILE_STORAGE_KEY, JSON.stringify(profile));
+}
+
+export async function loadRemoteProfile(userId: string) {
+  const cachedProfile = profileCache.get(userId);
+  if (cachedProfile) {
+    return cachedProfile;
+  }
+
+  const inFlightRequest = profileRequestCache.get(userId);
+  if (inFlightRequest) {
+    return inFlightRequest;
+  }
+
+  const request = (async () => {
+    const response = await fetch('/api/profile', {
+      credentials: 'same-origin',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to load profile');
+    }
+
+    const data = (await response.json()) as { profile: Partial<AppProfile> | null };
+    if (data.profile) {
+      profileCache.set(userId, data.profile);
+    }
+
+    return data.profile;
+  })();
+
+  profileRequestCache.set(userId, request);
+
+  try {
+    return await request;
+  } finally {
+    profileRequestCache.delete(userId);
+  }
+}
+
+export function buildProfileFromSource(options: {
+  existing?: Partial<AppProfile>;
+  locale: string;
+  theme: ThemeMode;
+  user: AuthUserSnapshot | null;
+}) {
+  return createProfileDraft(options);
+}

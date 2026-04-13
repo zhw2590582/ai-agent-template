@@ -107,6 +107,12 @@ src/
 - 需要语言适配时，优先把 `locale` 作为上下文传给模型
 - 只有在英文 prompt 无法满足效果时，才增加特定语言 prompt
 
+### 7. Fix Tailwind warnings
+
+- Tailwind 警告不能忽略
+- 无论来自 `bun run lint`、编辑器、Tailwind IntelliSense，还是构建过程，只要出现 Tailwind 类名警告，就要修掉
+- 优先改成合法的标准类名；只有没有标准类可表达时，才使用任意值
+
 ## Recommended Next Refactors
 
 当继续实现教程中的新能力时，优先做：

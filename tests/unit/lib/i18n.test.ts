@@ -9,7 +9,7 @@ describe('i18n', () => {
   describe('t', () => {
     it('should translate simple key', () => {
       const result = t('zh-CN', 'common.app_name');
-      expect(result).toBe('AI Agent 应用');
+      expect(result).toBe('AI Agent Template');
     });
 
     it('should translate nested key', () => {
@@ -19,7 +19,7 @@ describe('i18n', () => {
 
     it('should return English translation', () => {
       const result = t('en-US', 'common.app_name');
-      expect(result).toBe('AI Agent App');
+      expect(result).toBe('AI Agent Template');
     });
 
     it('should return key if translation not found', () => {
@@ -63,7 +63,7 @@ describe('i18n', () => {
       const messages = getMessages('invalid' as never);
 
       expect(messages).toHaveProperty('common');
-      expect(messages.common.app_name).toBe('AI Agent App');
+      expect(messages.common.app_name).toBe('AI Agent Template');
     });
   });
 

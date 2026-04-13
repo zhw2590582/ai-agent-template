@@ -6,82 +6,20 @@ import { toast } from 'sonner';
 
 import { useTheme } from '@/components/ui-settings/theme-provider';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
+import { createPersistProfile } from '@/features/models/hooks/profile-persistence';
+import {
+  buildProfileFromSource,
+  loadRemoteProfile,
+  MODEL_PROFILE_UPDATED_EVENT,
+  profileCache,
+  readLocalProfile,
+} from '@/features/models/hooks/profile-storage';
 import type { AppProfile, ModelsSettings, ProviderSettings } from '@/features/models/types';
 import {
   buildCustomProviderSettings,
-  createProfileDraft,
   getOrderedProviders,
   normalizeProfileSettings,
 } from '@/features/models/utils/profile';
-
-const LOCAL_MODEL_PROFILE_STORAGE_KEY = 'agent-model-profile';
-const MODEL_PROFILE_UPDATED_EVENT = 'agent-model-profile-updated';
-const profileCache = new Map<string, Partial<AppProfile>>();
-const profileRequestCache = new Map<string, Promise<Partial<AppProfile> | null>>();
-
-function emitProfileUpdated(profile: Partial<AppProfile>) {
-  if (typeof window === 'undefined') return;
-
-  window.dispatchEvent(
-    new CustomEvent<Partial<AppProfile>>(MODEL_PROFILE_UPDATED_EVENT, {
-      detail: profile,
-    })
-  );
-}
-
-function readLocalProfile() {
-  if (typeof window === 'undefined') return null;
-
-  try {
-    const raw = window.localStorage.getItem(LOCAL_MODEL_PROFILE_STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as Partial<AppProfile>;
-  } catch {
-    return null;
-  }
-}
-
-function writeLocalProfile(profile: AppProfile) {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(LOCAL_MODEL_PROFILE_STORAGE_KEY, JSON.stringify(profile));
-}
-
-async function loadRemoteProfile(userId: string) {
-  const cachedProfile = profileCache.get(userId);
-  if (cachedProfile) {
-    return cachedProfile;
-  }
-
-  const inFlightRequest = profileRequestCache.get(userId);
-  if (inFlightRequest) {
-    return inFlightRequest;
-  }
-
-  const request = (async () => {
-    const response = await fetch('/api/profile', {
-      credentials: 'same-origin',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to load profile');
-    }
-
-    const data = (await response.json()) as { profile: Partial<AppProfile> | null };
-    if (data.profile) {
-      profileCache.set(userId, data.profile);
-    }
-
-    return data.profile;
-  })();
-
-  profileRequestCache.set(userId, request);
-
-  try {
-    return await request;
-  } finally {
-    profileRequestCache.delete(userId);
-  }
-}
 
 export function useModelProfile(user: AuthUserSnapshot | null) {
   const t = useTranslations();
@@ -90,7 +28,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
   const [profile, setProfile] = useState<AppProfile>(() => {
     const cachedProfile = user ? profileCache.get(user.id) : null;
 
-    return createProfileDraft({
+    return buildProfileFromSource({
       existing: cachedProfile ?? undefined,
       locale,
       theme,
@@ -117,7 +55,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
       const localProfile = readLocalProfile();
       if (!cancelled) {
         setProfile(
-          createProfileDraft({
+          buildProfileFromSource({
             existing: localProfile ?? undefined,
             locale,
             theme,
@@ -137,7 +75,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
 
         if (!cancelled) {
           setProfile(
-            createProfileDraft({
+            buildProfileFromSource({
               existing: remoteProfile ?? undefined,
               locale,
               theme,
@@ -148,7 +86,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
       } catch {
         if (!cancelled) {
           setProfile(
-            createProfileDraft({
+            buildProfileFromSource({
               locale,
               theme,
               user,
@@ -184,7 +122,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
       }
 
       setProfile(
-        createProfileDraft({
+        buildProfileFromSource({
           existing: detail,
           locale,
           theme,
@@ -229,6 +167,21 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     [locale, theme]
   );
 
+  const persistProfile = useMemo(
+    () =>
+      createPersistProfile({
+        locale,
+        queuedSaveRef,
+        saveInFlightRef,
+        setIsSaving,
+        setProfile,
+        t,
+        theme,
+        user,
+      }),
+    [locale, t, theme, user]
+  );
+
   const updateSelectedProviderId = useCallback(
     (providerId: string) => {
       const current = profileRef.current;
@@ -257,91 +210,6 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
       setProfile(nextProfile);
     },
     [buildNextProfile]
-  );
-
-  const persistProfile = useCallback(
-    async (nextProfile: AppProfile, options?: { silent?: boolean; trackSavingState?: boolean }) => {
-      if (!user) {
-        writeLocalProfile(nextProfile);
-        emitProfileUpdated(nextProfile);
-        if (!options?.silent) {
-          toast.success(t('models_page.toast.save_local_success'));
-        }
-        return true;
-      }
-
-      if (saveInFlightRef.current) {
-        queuedSaveRef.current = { nextProfile, options };
-        await saveInFlightRef.current;
-        const queuedSave = queuedSaveRef.current;
-        if (!queuedSave || queuedSave.nextProfile.updated_at !== nextProfile.updated_at) {
-          return true;
-        }
-        queuedSaveRef.current = null;
-        return persistProfile(queuedSave.nextProfile, queuedSave.options);
-      }
-
-      const request = (async () => {
-        if (options?.trackSavingState !== false) {
-          setIsSaving(true);
-        }
-        try {
-          const response = await fetch('/api/profile', {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              settings: nextProfile.settings,
-            }),
-          });
-
-          if (!response.ok) {
-            if (!options?.silent) {
-              toast.error(t('models_page.toast.save_failed'));
-            }
-            return false;
-          }
-
-          const data = (await response.json()) as { profile: Partial<AppProfile> };
-          profileCache.set(user.id, data.profile ?? nextProfile);
-          emitProfileUpdated(data.profile ?? nextProfile);
-          setProfile(
-            createProfileDraft({
-              existing: data.profile,
-              locale,
-              theme,
-              user,
-            })
-          );
-
-          if (!options?.silent) {
-            toast.success(t('models_page.toast.save_success'));
-          }
-          return true;
-        } finally {
-          if (options?.trackSavingState !== false) {
-            setIsSaving(false);
-          }
-        }
-      })();
-
-      saveInFlightRef.current = request;
-
-      try {
-        return await request;
-      } finally {
-        if (saveInFlightRef.current === request) {
-          saveInFlightRef.current = null;
-        }
-        const queuedSave = queuedSaveRef.current;
-        if (queuedSave) {
-          queuedSaveRef.current = null;
-          void persistProfile(queuedSave.nextProfile, queuedSave.options);
-        }
-      }
-    },
-    [locale, t, theme, user]
   );
 
   const addCustomProvider = useCallback(
@@ -478,14 +346,14 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     addCustomProvider,
     isLoading,
     isSaving,
-    providers: orderedProviders,
     profile,
+    providers: orderedProviders,
     removeCustomProvider,
-    saveProviderEnabled,
     saveProfile,
+    saveProviderEnabled,
     selectedProvider,
-    updateSelectedChatModelId,
     updateProvider,
+    updateSelectedChatModelId,
     updateSelectedProviderId,
   };
 }

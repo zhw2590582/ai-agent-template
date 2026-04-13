@@ -44,12 +44,12 @@ export function ChatComposer({
   const t = useTranslations();
 
   return (
-    <div className="border-border bg-background border-t px-6 py-5">
+    <div className="border-border bg-background border-t px-6 py-5 select-none">
       <div
         className={`mx-auto w-full transition-[max-width] duration-300 ease-out ${isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl'}`}
       >
         <PromptInput
-          className="w-full [&_[data-slot=input-group]]:has-disabled:bg-transparent [&_[data-slot=input-group]]:has-disabled:opacity-100 dark:[&_[data-slot=input-group]]:has-disabled:bg-transparent"
+          className="w-full **:data-[slot=input-group]:has-disabled:bg-transparent **:data-[slot=input-group]:has-disabled:opacity-100 dark:**:data-[slot=input-group]:has-disabled:bg-transparent"
           onSubmit={(_, event) => onSubmit(event)}
         >
           <PromptInputBody>
