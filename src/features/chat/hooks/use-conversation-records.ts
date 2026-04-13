@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
+import type { Locale } from '@/config/i18n';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import {
   deleteConversationRecord,
@@ -19,7 +20,7 @@ interface UseConversationRecordsOptions {
   activeThreadId: string | null;
   handleClearChat: () => void;
   isBusy: boolean;
-  locale: 'zh-CN' | 'en-US';
+  locale: Locale;
   messages: UIMessage[];
   onOptimisticRemoveConversation: (conversationId: string) => void;
   onOptimisticUpdateConversation: (conversation: {

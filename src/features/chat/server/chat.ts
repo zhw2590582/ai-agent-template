@@ -1,7 +1,12 @@
 import { convertToModelMessages, streamText, type UIMessage } from 'ai';
 
 import { AI_CONFIG } from '@/config/app';
-import { LOCALE_DETECTION_STRATEGY } from '@/config/i18n';
+import {
+  DEFAULT_LOCALE,
+  LOCALE_DETECTION_STRATEGY,
+  isSupportedLocale,
+  type Locale,
+} from '@/config/i18n';
 import { AppError, ErrorCode, handleErrorWithLocale } from '@/lib/errors';
 import { t } from '@/lib/i18n';
 import { logger } from '@/lib/logger';
@@ -15,11 +20,11 @@ import { saveConversationMessages } from '@/features/chat/storage';
 
 export const maxDuration = 30;
 
-function getLocaleFromRequest(request: Request): 'zh-CN' | 'en-US' {
+function getLocaleFromRequest(request: Request): Locale {
   const url = new URL(request.url);
   const queryLocale = url.searchParams.get('lang');
 
-  if (queryLocale === 'zh-CN' || queryLocale === 'en-US') {
+  if (isSupportedLocale(queryLocale)) {
     return queryLocale;
   }
 
@@ -31,7 +36,7 @@ function getLocaleFromRequest(request: Request): 'zh-CN' | 'en-US' {
     ?.split('=')[1]
     ?.slice(0, 10); // Limit length to prevent abuse
 
-  if (localeFromCookie === 'zh-CN' || localeFromCookie === 'en-US') {
+  if (isSupportedLocale(localeFromCookie)) {
     return localeFromCookie;
   }
 
@@ -40,7 +45,7 @@ function getLocaleFromRequest(request: Request): 'zh-CN' | 'en-US' {
     return 'en-US';
   }
 
-  return 'zh-CN';
+  return DEFAULT_LOCALE;
 }
 
 const hasAgentTools = Object.keys(agentTools).length > 0;

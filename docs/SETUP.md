@@ -10,9 +10,9 @@ bun run dev
 
 访问地址：
 
-- 中文：`http://localhost:3000/zh-CN`
 - 英文：`http://localhost:3000/en-US`
-- 默认：`http://localhost:3000`
+- 中文：`http://localhost:3000/zh-CN`
+- 默认：`http://localhost:3000`（英文）
 
 ## 环境变量
 

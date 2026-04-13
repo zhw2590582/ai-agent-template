@@ -2,6 +2,7 @@
 
 import type { UIMessage } from 'ai';
 
+import type { Locale } from '@/config/i18n';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import {
   createLocalConversationThread,
@@ -14,7 +15,7 @@ import type { ChatRuntimeModel } from '@/features/models/types';
 
 export async function createConversationRecord(options: {
   initialMessage: string;
-  locale: 'zh-CN' | 'en-US';
+  locale: Locale;
   runtimeModel?: ChatRuntimeModel | null;
   user: AuthUserSnapshot | null;
 }) {
@@ -61,7 +62,7 @@ export function getConversationMessages(options: {
 
 export function persistConversationMessages(options: {
   conversationId: string;
-  locale: 'zh-CN' | 'en-US';
+  locale: Locale;
   messages: UIMessage[];
   runtimeModel?: ChatRuntimeModel | null;
   user: AuthUserSnapshot | null;

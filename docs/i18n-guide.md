@@ -4,8 +4,8 @@
 
 项目使用 `next-intl`，支持：
 
+- `en-US`（默认）
 - `zh-CN`
-- `en-US`
 
 路由形式：
 
@@ -30,6 +30,8 @@
 2. Locale cookie
 3. `Accept-Language`
 4. 默认语言
+
+当前默认语言是 `en-US`。
 
 聊天 API 自己还有一层 locale 兜底逻辑，会从 `?lang=`、cookie 和 `Accept-Language` 再判断一次。
 

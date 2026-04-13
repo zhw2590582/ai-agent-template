@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { normalizeLocale } from '@/config/i18n';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
 import { createConversationRecord } from '@/features/chat/data/conversation-operations';
 import { useChatController } from '@/features/chat/hooks/use-chat-controller';
@@ -34,8 +35,8 @@ export function useChatWorkbench({
   initialMessages,
 }: UseChatWorkbenchOptions) {
   const t = useTranslations();
-  const locale = useLocale();
-  const titleLocale = locale === 'en-US' ? 'en-US' : 'zh-CN';
+  const locale = normalizeLocale(useLocale());
+  const titleLocale = locale;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

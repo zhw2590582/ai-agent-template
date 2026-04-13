@@ -58,8 +58,8 @@ function getNestedValue(obj: Record<string, unknown>, path: string): string {
  * @returns 翻译后的文本
  *
  * @example
- * t('zh-CN', 'common.app_name') // => 'AI Agent 应用'
  * t('en-US', 'chat.status.ready') // => 'Ready'
+ * t('zh-CN', 'common.app_name') // => 'AI Agent 应用'
  */
 export function t(locale: Locale, key: AllTranslationKeys): string {
   const messages = translations[locale] || translations[DEFAULT_LOCALE];
@@ -73,8 +73,8 @@ export function t(locale: Locale, key: AllTranslationKeys): string {
  * @returns 绑定了语言的翻译函数
  *
  * @example
- * const t = createTranslator('zh-CN');
- * t('common.app_name') // => 'AI Agent 应用'
+ * const t = createTranslator('en-US');
+ * t('common.app_name') // => 'AI Agent App'
  */
 export function createTranslator(locale: Locale) {
   return (key: AllTranslationKeys) => t(locale, key);

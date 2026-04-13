@@ -7,6 +7,7 @@
  */
 
 import { z } from 'zod';
+import { SUPPORTED_LOCALES } from '@/config/i18n';
 
 /**
  * A single message part. We only enforce it is a non-empty object with a `type` field.
@@ -44,7 +45,7 @@ export type ChatPostInput = z.infer<typeof chatPostSchema>;
 
 export const chatTitlePostSchema = z.object({
   input: z.string().min(1),
-  locale: z.enum(['zh-CN', 'en-US']).optional(),
+  locale: z.enum(SUPPORTED_LOCALES).optional(),
   runtimeModel: z.object({
     apiFormat: z.enum(['anthropic', 'openai']),
     apiKey: z.string().min(1),

@@ -9,10 +9,9 @@
 
 import * as Sentry from '@sentry/nextjs';
 
+import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
 import { logger } from './logger';
 import { t } from './i18n';
-
-type Locale = 'zh-CN' | 'en-US';
 
 /**
  * 应用错误类型
@@ -60,7 +59,7 @@ export class AppError extends Error {
   /**
    * 转换为 HTTP Response
    */
-  toResponse(locale: Locale = 'zh-CN'): Response {
+  toResponse(locale: Locale = DEFAULT_LOCALE): Response {
     const fallbackMessage = t(locale, `errors.${this.code.toLowerCase()}` as never);
     const message = this.message || fallbackMessage;
 
@@ -84,7 +83,7 @@ export class AppError extends Error {
  * 错误处理辅助函数
  */
 export const handleError = (error: unknown): Response => {
-  return handleErrorWithLocale(error, 'zh-CN');
+  return handleErrorWithLocale(error, DEFAULT_LOCALE);
 };
 
 export const handleErrorWithLocale = (error: unknown, locale: Locale): Response => {

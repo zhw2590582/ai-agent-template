@@ -25,7 +25,7 @@
 - 自定义 provider：新增、删除、自动保存
 - 自定义模型：新增、编辑、删除
 - 测试连接：真实请求 provider，并同步模型列表
-- 国际化：`zh-CN` / `en-US`
+- 国际化：`en-US` / `zh-CN`，默认语言为英文
 - 主题切换（已处理 hydration 问题）
 - Supabase 社交登录（GitHub / Google）
 - 会话创建、消息持久化、标题生成

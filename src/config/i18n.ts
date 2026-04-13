@@ -20,7 +20,7 @@ export type Locale = (typeof SUPPORTED_LOCALES)[number];
 /**
  * 默认语言
  */
-export const DEFAULT_LOCALE: Locale = 'zh-CN';
+export const DEFAULT_LOCALE: Locale = 'en-US';
 
 /**
  * 语言配置
@@ -58,3 +58,11 @@ export const LOCALE_DETECTION_STRATEGY = {
   useAcceptLanguage: true,
   fallback: DEFAULT_LOCALE,
 } as const;
+
+export function isSupportedLocale(locale: string | null | undefined): locale is Locale {
+  return !!locale && SUPPORTED_LOCALES.includes(locale as Locale);
+}
+
+export function normalizeLocale(locale: string | null | undefined): Locale {
+  return isSupportedLocale(locale) ? locale : DEFAULT_LOCALE;
+}

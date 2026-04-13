@@ -1,5 +1,6 @@
 import { generateText } from 'ai';
 
+import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
 import { getRuntimeChatModel } from '@/features/chat/ai/models';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
@@ -14,7 +15,7 @@ export function cleanTitle(value: string) {
 export async function generateConversationTitle(
   input: string,
   options?: {
-    locale?: 'zh-CN' | 'en-US';
+    locale?: Locale;
     runtimeModel?: ChatRuntimeModel | null;
   }
 ) {
@@ -29,7 +30,7 @@ export async function generateConversationTitle(
     return cleanTitle(firstSentence || normalized);
   }
 
-  const locale = options.locale ?? 'zh-CN';
+  const locale = options.locale ?? DEFAULT_LOCALE;
   const prompt = `Generate a short conversation title from this first user message.
 
 Context:

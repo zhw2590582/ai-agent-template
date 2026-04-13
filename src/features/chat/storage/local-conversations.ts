@@ -2,6 +2,7 @@
 
 import type { UIMessage } from 'ai';
 
+import type { Locale } from '@/config/i18n';
 import { buildConversationTitleFromText } from '@/features/chat/storage/conversations';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import type { ChatRuntimeModel } from '@/features/models/types';
@@ -148,7 +149,7 @@ export function createLocalConversationThread(initialMessage: string) {
 
 export async function upsertLocalConversationThread(input: {
   id: string;
-  locale?: 'zh-CN' | 'en-US';
+  locale?: Locale;
   messages: UIMessage[];
   runtimeModel?: ChatRuntimeModel | null;
   title?: string;

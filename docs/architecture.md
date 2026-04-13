@@ -51,9 +51,11 @@ src/
 
 - `pages/`: 页面级组装
 - `components/`: 聊天相关 UI
-- `lib/`: 前端侧 helper、同步、分页、搜索
+- `data/`: guest / 已登录会话操作适配层
+- `hooks/`: workbench、session、sidebar、会话记录编排
 - `server/`: 聊天请求 handler 和 schema
 - `storage/`: 会话存储与查询
+- `utils/`: 轻量纯函数和配置辅助
 - `ai/`: 模型、prompt、工具、标题生成
 
 ### `src/features/models`

@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE } from '@/config/i18n';
 import { generateConversationTitle } from '@/features/chat/ai/title';
 import { chatTitlePostSchema } from '@/features/chat/server/schemas';
 import { handleErrorWithLocale } from '@/lib/errors';
@@ -7,12 +8,12 @@ export async function POST(request: Request) {
   try {
     const { input, locale, runtimeModel } = await validateRequest(request, chatTitlePostSchema);
     const title = await generateConversationTitle(input, {
-      locale: locale ?? 'zh-CN',
+      locale: locale ?? DEFAULT_LOCALE,
       runtimeModel,
     });
 
     return Response.json({ title });
   } catch (error) {
-    return handleErrorWithLocale(error, 'zh-CN');
+    return handleErrorWithLocale(error, DEFAULT_LOCALE);
   }
 }

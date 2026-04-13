@@ -24,7 +24,7 @@
 - provider 配置持久化：guest 存本地，登录用户写入 `profile.settings`
 - 自定义 provider：可新增、删除、自动保存
 - 模型同步和自定义模型管理
-- 国际化：`zh-CN` / `en-US`
+- 国际化：`en-US` / `zh-CN`，默认语言为英文
 - 主题切换
 - Supabase 社交登录（GitHub / Google）
 - 会话持久化（`conversations` 表）
@@ -53,9 +53,9 @@ bun run dev
 
 访问地址：
 
-- 中文：`http://localhost:3000/zh-CN`
 - 英文：`http://localhost:3000/en-US`
-- 默认：`http://localhost:3000`
+- 中文：`http://localhost:3000/zh-CN`
+- 默认：`http://localhost:3000`（英文）
 
 最低可运行环境变量：
 
