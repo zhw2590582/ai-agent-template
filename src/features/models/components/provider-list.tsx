@@ -53,7 +53,7 @@ export function ProviderList({
               <Switch
                 aria-label={`${provider.name} ${providerSettings.enabled ? t('models_page.status.enabled') : t('models_page.status.disabled')}`}
                 checked={providerSettings.enabled}
-                className="shrink-0"
+                className="shrink-0 data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
                 onCheckedChange={() => onToggleProvider(provider.id)}
               />
             </div>

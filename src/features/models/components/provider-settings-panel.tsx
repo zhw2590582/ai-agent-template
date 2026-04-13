@@ -1,6 +1,6 @@
 'use client';
 
-import { EyeIcon, EyeOffIcon, LinkIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, LinkIcon, PlugZapIcon, SaveIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -74,18 +74,27 @@ export function ProviderSettingsPanel({
             <LinkIcon className="size-4" />
           </a>
         </div>
-        <Button
-          className="shrink-0"
-          disabled={isSaving || isLoading}
-          type="button"
-          onClick={onSave}
-        >
-          {isLoading
-            ? t('models_page.actions.loading')
-            : isSaving
-              ? t('models_page.actions.saving')
-              : t('models_page.actions.save')}
-        </Button>
+        <div className="flex shrink-0 items-center gap-3">
+          <Button
+            disabled={isTestingConnection || !provider.apiKey.trim() || !provider.baseUrl.trim()}
+            type="button"
+            variant="outline"
+            onClick={onTestConnection}
+          >
+            <PlugZapIcon data-icon="inline-start" />
+            {isTestingConnection
+              ? t('models_page.actions.testing_connection')
+              : t('models_page.actions.test_connection')}
+          </Button>
+          <Button disabled={isSaving || isLoading} type="button" onClick={onSave}>
+            <SaveIcon data-icon="inline-start" />
+            {isLoading
+              ? t('models_page.actions.loading')
+              : isSaving
+                ? t('models_page.actions.saving')
+                : t('models_page.actions.save')}
+          </Button>
+        </div>
       </header>
 
       <div className="flex flex-1 flex-col gap-6 px-6 py-5">
@@ -154,24 +163,13 @@ export function ProviderSettingsPanel({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              disabled={isTestingConnection || !provider.apiKey.trim() || !provider.baseUrl.trim()}
-              type="button"
-              variant="outline"
-              onClick={onTestConnection}
-            >
-              {isTestingConnection
-                ? t('models_page.actions.testing_connection')
-                : t('models_page.actions.test_connection')}
-            </Button>
-
-            {isRefreshingModels ? (
+          {isRefreshingModels ? (
+            <div className="flex flex-wrap items-center gap-3">
               <span className="text-muted-foreground text-sm">
                 {t('models_page.models.syncing')}
               </span>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </div>
 
         <Separator />

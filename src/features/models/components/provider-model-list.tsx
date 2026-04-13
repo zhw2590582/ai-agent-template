@@ -70,6 +70,7 @@ export function ProviderModelList({
               <Switch
                 aria-label={`${model.name || model.id || 'model'} ${model.enabled ? t('models_page.status.enabled') : t('models_page.status.disabled')}`}
                 checked={model.enabled}
+                className="shrink-0 data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
                 onCheckedChange={() =>
                   onUpdateModel(index, {
                     ...model,
