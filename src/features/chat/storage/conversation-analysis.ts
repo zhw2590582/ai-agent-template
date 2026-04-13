@@ -47,6 +47,7 @@ export function mapConversationSummary(record: ConversationRecord): Conversation
     id: record.id,
     lastMessageAt: record.last_message_at,
     preview: record.analysis?.last_message_preview ?? null,
+    summary: record.summary ?? null,
     title: record.title,
   };
 }

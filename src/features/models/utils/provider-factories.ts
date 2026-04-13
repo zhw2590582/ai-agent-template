@@ -108,6 +108,11 @@ export function createProfileDraft(options: {
     locale: options.existing?.locale ?? options.locale,
     memory_summary: options.existing?.memory_summary ?? null,
     settings: (options.existing?.settings as AppProfile['settings'] | undefined) ?? {
+      memory: {
+        autoWrite: false,
+        crossConversation: true,
+        enabled: false,
+      },
       models: { providers: {}, selectedChatModelId: null, selectedProviderId: '' },
     },
     theme: options.existing?.theme ?? options.theme,

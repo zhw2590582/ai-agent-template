@@ -29,6 +29,7 @@ const messageSchema = z
 
 export const chatPostSchema = z.object({
   conversationId: z.string().min(1).optional(),
+  conversationSummary: z.string().trim().min(1).optional(),
   messages: z.array(messageSchema).min(1),
   runtimeModel: z
     .object({
@@ -56,6 +57,21 @@ export const chatTitlePostSchema = z.object({
 });
 
 export type ChatTitlePostInput = z.infer<typeof chatTitlePostSchema>;
+
+export const chatSummaryPostSchema = z.object({
+  existingSummary: z.string().trim().min(1).optional(),
+  locale: z.enum(SUPPORTED_LOCALES).optional(),
+  messages: z.array(messageSchema).min(1),
+  runtimeModel: z.object({
+    apiFormat: z.enum(['anthropic', 'openai']),
+    apiKey: z.string().min(1),
+    baseUrl: z.string().min(1),
+    modelId: z.string().min(1),
+    providerId: z.string().min(1),
+  }),
+});
+
+export type ChatSummaryPostInput = z.infer<typeof chatSummaryPostSchema>;
 
 /* ---------- Conversations ---------- */
 

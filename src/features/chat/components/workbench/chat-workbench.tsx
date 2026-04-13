@@ -11,6 +11,7 @@ import { ChatTopBar } from '@/features/chat/components/workbench/chat-topbar';
 import { useChatWorkbench } from '@/features/chat/hooks/use-chat-workbench';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import type { WorkbenchView } from '@/features/chat/types';
+import { MemoryPage } from '@/features/memory/pages/memory-page';
 import { ModelsPage } from '@/features/models/pages/models-page';
 import { cn } from '@/lib/utils';
 
@@ -41,6 +42,7 @@ export function ChatWorkbench({
   });
 
   const isChatView = activeView === 'chat';
+  const isMemoryView = activeView === 'memory';
   const isModelsView = activeView === 'models';
 
   return (
@@ -95,6 +97,12 @@ export function ChatWorkbench({
             </>
           ) : isModelsView ? (
             <ModelsPage />
+          ) : isMemoryView ? (
+            <MemoryPage
+              isAuthenticated={workbench.isAuthenticated}
+              settings={workbench.memorySettings}
+              summaries={workbench.sidebar.conversations}
+            />
           ) : (
             <ChatPlaceholder activeView={activeView} t={t} />
           )}

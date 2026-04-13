@@ -85,6 +85,12 @@ export function useChatWorkbench({
     initialMessages.length > 0
       ? initialMessages
       : starterMessages;
+  const activeConversationSummary = useMemo(
+    () =>
+      sidebar.conversations.find((conversation) => conversation.id === activeThreadId)?.summary ??
+      null,
+    [activeThreadId, sidebar.conversations]
+  );
 
   const {
     messages,
@@ -99,6 +105,7 @@ export function useChatWorkbench({
   } = useChatSession({
     activeThreadId,
     availableModels,
+    conversationSummary: activeConversationSummary,
     initialMessages: useChatInitialMessages,
     locale,
     onFinish: () => {
@@ -242,9 +249,11 @@ export function useChatWorkbench({
     handleClearChat,
     handleSubmit: guardedSubmit,
     input,
+    isAuthenticated: !!user,
     isBusy,
     isSidebarOpen,
     isStartingThread,
+    memorySettings: models.profile.settings.memory,
     isModelsLoading: models.isLoading,
     locale,
     messages,

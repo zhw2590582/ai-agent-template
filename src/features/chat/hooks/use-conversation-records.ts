@@ -11,6 +11,7 @@ import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import {
   deleteConversationRecord,
   generateConversationRecordTitle,
+  generateConversationRecordSummary,
   getConversationMessages,
   persistConversationMessages,
   renameConversationRecord,
@@ -108,6 +109,26 @@ export function useConversationRecords({
     }
 
     generateConversationRecordTitle({
+      conversationId: activeThreadId,
+      locale,
+      runtimeModel,
+      user,
+    });
+  }, [activeThreadId, isBusy, locale, messages.length, runtimeModel, user]);
+
+  useEffect(() => {
+    if (
+      user ||
+      isBusy ||
+      !activeThreadId ||
+      !isLocalConversationId(activeThreadId) ||
+      messages.length === 0 ||
+      !runtimeModel
+    ) {
+      return;
+    }
+
+    generateConversationRecordSummary({
       conversationId: activeThreadId,
       locale,
       runtimeModel,

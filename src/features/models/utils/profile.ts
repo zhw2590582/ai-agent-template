@@ -5,6 +5,7 @@ import type {
   AppProfileSettings,
   ChatModelOption,
   ChatRuntimeModel,
+  MemorySettings,
   ModelsSettings,
   ProviderModelItem,
   ProviderSettings,
@@ -168,6 +169,20 @@ function readSelectedChatModelId(input: unknown) {
   return undefined;
 }
 
+function readMemorySettings(input: unknown): Partial<MemorySettings> | undefined {
+  if (
+    typeof input === 'object' &&
+    input != null &&
+    'memory' in input &&
+    typeof input.memory === 'object' &&
+    input.memory != null
+  ) {
+    return input.memory as Partial<MemorySettings>;
+  }
+
+  return undefined;
+}
+
 export function normalizeProfileSettings(input?: unknown) {
   const existingProviders = readExistingProviders(input);
   const providers = Object.fromEntries(
@@ -209,7 +224,14 @@ export function normalizeProfileSettings(input?: unknown) {
       typeof inputSelectedChatModelId === 'string' ? inputSelectedChatModelId : null,
     selectedProviderId,
   };
-  return { models };
+  const existingMemory = readMemorySettings(input);
+  const memory: MemorySettings = {
+    autoWrite: existingMemory?.autoWrite ?? false,
+    crossConversation: existingMemory?.crossConversation ?? true,
+    enabled: existingMemory?.enabled ?? false,
+  };
+
+  return { memory, models };
 }
 
 export function createProfileDraft(options: {

@@ -10,6 +10,7 @@ import { resolveChatRuntimeModel } from '@/features/models/utils/profile';
 interface UseChatSessionOptions {
   activeThreadId: string | null;
   availableModels: ChatModelOption[];
+  conversationSummary?: string | null;
   initialMessages: UIMessage[];
   locale: string;
   onFinish: () => void;
@@ -19,6 +20,7 @@ interface UseChatSessionOptions {
 export function useChatSession({
   activeThreadId,
   availableModels,
+  conversationSummary,
   initialMessages,
   locale,
   onFinish,
@@ -50,11 +52,13 @@ export function useChatSession({
   }, [profileSettings, selectedModel]);
   const runtimeModelRef = useRef(runtimeModel);
   const activeThreadIdRef = useRef(activeThreadId);
+  const conversationSummaryRef = useRef(conversationSummary);
 
   useEffect(() => {
     runtimeModelRef.current = runtimeModel;
     activeThreadIdRef.current = activeThreadId;
-  }, [activeThreadId, runtimeModel]);
+    conversationSummaryRef.current = conversationSummary;
+  }, [activeThreadId, conversationSummary, runtimeModel]);
 
   /* eslint-disable react-hooks/refs */
   const [transport] = useState(
@@ -74,6 +78,7 @@ export function useChatSession({
             trigger,
             messageId,
             messages,
+            conversationSummary: conversationSummaryRef.current ?? undefined,
             runtimeModel: runtimeModelRef.current ?? undefined,
             conversationId:
               (requestBody.conversationId as string | undefined) ??

@@ -40,7 +40,14 @@ export interface ModelsSettings {
   selectedProviderId: string;
 }
 
+export interface MemorySettings {
+  autoWrite: boolean;
+  crossConversation: boolean;
+  enabled: boolean;
+}
+
 export interface AppProfileSettings {
+  memory: MemorySettings;
   models: ModelsSettings;
 }
 

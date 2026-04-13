@@ -36,7 +36,10 @@ export type ConversationsClient = {
 
 export type ConversationsTable = {
   insert: (
-    values: Pick<ConversationRecord, 'analysis' | 'last_message_at' | 'title' | 'user_id'>
+    values: Pick<
+      ConversationRecord,
+      'analysis' | 'last_message_at' | 'summary' | 'summary_updated_at' | 'title' | 'user_id'
+    >
   ) => {
     select: () => {
       single: () => SingleConversationResult;
@@ -44,7 +47,10 @@ export type ConversationsTable = {
   };
   select: (columns: string) => ConversationSelectQuery;
   update: (
-    values: Pick<ConversationRecord, 'analysis' | 'last_message_at' | 'messages' | 'title'>
+    values: Pick<
+      ConversationRecord,
+      'analysis' | 'last_message_at' | 'messages' | 'summary' | 'summary_updated_at' | 'title'
+    >
   ) => {
     eq: (column: 'id', value: string) => PromiseLike<{ error: unknown }>;
   };
@@ -61,7 +67,7 @@ type RangeableListQuery = {
 };
 
 export const conversationListColumns =
-  'id, user_id, title, messages, analysis, last_message_at, created_at, updated_at';
+  'id, user_id, title, messages, analysis, summary, summary_updated_at, last_message_at, created_at, updated_at';
 
 export function getConversationsTable(client: ConversationsClient) {
   return client.from('conversations') as ConversationsTable;

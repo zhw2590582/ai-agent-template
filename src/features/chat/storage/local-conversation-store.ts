@@ -19,6 +19,9 @@ export interface LocalConversationThread {
   lastMessageAt: string;
   messages: UIMessage[];
   preview: string | null;
+  summary?: string | null;
+  summaryGenerating?: boolean;
+  summaryUpdatedAt?: string | null;
   title: string;
   titleGenerated?: boolean;
   titleGenerating?: boolean;
@@ -86,6 +89,7 @@ export function readLocalConversationThreads() {
       id: thread.id,
       lastMessageAt: thread.lastMessageAt,
       preview: thread.preview,
+      summary: thread.summary ?? null,
       title: thread.title,
     }));
     return localConversationThreadsCache;
@@ -105,6 +109,7 @@ export function writeLocalConversationThreads(threads: LocalConversationThread[]
     id: thread.id,
     lastMessageAt: thread.lastMessageAt,
     preview: thread.preview,
+    summary: thread.summary ?? null,
     title: thread.title,
   }));
   const raw = JSON.stringify(nextThreads);
@@ -140,6 +145,7 @@ export function createLocalConversationThread(initialMessage: string) {
     lastMessageAt: now,
     messages: [],
     preview: initialMessage.trim().slice(0, 120) || null,
+    summary: null,
     title: buildConversationTitleFromText(initialMessage),
     titleGenerated: false,
   } satisfies LocalConversationThread;
@@ -157,6 +163,9 @@ export function upsertLocalConversationThread(input: {
     lastMessageAt: new Date().toISOString(),
     messages: input.messages,
     preview: buildPreview(input.messages),
+    summary: existingThread?.summary ?? null,
+    summaryGenerating: existingThread?.summaryGenerating ?? false,
+    summaryUpdatedAt: existingThread?.summaryUpdatedAt ?? null,
     title:
       input.title?.trim() ||
       (existingThread?.titleGenerated ? existingThread.title : buildTitle(input.messages)),

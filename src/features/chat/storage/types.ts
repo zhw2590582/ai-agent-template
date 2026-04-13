@@ -16,6 +16,8 @@ export interface ConversationRecord {
   id: string;
   last_message_at: string;
   messages: UIMessage[];
+  summary: string | null;
+  summary_updated_at: string | null;
   title: string;
   updated_at: string;
   user_id: string;
@@ -25,5 +27,6 @@ export interface ConversationSummary {
   id: string;
   lastMessageAt: string;
   preview: string | null;
+  summary?: string | null;
   title: string;
 }

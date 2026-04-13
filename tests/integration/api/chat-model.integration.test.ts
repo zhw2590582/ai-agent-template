@@ -37,6 +37,16 @@ vi.mock('@/config/env', () => ({
   isSentryConfigured: () => false,
 }));
 
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: vi.fn(async () => ({
+    auth: {
+      getUser: vi.fn(async () => ({
+        data: { user: null },
+      })),
+    },
+  })),
+}));
+
 describe('chat model integration', () => {
   beforeEach(() => {
     mockStreamText.mockReset();

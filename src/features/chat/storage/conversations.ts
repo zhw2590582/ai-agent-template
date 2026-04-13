@@ -1,5 +1,7 @@
 import type { UIMessage } from 'ai';
 
+import type { Locale } from '@/config/i18n';
+import { generateConversationSummary } from '@/features/chat/ai/summary';
 import { generateConversationTitle } from '@/features/chat/ai/title';
 import type { ChatRuntimeModel } from '@/features/models/types';
 import {
@@ -44,6 +46,8 @@ export async function createConversation(
         updated_from: 'create',
       },
       last_message_at: now,
+      summary: null,
+      summary_updated_at: null,
       title,
       user_id: input.userId,
     })
@@ -59,6 +63,7 @@ export async function createConversation(
 export async function saveConversationMessages(
   input: {
     conversationId: string;
+    locale?: Locale;
     messages: UIMessage[];
     runtimeModel?: ChatRuntimeModel | null;
     userId: string;
@@ -93,11 +98,31 @@ export async function saveConversationMessages(
     }
   }
 
+  let summary = existingConversation?.summary ?? null;
+  let summaryUpdatedAt = existingConversation?.summary_updated_at ?? null;
+
+  try {
+    const nextSummary = await generateConversationSummary(input.messages, {
+      existingSummary: summary,
+      locale: input.locale,
+      runtimeModel: input.runtimeModel,
+    });
+
+    if (nextSummary && nextSummary !== summary) {
+      summary = nextSummary;
+      summaryUpdatedAt = new Date().toISOString();
+    }
+  } catch {
+    // Keep existing summary if regeneration fails.
+  }
+
   const { error } = await conversations
     .update({
       analysis,
       last_message_at: new Date().toISOString(),
       messages: input.messages,
+      summary,
+      summary_updated_at: summaryUpdatedAt,
       title,
     })
     .eq('id', input.conversationId);
@@ -127,6 +152,8 @@ export async function renameConversation(
       analysis: existingConversation.analysis,
       last_message_at: existingConversation.last_message_at,
       messages: existingConversation.messages,
+      summary: existingConversation.summary,
+      summary_updated_at: existingConversation.summary_updated_at,
       title: input.title.trim(),
     })
     .eq('id', input.conversationId);

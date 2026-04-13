@@ -14,9 +14,13 @@ import { createClient as createSupabaseServerClient } from '@/lib/supabase/serve
 import { validateRequest } from '@/lib/validation';
 import { getRuntimeChatModel } from '@/features/chat/ai/models';
 import { getSystemPrompt } from '@/features/chat/ai/prompts';
+import {
+  buildConversationSummaryContext,
+  CONVERSATION_SUMMARY_RECENT_MESSAGE_WINDOW,
+} from '@/features/chat/ai/summary';
 import { agentTools } from '@/features/chat/ai/tools';
 import { chatPostSchema } from '@/features/chat/server/schemas';
-import { saveConversationMessages } from '@/features/chat/storage';
+import { saveConversationMessages, verifyConversationOwnership } from '@/features/chat/storage';
 
 export const maxDuration = 30;
 
@@ -50,11 +54,25 @@ function getLocaleFromRequest(request: Request): Locale {
 
 const hasAgentTools = Object.keys(agentTools).length > 0;
 
+async function buildChatMessagesWithSummary(messages: UIMessage[], summary?: string | null) {
+  const summaryMessage = summary ? buildConversationSummaryContext(summary) : null;
+
+  if (!summaryMessage || messages.length <= CONVERSATION_SUMMARY_RECENT_MESSAGE_WINDOW) {
+    return convertToModelMessages(messages as unknown as UIMessage[]);
+  }
+
+  const scopedMessages = [
+    summaryMessage,
+    ...messages.slice(-CONVERSATION_SUMMARY_RECENT_MESSAGE_WINDOW),
+  ];
+  return convertToModelMessages(scopedMessages as unknown as UIMessage[]);
+}
+
 export async function handleChatPost(request: Request) {
   const locale = getLocaleFromRequest(request);
 
   try {
-    const { conversationId, messages, runtimeModel } = await validateRequest(
+    const { conversationId, conversationSummary, messages, runtimeModel } = await validateRequest(
       request,
       chatPostSchema
     );
@@ -67,10 +85,31 @@ export async function handleChatPost(request: Request) {
       );
     }
 
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    let persistedConversationSummary: string | null = null;
+
+    if (conversationId && user) {
+      try {
+        const conversation = await verifyConversationOwnership(conversationId, user.id, supabase);
+        persistedConversationSummary = conversation.summary ?? null;
+      } catch (error) {
+        logger.warn('Chat request: failed to load persisted conversation summary', {
+          conversationId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
     const result = streamText({
       model: getRuntimeChatModel(runtimeModel),
       system: getSystemPrompt(locale),
-      messages: await convertToModelMessages(messages as unknown as UIMessage[]),
+      messages: await buildChatMessagesWithSummary(
+        messages as unknown as UIMessage[],
+        persistedConversationSummary ?? conversationSummary ?? null
+      ),
       ...(hasAgentTools ? { tools: agentTools } : {}),
       maxOutputTokens: AI_CONFIG.DEFAULT_MAX_TOKENS,
     });
@@ -85,11 +124,6 @@ export async function handleChatPost(request: Request) {
         }
 
         try {
-          const supabase = await createSupabaseServerClient();
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
-
           if (!user) {
             logger.warn('Chat onFinish: user not authenticated, messages not saved', {
               conversationId,
@@ -100,6 +134,7 @@ export async function handleChatPost(request: Request) {
           await saveConversationMessages(
             {
               conversationId,
+              locale,
               messages: responseMessages,
               runtimeModel,
               userId: user.id,
