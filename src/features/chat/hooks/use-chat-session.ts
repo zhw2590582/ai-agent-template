@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 
@@ -24,19 +24,11 @@ export function useChatSession({
   onFinish,
   profileSettings,
 }: UseChatSessionOptions) {
-  const [rawSelectedModel, setSelectedModel] = useState(
-    profileSettings?.models.selectedChatModelId ?? ''
-  );
-
   const selectedModel = useMemo(() => {
     const profileSelectedModel = profileSettings?.models.selectedChatModelId ?? '';
 
     if (availableModels.length === 0) {
       return '';
-    }
-
-    if (availableModels.some((model) => model.id === rawSelectedModel)) {
-      return rawSelectedModel;
     }
 
     if (
@@ -47,7 +39,7 @@ export function useChatSession({
     }
 
     return availableModels[0]?.id ?? '';
-  }, [availableModels, profileSettings?.models.selectedChatModelId, rawSelectedModel]);
+  }, [availableModels, profileSettings?.models.selectedChatModelId]);
 
   const runtimeModel = useMemo(() => {
     if (!profileSettings) {
@@ -93,6 +85,5 @@ export function useChatSession({
     ...chat,
     runtimeModel,
     selectedModel,
-    setSelectedModel,
   };
 }

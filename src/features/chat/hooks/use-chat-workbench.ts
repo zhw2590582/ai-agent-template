@@ -88,7 +88,6 @@ export function useChatWorkbench({
     error,
     regenerate,
     selectedModel,
-    setSelectedModel,
     runtimeModel,
   } = useChatSession({
     activeThreadId,
@@ -103,13 +102,15 @@ export function useChatWorkbench({
 
   const isBusy = status === 'submitted' || status === 'streaming';
 
-  if (pendingThreadId != null && urlConversationId === pendingThreadId) {
-    setPendingThreadId(null);
-  }
+  useEffect(() => {
+    if (pendingThreadId == null) {
+      return;
+    }
 
-  if (urlConversationId == null && pendingThreadId != null) {
-    setPendingThreadId(null);
-  }
+    if (urlConversationId === pendingThreadId) {
+      setPendingThreadId(null);
+    }
+  }, [pendingThreadId, urlConversationId]);
 
   useChatSync({
     urlConversationId,
@@ -182,12 +183,11 @@ export function useChatWorkbench({
 
   const handleModelChange = useCallback(
     (value: string) => {
-      setSelectedModel(value);
       void updateSelectedChatModelId(value, {
         silent: true,
       });
     },
-    [setSelectedModel, updateSelectedChatModelId]
+    [updateSelectedChatModelId]
   );
 
   const guardedSubmit = useCallback(
@@ -205,6 +205,19 @@ export function useChatWorkbench({
     },
     [handleSubmit, models.isLoading, runtimeModel, t]
   );
+
+  const guardedRegenerate = useCallback(() => {
+    if (models.isLoading) {
+      return;
+    }
+
+    if (!runtimeModel) {
+      toast.error(t('chat.errors.model_not_configured'));
+      return;
+    }
+
+    void regenerate();
+  }, [models.isLoading, regenerate, runtimeModel, t]);
 
   useEffect(() => {
     if (!urlConversationId) {
@@ -244,7 +257,7 @@ export function useChatWorkbench({
     isModelsLoading: models.isLoading,
     locale,
     messages,
-    regenerate,
+    regenerate: guardedRegenerate,
     availableModels,
     selectedModel,
     setSelectedModel: handleModelChange,
