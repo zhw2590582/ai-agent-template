@@ -178,6 +178,7 @@ export const enUS: Translations = {
       import: 'Import',
       export: 'Export',
       add_model: 'Add Model',
+      edit_model: 'Edit Model',
       test_connection: 'Test Connection',
       testing_connection: 'Testing...',
       saved: 'Saved',

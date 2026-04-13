@@ -176,6 +176,7 @@ const zhCN = {
       import: '导入',
       export: '导出',
       add_model: '添加模型',
+      edit_model: '编辑模型',
       test_connection: '测试连接',
       testing_connection: '测试中...',
       saved: '已保存',

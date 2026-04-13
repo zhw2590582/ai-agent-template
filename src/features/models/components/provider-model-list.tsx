@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PlusCircleIcon, Trash2Icon } from 'lucide-react';
+import { PencilIcon, PlusCircleIcon, Trash2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -32,11 +32,27 @@ export function ProviderModelList({
   onUpdateModel,
 }: ProviderModelListProps) {
   const t = useTranslations();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [draftModelName, setDraftModelName] = useState('');
   const [draftModelId, setDraftModelId] = useState('');
 
-  const handleAddModel = () => {
+  const openCreateDialog = () => {
+    setEditingIndex(null);
+    setDraftModelName('');
+    setDraftModelId('');
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = (index: number) => {
+    const model = models[index];
+    setEditingIndex(index);
+    setDraftModelName(model.name);
+    setDraftModelId(model.id);
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = () => {
     const modelId = draftModelId.trim();
     const modelName = draftModelName.trim() || modelId;
 
@@ -44,13 +60,23 @@ export function ProviderModelList({
       return;
     }
 
-    onAddModel({
-      id: modelId,
-      name: modelName,
-    });
+    if (editingIndex == null) {
+      onAddModel({
+        id: modelId,
+        name: modelName,
+      });
+    } else {
+      onUpdateModel(editingIndex, {
+        ...models[editingIndex],
+        id: modelId,
+        name: modelName,
+      });
+    }
+
     setDraftModelName('');
     setDraftModelId('');
-    setIsAddDialogOpen(false);
+    setEditingIndex(null);
+    setIsDialogOpen(false);
   };
 
   return (
@@ -60,16 +86,30 @@ export function ProviderModelList({
           <h3 className="text-base font-medium">{t('models_page.models.title')}</h3>
           <p className="text-muted-foreground text-sm">{t('models_page.models.description')}</p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) {
+              setEditingIndex(null);
+              setDraftModelName('');
+              setDraftModelId('');
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button type="button" variant="ghost">
+            <Button type="button" variant="ghost" onClick={openCreateDialog}>
               <PlusCircleIcon data-icon="inline-start" />
               {t('models_page.actions.add_model')}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>{t('models_page.actions.add_model')}</DialogTitle>
+              <DialogTitle>
+                {editingIndex == null
+                  ? t('models_page.actions.add_model')
+                  : t('models_page.actions.edit_model')}
+              </DialogTitle>
               <DialogDescription>{t('models_page.models.description')}</DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-4">
@@ -95,8 +135,10 @@ export function ProviderModelList({
               </div>
             </div>
             <DialogFooter>
-              <Button disabled={!draftModelId.trim()} type="button" onClick={handleAddModel}>
-                {t('models_page.actions.add_model')}
+              <Button disabled={!draftModelId.trim()} type="button" onClick={handleSubmit}>
+                {editingIndex == null
+                  ? t('models_page.actions.add_model')
+                  : t('models_page.actions.edit_model')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -109,27 +151,9 @@ export function ProviderModelList({
             key={`${model.id || 'custom'}-${index}`}
             className="bg-background hover:bg-accent/10 flex items-start gap-4 px-4 py-4 transition-colors"
           >
-            <div className="min-w-0 flex-1 space-y-1">
-              <Input
-                placeholder={t('models_page.models.name_placeholder')}
-                value={model.name}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                  onUpdateModel(index, {
-                    ...model,
-                    name: event.target.value,
-                  })
-                }
-              />
-              <Input
-                placeholder={t('models_page.models.id_placeholder')}
-                value={model.id}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                  onUpdateModel(index, {
-                    ...model,
-                    id: event.target.value,
-                  })
-                }
-              />
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-medium">{model.name || model.id}</div>
+              <div className="text-muted-foreground mt-1 truncate text-sm">{model.id}</div>
             </div>
             <div className="flex shrink-0 items-center gap-2 self-center">
               <Switch
@@ -144,14 +168,24 @@ export function ProviderModelList({
                 }
               />
               {model.isCustom ? (
-                <Button
-                  size="icon-sm"
-                  type="button"
-                  variant="ghost"
-                  onClick={() => onRemoveModel(index)}
-                >
-                  <Trash2Icon />
-                </Button>
+                <>
+                  <Button
+                    size="icon-sm"
+                    type="button"
+                    variant="ghost"
+                    onClick={() => openEditDialog(index)}
+                  >
+                    <PencilIcon />
+                  </Button>
+                  <Button
+                    size="icon-sm"
+                    type="button"
+                    variant="ghost"
+                    onClick={() => onRemoveModel(index)}
+                  >
+                    <Trash2Icon />
+                  </Button>
+                </>
               ) : null}
             </div>
           </div>
