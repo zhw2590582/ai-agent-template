@@ -55,7 +55,7 @@ export function ProviderIcon({
     >
       <Image
         alt={`${preset?.name ?? providerId} logo`}
-        className={cn('size-4 object-contain dark:invert', className)}
+        className={cn('size-6 object-contain dark:invert', className)}
         height={16}
         src={`https://models.dev/logos/${logoId}.svg`}
         width={16}

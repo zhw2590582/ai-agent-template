@@ -43,7 +43,7 @@ export function ProviderList({
             >
               <div className="flex h-auto min-w-0 flex-1 items-center justify-start gap-3 px-0 py-0 font-normal">
                 <ProviderIcon
-                  fallbackClassName="flex size-10 shrink-0 items-center justify-center border text-sm font-semibold"
+                  fallbackClassName="flex size-10 shrink-0 items-center justify-center border text-lg font-semibold"
                   providerId={provider.id}
                 />
                 <span className="min-w-0 flex-1 truncate text-left text-sm font-medium">

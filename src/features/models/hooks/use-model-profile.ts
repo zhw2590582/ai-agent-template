@@ -196,7 +196,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
   );
 
   const persistProfile = useCallback(
-    async (nextProfile: AppProfile, options?: { silent?: boolean }) => {
+    async (nextProfile: AppProfile, options?: { silent?: boolean; trackSavingState?: boolean }) => {
       if (!user) {
         writeLocalProfile(nextProfile);
         if (!options?.silent) {
@@ -205,7 +205,9 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
         return true;
       }
 
-      setIsSaving(true);
+      if (options?.trackSavingState !== false) {
+        setIsSaving(true);
+      }
       try {
         const response = await fetch('/api/profile', {
           method: 'PATCH',
@@ -240,7 +242,9 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
         }
         return true;
       } finally {
-        setIsSaving(false);
+        if (options?.trackSavingState !== false) {
+          setIsSaving(false);
+        }
       }
     },
     [locale, t, theme, user]
@@ -278,7 +282,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
   const saveProfile = useCallback(
     async (
       updater?: (models: ModelsSettings) => ModelsSettings,
-      options?: { silent?: boolean }
+      options?: { silent?: boolean; trackSavingState?: boolean }
     ) => {
       const current = profileRef.current;
       const nextProfile = buildNextProfile(
@@ -287,7 +291,10 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
       );
       profileRef.current = nextProfile;
       setProfile(nextProfile);
-      return persistProfile(nextProfile, { silent: options?.silent });
+      return persistProfile(nextProfile, {
+        silent: options?.silent,
+        trackSavingState: options?.trackSavingState,
+      });
     },
     [buildNextProfile, persistProfile]
   );
@@ -305,7 +312,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
             },
           },
         }),
-        { silent: true }
+        { silent: true, trackSavingState: false }
       );
     },
     [saveProfile]
