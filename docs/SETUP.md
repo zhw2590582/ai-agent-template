@@ -22,6 +22,14 @@ bun run dev
 
 聊天模型改为在应用内 `/models` 页面配置，默认不再依赖服务端预置模型 API Key。
 
+当前 `/models` 页支持：
+
+- 预置 provider 配置
+- 自定义 provider 新增 / 删除
+- 测试连接并同步模型列表
+- 自定义模型新增 / 编辑 / 删除
+- guest 本地存储和登录用户数据库持久化
+
 如果要启用登录和会话持久化，还需要：
 
 - `NEXT_PUBLIC_SUPABASE_URL`

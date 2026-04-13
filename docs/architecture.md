@@ -7,6 +7,7 @@
 当前架构的重点是三件事：
 
 - 让聊天主链路保持稳定
+- 让模型/provider 配置成为真实能力
 - 让登录与会话持久化清晰落地
 - 让新能力能按边界逐步接入，而不是提前过度设计
 
@@ -27,7 +28,8 @@ src/
 ├── config/                     # app/env/i18n 等集中配置
 ├── features/
 │   ├── auth/                   # 登录 UI、用户快照、profile 同步
-│   └── chat/                   # 当前唯一真实业务域
+│   ├── chat/                   # 聊天工作台与会话链路
+│   └── models/                 # provider 配置、模型同步、自定义 provider/model
 ├── i18n/                       # next-intl 请求配置
 ├── lib/                        # 共享工具、错误处理、日志、Supabase client
 └── proxy.ts                    # locale 检测和 session 更新
@@ -45,7 +47,7 @@ src/
 
 ### `src/features/chat`
 
-当前唯一真实业务域。
+当前核心业务域。
 
 - `pages/`: 页面级组装
 - `components/`: 聊天相关 UI
@@ -54,7 +56,17 @@ src/
 - `storage/`: 会话存储与查询
 - `ai/`: 模型、prompt、工具、标题生成
 
-注意：很多导航页虽然存在，但本质上仍是复用 chat workbench 的占位视图，不代表已经形成独立业务域。
+### `src/features/models`
+
+当前第二个真实业务域。
+
+- `pages/`: models 工作台页面
+- `components/`: provider 列表、provider 设置、模型列表
+- `hooks/`: profile.settings 的读写与持久化
+- `server/`: provider 测试连接和模型同步
+- `utils/`: provider/model 归一化、runtime option 推导
+
+它的职责不是管理平台内置模型，而是管理用户自己接入的第三方 provider 与模型。
 
 ### `src/features/auth`
 
@@ -95,12 +107,22 @@ src/
 
 ```text
 UI input
-  -> useChat
+  -> useChat + runtimeModel
   -> /api/chat
   -> src/features/chat/server/chat.ts
   -> model + tools
   -> stream response
   -> chat UI
+
+Models UI
+  -> useModelProfile
+  -> /api/profile
+  -> localStorage or Supabase profile.settings
+
+Test connection
+  -> /api/models/providers
+  -> src/features/models/server/providers.ts
+  -> sync models back into profile.settings
 
 Sidebar list/search/create
   -> /api/conversations
@@ -119,7 +141,7 @@ OAuth sign-in
 已经稳定的部分：
 
 - 聊天主链路
-- 工具模块化
+- 用户侧 provider / model 配置
 - prompt 抽离
 - i18n 路由
 - 主题与 hydration 处理
@@ -130,7 +152,6 @@ OAuth sign-in
 
 - memory
 - rag
-- provider 管理抽象
 - agents / subagents
 - sandbox
 - mcp 管理

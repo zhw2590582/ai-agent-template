@@ -9,7 +9,7 @@
 当前项目不是完整 agent 平台，而是一个已经跑通的聊天工作台骨架，重点在：
 
 - 流式聊天主链路
-- 服务端工具调用骨架
+- 用户自配置的模型/provider 接入
 - 登录、会话持久化、分页和搜索
 - 为 Memory、RAG、Planning、多代理预留结构边界
 
@@ -19,8 +19,11 @@
 
 - 基于 `useChat` 的流式聊天
 - 服务端 `/api/chat` 到 `streamText(...)` 的主链路
-- DeepSeek 模型接入，兼容 OpenAI SDK 风格调用
-- 工具调用骨架：天气、计算器、时间
+- `/models` 页面已落地
+- 运行时模型配置：OpenAI 兼容 / Anthropic 兼容
+- provider 配置持久化：guest 存本地，登录用户写入 `profile.settings`
+- 自定义 provider：可新增、删除、自动保存
+- 模型同步和自定义模型管理
 - 国际化：`zh-CN` / `en-US`
 - 主题切换
 - Supabase 社交登录（GitHub / Google）
@@ -35,7 +38,7 @@
 - RAG
 - Planning
 - Multi-Agent
-- 大多数工作台页面的真实业务实现
+- 除聊天和 Models 外的大多数工作台页面的真实业务实现
 - E2E 自动化测试
 
 更准确的状态说明见 [docs/project-status.md](./docs/project-status.md)。
@@ -86,8 +89,9 @@ src/
 ├── components/           # 基础 UI 和 AI Elements 组件
 ├── config/               # env / app / i18n 等配置
 ├── features/
-│   ├── chat/             # 当前唯一真实业务域
-│   └── auth/             # 登录和 profile 同步
+│   ├── auth/             # 登录和 profile 同步
+│   ├── chat/             # 聊天工作台、消息链路、会话存储
+│   └── models/           # provider 配置、模型同步、自定义 provider/model
 ├── i18n/                 # next-intl 请求配置
 ├── lib/                  # 通用工具、错误处理、日志、Supabase client
 └── proxy.ts              # locale 检测与 session 更新
