@@ -80,8 +80,6 @@ export function ChatWorkbench({
             profileSaveStatus={workbench.profileSaveStatus}
             t={t}
           />
-
-
           {isChatView ? (
             <>
               <ChatMessageList

@@ -40,12 +40,7 @@ interface ChatTopBarProps {
   t: TranslateFn;
 }
 
-export function ChatTopBar({
-  activeView,
-  locale,
-  profileSaveStatus = 'idle',
-  t,
-}: ChatTopBarProps) {
+export function ChatTopBar({ activeView, locale, profileSaveStatus = 'idle', t }: ChatTopBarProps) {
   return (
     <div className="border-border h-12 border-b px-4 py-2">
       <div className="flex w-full flex-col gap-4">
