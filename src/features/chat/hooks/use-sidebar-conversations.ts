@@ -7,14 +7,7 @@
 
 'use client';
 
-import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useSyncExternalStore,
-} from 'react';
+import { startTransition, useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { useSidebarPagination } from '@/features/chat/hooks/use-sidebar-pagination';
@@ -23,6 +16,7 @@ import {
   listLocalConversationSummaries,
   subscribeToLocalConversationUpdates,
 } from '@/features/chat/storage/local-conversations';
+import { useConversationListStore } from '@/features/chat/hooks/use-conversation-list-store';
 
 const EMPTY_CONVERSATIONS: ConversationSummary[] = [];
 
@@ -42,11 +36,7 @@ export function useSidebarConversations({
   searchQuery = '',
   onLoadError,
 }: UseSidebarConversationsOptions) {
-  const [pendingSidebarHead, setPendingSidebarHead] = useState<ConversationSummary | null>(null);
-  const [optimisticUpdates, setOptimisticUpdates] = useState<Record<string, ConversationSummary>>(
-    {}
-  );
-  const [optimisticRemovedIds, setOptimisticRemovedIds] = useState<string[]>([]);
+  const listStore = useConversationListStore();
   const subscribe = useCallback(
     (onStoreChange: () => void) =>
       isAuthenticated ? () => {} : subscribeToLocalConversationUpdates(onStoreChange),
@@ -79,86 +69,49 @@ export function useSidebarConversations({
 
   // Clear optimistic head once it appears in the server list
   useEffect(() => {
-    if (pendingSidebarHead && initialConversations.some((c) => c.id === pendingSidebarHead.id)) {
+    const insertedConversationId = listStore.state.insertedConversation?.id;
+
+    if (
+      insertedConversationId &&
+      initialConversations.some((conversation) => conversation.id === insertedConversationId)
+    ) {
       startTransition(() => {
-        setPendingSidebarHead(null);
+        listStore.clearInsertedConversation(insertedConversationId);
       });
     }
-  }, [initialConversations, pendingSidebarHead]);
-
-  const applyOptimisticState = useCallback(
-    (items: ConversationSummary[]) =>
-      items
-        .filter((item) => !optimisticRemovedIds.includes(item.id))
-        .map((item) => optimisticUpdates[item.id] ?? item),
-    [optimisticRemovedIds, optimisticUpdates]
-  );
+  }, [initialConversations, listStore]);
 
   const conversations = useMemo(() => {
     if (!isAuthenticated) {
-      const base =
-        pendingSidebarHead && !localConversations.some((c) => c.id === pendingSidebarHead.id)
-          ? [pendingSidebarHead, ...localConversations]
-          : localConversations;
+      const base = listStore.buildList(localConversations);
 
-      if (!isSearching) {
-        return base;
-      }
+      if (!isSearching) return base;
 
       const query = searchQuery.trim().toLowerCase();
       return base.filter((item) => item.title.toLowerCase().includes(query));
     }
 
-    if (isSearching) return applyOptimisticState(search.results);
-    const base =
-      pendingSidebarHead && !initialConversations.some((c) => c.id === pendingSidebarHead.id)
-        ? [pendingSidebarHead, ...initialConversations]
-        : initialConversations;
+    if (isSearching) return listStore.buildList(search.results);
+    const base = listStore.buildList(initialConversations);
 
-    if (pagination.extra.length === 0) return applyOptimisticState(base);
+    if (pagination.extra.length === 0) return base;
 
     const seen = new Set(base.map((c) => c.id));
-    return applyOptimisticState([...base, ...pagination.extra.filter((c) => !seen.has(c.id))]);
+    return listStore.buildList([...base, ...pagination.extra.filter((c) => !seen.has(c.id))]);
   }, [
-    applyOptimisticState,
     initialConversations,
     isAuthenticated,
     isSearching,
+    listStore,
     localConversations,
     pagination.extra,
-    pendingSidebarHead,
     search.results,
     searchQuery,
   ]);
 
-  const applyConversationUpdate = useCallback((conversation: ConversationSummary) => {
-    setOptimisticRemovedIds((current) => current.filter((id) => id !== conversation.id));
-    setOptimisticUpdates((current) => ({
-      ...current,
-      [conversation.id]: conversation,
-    }));
-  }, []);
-
-  const removeConversation = useCallback(
-    (conversationId: string) => {
-      setOptimisticUpdates((current) => {
-        const next = { ...current };
-        delete next[conversationId];
-        return next;
-      });
-      setOptimisticRemovedIds((current) =>
-        current.includes(conversationId) ? current : [...current, conversationId]
-      );
-      if (pendingSidebarHead?.id === conversationId) {
-        setPendingSidebarHead(null);
-      }
-    },
-    [pendingSidebarHead]
-  );
-
   return {
-    applyConversationUpdate,
     conversations,
+    insertConversation: listStore.insertConversation,
     hasMore: isAuthenticated ? (isSearching ? search.hasMore : pagination.hasMore) : false,
     isLoadingMore: isAuthenticated
       ? isSearching
@@ -166,7 +119,8 @@ export function useSidebarConversations({
         : pagination.isLoading
       : false,
     loadMore: pagination.loadMore,
-    removeConversation,
-    setPendingSidebarHead,
+    patchConversation: listStore.patchConversation,
+    removeConversation: listStore.removeConversation,
+    setPendingSidebarHead: listStore.clearInsertedConversation,
   };
 }

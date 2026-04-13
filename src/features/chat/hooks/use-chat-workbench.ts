@@ -160,7 +160,7 @@ export function useChatWorkbench({
     locale: titleLocale,
     messages,
     onOptimisticRemoveConversation: sidebar.removeConversation,
-    onOptimisticUpdateConversation: sidebar.applyConversationUpdate,
+    onOptimisticPatchConversation: sidebar.patchConversation,
     router,
     runtimeModel,
     setMessages,

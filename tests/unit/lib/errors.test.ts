@@ -51,9 +51,15 @@ describe('errors', () => {
     });
 
     it('should return correct messages', () => {
-      expect(ERROR_MESSAGES[ErrorCode.CONFIG_MISSING]).toBe('系统配置缺失，请联系管理员');
-      expect(ERROR_MESSAGES[ErrorCode.API_KEY_INVALID]).toBe('API Key 无效，请检查配置');
-      expect(ERROR_MESSAGES[ErrorCode.API_NETWORK]).toBe('网络连接失败，请检查网络');
+      expect(ERROR_MESSAGES[ErrorCode.CONFIG_MISSING]).toBe(
+        'Required configuration is missing. Contact the administrator.'
+      );
+      expect(ERROR_MESSAGES[ErrorCode.API_KEY_INVALID]).toBe(
+        'The API key is invalid. Check your configuration.'
+      );
+      expect(ERROR_MESSAGES[ErrorCode.API_NETWORK]).toBe(
+        'Network request failed. Check your connection.'
+      );
     });
   });
 });

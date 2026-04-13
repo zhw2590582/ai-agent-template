@@ -29,7 +29,7 @@ describe('i18n', () => {
 
     it('should fallback to default locale if invalid locale', () => {
       const result = t('invalid' as never, 'common.welcome');
-      expect(result).toBe('欢迎'); // 默认语言是中文
+      expect(result).toBe('Welcome');
     });
   });
 
@@ -63,7 +63,7 @@ describe('i18n', () => {
       const messages = getMessages('invalid' as never);
 
       expect(messages).toHaveProperty('common');
-      expect(messages.common.app_name).toBe('AI Agent 应用');
+      expect(messages.common.app_name).toBe('AI Agent App');
     });
   });
 

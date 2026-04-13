@@ -1,10 +1,10 @@
 /**
- * 错误处理工具
+ * Error handling utilities.
  *
- * 用途：
- * 1. 统一错误分类和处理
- * 2. 提供清晰的错误信息给用户
- * 3. 便于日志记录和监控
+ * Responsibilities:
+ * 1. Classify application errors consistently
+ * 2. Return user-facing error responses
+ * 3. Capture logs and monitoring context
  */
 
 import * as Sentry from '@sentry/nextjs';
@@ -14,36 +14,36 @@ import { logger } from './logger';
 import { t } from './i18n';
 
 /**
- * 应用错误类型
+ * Application error codes.
  */
 export enum ErrorCode {
-  // 配置错误
+  // Configuration
   CONFIG_MISSING = 'CONFIG_MISSING',
   CONFIG_INVALID = 'CONFIG_INVALID',
 
-  // API 错误
+  // API
   API_KEY_INVALID = 'API_KEY_INVALID',
   API_RATE_LIMIT = 'API_RATE_LIMIT',
   API_TIMEOUT = 'API_TIMEOUT',
   API_NETWORK = 'API_NETWORK',
 
-  // 输入错误
+  // Input
   INPUT_INVALID = 'INPUT_INVALID',
   INPUT_TOO_LONG = 'INPUT_TOO_LONG',
 
-  // 模型错误
+  // Model
   MODEL_ERROR = 'MODEL_ERROR',
   MODEL_OVERLOAD = 'MODEL_OVERLOAD',
 
-  // 工具错误
+  // Tooling
   TOOL_EXECUTION_ERROR = 'TOOL_EXECUTION_ERROR',
 
-  // 未知错误
+  // Unknown
   UNKNOWN = 'UNKNOWN',
 }
 
 /**
- * 自定义应用错误类
+ * Custom application error.
  */
 export class AppError extends Error {
   constructor(
@@ -57,7 +57,7 @@ export class AppError extends Error {
   }
 
   /**
-   * 转换为 HTTP Response
+   * Convert the error into an HTTP response.
    */
   toResponse(locale: Locale = DEFAULT_LOCALE): Response {
     const fallbackMessage = t(locale, `errors.${this.code.toLowerCase()}` as never);
@@ -80,14 +80,14 @@ export class AppError extends Error {
 }
 
 /**
- * 错误处理辅助函数
+ * Error handling helpers.
  */
 export const handleError = (error: unknown): Response => {
   return handleErrorWithLocale(error, DEFAULT_LOCALE);
 };
 
 export const handleErrorWithLocale = (error: unknown, locale: Locale): Response => {
-  // 已知的应用错误
+  // Known application errors
   if (error instanceof AppError) {
     logger.error(`[${error.code}] ${error.message}`, { details: error.details });
     Sentry.captureException(error, {
@@ -104,9 +104,9 @@ export const handleErrorWithLocale = (error: unknown, locale: Locale): Response 
     return error.toResponse(locale);
   }
 
-  // AI SDK 错误
+  // AI SDK or provider errors
   if (error instanceof Error && error.message.includes('API')) {
-    logger.error('[API_ERROR] 模型请求失败', { message: error.message });
+    logger.error('[API_ERROR] Model request failed', { message: error.message });
     Sentry.captureException(error, {
       extra: { locale },
       tags: {
@@ -122,8 +122,8 @@ export const handleErrorWithLocale = (error: unknown, locale: Locale): Response 
     ).toResponse(locale);
   }
 
-  // 未知错误
-  logger.error('[UNKNOWN_ERROR] 未知错误', { error });
+  // Unknown errors
+  logger.error('[UNKNOWN_ERROR] Unexpected error', { error });
   Sentry.captureException(error, {
     extra: { locale },
     tags: {
@@ -135,19 +135,19 @@ export const handleErrorWithLocale = (error: unknown, locale: Locale): Response 
 };
 
 /**
- * 错误消息映射（用户友好的提示）
+ * Fallback user-facing messages.
  */
 export const ERROR_MESSAGES: Record<ErrorCode, string> = {
-  [ErrorCode.CONFIG_MISSING]: '系统配置缺失，请联系管理员',
-  [ErrorCode.CONFIG_INVALID]: '系统配置无效，请联系管理员',
-  [ErrorCode.API_KEY_INVALID]: 'API Key 无效，请检查配置',
-  [ErrorCode.API_RATE_LIMIT]: '请求过于频繁，请稍后再试',
-  [ErrorCode.API_TIMEOUT]: '请求超时，请重试',
-  [ErrorCode.API_NETWORK]: '网络连接失败，请检查网络',
-  [ErrorCode.INPUT_INVALID]: '输入内容无效',
-  [ErrorCode.INPUT_TOO_LONG]: '输入内容过长',
-  [ErrorCode.MODEL_ERROR]: 'AI 模型服务异常',
-  [ErrorCode.MODEL_OVERLOAD]: 'AI 服务负载过高，请稍后重试',
-  [ErrorCode.TOOL_EXECUTION_ERROR]: '工具执行失败',
-  [ErrorCode.UNKNOWN]: '未知错误，请稍后重试',
+  [ErrorCode.CONFIG_MISSING]: 'Required configuration is missing. Contact the administrator.',
+  [ErrorCode.CONFIG_INVALID]: 'Configuration is invalid. Contact the administrator.',
+  [ErrorCode.API_KEY_INVALID]: 'The API key is invalid. Check your configuration.',
+  [ErrorCode.API_RATE_LIMIT]: 'Too many requests. Please try again later.',
+  [ErrorCode.API_TIMEOUT]: 'The request timed out. Please try again.',
+  [ErrorCode.API_NETWORK]: 'Network request failed. Check your connection.',
+  [ErrorCode.INPUT_INVALID]: 'The input is invalid.',
+  [ErrorCode.INPUT_TOO_LONG]: 'The input is too long.',
+  [ErrorCode.MODEL_ERROR]: 'The AI model request failed.',
+  [ErrorCode.MODEL_OVERLOAD]: 'The AI service is overloaded. Please try again later.',
+  [ErrorCode.TOOL_EXECUTION_ERROR]: 'Tool execution failed.',
+  [ErrorCode.UNKNOWN]: 'An unknown error occurred. Please try again later.',
 };

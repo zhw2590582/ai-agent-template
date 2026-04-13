@@ -235,13 +235,13 @@ export function createProfileDraft(options: {
 }
 
 export function getOrderedProviders(settings: AppProfileSettings) {
-  const presetIds = new Set(MODEL_PROVIDER_PRESETS.map((preset) => preset.id));
   const providers = settings.models.providers;
 
-  return [
-    ...MODEL_PROVIDER_PRESETS.map((preset) => providers[preset.id]).filter(Boolean),
-    ...Object.values(providers).filter((provider) => !presetIds.has(provider.id)),
-  ];
+  return Object.values(providers).sort((left, right) =>
+    left.name.localeCompare(right.name, 'en', {
+      sensitivity: 'base',
+    })
+  );
 }
 
 export function normalizeProviderBaseUrl(

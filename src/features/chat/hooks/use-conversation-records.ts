@@ -23,12 +23,15 @@ interface UseConversationRecordsOptions {
   locale: Locale;
   messages: UIMessage[];
   onOptimisticRemoveConversation: (conversationId: string) => void;
-  onOptimisticUpdateConversation: (conversation: {
-    id: string;
-    lastMessageAt: string;
-    preview: string | null;
-    title: string;
-  }) => void;
+  onOptimisticPatchConversation: (
+    conversationId: string,
+    patch: {
+      id?: string;
+      lastMessageAt?: string;
+      preview?: string | null;
+      title?: string;
+    }
+  ) => void;
   router: AppRouterInstance;
   runtimeModel?: ChatRuntimeModel | null;
   setMessages: (messages: UIMessage[]) => void;
@@ -43,7 +46,7 @@ export function useConversationRecords({
   locale,
   messages,
   onOptimisticRemoveConversation,
-  onOptimisticUpdateConversation,
+  onOptimisticPatchConversation,
   router,
   runtimeModel,
   setMessages,
@@ -95,10 +98,7 @@ export function useConversationRecords({
         return false;
       }
 
-      onOptimisticUpdateConversation({
-        id: conversationId,
-        lastMessageAt: new Date().toISOString(),
-        preview: null,
+      onOptimisticPatchConversation(conversationId, {
         title: title.trim(),
       });
 
@@ -108,7 +108,7 @@ export function useConversationRecords({
 
       return true;
     },
-    [onOptimisticUpdateConversation, router, t, user]
+    [onOptimisticPatchConversation, router, t, user]
   );
 
   const deleteConversation = useCallback(

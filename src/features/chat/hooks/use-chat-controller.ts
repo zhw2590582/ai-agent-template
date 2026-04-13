@@ -29,7 +29,8 @@ interface UseChatControllerOptions {
   setMessages: (messages: UIMessage[]) => void;
   setPendingThreadId: (value: string | null) => void;
   sidebar: {
-    setPendingSidebarHead: (value: ConversationSummary | null) => void;
+    insertConversation: (conversation: ConversationSummary) => void;
+    setPendingSidebarHead: (value: string | null) => void;
   };
   starterMessages: UIMessage[];
 }
@@ -75,7 +76,7 @@ export function useChatController({
         setIsStartingThread(false);
 
         setPendingThreadId(created.id);
-        sidebar.setPendingSidebarHead({
+        sidebar.insertConversation({
           id: created.id,
           lastMessageAt: new Date().toISOString(),
           preview: null,
