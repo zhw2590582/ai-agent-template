@@ -156,25 +156,12 @@ export async function upsertLocalConversationThread(input: {
 }) {
   const existingThreads = readLocalConversationThreads();
   const existingThread = existingThreads.find((thread) => thread.id === input.id) ?? null;
-  const firstUserMessage = input.messages.find(
-    (message) => message.role === 'user' && getMessageText(message).length > 0
-  );
 
   const title =
     input.title?.trim() ||
     (existingThread?.titleGenerated ? existingThread.title : buildTitle(input.messages));
   const titleGenerated = existingThread?.titleGenerated ?? false;
-  let titleGenerating = existingThread?.titleGenerating ?? false;
-
-  if (
-    !input.title?.trim() &&
-    !titleGenerated &&
-    !titleGenerating &&
-    firstUserMessage &&
-    input.runtimeModel
-  ) {
-    titleGenerating = true;
-  }
+  const titleGenerating = existingThread?.titleGenerating ?? false;
 
   const nextThread: LocalConversationThread = {
     id: input.id,
@@ -190,61 +177,98 @@ export async function upsertLocalConversationThread(input: {
 
   writeLocalConversationThreads(nextThreads);
 
-  if (titleGenerating && firstUserMessage && input.runtimeModel) {
-    try {
-      const response = await fetch('/api/chat/title', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          input: getMessageText(firstUserMessage),
-          locale: input.locale,
-          runtimeModel: input.runtimeModel,
-        }),
-      });
+  return nextThread;
+}
 
-      if (!response.ok) {
-        throw new Error('Failed to generate local conversation title');
-      }
+export async function generateLocalConversationTitle(input: {
+  id: string;
+  locale?: Locale;
+  runtimeModel?: ChatRuntimeModel | null;
+}) {
+  const existingThreads = readLocalConversationThreads();
+  const existingThread = existingThreads.find((thread) => thread.id === input.id);
 
-      const data = (await response.json()) as { title?: string };
-      const generatedTitle = data.title?.trim();
-
-      if (generatedTitle) {
-        const refreshedThreads = readLocalConversationThreads();
-        const refreshedThread = refreshedThreads.find((thread) => thread.id === input.id);
-
-        if (refreshedThread && !refreshedThread.titleGenerated) {
-          writeLocalConversationThreads(
-            refreshedThreads.map((thread) =>
-              thread.id === input.id
-                ? {
-                    ...thread,
-                    title: generatedTitle,
-                    titleGenerated: true,
-                    titleGenerating: false,
-                  }
-                : thread
-            )
-          );
-        }
-      }
-    } catch {
-      const refreshedThreads = readLocalConversationThreads();
-      const refreshedThread = refreshedThreads.find((thread) => thread.id === input.id);
-
-      if (refreshedThread?.titleGenerating) {
-        writeLocalConversationThreads(
-          refreshedThreads.map((thread) =>
-            thread.id === input.id ? { ...thread, titleGenerating: false } : thread
-          )
-        );
-      }
-    }
+  if (!existingThread || existingThread.titleGenerated || existingThread.titleGenerating) {
+    return existingThread ?? null;
   }
 
-  return nextThread;
+  const firstUserMessage = existingThread.messages.find(
+    (message) => message.role === 'user' && getMessageText(message).length > 0
+  );
+
+  if (!firstUserMessage || !input.runtimeModel) {
+    return existingThread ?? null;
+  }
+
+  writeLocalConversationThreads(
+    existingThreads.map((thread) =>
+      thread.id === input.id ? { ...thread, titleGenerating: true } : thread
+    )
+  );
+
+  try {
+    const response = await fetch('/api/chat/title', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        input: getMessageText(firstUserMessage),
+        locale: input.locale,
+        runtimeModel: input.runtimeModel,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate local conversation title');
+    }
+
+    const data = (await response.json()) as { title?: string };
+    const generatedTitle = data.title?.trim();
+    const refreshedThreads = readLocalConversationThreads();
+    const refreshedThread = refreshedThreads.find((thread) => thread.id === input.id);
+
+    if (!refreshedThread) {
+      return null;
+    }
+
+    if (!generatedTitle) {
+      writeLocalConversationThreads(
+        refreshedThreads.map((thread) =>
+          thread.id === input.id ? { ...thread, titleGenerating: false } : thread
+        )
+      );
+      return refreshedThread;
+    }
+
+    writeLocalConversationThreads(
+      refreshedThreads.map((thread) =>
+        thread.id === input.id
+          ? {
+              ...thread,
+              title: generatedTitle,
+              titleGenerated: true,
+              titleGenerating: false,
+            }
+          : thread
+      )
+    );
+
+    return getLocalConversationThread(input.id);
+  } catch {
+    const refreshedThreads = readLocalConversationThreads();
+    const refreshedThread = refreshedThreads.find((thread) => thread.id === input.id);
+
+    if (refreshedThread?.titleGenerating) {
+      writeLocalConversationThreads(
+        refreshedThreads.map((thread) =>
+          thread.id === input.id ? { ...thread, titleGenerating: false } : thread
+        )
+      );
+    }
+
+    return refreshedThread ?? null;
+  }
 }
 
 export function renameLocalConversationThread(input: { id: string; title: string }) {

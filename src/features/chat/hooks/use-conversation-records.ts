@@ -10,6 +10,7 @@ import type { Locale } from '@/config/i18n';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import {
   deleteConversationRecord,
+  generateConversationRecordTitle,
   getConversationMessages,
   persistConversationMessages,
   renameConversationRecord,
@@ -84,6 +85,19 @@ export function useConversationRecords({
       user,
     });
   }, [activeThreadId, locale, messages, runtimeModel, user]);
+
+  useEffect(() => {
+    if (user || isBusy || !activeThreadId || messages.length === 0 || !runtimeModel) {
+      return;
+    }
+
+    generateConversationRecordTitle({
+      conversationId: activeThreadId,
+      locale,
+      runtimeModel,
+      user,
+    });
+  }, [activeThreadId, isBusy, locale, messages.length, runtimeModel, user]);
 
   const renameConversation = useCallback(
     async (conversationId: string, title: string) => {

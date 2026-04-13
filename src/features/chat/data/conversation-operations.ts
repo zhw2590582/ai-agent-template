@@ -6,6 +6,7 @@ import type { Locale } from '@/config/i18n';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import {
   createLocalConversationThread,
+  generateLocalConversationTitle,
   deleteLocalConversationThread,
   getLocalConversationThread,
   renameLocalConversationThread,
@@ -75,6 +76,23 @@ export function persistConversationMessages(options: {
     id: options.conversationId,
     locale: options.locale,
     messages: options.messages,
+    runtimeModel: options.runtimeModel,
+  });
+}
+
+export function generateConversationRecordTitle(options: {
+  conversationId: string;
+  locale: Locale;
+  runtimeModel?: ChatRuntimeModel | null;
+  user: AuthUserSnapshot | null;
+}) {
+  if (options.user) {
+    return;
+  }
+
+  void generateLocalConversationTitle({
+    id: options.conversationId,
+    locale: options.locale,
     runtimeModel: options.runtimeModel,
   });
 }
