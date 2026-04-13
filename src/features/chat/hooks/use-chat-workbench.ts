@@ -158,6 +158,8 @@ export function useChatWorkbench({
     isBusy,
     locale: titleLocale,
     messages,
+    onOptimisticRemoveConversation: sidebar.removeConversation,
+    onOptimisticUpdateConversation: sidebar.applyConversationUpdate,
     router,
     runtimeModel,
     setMessages,

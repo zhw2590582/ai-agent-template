@@ -21,6 +21,13 @@ interface UseConversationRecordsOptions {
   isBusy: boolean;
   locale: 'zh-CN' | 'en-US';
   messages: UIMessage[];
+  onOptimisticRemoveConversation: (conversationId: string) => void;
+  onOptimisticUpdateConversation: (conversation: {
+    id: string;
+    lastMessageAt: string;
+    preview: string | null;
+    title: string;
+  }) => void;
   router: AppRouterInstance;
   runtimeModel?: ChatRuntimeModel | null;
   setMessages: (messages: UIMessage[]) => void;
@@ -34,6 +41,8 @@ export function useConversationRecords({
   isBusy,
   locale,
   messages,
+  onOptimisticRemoveConversation,
+  onOptimisticUpdateConversation,
   router,
   runtimeModel,
   setMessages,
@@ -85,13 +94,20 @@ export function useConversationRecords({
         return false;
       }
 
+      onOptimisticUpdateConversation({
+        id: conversationId,
+        lastMessageAt: new Date().toISOString(),
+        preview: null,
+        title: title.trim(),
+      });
+
       if (user) {
         router.refresh();
       }
 
       return true;
     },
-    [router, t, user]
+    [onOptimisticUpdateConversation, router, t, user]
   );
 
   const deleteConversation = useCallback(
@@ -106,6 +122,8 @@ export function useConversationRecords({
         return false;
       }
 
+      onOptimisticRemoveConversation(conversationId);
+
       if (activeThreadId === conversationId) {
         handleClearChat();
       }
@@ -116,7 +134,7 @@ export function useConversationRecords({
 
       return true;
     },
-    [activeThreadId, handleClearChat, router, t, user]
+    [activeThreadId, handleClearChat, onOptimisticRemoveConversation, router, t, user]
   );
 
   return {

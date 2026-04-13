@@ -43,6 +43,10 @@ export function useSidebarConversations({
   onLoadError,
 }: UseSidebarConversationsOptions) {
   const [pendingSidebarHead, setPendingSidebarHead] = useState<ConversationSummary | null>(null);
+  const [optimisticUpdates, setOptimisticUpdates] = useState<Record<string, ConversationSummary>>(
+    {}
+  );
+  const [optimisticRemovedIds, setOptimisticRemovedIds] = useState<string[]>([]);
   const subscribe = useCallback(
     (onStoreChange: () => void) =>
       isAuthenticated ? () => {} : subscribeToLocalConversationUpdates(onStoreChange),
@@ -82,6 +86,14 @@ export function useSidebarConversations({
     }
   }, [initialConversations, pendingSidebarHead]);
 
+  const applyOptimisticState = useCallback(
+    (items: ConversationSummary[]) =>
+      items
+        .filter((item) => !optimisticRemovedIds.includes(item.id))
+        .map((item) => optimisticUpdates[item.id] ?? item),
+    [optimisticRemovedIds, optimisticUpdates]
+  );
+
   const conversations = useMemo(() => {
     if (!isAuthenticated) {
       const base =
@@ -97,17 +109,18 @@ export function useSidebarConversations({
       return base.filter((item) => item.title.toLowerCase().includes(query));
     }
 
-    if (isSearching) return search.results;
+    if (isSearching) return applyOptimisticState(search.results);
     const base =
       pendingSidebarHead && !initialConversations.some((c) => c.id === pendingSidebarHead.id)
         ? [pendingSidebarHead, ...initialConversations]
         : initialConversations;
 
-    if (pagination.extra.length === 0) return base;
+    if (pagination.extra.length === 0) return applyOptimisticState(base);
 
     const seen = new Set(base.map((c) => c.id));
-    return [...base, ...pagination.extra.filter((c) => !seen.has(c.id))];
+    return applyOptimisticState([...base, ...pagination.extra.filter((c) => !seen.has(c.id))]);
   }, [
+    applyOptimisticState,
     initialConversations,
     isAuthenticated,
     isSearching,
@@ -118,7 +131,33 @@ export function useSidebarConversations({
     searchQuery,
   ]);
 
+  const applyConversationUpdate = useCallback((conversation: ConversationSummary) => {
+    setOptimisticRemovedIds((current) => current.filter((id) => id !== conversation.id));
+    setOptimisticUpdates((current) => ({
+      ...current,
+      [conversation.id]: conversation,
+    }));
+  }, []);
+
+  const removeConversation = useCallback(
+    (conversationId: string) => {
+      setOptimisticUpdates((current) => {
+        const next = { ...current };
+        delete next[conversationId];
+        return next;
+      });
+      setOptimisticRemovedIds((current) =>
+        current.includes(conversationId) ? current : [...current, conversationId]
+      );
+      if (pendingSidebarHead?.id === conversationId) {
+        setPendingSidebarHead(null);
+      }
+    },
+    [pendingSidebarHead]
+  );
+
   return {
+    applyConversationUpdate,
     conversations,
     hasMore: isAuthenticated ? (isSearching ? search.hasMore : pagination.hasMore) : false,
     isLoadingMore: isAuthenticated
@@ -127,6 +166,7 @@ export function useSidebarConversations({
         : pagination.isLoading
       : false,
     loadMore: pagination.loadMore,
+    removeConversation,
     setPendingSidebarHead,
   };
 }
