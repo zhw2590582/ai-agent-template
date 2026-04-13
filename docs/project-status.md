@@ -26,11 +26,13 @@
 - 自定义模型：新增、编辑、删除
 - 测试连接：真实请求 provider，并同步模型列表
 - 国际化：`en-US` / `zh-CN`，默认语言为英文
+- 国际化消息已按领域拆成 `blocks/*` 聚合，而不是继续维护单一超大 locale 文件
 - 主题切换（已处理 hydration 问题）
 - Supabase 社交登录（GitHub / Google）
 - 会话创建、消息持久化、标题生成
 - 会话列表、分页和搜索
 - guest 本地会话列表，以及 sidebar 的乐观插入 / 重命名 / 删除
+- guest 本地会话标题在流式回复完成后再单独生成，避免和消息流写入互相覆盖
 - 环境变量校验、错误处理、日志、CI
 - 测试基础：Vitest 单元测试和集成测试
 
@@ -96,7 +98,7 @@ Chat UI
   -> UI message stream
 
 Models UI
-  -> /api/profile
+  -> src/features/models/hooks/use-models-page.ts
   -> src/features/models/hooks/use-model-profile.ts
   -> localStorage or Supabase profile.settings
 
@@ -107,8 +109,9 @@ Test connection / sync models
 
 Sidebar list/search/create
   -> /api/conversations
-  -> src/features/chat/storage/conversations.ts
-  -> Supabase
+  -> src/features/chat/storage/conversations.ts (authenticated)
+  -> src/features/chat/storage/local-conversation-store.ts (guest)
+  -> Supabase or localStorage
 ```
 
 ## 当前关键实现位置
@@ -118,13 +121,19 @@ Sidebar list/search/create
 - 聊天服务端入口：[src/features/chat/server/chat.ts](../src/features/chat/server/chat.ts)
 - 会话 API：[src/app/api/conversations/route.ts](../src/app/api/conversations/route.ts)
 - 会话存储：[src/features/chat/storage/conversations.ts](../src/features/chat/storage/conversations.ts)
+- guest 本地会话存储：[src/features/chat/storage/local-conversation-store.ts](../src/features/chat/storage/local-conversation-store.ts)
+- guest 本地标题生成：[src/features/chat/storage/local-conversation-title.ts](../src/features/chat/storage/local-conversation-title.ts)
+- 会话操作适配层：[src/features/chat/data/conversation-operations.ts](../src/features/chat/data/conversation-operations.ts)
 - 模型运行时构造：[src/features/chat/ai/models.ts](../src/features/chat/ai/models.ts)
 - Models 页面：[src/features/models/pages/models-page.tsx](../src/features/models/pages/models-page.tsx)
 - Models 状态持久化：[src/features/models/hooks/use-model-profile.ts](../src/features/models/hooks/use-model-profile.ts)
+- Models 页面编排：[src/features/models/hooks/use-models-page.ts](../src/features/models/hooks/use-models-page.ts)
 - provider / model 归一化：[src/features/models/utils/profile.ts](../src/features/models/utils/profile.ts)
 - provider 探测与模型同步：[src/features/models/server/providers.ts](../src/features/models/server/providers.ts)
 - 工具注册：[src/features/chat/ai/tools/index.ts](../src/features/chat/ai/tools/index.ts)
 - 国际化布局：[src/app/[locale]/layout.tsx](../src/app/[locale]/layout.tsx)
+- 国际化消息聚合：[src/i18n/locales/en-US.ts](../src/i18n/locales/en-US.ts) / [src/i18n/locales/zh-CN.ts](../src/i18n/locales/zh-CN.ts)
+- 国际化消息分块：[src/i18n/locales/blocks](../src/i18n/locales/blocks)
 - 环境变量校验：[src/config/env.ts](../src/config/env.ts)
 
 ## 已知现实约束

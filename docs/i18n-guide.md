@@ -19,6 +19,7 @@
 - [src/config/i18n.ts](../src/config/i18n.ts)
 - [src/i18n/locales/zh-CN.ts](../src/i18n/locales/zh-CN.ts)
 - [src/i18n/locales/en-US.ts](../src/i18n/locales/en-US.ts)
+- [src/i18n/locales/blocks](../src/i18n/locales/blocks)
 - [src/components/ui-settings/language-switcher.tsx](../src/components/ui-settings/language-switcher.tsx)
 - [src/proxy.ts](../src/proxy.ts)
 
@@ -37,16 +38,26 @@
 
 ## 维护规则
 
-- 所有语言文件必须保持相同结构
+- 聚合入口和 block 文件都必须保持相同结构
 - 新增用户可见文本时，要同步更新中英文
 - 翻译 key 用稳定语义命名，不要用临时编号
 - 导航文案和占位页文案要一起维护，避免单语缺失
 
+## 当前文件组织
+
+现在的 locale 组织方式是：
+
+1. `src/i18n/locales/blocks/<locale>/*`
+   按领域拆分消息块，例如 `chat.ts`、`models.ts`、`auth.ts`、`shared.ts`
+2. `src/i18n/locales/<locale>.ts`
+   只做聚合导出
+
 ## 新增翻译
 
-1. 在 `src/i18n/locales/zh-CN.ts` 中加键
-2. 在 `src/i18n/locales/en-US.ts` 中补对应值
-3. 运行 `bun run typecheck`
+1. 先判断它属于哪个领域 block
+2. 在 `src/i18n/locales/blocks/zh-CN/*.ts` 中加键
+3. 在 `src/i18n/locales/blocks/en-US/*.ts` 中补对应值
+4. 运行 `bun run typecheck`
 
 ## 备注
 

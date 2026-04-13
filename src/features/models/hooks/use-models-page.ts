@@ -251,9 +251,9 @@ export function useModelsPage() {
     [profile.settings.models.providers, saveProviderEnabled]
   );
 
-  const deleteSelectedProvider = useCallback(() => {
+  const deleteSelectedProvider = useCallback(async () => {
     suppressNextAutoSaveRef.current = true;
-    void removeCustomProvider(selectedProvider.id);
+    await removeCustomProvider(selectedProvider.id);
   }, [removeCustomProvider, selectedProvider.id]);
 
   return {

@@ -16,6 +16,7 @@ import {
 import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
+import { Spinner } from '@/components/ui/spinner';
 import { ProviderIcon } from '@/features/models/components/provider-icon';
 import { ProviderModelList } from '@/features/models/components/provider-model-list';
 import type { ProviderModelItem, ProviderSettings } from '@/features/models/types';
@@ -33,7 +34,7 @@ interface ProviderSettingsPanelProps {
   onModelRemove: (index: number) => void;
   onModelUpdate: (index: number, nextModel: ProviderModelItem) => void;
   onProviderApiKeyChange: (value: string) => void;
-  onDeleteProvider: () => void;
+  onDeleteProvider: () => Promise<void> | void;
   onTestConnection: () => void;
 }
 
@@ -54,6 +55,7 @@ export function ProviderSettingsPanel({
 }: ProviderSettingsPanelProps) {
   const t = useTranslations();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeletingProvider, setIsDeletingProvider] = useState(false);
 
   return (
     <>
@@ -102,7 +104,11 @@ export function ProviderSettingsPanel({
               variant="outline"
               onClick={onTestConnection}
             >
-              <PlugZapIcon data-icon="inline-start" />
+              {isTestingConnection ? (
+                <Spinner data-icon="inline-start" />
+              ) : (
+                <PlugZapIcon data-icon="inline-start" />
+              )}
               {isTestingConnection
                 ? t('models_page.actions.testing_connection')
                 : t('models_page.actions.test_connection')}
@@ -232,12 +238,19 @@ export function ProviderSettingsPanel({
               {t('common.cancel')}
             </Button>
             <Button
+              disabled={isDeletingProvider}
               variant="destructive"
-              onClick={() => {
-                onDeleteProvider();
-                setIsDeleteDialogOpen(false);
+              onClick={async () => {
+                setIsDeletingProvider(true);
+                try {
+                  await onDeleteProvider();
+                  setIsDeleteDialogOpen(false);
+                } finally {
+                  setIsDeletingProvider(false);
+                }
               }}
             >
+              {isDeletingProvider ? <Spinner data-icon="inline-start" /> : null}
               {t('common.delete')}
             </Button>
           </DialogFooter>

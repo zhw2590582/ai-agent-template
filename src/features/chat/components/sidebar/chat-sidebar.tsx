@@ -31,6 +31,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Spinner } from '@/components/ui/spinner';
 import { SidebarSearch } from '@/features/chat/components/sidebar/sidebar-search';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { cn } from '@/lib/utils';
@@ -345,6 +346,7 @@ export function ChatSidebar({
                 {t('common.cancel')}
               </Button>
               <Button disabled={isMutating || renameValue.trim().length === 0} type="submit">
+                {isMutating ? <Spinner data-icon="inline-start" /> : null}
                 {t('chat.sidebar.rename_confirm')}
               </Button>
             </DialogFooter>
@@ -374,11 +376,12 @@ export function ChatSidebar({
               {t('common.cancel')}
             </Button>
             <Button
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={isMutating}
               onClick={() => void handleDeleteSubmit()}
               type="button"
+              variant="destructive"
             >
+              {isMutating ? <Spinner data-icon="inline-start" /> : null}
               {t('chat.sidebar.delete_confirm')}
             </Button>
           </DialogFooter>

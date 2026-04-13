@@ -52,11 +52,20 @@ src/
 - `pages/`: 页面级组装
 - `components/`: 聊天相关 UI
 - `data/`: guest / 已登录会话操作适配层
-- `hooks/`: workbench、session、sidebar、会话记录编排
+- `hooks/`: workbench、session、sidebar、标题、非法会话保护等编排 hook
 - `server/`: 聊天请求 handler 和 schema
-- `storage/`: 会话存储与查询
+- `storage/`: 已登录会话存储、guest 本地会话 store、标题生成
 - `utils/`: 轻量纯函数和配置辅助
 - `ai/`: 模型、prompt、工具、标题生成
+
+当前已经形成的关键边界：
+
+- `use-chat-workbench`: 页面总编排，不再直接承载所有副作用
+- `use-conversation-records`: 会话记录读写和 guest / auth 适配
+- `use-conversation-list-store`: sidebar 乐观列表状态
+- `conversation-operations.ts`: guest / 已登录会话操作统一出口
+- `local-conversation-store.ts`: guest 本地线程存储和订阅
+- `local-conversation-title.ts`: guest 标题生成
 
 ### `src/features/models`
 
@@ -64,11 +73,19 @@ src/
 
 - `pages/`: models 工作台页面
 - `components/`: provider 列表、provider 设置、模型列表
-- `hooks/`: profile.settings 的读写与持久化
+- `hooks/`: profile.settings 的读写、保存串行化、页面编排
 - `server/`: provider 测试连接和模型同步
 - `utils/`: provider/model 归一化、runtime option 推导
 
 它的职责不是管理平台内置模型，而是管理用户自己接入的第三方 provider 与模型。
+
+当前已经形成的关键边界：
+
+- `use-model-profile`: profile 加载、同步和对外 API
+- `profile-storage.ts`: localStorage / remote profile / event 同步
+- `profile-persistence.ts`: 保存串行化与写库
+- `profile-actions.ts`: provider / model 更新动作
+- `use-models-page.ts`: Models 页面级编排
 
 ### `src/features/auth`
 
@@ -117,6 +134,7 @@ UI input
   -> chat UI
 
 Models UI
+  -> useModelsPage
   -> useModelProfile
   -> /api/profile
   -> localStorage or Supabase profile.settings
@@ -127,9 +145,9 @@ Test connection
   -> sync models back into profile.settings
 
 Sidebar list/search/create
-  -> /api/conversations
-  -> src/features/chat/storage/conversations.ts
-  -> Supabase
+  -> conversation-operations
+  -> src/features/chat/storage/conversations.ts or local-conversation-store.ts
+  -> Supabase or localStorage
 
 OAuth sign-in
   -> Supabase auth
@@ -146,6 +164,7 @@ OAuth sign-in
 - 用户侧 provider / model 配置
 - prompt 抽离
 - i18n 路由
+- locale 文件按领域分块聚合
 - 主题与 hydration 处理
 - Supabase 登录和会话持久化
 - 基础配置、错误处理、日志
@@ -169,3 +188,17 @@ OAuth sign-in
 3. 可跨域复用的纯工具函数才放 `src/lib`
 4. 路由层继续保持薄，不把业务逻辑塞进 `app`
 5. 只有在某个能力真正成形后，才把它从占位页升级成独立 feature
+
+## i18n 组织方式
+
+当前语言文件不再继续维护成单一超大对象，而是：
+
+- `src/i18n/locales/en-US.ts`
+- `src/i18n/locales/zh-CN.ts`
+
+作为聚合入口；
+
+- `src/i18n/locales/blocks/en-US/*`
+- `src/i18n/locales/blocks/zh-CN/*`
+
+按领域拆分消息块。新增 feature 文案时，优先补对应领域文件，再由聚合入口统一导出。
