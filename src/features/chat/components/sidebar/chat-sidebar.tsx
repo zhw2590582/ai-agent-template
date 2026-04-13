@@ -15,6 +15,16 @@ import { usePathname } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -354,7 +364,7 @@ export function ChatSidebar({
         </DialogContent>
       </Dialog>
 
-      <Dialog
+      <AlertDialog
         open={deleteTarget != null}
         onOpenChange={(open) => {
           if (!open) {
@@ -362,31 +372,33 @@ export function ChatSidebar({
           }
         }}
       >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('chat.sidebar.delete_title')}</DialogTitle>
-            <DialogDescription>
+        <AlertDialogContent size="default">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('chat.sidebar.delete_title')}</AlertDialogTitle>
+            <AlertDialogDescription>
               {t('chat.sidebar.delete_description', {
                 title: deleteTarget?.title ?? '',
               })}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setDeleteTarget(null)} type="button" variant="ghost">
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteTarget(null)}>
               {t('common.cancel')}
-            </Button>
-            <Button
+            </AlertDialogCancel>
+            <AlertDialogAction
               disabled={isMutating}
-              onClick={() => void handleDeleteSubmit()}
-              type="button"
               variant="destructive"
+              onClick={(event) => {
+                event.preventDefault();
+                void handleDeleteSubmit();
+              }}
             >
               {isMutating ? <Spinner data-icon="inline-start" /> : null}
               {t('chat.sidebar.delete_confirm')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </aside>
   );
 }

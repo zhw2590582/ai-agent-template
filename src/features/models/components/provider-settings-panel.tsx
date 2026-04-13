@@ -4,15 +4,18 @@ import { EyeIcon, EyeOffIcon, LinkIcon, PlugZapIcon, Trash2Icon } from 'lucide-r
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
@@ -84,13 +87,12 @@ export function ProviderSettingsPanel({
           </div>
           <div className="flex shrink-0 items-center gap-3">
             {autoSaveStatus === 'saving' ? (
-              <span className="text-muted-foreground text-sm">
+              <Badge variant="secondary">
+                <Spinner data-icon="inline-start" />
                 {t('models_page.actions.saving')}
-              </span>
+              </Badge>
             ) : autoSaveStatus === 'saved' ? (
-              <span className="text-muted-foreground text-sm">
-                {t('models_page.actions.saved')}
-              </span>
+              <Badge variant="secondary">{t('models_page.actions.saved')}</Badge>
             ) : null}
             {provider.isCustom ? (
               <Button type="button" variant="outline" onClick={() => setIsDeleteDialogOpen(true)}>
@@ -223,24 +225,25 @@ export function ProviderSettingsPanel({
           />
         </div>
       </div>
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('models_page.providers.delete_title')}</DialogTitle>
-            <DialogDescription>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent size="default">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('models_page.providers.delete_title')}</AlertDialogTitle>
+            <AlertDialogDescription>
               {t('models_page.providers.delete_description', {
                 provider: provider.name,
               })}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>
               {t('common.cancel')}
-            </Button>
-            <Button
+            </AlertDialogCancel>
+            <AlertDialogAction
               disabled={isDeletingProvider}
               variant="destructive"
-              onClick={async () => {
+              onClick={async (event) => {
+                event.preventDefault();
                 setIsDeletingProvider(true);
                 try {
                   await onDeleteProvider();
@@ -252,10 +255,10 @@ export function ProviderSettingsPanel({
             >
               {isDeletingProvider ? <Spinner data-icon="inline-start" /> : null}
               {t('common.delete')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
