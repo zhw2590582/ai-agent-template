@@ -3,12 +3,20 @@ import { EmptyMemoryState } from '@/features/memory/components/empty-memory-stat
 import type { ConversationSummary } from '@/features/chat/storage/types';
 
 interface MemorySummaryListProps {
+  locale: string;
   summaries: ConversationSummary[];
   t: (key: string) => string;
 }
 
-export function MemorySummaryList({ summaries, t }: MemorySummaryListProps) {
+export function MemorySummaryList({ locale, summaries, t }: MemorySummaryListProps) {
   const items = summaries.filter((summary) => summary.summary?.trim());
+  const formatDate = (value: string) =>
+    new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'numeric',
+      timeZone: 'UTC',
+      year: 'numeric',
+    }).format(new Date(value));
 
   return (
     <section className="flex flex-col gap-4">
@@ -31,9 +39,7 @@ export function MemorySummaryList({ summaries, t }: MemorySummaryListProps) {
             >
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-sm font-medium">{summary.title}</h3>
-                <Badge variant="secondary">
-                  {new Date(summary.lastMessageAt).toLocaleDateString()}
-                </Badge>
+                <Badge variant="secondary">{formatDate(summary.lastMessageAt)}</Badge>
               </div>
               <p className="text-muted-foreground text-sm leading-6">{summary.summary}</p>
             </article>

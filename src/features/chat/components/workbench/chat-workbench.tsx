@@ -109,6 +109,7 @@ export function ChatWorkbench({
           ) : isMemoryView ? (
             <MemoryPage
               isAuthenticated={workbench.isAuthenticated}
+              locale={workbench.locale}
               memories={initialMemories}
               onMemorySettingsChange={workbench.setMemorySettings}
               settings={workbench.memorySettings}

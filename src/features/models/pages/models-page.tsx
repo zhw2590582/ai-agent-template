@@ -13,7 +13,6 @@ export function ModelsPage() {
     isApiKeyVisible,
     isTestingConnection,
     providers,
-    saveStatus,
     selectedProvider,
     setIsApiKeyVisible,
     toggleProviderEnabled,

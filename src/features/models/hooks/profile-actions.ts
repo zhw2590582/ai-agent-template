@@ -74,7 +74,6 @@ export function createProfileActions({
 
     const success = await persistProfile(nextProfile, {
       silent: true,
-      trackSavingState: false,
     });
 
     return success ? nextProvider.id : null;
@@ -113,7 +112,6 @@ export function createProfileActions({
 
     return persistProfile(nextProfile, {
       silent: true,
-      trackSavingState: false,
     });
   };
 
@@ -166,7 +164,7 @@ export function createProfileActions({
           },
         },
       }),
-      { silent: true, trackSavingState: false }
+      { silent: true }
     );
 
   return {

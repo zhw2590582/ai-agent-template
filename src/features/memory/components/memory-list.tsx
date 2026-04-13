@@ -8,6 +8,7 @@ import type { MemoryListItem } from '@/features/memory/types';
 import { useState } from 'react';
 
 interface MemoryListProps {
+  locale: string;
   onEditMemory?: (input: { content: string; id: string; kind: string }) => Promise<boolean> | void;
   memories: MemoryListItem[];
   onDeleteMemory?: (memoryId: string) => Promise<boolean> | void;
@@ -17,6 +18,7 @@ interface MemoryListProps {
 }
 
 export function MemoryList({
+  locale,
   onEditMemory,
   memories,
   onDeleteMemory,
@@ -26,6 +28,13 @@ export function MemoryList({
 }: MemoryListProps) {
   const [editingMemoryId, setEditingMemoryId] = useState<string | null>(null);
   const editingMemory = memories.find((memory) => memory.id === editingMemoryId) ?? null;
+  const formatDate = (value: string) =>
+    new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'numeric',
+      timeZone: 'UTC',
+      year: 'numeric',
+    }).format(new Date(value));
 
   return (
     <section className="flex flex-col gap-4">
@@ -55,7 +64,7 @@ export function MemoryList({
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-muted-foreground text-xs">
-                    {new Date(memory.updatedAt).toLocaleDateString()}
+                    {formatDate(memory.updatedAt)}
                   </span>
                   {onEditMemory ? (
                     <Button onClick={() => setEditingMemoryId(memory.id)} size="sm" variant="ghost">
