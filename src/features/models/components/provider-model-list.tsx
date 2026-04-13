@@ -36,13 +36,13 @@ export function ProviderModelList({
         </Button>
       </div>
 
-      <div>
+      <div className="divide-y border">
         {models.map((model, index) => (
           <div
             key={`${model.id || 'custom'}-${index}`}
-            className="bg-background flex items-start gap-3 border px-3 py-3"
+            className="bg-background hover:bg-accent/10 flex items-start gap-4 px-4 py-4 transition-colors"
           >
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 space-y-1">
               <Input
                 className="h-8 border-0 px-0 text-sm font-medium shadow-none focus-visible:ring-0"
                 placeholder={t('models_page.models.name_placeholder')}
@@ -66,7 +66,7 @@ export function ProviderModelList({
                 }
               />
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2 self-center">
               <Switch
                 aria-label={`${model.name || model.id || 'model'} ${model.enabled ? t('models_page.status.enabled') : t('models_page.status.disabled')}`}
                 checked={model.enabled}

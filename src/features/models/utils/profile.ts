@@ -16,11 +16,7 @@ function buildProviderModels(
   existing?: ProviderModelItem[]
 ) {
   if (!existing || existing.length === 0) {
-    return models.map((model) => ({
-      enabled: true,
-      id: model.id,
-      name: model.name,
-    }));
+    return [];
   }
 
   return existing.map((model) => ({
