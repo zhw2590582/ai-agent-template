@@ -22,10 +22,15 @@ vi.mock('@/features/chat/ai/tools', () => ({
   agentTools: {},
 }));
 
-vi.mock('@/config/app', () => ({
-  AI_CONFIG: { DEFAULT_MAX_TOKENS: 1024 },
-  DEV_CONFIG: { ENABLE_DEBUG_LOGS: false },
-}));
+vi.mock('@/config/app', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/config/app')>();
+
+  return {
+    ...actual,
+    AI_CONFIG: { ...actual.AI_CONFIG, DEFAULT_MAX_TOKENS: 1024 },
+    DEV_CONFIG: { ...actual.DEV_CONFIG, ENABLE_DEBUG_LOGS: false },
+  };
+});
 
 vi.mock('@/config/env', () => ({
   env: { NODE_ENV: 'test' },
