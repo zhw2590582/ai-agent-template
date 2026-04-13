@@ -15,8 +15,19 @@ import {
 } from '@/features/models/utils/profile';
 
 const LOCAL_MODEL_PROFILE_STORAGE_KEY = 'agent-model-profile';
+const MODEL_PROFILE_UPDATED_EVENT = 'agent-model-profile-updated';
 const profileCache = new Map<string, Partial<AppProfile>>();
 const profileRequestCache = new Map<string, Promise<Partial<AppProfile> | null>>();
+
+function emitProfileUpdated(profile: Partial<AppProfile>) {
+  if (typeof window === 'undefined') return;
+
+  window.dispatchEvent(
+    new CustomEvent<Partial<AppProfile>>(MODEL_PROFILE_UPDATED_EVENT, {
+      detail: profile,
+    })
+  );
+}
 
 function readLocalProfile() {
   if (typeof window === 'undefined') return null;
@@ -157,6 +168,41 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     };
   }, [locale, t, theme, user]);
 
+  useEffect(() => {
+    const handleProfileUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<Partial<AppProfile>>).detail;
+      if (!detail) {
+        return;
+      }
+
+      if (user) {
+        if (detail.id !== user.id) {
+          return;
+        }
+      } else if (detail.id !== 'guest-local') {
+        return;
+      }
+
+      setProfile(
+        createProfileDraft({
+          existing: detail,
+          locale,
+          theme,
+          user,
+        })
+      );
+    };
+
+    window.addEventListener(MODEL_PROFILE_UPDATED_EVENT, handleProfileUpdated as EventListener);
+
+    return () => {
+      window.removeEventListener(
+        MODEL_PROFILE_UPDATED_EVENT,
+        handleProfileUpdated as EventListener
+      );
+    };
+  }, [locale, theme, user]);
+
   const orderedProviders = useMemo(() => getOrderedProviders(profile.settings), [profile.settings]);
 
   const selectedProvider = useMemo(
@@ -217,6 +263,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     async (nextProfile: AppProfile, options?: { silent?: boolean; trackSavingState?: boolean }) => {
       if (!user) {
         writeLocalProfile(nextProfile);
+        emitProfileUpdated(nextProfile);
         if (!options?.silent) {
           toast.success(t('models_page.toast.save_local_success'));
         }
@@ -258,6 +305,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
 
           const data = (await response.json()) as { profile: Partial<AppProfile> };
           profileCache.set(user.id, data.profile ?? nextProfile);
+          emitProfileUpdated(data.profile ?? nextProfile);
           setProfile(
             createProfileDraft({
               existing: data.profile,

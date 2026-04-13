@@ -7,11 +7,24 @@
 
 'use client';
 
-import { startTransition, useEffect, useMemo, useState } from 'react';
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { useSidebarPagination } from '@/features/chat/hooks/use-sidebar-pagination';
 import { useSidebarSearch } from '@/features/chat/hooks/use-sidebar-search';
+import {
+  listLocalConversationSummaries,
+  subscribeToLocalConversationUpdates,
+} from '@/features/chat/storage/local-conversations';
+
+const EMPTY_CONVERSATIONS: ConversationSummary[] = [];
 
 interface UseSidebarConversationsOptions {
   initialConversations: ConversationSummary[];
@@ -30,6 +43,20 @@ export function useSidebarConversations({
   onLoadError,
 }: UseSidebarConversationsOptions) {
   const [pendingSidebarHead, setPendingSidebarHead] = useState<ConversationSummary | null>(null);
+  const subscribe = useCallback(
+    (onStoreChange: () => void) =>
+      isAuthenticated ? () => {} : subscribeToLocalConversationUpdates(onStoreChange),
+    [isAuthenticated]
+  );
+  const getSnapshot = useCallback(
+    () => (isAuthenticated ? EMPTY_CONVERSATIONS : listLocalConversationSummaries()),
+    [isAuthenticated]
+  );
+  const localConversations = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    () => EMPTY_CONVERSATIONS
+  );
   const isSearching = searchQuery.trim().length > 0;
 
   const search = useSidebarSearch({
@@ -56,6 +83,20 @@ export function useSidebarConversations({
   }, [initialConversations, pendingSidebarHead]);
 
   const conversations = useMemo(() => {
+    if (!isAuthenticated) {
+      const base =
+        pendingSidebarHead && !localConversations.some((c) => c.id === pendingSidebarHead.id)
+          ? [pendingSidebarHead, ...localConversations]
+          : localConversations;
+
+      if (!isSearching) {
+        return base;
+      }
+
+      const query = searchQuery.trim().toLowerCase();
+      return base.filter((item) => item.title.toLowerCase().includes(query));
+    }
+
     if (isSearching) return search.results;
     const base =
       pendingSidebarHead && !initialConversations.some((c) => c.id === pendingSidebarHead.id)
@@ -66,12 +107,25 @@ export function useSidebarConversations({
 
     const seen = new Set(base.map((c) => c.id));
     return [...base, ...pagination.extra.filter((c) => !seen.has(c.id))];
-  }, [initialConversations, isSearching, pagination.extra, pendingSidebarHead, search.results]);
+  }, [
+    initialConversations,
+    isAuthenticated,
+    isSearching,
+    localConversations,
+    pagination.extra,
+    pendingSidebarHead,
+    search.results,
+    searchQuery,
+  ]);
 
   return {
     conversations,
-    hasMore: isSearching ? search.hasMore : pagination.hasMore,
-    isLoadingMore: isSearching ? search.isLoading : pagination.isLoading,
+    hasMore: isAuthenticated ? (isSearching ? search.hasMore : pagination.hasMore) : false,
+    isLoadingMore: isAuthenticated
+      ? isSearching
+        ? search.isLoading
+        : pagination.isLoading
+      : false,
     loadMore: pagination.loadMore,
     setPendingSidebarHead,
   };

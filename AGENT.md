@@ -100,6 +100,13 @@ src/
 
 不要提前把目录拆得很深。
 
+### 6. Keep prompts English-first
+
+- 内置 prompt 默认使用英文编写
+- 不长期维护同一语义的中英文双份 prompt
+- 需要语言适配时，优先把 `locale` 作为上下文传给模型
+- 只有在英文 prompt 无法满足效果时，才增加特定语言 prompt
+
 ## Recommended Next Refactors
 
 当继续实现教程中的新能力时，优先做：

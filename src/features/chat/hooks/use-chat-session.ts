@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 
@@ -48,8 +48,16 @@ export function useChatSession({
 
     return resolveChatRuntimeModel(profileSettings, selectedModel);
   }, [profileSettings, selectedModel]);
+  const runtimeModelRef = useRef(runtimeModel);
+  const activeThreadIdRef = useRef(activeThreadId);
 
-  const transport = useMemo(
+  useEffect(() => {
+    runtimeModelRef.current = runtimeModel;
+    activeThreadIdRef.current = activeThreadId;
+  }, [activeThreadId, runtimeModel]);
+
+  /* eslint-disable react-hooks/refs */
+  const [transport] = useState(
     () =>
       new DefaultChatTransport({
         api: `/api/chat?lang=${locale}`,
@@ -66,14 +74,16 @@ export function useChatSession({
             trigger,
             messageId,
             messages,
-            runtimeModel: runtimeModel ?? undefined,
+            runtimeModel: runtimeModelRef.current ?? undefined,
             conversationId:
-              (requestBody.conversationId as string | undefined) ?? activeThreadId ?? undefined,
+              (requestBody.conversationId as string | undefined) ??
+              activeThreadIdRef.current ??
+              undefined,
           },
         }),
-      }),
-    [activeThreadId, locale, runtimeModel]
+      })
   );
+  /* eslint-enable react-hooks/refs */
 
   const chat = useChat({
     onFinish,

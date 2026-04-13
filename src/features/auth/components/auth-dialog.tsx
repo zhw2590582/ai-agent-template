@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { CircleUserRoundIcon, LogInIcon, LogOutIcon } from 'lucide-react';
+import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -62,6 +63,7 @@ export function AuthDialog({
 }: AuthDialogProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const supabaseConfigured = isSupabaseBrowserConfigured();
   const { user, setUser } = useAuthUser();
@@ -100,6 +102,7 @@ export function AuthDialog({
       await supabase.auth.signOut();
       setUser(null);
       setIsOpen(false);
+      router.replace(`/${locale}`);
       router.refresh();
       if (signOutSuccessLabel) toast.success(signOutSuccessLabel);
     } catch {

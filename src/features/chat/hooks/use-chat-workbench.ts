@@ -11,6 +11,11 @@ import { useChatController } from '@/features/chat/hooks/use-chat-controller';
 import { useChatSession } from '@/features/chat/hooks/use-chat-session';
 import { useChatSync } from '@/features/chat/hooks/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/hooks/use-sidebar-conversations';
+import {
+  createLocalConversationThread,
+  getLocalConversationThread,
+  upsertLocalConversationThread,
+} from '@/features/chat/storage/local-conversations';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { getInitialMessages } from '@/features/chat/utils/chat-config';
 import { useModelProfile } from '@/features/models/hooks/use-model-profile';
@@ -33,6 +38,7 @@ export function useChatWorkbench({
 }: UseChatWorkbenchOptions) {
   const t = useTranslations();
   const locale = useLocale();
+  const titleLocale = locale === 'en-US' ? 'en-US' : 'zh-CN';
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -117,7 +123,35 @@ export function useChatWorkbench({
     }, []),
   });
 
+  useEffect(() => {
+    if (user || !urlConversationId || isBusy) {
+      return;
+    }
+
+    const localConversation = getLocalConversationThread(urlConversationId);
+    if (!localConversation) {
+      return;
+    }
+
+    setMessages(localConversation.messages);
+  }, [isBusy, setMessages, urlConversationId, user]);
+
   const createConversation = async (initialMessage: string) => {
+    if (!user) {
+      const localConversation = createLocalConversationThread(initialMessage);
+      void upsertLocalConversationThread({
+        id: localConversation.id,
+        locale: titleLocale,
+        messages: [],
+        runtimeModel,
+        title: localConversation.title,
+      });
+      return {
+        id: localConversation.id,
+        title: localConversation.title,
+      };
+    }
+
     const response = await fetch('/api/conversations', {
       body: JSON.stringify({ initialMessage }),
       headers: { 'Content-Type': 'application/json' },
@@ -138,7 +172,6 @@ export function useChatWorkbench({
     isBusy,
     isStartingThread,
     pathname,
-    userId: user?.id ?? null,
     onCreateConversation: createConversation,
     onCreateError: () => toast.error(t('chat.errors.create_conversation_failed')),
     onSendMessage: sendMessage,
@@ -209,6 +242,19 @@ export function useChatWorkbench({
 
     void regenerate();
   }, [models.isLoading, regenerate, runtimeModel, t]);
+
+  useEffect(() => {
+    if (user || !activeThreadId || messages.length === 0) {
+      return;
+    }
+
+    void upsertLocalConversationThread({
+      id: activeThreadId,
+      locale: titleLocale,
+      messages,
+      runtimeModel,
+    });
+  }, [activeThreadId, messages, runtimeModel, titleLocale, user]);
 
   useEffect(() => {
     if (!urlConversationId) {

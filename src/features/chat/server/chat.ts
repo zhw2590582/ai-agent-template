@@ -96,6 +96,7 @@ export async function handleChatPost(request: Request) {
             {
               conversationId,
               messages: responseMessages,
+              runtimeModel,
               userId: user.id,
             },
             supabase

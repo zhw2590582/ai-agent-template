@@ -127,8 +127,15 @@ export function ProviderSettingsPanel({
             </div>
             <InputGroup>
               <InputGroupInput
+                autoCapitalize="none"
+                autoComplete="new-password"
+                autoCorrect="off"
                 className="h-10"
+                data-1p-ignore="true"
+                data-lpignore="true"
+                name={`${provider.id}-api-token`}
                 placeholder={t('models_page.fields.api_key_placeholder')}
+                spellCheck={false}
                 type={isApiKeyVisible ? 'text' : 'password'}
                 value={provider.apiKey}
                 onChange={(event) => onProviderApiKeyChange(event.target.value)}
@@ -148,8 +155,13 @@ export function ProviderSettingsPanel({
             <label className="text-sm font-medium">{t('models_page.fields.base_url')}</label>
             <InputGroup>
               <InputGroupInput
+                autoCapitalize="none"
+                autoComplete="url"
+                autoCorrect="off"
                 className="h-10"
+                name={`${provider.id}-base-url`}
                 placeholder={provider.defaultBaseUrl || 'https://api.example.com/v1'}
+                spellCheck={false}
                 value={provider.baseUrl}
                 onChange={(event) => onBaseUrlChange(event.target.value)}
               />

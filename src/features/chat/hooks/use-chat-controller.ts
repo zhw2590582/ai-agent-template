@@ -14,7 +14,6 @@ interface UseChatControllerOptions {
   isBusy: boolean;
   isStartingThread: boolean;
   pathname: string;
-  userId: string | null;
   onCreateConversation: (initialMessage: string) => Promise<{ id: string; title: string }>;
   onCreateError: () => void;
   onSendMessage: (
@@ -41,7 +40,6 @@ export function useChatController({
   isBusy,
   isStartingThread,
   pathname,
-  userId,
   onCreateConversation,
   onCreateError,
   onSendMessage,
@@ -63,8 +61,8 @@ export function useChatController({
 
       if (!text || isBusy || isStartingThread) return;
 
-      // New thread for logged-in user
-      if (!activeThreadId && userId) {
+      // New thread
+      if (!activeThreadId) {
         setIsStartingThread(true);
         let created: { id: string; title: string };
         try {

@@ -31,6 +31,8 @@ export function ModelsPage() {
   const hasInitializedAutoSaveRef = useRef(false);
   const suppressNextAutoSaveRef = useRef(false);
   const savedIndicatorTimeoutRef = useRef<number | null>(null);
+  const autoSaveTimeoutRef = useRef<number | null>(null);
+  const hasPendingAutoSaveRef = useRef(false);
 
   const handleAddModel = (model: Pick<ProviderModelItem, 'id' | 'name'>) => {
     updateProvider(selectedProvider.id, (provider) => ({
@@ -172,12 +174,15 @@ export function ModelsPage() {
 
     if (suppressNextAutoSaveRef.current) {
       suppressNextAutoSaveRef.current = false;
+      hasPendingAutoSaveRef.current = false;
       return;
     }
 
     const timeoutId = window.setTimeout(() => {
+      autoSaveTimeoutRef.current = null;
       setAutoSaveStatus('saving');
       void saveProfile(undefined, { silent: true, trackSavingState: false }).then((success) => {
+        hasPendingAutoSaveRef.current = false;
         if (!success) {
           setAutoSaveStatus('idle');
           return;
@@ -193,17 +198,34 @@ export function ModelsPage() {
         }, 1400);
       });
     }, 600);
+    autoSaveTimeoutRef.current = timeoutId;
+    hasPendingAutoSaveRef.current = true;
 
-    return () => window.clearTimeout(timeoutId);
+    return () => {
+      if (autoSaveTimeoutRef.current === timeoutId) {
+        window.clearTimeout(timeoutId);
+        autoSaveTimeoutRef.current = null;
+      }
+    };
   }, [autoSaveKey, isLoading, saveProfile]);
 
   useEffect(() => {
     return () => {
+      if (autoSaveTimeoutRef.current) {
+        window.clearTimeout(autoSaveTimeoutRef.current);
+        autoSaveTimeoutRef.current = null;
+      }
+
+      if (hasPendingAutoSaveRef.current) {
+        void saveProfile(undefined, { silent: true, trackSavingState: false });
+        hasPendingAutoSaveRef.current = false;
+      }
+
       if (savedIndicatorTimeoutRef.current) {
         window.clearTimeout(savedIndicatorTimeoutRef.current);
       }
     };
-  }, []);
+  }, [saveProfile]);
 
   return (
     <div className="bg-background text-foreground flex h-[calc(100vh-3rem)] overflow-hidden">

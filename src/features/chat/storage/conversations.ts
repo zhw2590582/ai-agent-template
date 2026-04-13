@@ -1,6 +1,7 @@
 import type { UIMessage } from 'ai';
 
 import { generateConversationTitle } from '@/features/chat/ai/title';
+import type { ChatRuntimeModel } from '@/features/models/types';
 import type {
   ConversationAnalysis,
   ConversationRecord,
@@ -275,6 +276,7 @@ export async function saveConversationMessages(
   input: {
     conversationId: string;
     messages: UIMessage[];
+    runtimeModel?: ChatRuntimeModel | null;
     userId: string;
   },
   client: ConversationsClient
@@ -295,7 +297,9 @@ export async function saveConversationMessages(
 
   if (!analysis.title_generated && analysis.first_user_message) {
     try {
-      const generatedTitle = await generateConversationTitle(analysis.first_user_message);
+      const generatedTitle = await generateConversationTitle(analysis.first_user_message, {
+        runtimeModel: input.runtimeModel,
+      });
       if (generatedTitle) {
         title = generatedTitle;
         analysis.title_generated = true;

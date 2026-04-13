@@ -42,6 +42,20 @@ export const chatPostSchema = z.object({
 
 export type ChatPostInput = z.infer<typeof chatPostSchema>;
 
+export const chatTitlePostSchema = z.object({
+  input: z.string().min(1),
+  locale: z.enum(['zh-CN', 'en-US']).optional(),
+  runtimeModel: z.object({
+    apiFormat: z.enum(['anthropic', 'openai']),
+    apiKey: z.string().min(1),
+    baseUrl: z.string().min(1),
+    modelId: z.string().min(1),
+    providerId: z.string().min(1),
+  }),
+});
+
+export type ChatTitlePostInput = z.infer<typeof chatTitlePostSchema>;
+
 /* ---------- Conversations ---------- */
 
 export const createConversationSchema = z.object({
