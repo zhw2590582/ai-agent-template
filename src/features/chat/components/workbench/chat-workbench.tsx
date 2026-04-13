@@ -75,6 +75,7 @@ export function ChatWorkbench({
 
         <section className="bg-background flex min-h-0 flex-1 flex-col transition-[width] duration-300 ease-out">
           <ChatTopBar activeView={activeView} locale={workbench.locale} t={t} />
+          
 
           {isChatView ? (
             <>

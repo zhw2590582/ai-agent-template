@@ -34,8 +34,10 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
   });
   const [isLoading, setIsLoading] = useState(Boolean(user && !profileCache.has(user.id)));
   const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'saving'>('idle');
   const profileRef = useRef(profile);
   const saveInFlightRef = useRef<Promise<boolean> | null>(null);
+  const savedIndicatorTimeoutRef = useRef<number | null>(null);
   const queuedSaveRef = useRef<{
     nextProfile: AppProfile;
     options?: { silent?: boolean; trackSavingState?: boolean };
@@ -44,6 +46,28 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
   useEffect(() => {
     profileRef.current = profile;
   }, [profile]);
+
+  useEffect(() => {
+    if (saveStatus !== 'saved') {
+      return;
+    }
+
+    if (savedIndicatorTimeoutRef.current) {
+      window.clearTimeout(savedIndicatorTimeoutRef.current);
+    }
+
+    savedIndicatorTimeoutRef.current = window.setTimeout(() => {
+      setSaveStatus('idle');
+      savedIndicatorTimeoutRef.current = null;
+    }, 1400);
+
+    return () => {
+      if (savedIndicatorTimeoutRef.current) {
+        window.clearTimeout(savedIndicatorTimeoutRef.current);
+        savedIndicatorTimeoutRef.current = null;
+      }
+    };
+  }, [saveStatus]);
 
   useEffect(() => {
     let cancelled = false;
@@ -170,6 +194,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
         locale,
         queuedSaveRef,
         saveInFlightRef,
+        setSaveStatus,
         setIsSaving,
         setProfile,
         t,
@@ -221,6 +246,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     isLoading,
     isSaving,
     profile,
+    saveStatus,
     providers: orderedProviders,
     removeCustomProvider: actions.removeCustomProvider,
     saveProfile: actions.saveProfile,

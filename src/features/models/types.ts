@@ -42,8 +42,11 @@ export interface ModelsSettings {
 
 export interface MemorySettings {
   autoWrite: boolean;
+  contextMaxItems: number;
   crossConversation: boolean;
   enabled: boolean;
+  recentMessageWindow: number;
+  summaryMinMessages: number;
 }
 
 export interface AppProfileSettings {

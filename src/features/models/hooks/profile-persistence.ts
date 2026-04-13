@@ -20,6 +20,7 @@ interface PersistProfileOptions {
 
 interface CreatePersistProfileOptions {
   locale: string;
+  setSaveStatus: (status: 'idle' | 'saved' | 'saving') => void;
   setIsSaving: (saving: boolean) => void;
   setProfile: (profile: AppProfile) => void;
   t: (key: string) => string;
@@ -36,6 +37,7 @@ export function createPersistProfile({
   locale,
   queuedSaveRef,
   saveInFlightRef,
+  setSaveStatus,
   setIsSaving,
   setProfile,
   t,
@@ -46,6 +48,9 @@ export function createPersistProfile({
     if (!user) {
       writeLocalProfile(nextProfile);
       emitProfileUpdated(nextProfile);
+      if (options?.trackSavingState !== false) {
+        setSaveStatus('saved');
+      }
       if (!options?.silent) {
         toast.success(t('models_page.toast.save_local_success'));
       }
@@ -66,6 +71,7 @@ export function createPersistProfile({
     const request = (async () => {
       if (options?.trackSavingState !== false) {
         setIsSaving(true);
+        setSaveStatus('saving');
       }
       try {
         const response = await fetch('/api/profile', {
@@ -79,6 +85,9 @@ export function createPersistProfile({
         });
 
         if (!response.ok) {
+          if (options?.trackSavingState !== false) {
+            setSaveStatus('idle');
+          }
           if (!options?.silent) {
             toast.error(t('models_page.toast.save_failed'));
           }
@@ -99,6 +108,9 @@ export function createPersistProfile({
 
         if (!options?.silent) {
           toast.success(t('models_page.toast.save_success'));
+        }
+        if (options?.trackSavingState !== false) {
+          setSaveStatus('saved');
         }
         return true;
       } finally {

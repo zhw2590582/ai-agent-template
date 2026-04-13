@@ -5,11 +5,15 @@ import { MEMORY_CONFIG } from '@/config/app';
 import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
 import { getRuntimeChatModel } from '@/features/chat/ai/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';
-import type { ChatRuntimeModel } from '@/features/models/types';
+import type { ChatRuntimeModel, MemorySettings } from '@/features/models/types';
 
-export const CONVERSATION_SUMMARY_MIN_MESSAGES = MEMORY_CONFIG.SUMMARY_MIN_MESSAGES;
-export const CONVERSATION_SUMMARY_RECENT_MESSAGE_WINDOW =
-  MEMORY_CONFIG.SUMMARY_RECENT_MESSAGE_WINDOW;
+export function resolveConversationSummaryConfig(memorySettings?: Partial<MemorySettings> | null) {
+  return {
+    recentMessageWindow:
+      memorySettings?.recentMessageWindow ?? MEMORY_CONFIG.SUMMARY_RECENT_MESSAGE_WINDOW,
+    summaryMinMessages: memorySettings?.summaryMinMessages ?? MEMORY_CONFIG.SUMMARY_MIN_MESSAGES,
+  };
+}
 
 function trimSummary(value: string) {
   return value.replace(/\s+/g, ' ').trim().slice(0, 1200);
@@ -29,8 +33,11 @@ function formatMessages(messages: UIMessage[]) {
     .join('\n\n');
 }
 
-export function shouldGenerateConversationSummary(messages: UIMessage[]) {
-  return messages.length >= CONVERSATION_SUMMARY_MIN_MESSAGES;
+export function shouldGenerateConversationSummary(
+  messages: UIMessage[],
+  memorySettings?: Partial<MemorySettings> | null
+) {
+  return messages.length >= resolveConversationSummaryConfig(memorySettings).summaryMinMessages;
 }
 
 export function buildConversationSummaryContext(summary: string) {
@@ -56,18 +63,22 @@ export async function generateConversationSummary(
   options: {
     existingSummary?: string | null;
     locale?: Locale;
+    memorySettings?: Partial<MemorySettings> | null;
     runtimeModel?: ChatRuntimeModel | null;
   }
 ) {
-  if (!options.runtimeModel || !shouldGenerateConversationSummary(messages)) {
+  const config = resolveConversationSummaryConfig(options.memorySettings);
+
+  if (
+    !options.runtimeModel ||
+    !shouldGenerateConversationSummary(messages, options.memorySettings)
+  ) {
     return options.existingSummary?.trim() || null;
   }
 
   const locale = options.locale ?? DEFAULT_LOCALE;
   const existingSummary = options.existingSummary?.trim() || null;
-  const scopedMessages = existingSummary
-    ? messages.slice(-CONVERSATION_SUMMARY_RECENT_MESSAGE_WINDOW)
-    : messages;
+  const scopedMessages = existingSummary ? messages.slice(-config.recentMessageWindow) : messages;
   const transcript = formatMessages(scopedMessages);
 
   if (!transcript) {

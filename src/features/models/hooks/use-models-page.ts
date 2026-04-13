@@ -18,6 +18,7 @@ export function useModelsPage() {
     profile,
     providers,
     removeCustomProvider,
+    saveStatus,
     saveProviderEnabled,
     saveProfile,
     selectedProvider,
@@ -26,10 +27,8 @@ export function useModelsPage() {
   } = modelProfile;
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
-  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const hasInitializedAutoSaveRef = useRef(false);
   const suppressNextAutoSaveRef = useRef(false);
-  const savedIndicatorTimeoutRef = useRef<number | null>(null);
   const autoSaveTimeoutRef = useRef<number | null>(null);
   const hasPendingAutoSaveRef = useRef(false);
 
@@ -188,22 +187,11 @@ export function useModelsPage() {
 
     const timeoutId = window.setTimeout(() => {
       autoSaveTimeoutRef.current = null;
-      setAutoSaveStatus('saving');
-      void saveProfile(undefined, { silent: true, trackSavingState: false }).then((success) => {
+      void saveProfile(undefined, { silent: true }).then((success) => {
         hasPendingAutoSaveRef.current = false;
         if (!success) {
-          setAutoSaveStatus('idle');
           return;
         }
-
-        setAutoSaveStatus('saved');
-        if (savedIndicatorTimeoutRef.current) {
-          window.clearTimeout(savedIndicatorTimeoutRef.current);
-        }
-        savedIndicatorTimeoutRef.current = window.setTimeout(() => {
-          setAutoSaveStatus('idle');
-          savedIndicatorTimeoutRef.current = null;
-        }, 1400);
       });
     }, 600);
     autoSaveTimeoutRef.current = timeoutId;
@@ -225,12 +213,8 @@ export function useModelsPage() {
       }
 
       if (hasPendingAutoSaveRef.current) {
-        void saveProfile(undefined, { silent: true, trackSavingState: false });
+        void saveProfile(undefined, { silent: true });
         hasPendingAutoSaveRef.current = false;
-      }
-
-      if (savedIndicatorTimeoutRef.current) {
-        window.clearTimeout(savedIndicatorTimeoutRef.current);
       }
     };
   }, [saveProfile]);
@@ -257,13 +241,13 @@ export function useModelsPage() {
   }, [removeCustomProvider, selectedProvider.id]);
 
   return {
-    autoSaveStatus,
     handleAddModel,
     handleTestConnection,
     isApiKeyVisible,
     isLoading,
     isTestingConnection,
     providers,
+    saveStatus,
     selectedProvider,
     setIsApiKeyVisible,
     updateModel,

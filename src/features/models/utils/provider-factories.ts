@@ -1,3 +1,4 @@
+import { MEMORY_CONFIG } from '@/config/app';
 import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
 import type { AppProfile, ProviderModelItem, ProviderSettings } from '@/features/models/types';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
@@ -110,8 +111,11 @@ export function createProfileDraft(options: {
     settings: (options.existing?.settings as AppProfile['settings'] | undefined) ?? {
       memory: {
         autoWrite: false,
+        contextMaxItems: MEMORY_CONFIG.CONTEXT_MAX_ITEMS,
         crossConversation: true,
         enabled: false,
+        recentMessageWindow: MEMORY_CONFIG.SUMMARY_RECENT_MESSAGE_WINDOW,
+        summaryMinMessages: MEMORY_CONFIG.SUMMARY_MIN_MESSAGES,
       },
       models: { providers: {}, selectedChatModelId: null, selectedProviderId: '' },
     },

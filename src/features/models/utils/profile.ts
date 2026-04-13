@@ -1,3 +1,4 @@
+import { MEMORY_CONFIG } from '@/config/app';
 import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import type {
@@ -183,6 +184,14 @@ function readMemorySettings(input: unknown): Partial<MemorySettings> | undefined
   return undefined;
 }
 
+function clampMemoryNumber(value: unknown, fallback: number, min: number, max: number) {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return fallback;
+  }
+
+  return Math.min(max, Math.max(min, Math.round(value)));
+}
+
 export function normalizeProfileSettings(input?: unknown) {
   const existingProviders = readExistingProviders(input);
   const providers = Object.fromEntries(
@@ -227,8 +236,26 @@ export function normalizeProfileSettings(input?: unknown) {
   const existingMemory = readMemorySettings(input);
   const memory: MemorySettings = {
     autoWrite: existingMemory?.autoWrite ?? false,
+    contextMaxItems: clampMemoryNumber(
+      existingMemory?.contextMaxItems,
+      MEMORY_CONFIG.CONTEXT_MAX_ITEMS,
+      1,
+      20
+    ),
     crossConversation: existingMemory?.crossConversation ?? true,
     enabled: existingMemory?.enabled ?? false,
+    recentMessageWindow: clampMemoryNumber(
+      existingMemory?.recentMessageWindow,
+      MEMORY_CONFIG.SUMMARY_RECENT_MESSAGE_WINDOW,
+      2,
+      20
+    ),
+    summaryMinMessages: clampMemoryNumber(
+      existingMemory?.summaryMinMessages,
+      MEMORY_CONFIG.SUMMARY_MIN_MESSAGES,
+      2,
+      30
+    ),
   };
 
   return { memory, models };

@@ -254,6 +254,7 @@ export function useChatWorkbench({
     isSidebarOpen,
     isStartingThread,
     memorySettings: models.profile.settings.memory,
+    profileSaveStatus: models.saveStatus,
     setMemorySettings: updateMemorySettings,
     isModelsLoading: models.isLoading,
     locale,

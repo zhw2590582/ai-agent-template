@@ -7,13 +7,13 @@ import { useModelsPage } from '@/features/models/hooks/use-models-page';
 export function ModelsPage() {
   const {
     addCustomProviderAndPersist,
-    autoSaveStatus,
     deleteSelectedProvider,
     handleAddModel,
     handleTestConnection,
     isApiKeyVisible,
     isTestingConnection,
     providers,
+    saveStatus,
     selectedProvider,
     setIsApiKeyVisible,
     toggleProviderEnabled,
@@ -37,7 +37,6 @@ export function ModelsPage() {
 
       <div className="max-w-4xl flex-1 overflow-y-auto">
         <ProviderSettingsPanel
-          autoSaveStatus={autoSaveStatus}
           isApiKeyVisible={isApiKeyVisible}
           isTestingConnection={isTestingConnection}
           provider={selectedProvider}

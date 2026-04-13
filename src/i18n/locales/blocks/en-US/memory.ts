@@ -16,11 +16,22 @@ export const enUSMemoryMessages = {
       cross_conversation_label: 'Use memories across conversations',
       cross_conversation_description:
         'Inject saved long-term memories into future chats when they are relevant.',
+      advanced_title: 'Advanced thresholds',
+      advanced_description: 'Tune when summaries are generated and how much memory is injected.',
+      summary_min_messages_label: 'Summary trigger messages',
+      summary_min_messages_description:
+        'Generate or refresh a conversation summary once the thread reaches this many messages.',
+      recent_message_window_label: 'Recent messages window',
+      recent_message_window_description:
+        'Keep this many latest messages alongside the stored summary.',
+      context_max_items_label: 'Injected memories limit',
+      context_max_items_description:
+        'Limit how many long-term memories can be injected into chat context at once.',
       scope_account: 'Account memory',
       scope_guest: 'Guest mode',
       notice_title: 'Memory V1',
       notice_authenticated:
-        'Conversation summaries are starting to power context compression. Long-term memories and controls will be connected next.',
+        'Conversation summaries and long-term memories now use Supabase as the source of truth for context compression and cross-conversation recall.',
       notice_guest:
         'Guest mode can keep local conversations, but long-term memory will only be available for signed-in accounts.',
     },

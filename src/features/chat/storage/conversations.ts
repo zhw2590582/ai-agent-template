@@ -4,6 +4,7 @@ import type { Locale } from '@/config/i18n';
 import { generateConversationSummary } from '@/features/chat/ai/summary';
 import { generateConversationTitle } from '@/features/chat/ai/title';
 import type { ChatRuntimeModel } from '@/features/models/types';
+import type { MemorySettings } from '@/features/models/types';
 import {
   buildConversationAnalysis,
   buildConversationTitleFromText,
@@ -64,6 +65,7 @@ export async function saveConversationMessages(
   input: {
     conversationId: string;
     locale?: Locale;
+    memorySettings?: Partial<MemorySettings> | null;
     messages: UIMessage[];
     runtimeModel?: ChatRuntimeModel | null;
     userId: string;
@@ -105,6 +107,7 @@ export async function saveConversationMessages(
     const nextSummary = await generateConversationSummary(input.messages, {
       existingSummary: summary,
       locale: input.locale,
+      memorySettings: input.memorySettings,
       runtimeModel: input.runtimeModel,
     });
 

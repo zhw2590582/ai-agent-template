@@ -27,8 +27,11 @@ const profilePatchSchema = z.object({
   settings: z.object({
     memory: z.object({
       autoWrite: z.boolean().optional(),
+      contextMaxItems: z.number().int().optional(),
       crossConversation: z.boolean().optional(),
       enabled: z.boolean().optional(),
+      recentMessageWindow: z.number().int().optional(),
+      summaryMinMessages: z.number().int().optional(),
     }),
     models: z.object({
       providers: z.record(z.string(), z.unknown()),

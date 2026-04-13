@@ -16,7 +16,7 @@ import { getRuntimeChatModel } from '@/features/chat/ai/models';
 import { getSystemPrompt } from '@/features/chat/ai/prompts';
 import {
   buildConversationSummaryContext,
-  CONVERSATION_SUMMARY_RECENT_MESSAGE_WINDOW,
+  resolveConversationSummaryConfig,
 } from '@/features/chat/ai/summary';
 import { agentTools } from '@/features/chat/ai/tools';
 import { chatPostSchema } from '@/features/chat/server/schemas';
@@ -70,25 +70,33 @@ function getProfileMemorySettings(profile: Awaited<ReturnType<typeof getProfileB
   ) {
     return profile.settings.memory as {
       autoWrite?: boolean;
+      contextMaxItems?: number;
       crossConversation?: boolean;
       enabled?: boolean;
+      recentMessageWindow?: number;
+      summaryMinMessages?: number;
     };
   }
 
   return null;
 }
 
-async function buildChatMessagesWithSummary(messages: UIMessage[], summary?: string | null) {
+async function buildChatMessagesWithSummary(
+  messages: UIMessage[],
+  summary?: string | null,
+  memorySettings?: {
+    recentMessageWindow?: number;
+    summaryMinMessages?: number;
+  } | null
+) {
+  const config = resolveConversationSummaryConfig(memorySettings);
   const summaryMessage = summary ? buildConversationSummaryContext(summary) : null;
 
-  if (!summaryMessage || messages.length <= CONVERSATION_SUMMARY_RECENT_MESSAGE_WINDOW) {
+  if (!summaryMessage || messages.length <= config.recentMessageWindow) {
     return convertToModelMessages(messages as unknown as UIMessage[]);
   }
 
-  const scopedMessages = [
-    summaryMessage,
-    ...messages.slice(-CONVERSATION_SUMMARY_RECENT_MESSAGE_WINDOW),
-  ];
+  const scopedMessages = [summaryMessage, ...messages.slice(-config.recentMessageWindow)];
   return convertToModelMessages(scopedMessages as unknown as UIMessage[]);
 }
 
@@ -123,7 +131,7 @@ export async function handleChatPost(request: Request) {
 
       if (memorySettings?.enabled && memorySettings.crossConversation) {
         const memories = await listMemoriesForUser(user.id, supabase);
-        memoryContext = buildMemoryContext(memories);
+        memoryContext = buildMemoryContext(memories, { memorySettings });
       }
     }
 
@@ -144,7 +152,8 @@ export async function handleChatPost(request: Request) {
       system: getSystemPrompt(locale, { memoryContext }),
       messages: await buildChatMessagesWithSummary(
         messages as unknown as UIMessage[],
-        persistedConversationSummary ?? conversationSummary ?? null
+        persistedConversationSummary ?? conversationSummary ?? null,
+        memorySettings
       ),
       ...(hasAgentTools ? { tools: agentTools } : {}),
       maxOutputTokens: AI_CONFIG.DEFAULT_MAX_TOKENS,
@@ -172,6 +181,7 @@ export async function handleChatPost(request: Request) {
               {
                 conversationId,
                 locale,
+                memorySettings,
                 messages: responseMessages,
                 runtimeModel,
                 userId: user.id,

@@ -4,7 +4,6 @@ import { EyeIcon, EyeOffIcon, LinkIcon, PlugZapIcon, Trash2Icon } from 'lucide-r
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -26,7 +25,6 @@ import type { ProviderModelItem, ProviderSettings } from '@/features/models/type
 import { cn } from '@/lib/utils';
 
 interface ProviderSettingsPanelProps {
-  autoSaveStatus?: 'idle' | 'saving' | 'saved';
   isApiKeyVisible: boolean;
   isTestingConnection: boolean;
   provider: ProviderSettings;
@@ -42,7 +40,6 @@ interface ProviderSettingsPanelProps {
 }
 
 export function ProviderSettingsPanel({
-  autoSaveStatus = 'idle',
   isApiKeyVisible,
   isTestingConnection,
   provider,
@@ -86,14 +83,6 @@ export function ProviderSettingsPanel({
             ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            {autoSaveStatus === 'saving' ? (
-              <Badge variant="secondary">
-                <Spinner data-icon="inline-start" />
-                {t('models_page.actions.saving')}
-              </Badge>
-            ) : autoSaveStatus === 'saved' ? (
-              <Badge variant="secondary">{t('models_page.actions.saved')}</Badge>
-            ) : null}
             {provider.isCustom ? (
               <Button type="button" variant="outline" onClick={() => setIsDeleteDialogOpen(true)}>
                 <Trash2Icon data-icon="inline-start" />

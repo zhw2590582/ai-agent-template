@@ -5,7 +5,7 @@ import { MEMORY_CONFIG } from '@/config/app';
 import type { Locale } from '@/config/i18n';
 import { getRuntimeChatModel } from '@/features/chat/ai/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';
-import type { ChatRuntimeModel } from '@/features/models/types';
+import type { ChatRuntimeModel, MemorySettings } from '@/features/models/types';
 import type { MemoryListItem, MemoryRecord } from '@/features/memory/types';
 
 const memoryExtractionSchema = z.array(
@@ -145,13 +145,16 @@ export async function listMemoriesForUser(userId: string, client: MemoriesClient
   }));
 }
 
-export function buildMemoryContext(memories: MemoryListItem[]) {
+export function buildMemoryContext(
+  memories: MemoryListItem[],
+  options?: { memorySettings?: Partial<MemorySettings> | null }
+) {
   if (memories.length === 0) {
     return null;
   }
 
   const scopedMemories = memories
-    .slice(0, MEMORY_CONFIG.CONTEXT_MAX_ITEMS)
+    .slice(0, options?.memorySettings?.contextMaxItems ?? MEMORY_CONFIG.CONTEXT_MAX_ITEMS)
     .map((memory) => `- [${memory.kind}] ${normalizeMemoryContent(memory.content)}`);
 
   if (scopedMemories.length === 0) {
