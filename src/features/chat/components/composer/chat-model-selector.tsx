@@ -78,7 +78,8 @@ export function ChatModelSelector({
           {selectedModel ? (
             <ProviderIcon
               className="size-3.5"
-              fallbackClassName="size-5 rounded-full"
+              plain
+              fallbackClassName="size-5"
               providerId={selectedModel.providerId}
             />
           ) : (
@@ -119,27 +120,25 @@ export function ChatModelSelector({
               <div key={providerName}>
                 {index > 0 ? <DropdownMenuSeparator /> : null}
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel>{providerName}</DropdownMenuLabel>
+                  <DropdownMenuLabel className="flex items-center gap-2">
+                    <ProviderIcon
+                      className="size-3.5"
+                      plain
+                      fallbackClassName="size-5"
+                      providerId={providerModels[0]?.providerId ?? providerName.toLowerCase()}
+                    />
+                    <span>{providerName}</span>
+                  </DropdownMenuLabel>
                   {providerModels.map((option) => (
                     <DropdownMenuItem
                       key={option.id}
-                      className="gap-3 py-2"
+                      className="py-2"
                       onClick={() => {
                         onValueChange(option.id);
                         setOpen(false);
                       }}
                     >
-                      <ProviderIcon
-                        className="size-4"
-                        fallbackClassName="size-8 shrink-0 rounded-md"
-                        providerId={option.providerId}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm">{option.title}</div>
-                        <div className="text-muted-foreground truncate text-xs">
-                          {option.modelId}
-                        </div>
-                      </div>
+                      <div className="min-w-0 flex-1 truncate text-sm">{option.title}</div>
                       <CheckIcon
                         className={cn(
                           'size-4 shrink-0',

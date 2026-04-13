@@ -9,10 +9,16 @@ import { cn } from '@/lib/utils';
 interface ProviderIconProps {
   className?: string;
   fallbackClassName?: string;
+  plain?: boolean;
   providerId: string;
 }
 
-export function ProviderIcon({ className, fallbackClassName, providerId }: ProviderIconProps) {
+export function ProviderIcon({
+  className,
+  fallbackClassName,
+  plain = false,
+  providerId,
+}: ProviderIconProps) {
   const [hasError, setHasError] = useState(false);
 
   const preset = useMemo(
@@ -27,7 +33,9 @@ export function ProviderIcon({ className, fallbackClassName, providerId }: Provi
     return (
       <span
         className={cn(
-          'bg-muted text-foreground flex items-center justify-center rounded-md text-[10px] font-semibold',
+          plain
+            ? 'text-foreground flex items-center justify-center text-[10px] font-semibold'
+            : 'bg-muted text-foreground flex items-center justify-center rounded-md text-[10px] font-semibold',
           fallbackClassName ?? className
         )}
       >
@@ -39,7 +47,9 @@ export function ProviderIcon({ className, fallbackClassName, providerId }: Provi
   return (
     <span
       className={cn(
-        'bg-muted inline-flex items-center justify-center rounded-md',
+        plain
+          ? 'inline-flex items-center justify-center'
+          : 'bg-muted inline-flex items-center justify-center rounded-md',
         fallbackClassName ?? className
       )}
     >
