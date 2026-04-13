@@ -60,7 +60,8 @@ export function useChatWorkbench({
   const [bootstrappingThreadId, setBootstrappingThreadId] = useState<string | null>(null);
   const invalidIdHandledRef = useRef(false);
 
-  const activeThreadId = urlConversationId ?? pendingThreadId;
+  const effectivePendingThreadId = urlConversationId ? null : pendingThreadId;
+  const activeThreadId = urlConversationId ?? effectivePendingThreadId;
 
   const sidebar = useSidebarConversations({
     initialConversations,
@@ -102,23 +103,13 @@ export function useChatWorkbench({
 
   const isBusy = status === 'submitted' || status === 'streaming';
 
-  useEffect(() => {
-    if (pendingThreadId == null) {
-      return;
-    }
-
-    if (urlConversationId === pendingThreadId) {
-      setPendingThreadId(null);
-    }
-  }, [pendingThreadId, urlConversationId]);
-
   useChatSync({
     urlConversationId,
     initialConversationId,
     initialMessages,
     starterMessages,
     isBusy,
-    pendingThreadId,
+    pendingThreadId: effectivePendingThreadId,
     setMessages,
     bootstrappingThreadId,
     clearBootstrapping: useCallback(() => {
@@ -226,7 +217,7 @@ export function useChatWorkbench({
     }
 
     if (!invalidConversationId) return;
-    if (pendingThreadId || bootstrappingThreadId || isStartingThread || isBusy) return;
+    if (effectivePendingThreadId || bootstrappingThreadId || isStartingThread || isBusy) return;
     if (invalidIdHandledRef.current) return;
 
     invalidIdHandledRef.current = true;
@@ -240,7 +231,7 @@ export function useChatWorkbench({
     invalidConversationId,
     isBusy,
     isStartingThread,
-    pendingThreadId,
+    effectivePendingThreadId,
     t,
     urlConversationId,
   ]);
