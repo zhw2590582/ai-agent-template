@@ -149,6 +149,7 @@ export function MemoryPage({
           onSettingsChange={handleSettingsChange}
           settings={settings}
           t={t}
+          key={`${settings.summaryMinMessages}-${settings.recentMessageWindow}-${settings.contextMaxItems}`}
         />
         <Separator />
         <MemoryList

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { DownloadIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -25,18 +26,69 @@ export function MemoryControls({
   settings,
   t,
 }: MemoryControlsProps) {
-  const updateNumberSetting = (
+  const [draftNumbers, setDraftNumbers] = useState({
+    contextMaxItems: String(settings.contextMaxItems),
+    recentMessageWindow: String(settings.recentMessageWindow),
+    summaryMinMessages: String(settings.summaryMinMessages),
+  });
+  const debounceTimeoutsRef = useRef<
+    Partial<Record<'contextMaxItems' | 'recentMessageWindow' | 'summaryMinMessages', number>>
+  >({});
+  const changeSourceRef = useRef<'pointer' | 'stepper' | 'typing' | null>(null);
+
+  useEffect(() => {
+    const timeouts = debounceTimeoutsRef.current;
+    return () => {
+      for (const timeoutId of Object.values(timeouts)) {
+        if (timeoutId) {
+          window.clearTimeout(timeoutId);
+        }
+      }
+    };
+  }, []);
+
+  const commitNumberSetting = (
     key: 'contextMaxItems' | 'recentMessageWindow' | 'summaryMinMessages',
     value: string
   ) => {
     const parsed = Number.parseInt(value, 10);
     if (!Number.isFinite(parsed)) {
-      return;
+      setDraftNumbers((current) => ({
+        ...current,
+        [key]: String(settings[key]),
+      }));
+      return false;
     }
 
     void onSettingsChange((current) => ({
       ...current,
       [key]: parsed,
+    }));
+    return true;
+  };
+
+  const scheduleNumberSave = (
+    key: 'contextMaxItems' | 'recentMessageWindow' | 'summaryMinMessages',
+    value: string
+  ) => {
+    const existingTimeout = debounceTimeoutsRef.current[key];
+    if (existingTimeout) {
+      window.clearTimeout(existingTimeout);
+    }
+
+    debounceTimeoutsRef.current[key] = window.setTimeout(() => {
+      commitNumberSetting(key, value);
+      debounceTimeoutsRef.current[key] = undefined;
+    }, 600);
+  };
+
+  const updateDraftNumber = (
+    key: 'contextMaxItems' | 'recentMessageWindow' | 'summaryMinMessages',
+    value: string
+  ) => {
+    setDraftNumbers((current) => ({
+      ...current,
+      [key]: value,
     }));
   };
 
@@ -136,12 +188,36 @@ export function MemoryControls({
               {t('memory_page.controls.summary_min_messages_label')}
             </label>
             <Input
-              disabled={!isAuthenticated || isSaving}
+              disabled={!isAuthenticated}
               id="memory-summary-min-messages"
               min={2}
-              onChange={(event) => updateNumberSetting('summaryMinMessages', event.target.value)}
+              onBlur={(event) => {
+                const existingTimeout = debounceTimeoutsRef.current.summaryMinMessages;
+                if (existingTimeout) {
+                  window.clearTimeout(existingTimeout);
+                  debounceTimeoutsRef.current.summaryMinMessages = undefined;
+                }
+                commitNumberSetting('summaryMinMessages', event.target.value);
+              }}
+              onChange={(event) => {
+                updateDraftNumber('summaryMinMessages', event.target.value);
+                if (
+                  changeSourceRef.current === 'pointer' ||
+                  changeSourceRef.current === 'stepper'
+                ) {
+                  scheduleNumberSave('summaryMinMessages', event.target.value);
+                }
+                changeSourceRef.current = null;
+              }}
+              onKeyDown={(event) => {
+                changeSourceRef.current =
+                  event.key === 'ArrowDown' || event.key === 'ArrowUp' ? 'stepper' : 'typing';
+              }}
+              onPointerDown={() => {
+                changeSourceRef.current = 'pointer';
+              }}
               type="number"
-              value={settings.summaryMinMessages}
+              value={draftNumbers.summaryMinMessages}
             />
             <p className="text-muted-foreground text-xs">
               {t('memory_page.controls.summary_min_messages_description')}
@@ -153,12 +229,36 @@ export function MemoryControls({
               {t('memory_page.controls.recent_message_window_label')}
             </label>
             <Input
-              disabled={!isAuthenticated || isSaving}
+              disabled={!isAuthenticated}
               id="memory-recent-message-window"
               min={2}
-              onChange={(event) => updateNumberSetting('recentMessageWindow', event.target.value)}
+              onBlur={(event) => {
+                const existingTimeout = debounceTimeoutsRef.current.recentMessageWindow;
+                if (existingTimeout) {
+                  window.clearTimeout(existingTimeout);
+                  debounceTimeoutsRef.current.recentMessageWindow = undefined;
+                }
+                commitNumberSetting('recentMessageWindow', event.target.value);
+              }}
+              onChange={(event) => {
+                updateDraftNumber('recentMessageWindow', event.target.value);
+                if (
+                  changeSourceRef.current === 'pointer' ||
+                  changeSourceRef.current === 'stepper'
+                ) {
+                  scheduleNumberSave('recentMessageWindow', event.target.value);
+                }
+                changeSourceRef.current = null;
+              }}
+              onKeyDown={(event) => {
+                changeSourceRef.current =
+                  event.key === 'ArrowDown' || event.key === 'ArrowUp' ? 'stepper' : 'typing';
+              }}
+              onPointerDown={() => {
+                changeSourceRef.current = 'pointer';
+              }}
               type="number"
-              value={settings.recentMessageWindow}
+              value={draftNumbers.recentMessageWindow}
             />
             <p className="text-muted-foreground text-xs">
               {t('memory_page.controls.recent_message_window_description')}
@@ -170,12 +270,36 @@ export function MemoryControls({
               {t('memory_page.controls.context_max_items_label')}
             </label>
             <Input
-              disabled={!isAuthenticated || isSaving}
+              disabled={!isAuthenticated}
               id="memory-context-max-items"
               min={1}
-              onChange={(event) => updateNumberSetting('contextMaxItems', event.target.value)}
+              onBlur={(event) => {
+                const existingTimeout = debounceTimeoutsRef.current.contextMaxItems;
+                if (existingTimeout) {
+                  window.clearTimeout(existingTimeout);
+                  debounceTimeoutsRef.current.contextMaxItems = undefined;
+                }
+                commitNumberSetting('contextMaxItems', event.target.value);
+              }}
+              onChange={(event) => {
+                updateDraftNumber('contextMaxItems', event.target.value);
+                if (
+                  changeSourceRef.current === 'pointer' ||
+                  changeSourceRef.current === 'stepper'
+                ) {
+                  scheduleNumberSave('contextMaxItems', event.target.value);
+                }
+                changeSourceRef.current = null;
+              }}
+              onKeyDown={(event) => {
+                changeSourceRef.current =
+                  event.key === 'ArrowDown' || event.key === 'ArrowUp' ? 'stepper' : 'typing';
+              }}
+              onPointerDown={() => {
+                changeSourceRef.current = 'pointer';
+              }}
               type="number"
-              value={settings.contextMaxItems}
+              value={draftNumbers.contextMaxItems}
             />
             <p className="text-muted-foreground text-xs">
               {t('memory_page.controls.context_max_items_description')}
