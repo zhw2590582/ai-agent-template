@@ -1,4 +1,4 @@
-import { loadChatPageData } from '@/features/chat/lib/chat-page-data';
+import { loadChatPageData } from '@/features/chat/data/chat-page-data';
 import { ChatHomePage } from '@/features/chat/pages/chat-home-page';
 
 type ChatShellPageProps = {

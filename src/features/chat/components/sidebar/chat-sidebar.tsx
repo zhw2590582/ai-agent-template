@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SidebarSearch } from '@/features/chat/components/sidebar-search';
+import { SidebarSearch } from '@/features/chat/components/sidebar/sidebar-search';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { cn } from '@/lib/utils';
 
@@ -35,8 +35,8 @@ interface ChatSidebarProps {
   onClearChat: () => void;
   onLoadMoreConversations?: () => void | Promise<void>;
   onSearchQueryChange?: (value: string) => void;
-  searchQuery?: string;
   onToggleOpen: () => void;
+  searchQuery?: string;
 }
 
 export function ChatSidebar({
@@ -48,8 +48,8 @@ export function ChatSidebar({
   onClearChat,
   onLoadMoreConversations,
   onSearchQueryChange,
-  searchQuery = '',
   onToggleOpen,
+  searchQuery = '',
 }: ChatSidebarProps) {
   const t = useTranslations();
   const locale = useLocale();
@@ -97,12 +97,9 @@ export function ChatSidebar({
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-    // Only re-create observer when loading state or availability changes
-    // — not on every conversations.length change
   }, [hasMoreConversations, isLoadingMoreConversations, onLoadMoreConversations]);
 
-  const normalizedQuery = searchQuery.trim().toLowerCase();
-  const isFiltering = normalizedQuery.length > 0;
+  const isFiltering = searchQuery.trim().length > 0;
 
   if (!isOpen) {
     return (
@@ -110,11 +107,11 @@ export function ChatSidebar({
         <div className="border-border mb-3 flex h-12 items-center justify-between border-b px-4">
           <Button
             aria-label={t('chat.header.show_sidebar')}
+            className="group"
             onClick={onToggleOpen}
             size="icon"
             type="button"
             variant="ghost"
-            className="group"
           >
             <span className="relative inline-block">
               <BotIcon className="size-4 transition-opacity duration-150 group-hover:opacity-0" />
@@ -165,9 +162,9 @@ export function ChatSidebar({
 
       <SidebarSearch
         ariaLabel={t('chat.sidebar.search_placeholder')}
+        onChange={(value) => onSearchQueryChange?.(value)}
         placeholder={t('chat.sidebar.search_placeholder')}
         value={searchQuery}
-        onChange={(value) => onSearchQueryChange?.(value)}
       />
 
       <div className="pl-3">
@@ -183,7 +180,7 @@ export function ChatSidebar({
                       item.id === activeConversationId || openMenuId === item.id ? 'bg-accent' : ''
                     )}
                   >
-                    <Link href={`/${locale}?id=${item.id}`} className="min-w-0 flex-1">
+                    <Link className="min-w-0 flex-1" href={`/${locale}?id=${item.id}`}>
                       <div className="max-w-56 truncate">{item.title}</div>
                     </Link>
                     <DropdownMenu
@@ -197,10 +194,10 @@ export function ChatSidebar({
                             'shrink-0 opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100',
                             openMenuId === item.id ? 'opacity-100' : ''
                           )}
+                          onPointerDown={(event) => event.stopPropagation()}
                           size="icon-sm"
                           type="button"
                           variant="ghost"
-                          onPointerDown={(event) => event.stopPropagation()}
                         >
                           <MoreHorizontalIcon className="size-4" />
                         </Button>

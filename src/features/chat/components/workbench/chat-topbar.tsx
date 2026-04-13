@@ -4,18 +4,19 @@ import {
   BrainIcon,
   DatabaseIcon,
   FlaskConicalIcon,
+  GlobeIcon,
   PlugIcon,
   ServerIcon,
   SettingsIcon,
   ShieldEllipsisIcon,
-  GlobeIcon,
 } from 'lucide-react';
 
 import { LanguageSwitcher } from '@/components/ui-settings/language-switcher';
 import { ThemeToggle } from '@/components/ui-settings/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { HEADER_NAV_ITEMS, type HeaderNavItemId } from '@/config/app';
+import { HEADER_NAV_ITEMS } from '@/config/app';
 import { AuthDialog } from '@/features/auth/components/auth-dialog';
+import type { WorkbenchView } from '@/features/chat/types';
 
 const NAV_ICONS = {
   models: PlugIcon,
@@ -28,7 +29,6 @@ const NAV_ICONS = {
   search: GlobeIcon,
 } as const;
 
-type WorkbenchView = 'chat' | HeaderNavItemId | 'settings';
 type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
 
 interface ChatTopBarProps {
@@ -75,10 +75,10 @@ export function ChatTopBar({ activeView, locale, t }: ChatTopBarProps) {
               description={t('auth.dialog_description')}
               githubLabel={t('auth.sign_in_with_github')}
               googleLabel={t('auth.sign_in_with_google')}
-              signInLabel={t('auth.sign_in')}
               signInFailedLabel={t('auth.errors.sign_in_failed')}
-              signOutLabel={t('auth.sign_out')}
+              signInLabel={t('auth.sign_in')}
               signOutFailedLabel={t('auth.errors.sign_out_failed')}
+              signOutLabel={t('auth.sign_out')}
               signOutSuccessLabel={t('auth.toast.sign_out_success')}
               signedInAsLabel={t('auth.signed_in_as')}
               title={t('auth.title')}

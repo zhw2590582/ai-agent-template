@@ -14,16 +14,30 @@ bun run dev
 - 英文：`http://localhost:3000/en-US`
 - 默认：`http://localhost:3000`
 
-## 必需环境变量
+## 环境变量
+
+最低可运行配置：
 
 - `DEEPSEEK_API_KEY`
 
-可选：
+如果要启用登录和会话持久化，还需要：
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+
+如果要启用额外平台能力，还预留了这些变量：
 
 - `OPENAI_API_KEY`
-- `NEXT_PUBLIC_APP_URL`
+- `SENTRY_ORG`
+- `SENTRY_PROJECT`
+- `NEXT_PUBLIC_SENTRY_DSN`
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+- `MEM0_API_KEY`
+- `E2B_API_KEY`
+- `TAVILY_API_KEY`
 
-环境变量会在应用启动时由 [src/config/env.ts](../src/config/env.ts) 校验。
+环境变量会在应用启动时由 [src/config/env.ts](../src/config/env.ts) 校验；但注意，当前代码真正接入的核心仍是 DeepSeek 和 Supabase。
 
 ## 常用命令
 
@@ -52,6 +66,12 @@ bun run ci
 2. `lint`
 3. `typecheck`
 4. `test:run`
+
+## 当前现实说明
+
+- 不配 Supabase 也能本地跑聊天，但登录和会话持久化不可用
+- `test:e2e` 目前仍是占位命令
+- `/api/mcp` 目前只是占位接口，不需要额外配置
 
 ## 相关文档
 

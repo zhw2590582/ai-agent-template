@@ -6,7 +6,7 @@ import {
   buildUserMessage,
   clearConversationUrl,
   updateConversationUrl,
-} from '@/features/chat/lib/chat-controller';
+} from '@/features/chat/utils/chat-controller';
 
 interface UseChatControllerOptions {
   activeThreadId: string | null;

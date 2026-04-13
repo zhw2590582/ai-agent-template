@@ -6,7 +6,6 @@ import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
-import { getTextContent, getToolParts } from '@/features/chat/lib/message-utils';
 import {
   Conversation,
   ConversationContent,
@@ -26,33 +25,32 @@ import {
   ToolInput,
   ToolOutput,
 } from '@/components/ai-elements/tool';
+import { getTextContent, getToolParts } from '@/features/chat/utils/message-utils';
 import { cn } from '@/lib/utils';
 
 interface ChatMessageListProps {
-  isSidebarOpen: boolean;
   error?: Error;
+  isSidebarOpen: boolean;
   messages: UIMessage[];
   onRetry: () => void;
 }
 
-/* ---------- Single message row (memoized to reduce streaming re-renders) ---------- */
-
 interface ChatMessageRowProps {
-  message: UIMessage;
-  messageKey: string;
+  getToolTitle: (toolName: string) => string;
   isLastAssistant: boolean;
   isSidebarOpen: boolean;
-  getToolTitle: (toolName: string) => string;
+  message: UIMessage;
+  messageKey: string;
   onCopy: (text: string) => void;
   onRetry: () => void;
 }
 
 const ChatMessageRow = memo(function ChatMessageRow({
-  message,
-  messageKey,
+  getToolTitle,
   isLastAssistant,
   isSidebarOpen,
-  getToolTitle,
+  message,
+  messageKey,
   onCopy,
   onRetry,
 }: ChatMessageRowProps) {
@@ -127,9 +125,7 @@ const ChatMessageRow = memo(function ChatMessageRow({
   );
 });
 
-/* ---------- Message list container ---------- */
-
-export function ChatMessageList({ isSidebarOpen, error, messages, onRetry }: ChatMessageListProps) {
+export function ChatMessageList({ error, isSidebarOpen, messages, onRetry }: ChatMessageListProps) {
   const t = useTranslations();
   const lastAssistantMessageId = [...messages]
     .reverse()
@@ -191,8 +187,8 @@ export function ChatMessageList({ isSidebarOpen, error, messages, onRetry }: Cha
               isSidebarOpen={isSidebarOpen}
               message={message}
               messageKey={messageKey}
-              onRetry={onRetry}
               onCopy={handleCopy}
+              onRetry={onRetry}
             />
           );
         })}

@@ -1,13 +1,3 @@
-/**
- * useChatSync — synchronize useChat messages with URL and server state.
- *
- * Solves race conditions from the old monolithic useEffect:
- * - Uses a version counter to discard stale setMessages calls
- * - Separates URL-change resets from server-data merges
- * - Skips sync while the stream is active (isBusy)
- * - Respects the bootstrapping phase after conversation creation
- */
-
 'use client';
 
 import { startTransition, useEffect, useRef } from 'react';
@@ -20,7 +10,7 @@ import {
   shouldMergeServerMessages,
   shouldResetToStarter,
   shouldSkipUrlSync,
-} from '@/features/chat/lib/chat-sync';
+} from '@/features/chat/utils/chat-sync';
 
 interface UseChatSyncOptions {
   /** Conversation ID from the URL search params. null = new chat. */

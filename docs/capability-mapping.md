@@ -1,19 +1,22 @@
 # Capability Mapping
 
-这是一份简表，用来说明教程能力和当前项目状态的关系。
+这是一份简表，用来说明“教程中的 agent 能力”和“当前项目代码现状”的关系。
 
-| 能力                | 当前状态   | 说明                                      | 推荐接入点                  |
-| ------------------- | ---------- | ----------------------------------------- | --------------------------- |
-| Tool Use            | 已实现     | 已有天气、计算器、时间工具                | `src/server/ai/tools/`      |
-| Memory              | 已预留边界 | 还没有持久化和历史回放                    | `src/server/ai/memory/`     |
-| RAG                 | 已预留边界 | 还没有检索和来源展示                      | `src/server/ai/rag/`        |
-| Context Engineering | 部分具备   | 已有 prompt 分层，但没有 context pipeline | `src/server/ai/prompts.ts`  |
-| Planning            | 已预留边界 | `types.ts` 有基础类型，功能未落地         | `src/server/ai/planners/`   |
-| Multi-Agent         | 已预留边界 | 还没有真实 agent orchestration            | `src/server/ai/agents/`     |
-| Observability       | 基础具备   | 有日志和错误处理，没有 tracing/metrics    | `src/lib/logger.ts`         |
-| Evaluation          | 未开始     | 没有评估链路                              | `src/server/ai/evaluation/` |
-| Trustworthy AI      | 未开始     | 没有审批流、策略校验层                    | validation + approval flow  |
-| Agentic Protocols   | 未开始     | 没有协议层实现                            | protocol layer              |
+| 能力                     | 当前状态   | 说明                                              | 当前接入点                          |
+| ------------------------ | ---------- | ------------------------------------------------- | ----------------------------------- |
+| Tool Use                 | 已实现     | 已有天气、计算器、时间工具                        | `src/features/chat/ai/tools/`       |
+| Conversation Persistence | 已实现     | 登录用户的会话可创建、保存、分页、搜索            | `src/features/chat/storage/`        |
+| Auth                     | 已实现     | Supabase 社交登录和 profile 同步已接通            | `src/features/auth/`                |
+| Context Engineering      | 部分具备   | 已有系统 prompt 分层，但没有完整 context pipeline | `src/features/chat/ai/prompts.ts`   |
+| Memory                   | 已预留边界 | 只有 `profiles` 字段预留，没有真实记忆读写链路    | `src/features/memory/`              |
+| RAG                      | 已预留边界 | 还没有检索和来源展示                              | `src/features/rag/`                 |
+| Planning                 | 已预留边界 | 类型和导航边界存在，功能未落地                    | `src/features/chat/server/types.ts` |
+| Multi-Agent / Subagent   | 已预留边界 | 导航和页面存在，但没有真实 orchestration          | `src/features/subagent/`            |
+| MCP                      | 占位       | 只有占位页面和占位 API                            | `src/app/api/mcp/route.ts`          |
+| Skills                   | 占位       | 只有导航和占位页                                  | `src/features/skills/`              |
+| Observability            | 基础具备   | 有日志和错误处理，没有 tracing/metrics            | `src/lib/logger.ts`                 |
+| Evaluation               | 未开始     | 没有评估链路                                      | 待定                                |
+| Trustworthy AI           | 未开始     | 没有审批流、策略校验层                            | 待定                                |
 
 更具体的项目现状，看 [project-status.md](./project-status.md)。
 

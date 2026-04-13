@@ -12,7 +12,7 @@ import {
   PromptInputTextarea,
   PromptInputTools,
 } from '@/components/ai-elements/prompt-input';
-import { MODEL_OPTIONS, type ModelId } from '@/config/app';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,20 +20,19 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
+import { MODEL_OPTIONS, type ModelId } from '@/config/app';
 
 interface ChatComposerProps {
   input: string;
   isBusy: boolean;
-  /** True while POST /conversations is in flight (before stream starts). */
   isCreatingThread?: boolean;
   isSidebarOpen: boolean;
   model: ModelId;
-  onModelChange: (value: ModelId) => void;
-  status: ChatStatus;
   onInputChange: (value: string) => void;
+  onModelChange: (value: ModelId) => void;
   onStop: () => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  status: ChatStatus;
 }
 
 export function ChatComposer({
@@ -42,11 +41,11 @@ export function ChatComposer({
   isCreatingThread = false,
   isSidebarOpen,
   model,
-  onModelChange,
-  status,
   onInputChange,
+  onModelChange,
   onStop,
   onSubmit,
+  status,
 }: ChatComposerProps) {
   const t = useTranslations();
 
@@ -60,9 +59,9 @@ export function ChatComposer({
             <PromptInputTextarea
               className="min-h-19 border-0 bg-transparent text-base"
               disabled={isBusy}
-              value={input}
               onChange={(event) => onInputChange(event.target.value)}
               placeholder={t('chat.composer.placeholder')}
+              value={input}
             />
           </PromptInputBody>
           <PromptInputFooter>

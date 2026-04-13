@@ -1,6 +1,5 @@
-import type { HeaderNavItemId } from '@/config/app';
+import type { WorkbenchView } from '@/features/chat/types';
 
-type WorkbenchView = 'chat' | HeaderNavItemId | 'settings';
 type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
 
 interface ChatPlaceholderProps {

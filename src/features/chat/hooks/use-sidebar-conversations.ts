@@ -10,8 +10,8 @@
 import { startTransition, useEffect, useMemo, useState } from 'react';
 
 import type { ConversationSummary } from '@/features/chat/storage/types';
-import { useSidebarPagination } from '@/features/chat/lib/use-sidebar-pagination';
-import { useSidebarSearch } from '@/features/chat/lib/use-sidebar-search';
+import { useSidebarPagination } from '@/features/chat/hooks/use-sidebar-pagination';
+import { useSidebarSearch } from '@/features/chat/hooks/use-sidebar-search';
 
 interface UseSidebarConversationsOptions {
   initialConversations: ConversationSummary[];

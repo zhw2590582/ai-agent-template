@@ -6,10 +6,11 @@
 
 ## 当前定位
 
-当前项目不是完整 agent 平台，而是一个已经跑通的聊天骨架，重点在：
+当前项目不是完整 agent 平台，而是一个已经跑通的聊天工作台骨架，重点在：
 
 - 流式聊天主链路
 - 服务端工具调用骨架
+- 登录、会话持久化、分页和搜索
 - 为 Memory、RAG、Planning、多代理预留结构边界
 
 ## 当前真实状态
@@ -17,21 +18,25 @@
 已完成：
 
 - 基于 `useChat` 的流式聊天
-- DeepSeek 模型接入
+- 服务端 `/api/chat` 到 `streamText(...)` 的主链路
+- DeepSeek 模型接入，兼容 OpenAI SDK 风格调用
 - 工具调用骨架：天气、计算器、时间
 - 国际化：`zh-CN` / `en-US`
 - 主题切换
+- Supabase 社交登录（GitHub / Google）
+- 会话持久化（`conversations` 表）
+- 会话列表、分页、搜索、标题生成
 - 环境变量校验、错误处理、日志、CI
 - Vitest 单元测试和集成测试
 
-仍未完成：
+仍未完成或仍是占位：
 
-- 会话持久化
-- 用户系统
+- Memory
 - RAG
 - Planning
 - Multi-Agent
-- 多数工作台页面的真实业务实现
+- 大多数工作台页面的真实业务实现
+- E2E 自动化测试
 
 更准确的状态说明见 [docs/project-status.md](./docs/project-status.md)。
 
@@ -49,9 +54,14 @@ bun run dev
 - 英文：`http://localhost:3000/en-US`
 - 默认：`http://localhost:3000`
 
-必需环境变量：
+最低可运行环境变量：
 
 - `DEEPSEEK_API_KEY`
+
+如果要启用登录和会话持久化，还需要配置：
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
 ## 技术栈
 
@@ -61,8 +71,25 @@ bun run dev
 - AI Elements
 - shadcn/ui
 - Tailwind CSS v4
+- next-intl
+- Supabase
 - Zod
 - Bun
+
+## 当前结构
+
+```text
+src/
+├── app/                  # Next.js 路由入口与 API route
+├── components/           # 基础 UI 和 AI Elements 组件
+├── config/               # env / app / i18n 等配置
+├── features/
+│   ├── chat/             # 当前唯一真实业务域
+│   └── auth/             # 登录和 profile 同步
+├── i18n/                 # next-intl 请求配置
+├── lib/                  # 通用工具、错误处理、日志、Supabase client
+└── proxy.ts              # locale 检测与 session 更新
+```
 
 ## 文档入口
 
