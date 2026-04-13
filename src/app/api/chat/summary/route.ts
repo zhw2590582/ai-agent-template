@@ -2,7 +2,7 @@ import { API_RATE_LIMITS } from '@/config/api-rate-limit';
 import type { UIMessage } from 'ai';
 
 import { DEFAULT_LOCALE } from '@/config/i18n';
-import { generateConversationSummary } from '@/features/chat/ai/summary';
+import { generateConversationSummary } from '@/features/chat/ai/memory/summary';
 import { chatSummaryPostSchema } from '@/features/chat/server/schemas';
 import { handleErrorWithLocale } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';

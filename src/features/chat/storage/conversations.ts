@@ -1,8 +1,8 @@
 import type { UIMessage } from 'ai';
 
 import type { Locale } from '@/config/i18n';
-import { generateConversationSummary } from '@/features/chat/ai/summary';
-import { generateConversationTitle } from '@/features/chat/ai/title';
+import { generateConversationSummary } from '@/features/chat/ai/memory/summary';
+import { generateConversationTitle } from '@/features/chat/ai/memory/title';
 import type { ChatRuntimeModel } from '@/features/models/types';
 import type { MemorySettings } from '@/features/models/types';
 import {

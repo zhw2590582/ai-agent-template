@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 // Mock all AI/model/env dependencies to avoid requiring real API keys or env
-vi.mock('@/features/chat/ai/models', () => ({
+vi.mock('@/features/chat/ai/core/models', () => ({
   getRuntimeChatModel: vi.fn(() => ({})),
 }));
-vi.mock('@/features/chat/ai/prompts', () => ({
+vi.mock('@/features/chat/ai/core/prompts', () => ({
   getSystemPrompt: vi.fn(() => 'mock'),
 }));
 vi.mock('@/features/chat/ai/tools', () => ({

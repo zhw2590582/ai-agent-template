@@ -3,7 +3,7 @@ import { generateText } from 'ai';
 
 import { MEMORY_CONFIG } from '@/config/app';
 import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
-import { getRuntimeChatModel } from '@/features/chat/ai/models';
+import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';
 import type { ChatRuntimeModel, MemorySettings } from '@/features/models/types';
 

@@ -8,13 +8,13 @@ vi.mock('ai', () => ({
   streamText: mockStreamText,
 }));
 
-vi.mock('@/features/chat/ai/models', () => ({
+vi.mock('@/features/chat/ai/core/models', () => ({
   getRuntimeChatModel: vi.fn(
     (runtimeModel: { modelId: string }) => `runtime:${runtimeModel.modelId}`
   ),
 }));
 
-vi.mock('@/features/chat/ai/prompts', () => ({
+vi.mock('@/features/chat/ai/core/prompts', () => ({
   getSystemPrompt: vi.fn(() => 'mock-system-prompt'),
 }));
 

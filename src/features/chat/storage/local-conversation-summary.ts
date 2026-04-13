@@ -7,7 +7,7 @@ import {
   readLocalConversationThreads,
   writeLocalConversationThreads,
 } from '@/features/chat/storage/local-conversation-store';
-import { shouldGenerateConversationSummary } from '@/features/chat/ai/summary';
+import { shouldGenerateConversationSummary } from '@/features/chat/ai/memory/summary';
 
 export async function generateLocalConversationSummary(input: {
   id: string;

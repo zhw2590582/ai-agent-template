@@ -1,7 +1,7 @@
 import { generateText } from 'ai';
 
 import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
-import { getRuntimeChatModel } from '@/features/chat/ai/models';
+import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
 export function cleanTitle(value: string) {

@@ -1,6 +1,6 @@
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
 import { DEFAULT_LOCALE } from '@/config/i18n';
-import { generateConversationTitle } from '@/features/chat/ai/title';
+import { generateConversationTitle } from '@/features/chat/ai/memory/title';
 import { chatTitlePostSchema } from '@/features/chat/server/schemas';
 import { handleErrorWithLocale } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';

@@ -12,12 +12,12 @@ import { t } from '@/lib/i18n';
 import { logger } from '@/lib/logger';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { validateRequest } from '@/lib/validation';
-import { getRuntimeChatModel } from '@/features/chat/ai/models';
-import { getSystemPrompt } from '@/features/chat/ai/prompts';
+import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
+import { getSystemPrompt } from '@/features/chat/ai/core/prompts';
 import {
   buildConversationSummaryContext,
   resolveConversationSummaryConfig,
-} from '@/features/chat/ai/summary';
+} from '@/features/chat/ai/memory/summary';
 import { agentTools } from '@/features/chat/ai/tools';
 import { chatPostSchema } from '@/features/chat/server/schemas';
 import { saveConversationMessages, verifyConversationOwnership } from '@/features/chat/storage';

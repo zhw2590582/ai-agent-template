@@ -2,7 +2,7 @@ import { generateText, Output, type UIMessage } from 'ai';
 import { z } from 'zod';
 
 import type { Locale } from '@/config/i18n';
-import { getRuntimeChatModel } from '@/features/chat/ai/models';
+import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';
 import type { ChatRuntimeModel } from '@/features/models/types';
 import { MEMORY_KINDS, type MemoryKind } from '@/features/memory/types';
