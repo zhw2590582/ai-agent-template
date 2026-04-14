@@ -2,6 +2,7 @@ import { tool } from 'ai';
 import { z } from 'zod';
 
 import { SEARCH_CONFIG } from '@/config/search';
+import { assertTavilyEnabled, tavilyRequest } from '@/features/search/server/tavily-client';
 import type { SearchSettings } from '@/features/search/types';
 
 const tavilyExtractResultSchema = z.object({
@@ -16,14 +17,12 @@ const tavilyExtractResponseSchema = z.object({
   results: z.array(tavilyExtractResultSchema).default([]),
 });
 
-function assertExtractEnabled(settings: SearchSettings | null | undefined) {
-  return Boolean(settings?.enabled && settings.tavilyApiKey.trim().length > 0);
-}
-
 export function createWebExtractTool(settings: SearchSettings | null | undefined) {
-  if (!assertExtractEnabled(settings)) {
+  if (!settings || !assertTavilyEnabled(settings)) {
     return null;
   }
+
+  const resolvedSettings = settings;
 
   return tool({
     description:
@@ -41,30 +40,24 @@ export function createWebExtractTool(settings: SearchSettings | null | undefined
         .describe('One or more webpage URLs to extract content from.'),
     }),
     execute: async ({ query, urls }) => {
-      const response = await fetch(SEARCH_CONFIG.TAVILY_EXTRACT_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${settings?.tavilyApiKey.trim()}`,
-        },
-        body: JSON.stringify({
+      const parsed = await tavilyRequest({
+        apiKey: resolvedSettings.tavilyApiKey,
+        body: {
           urls,
           query,
           chunks_per_source:
-            settings?.extract.chunksPerSource ?? SEARCH_CONFIG.DEFAULT_EXTRACT_CHUNKS_PER_SOURCE,
-          extract_depth: settings?.extract.extractDepth ?? SEARCH_CONFIG.DEFAULT_EXTRACT_DEPTH,
-          format: settings?.extract.format ?? SEARCH_CONFIG.DEFAULT_EXTRACT_FORMAT,
+            resolvedSettings.extract.chunksPerSource ??
+            SEARCH_CONFIG.DEFAULT_EXTRACT_CHUNKS_PER_SOURCE,
+          extract_depth:
+            resolvedSettings.extract.extractDepth ?? SEARCH_CONFIG.DEFAULT_EXTRACT_DEPTH,
+          format: resolvedSettings.extract.format ?? SEARCH_CONFIG.DEFAULT_EXTRACT_FORMAT,
           include_favicon: true,
           include_images: false,
-        }),
+        },
+        endpoint: SEARCH_CONFIG.TAVILY_EXTRACT_ENDPOINT,
+        responseSchema: tavilyExtractResponseSchema,
+        scope: 'extract',
       });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Tavily extract failed (${response.status}): ${text.slice(0, 240)}`);
-      }
-
-      const parsed = tavilyExtractResponseSchema.parse(await response.json());
 
       return {
         failedCount: parsed.failed_results.length,

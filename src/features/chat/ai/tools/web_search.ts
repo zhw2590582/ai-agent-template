@@ -2,6 +2,7 @@ import { tool } from 'ai';
 import { z } from 'zod';
 
 import { SEARCH_CONFIG } from '@/config/search';
+import { assertTavilyEnabled, tavilyRequest } from '@/features/search/server/tavily-client';
 import type { SearchSettings } from '@/features/search/types';
 
 const tavilySearchResultSchema = z.object({
@@ -17,14 +18,12 @@ const tavilySearchResponseSchema = z.object({
   results: z.array(tavilySearchResultSchema).default([]),
 });
 
-function assertSearchEnabled(settings: SearchSettings | null | undefined) {
-  return Boolean(settings?.enabled && settings.tavilyApiKey.trim().length > 0);
-}
-
 export function createWebSearchTool(settings: SearchSettings | null | undefined) {
-  if (!assertSearchEnabled(settings)) {
+  if (!settings || !assertTavilyEnabled(settings)) {
     return null;
   }
+
+  const resolvedSettings = settings;
 
   return tool({
     description:
@@ -37,28 +36,20 @@ export function createWebSearchTool(settings: SearchSettings | null | undefined)
         .describe('Optional search topic. Use news for current events when relevant.'),
     }),
     execute: async ({ query, topic }) => {
-      const response = await fetch(SEARCH_CONFIG.TAVILY_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${settings?.tavilyApiKey.trim()}`,
-        },
-        body: JSON.stringify({
+      const parsed = await tavilyRequest({
+        apiKey: resolvedSettings.tavilyApiKey,
+        body: {
           query,
-          topic: topic ?? settings?.search.topic ?? SEARCH_CONFIG.DEFAULT_TOPIC,
-          search_depth: settings?.search.searchDepth ?? SEARCH_CONFIG.DEFAULT_SEARCH_DEPTH,
-          max_results: settings?.search.maxResults ?? SEARCH_CONFIG.DEFAULT_MAX_RESULTS,
+          topic: topic ?? resolvedSettings.search.topic ?? SEARCH_CONFIG.DEFAULT_TOPIC,
+          search_depth: resolvedSettings.search.searchDepth ?? SEARCH_CONFIG.DEFAULT_SEARCH_DEPTH,
+          max_results: resolvedSettings.search.maxResults ?? SEARCH_CONFIG.DEFAULT_MAX_RESULTS,
           include_answer: true,
           include_favicon: true,
-        }),
+        },
+        endpoint: SEARCH_CONFIG.TAVILY_ENDPOINT,
+        responseSchema: tavilySearchResponseSchema,
+        scope: 'search',
       });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Tavily search failed (${response.status}): ${text.slice(0, 240)}`);
-      }
-
-      const parsed = tavilySearchResponseSchema.parse(await response.json());
 
       return {
         answer: parsed.answer?.trim() || null,
