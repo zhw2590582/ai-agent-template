@@ -22,11 +22,23 @@ export interface ChatProfileMemorySettings {
 }
 
 export interface ChatSearchSettings {
+  crawl: {
+    allowExternal: boolean;
+    maxDepth: number;
+    pageLimit: number;
+  };
   enabled: boolean;
-  maxResults: number;
-  searchDepth: 'advanced' | 'basic';
+  extract: {
+    chunksPerSource: number;
+    extractDepth: 'advanced' | 'basic';
+    format: 'markdown' | 'text';
+  };
+  search: {
+    maxResults: number;
+    searchDepth: 'advanced' | 'basic';
+    topic: 'finance' | 'general' | 'news';
+  };
   tavilyApiKey: string;
-  topic: 'finance' | 'general' | 'news';
 }
 
 export function resolveChatRequestLocale(request: Request): Locale {
@@ -81,20 +93,88 @@ export function resolveSearchSettings(input: unknown): ChatSearchSettings | null
     typeof input.tavilyApiKey === 'string'
   ) {
     return {
+      crawl: {
+        allowExternal:
+          'crawl' in input &&
+          typeof input.crawl === 'object' &&
+          input.crawl != null &&
+          'allowExternal' in input.crawl &&
+          typeof input.crawl.allowExternal === 'boolean'
+            ? input.crawl.allowExternal
+            : true,
+        maxDepth:
+          'crawl' in input &&
+          typeof input.crawl === 'object' &&
+          input.crawl != null &&
+          'maxDepth' in input.crawl &&
+          typeof input.crawl.maxDepth === 'number'
+            ? input.crawl.maxDepth
+            : 1,
+        pageLimit:
+          'crawl' in input &&
+          typeof input.crawl === 'object' &&
+          input.crawl != null &&
+          'pageLimit' in input.crawl &&
+          typeof input.crawl.pageLimit === 'number'
+            ? input.crawl.pageLimit
+            : 25,
+      },
       enabled: input.enabled,
-      maxResults:
-        'maxResults' in input && typeof input.maxResults === 'number' ? input.maxResults : 5,
-      searchDepth:
-        'searchDepth' in input &&
-        (input.searchDepth === 'advanced' || input.searchDepth === 'basic')
-          ? input.searchDepth
-          : 'basic',
+      extract: {
+        chunksPerSource:
+          'extract' in input &&
+          typeof input.extract === 'object' &&
+          input.extract != null &&
+          'chunksPerSource' in input.extract &&
+          typeof input.extract.chunksPerSource === 'number'
+            ? input.extract.chunksPerSource
+            : 3,
+        extractDepth:
+          'extract' in input &&
+          typeof input.extract === 'object' &&
+          input.extract != null &&
+          'extractDepth' in input.extract &&
+          (input.extract.extractDepth === 'advanced' || input.extract.extractDepth === 'basic')
+            ? input.extract.extractDepth
+            : 'basic',
+        format:
+          'extract' in input &&
+          typeof input.extract === 'object' &&
+          input.extract != null &&
+          'format' in input.extract &&
+          (input.extract.format === 'markdown' || input.extract.format === 'text')
+            ? input.extract.format
+            : 'markdown',
+      },
+      search: {
+        maxResults:
+          'search' in input &&
+          typeof input.search === 'object' &&
+          input.search != null &&
+          'maxResults' in input.search &&
+          typeof input.search.maxResults === 'number'
+            ? input.search.maxResults
+            : 5,
+        searchDepth:
+          'search' in input &&
+          typeof input.search === 'object' &&
+          input.search != null &&
+          'searchDepth' in input.search &&
+          (input.search.searchDepth === 'advanced' || input.search.searchDepth === 'basic')
+            ? input.search.searchDepth
+            : 'basic',
+        topic:
+          'search' in input &&
+          typeof input.search === 'object' &&
+          input.search != null &&
+          'topic' in input.search &&
+          (input.search.topic === 'finance' ||
+            input.search.topic === 'general' ||
+            input.search.topic === 'news')
+            ? input.search.topic
+            : 'general',
+      },
       tavilyApiKey: input.tavilyApiKey,
-      topic:
-        'topic' in input &&
-        (input.topic === 'finance' || input.topic === 'general' || input.topic === 'news')
-          ? input.topic
-          : 'general',
     };
   }
 

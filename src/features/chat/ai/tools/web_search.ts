@@ -45,9 +45,9 @@ export function createWebSearchTool(settings: SearchSettings | null | undefined)
         },
         body: JSON.stringify({
           query,
-          topic: topic ?? settings?.topic ?? SEARCH_CONFIG.DEFAULT_TOPIC,
-          search_depth: settings?.searchDepth ?? SEARCH_CONFIG.DEFAULT_SEARCH_DEPTH,
-          max_results: settings?.maxResults ?? SEARCH_CONFIG.DEFAULT_MAX_RESULTS,
+          topic: topic ?? settings?.search.topic ?? SEARCH_CONFIG.DEFAULT_TOPIC,
+          search_depth: settings?.search.searchDepth ?? SEARCH_CONFIG.DEFAULT_SEARCH_DEPTH,
+          max_results: settings?.search.maxResults ?? SEARCH_CONFIG.DEFAULT_MAX_RESULTS,
           include_answer: true,
           include_favicon: true,
         }),

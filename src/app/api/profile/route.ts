@@ -43,11 +43,29 @@ const profilePatchSchema = z.object({
       selectedProviderId: z.string().min(1),
     }),
     search: z.object({
+      crawl: z
+        .object({
+          allowExternal: z.boolean().optional(),
+          maxDepth: z.number().int().optional(),
+          pageLimit: z.number().int().optional(),
+        })
+        .optional(),
       enabled: z.boolean().optional(),
-      maxResults: z.number().int().optional(),
-      searchDepth: z.enum(['advanced', 'basic']).optional(),
+      extract: z
+        .object({
+          chunksPerSource: z.number().int().optional(),
+          extractDepth: z.enum(['advanced', 'basic']).optional(),
+          format: z.enum(['markdown', 'text']).optional(),
+        })
+        .optional(),
+      search: z
+        .object({
+          maxResults: z.number().int().optional(),
+          searchDepth: z.enum(['advanced', 'basic']).optional(),
+          topic: z.enum(['finance', 'general', 'news']).optional(),
+        })
+        .optional(),
       tavilyApiKey: z.string().optional(),
-      topic: z.enum(['finance', 'general', 'news']).optional(),
     }),
   }),
 });

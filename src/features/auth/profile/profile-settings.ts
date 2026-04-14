@@ -125,6 +125,39 @@ function clampSearchMaxResults(value: unknown) {
   );
 }
 
+function clampExtractChunksPerSource(value: unknown) {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return SEARCH_CONFIG.DEFAULT_EXTRACT_CHUNKS_PER_SOURCE;
+  }
+
+  return Math.min(
+    SEARCH_CONFIG.EXTRACT_CHUNKS_PER_SOURCE_MAX,
+    Math.max(SEARCH_CONFIG.EXTRACT_CHUNKS_PER_SOURCE_MIN, Math.round(value))
+  );
+}
+
+function clampCrawlMaxDepth(value: unknown) {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return SEARCH_CONFIG.DEFAULT_CRAWL_MAX_DEPTH;
+  }
+
+  return Math.min(
+    SEARCH_CONFIG.CRAWL_MAX_DEPTH_MAX,
+    Math.max(SEARCH_CONFIG.CRAWL_MAX_DEPTH_MIN, Math.round(value))
+  );
+}
+
+function clampCrawlPageLimit(value: unknown) {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return SEARCH_CONFIG.DEFAULT_CRAWL_PAGE_LIMIT;
+  }
+
+  return Math.min(
+    SEARCH_CONFIG.CRAWL_PAGE_LIMIT_MAX,
+    Math.max(SEARCH_CONFIG.CRAWL_PAGE_LIMIT_MIN, Math.round(value))
+  );
+}
+
 export function normalizeProfileSettings(input?: unknown) {
   const existingProviders = readExistingProviders(input);
   const providers = Object.fromEntries(
@@ -194,20 +227,40 @@ export function normalizeProfileSettings(input?: unknown) {
 
   const existingSearch = readSearchSettings(input);
   const search: SearchSettings = {
+    crawl: {
+      allowExternal: existingSearch?.crawl?.allowExternal ?? true,
+      maxDepth: clampCrawlMaxDepth(existingSearch?.crawl?.maxDepth),
+      pageLimit: clampCrawlPageLimit(existingSearch?.crawl?.pageLimit),
+    },
     enabled: existingSearch?.enabled ?? false,
-    maxResults: clampSearchMaxResults(existingSearch?.maxResults),
-    searchDepth:
-      existingSearch?.searchDepth === 'advanced' || existingSearch?.searchDepth === 'basic'
-        ? existingSearch.searchDepth
-        : SEARCH_CONFIG.DEFAULT_SEARCH_DEPTH,
+    extract: {
+      chunksPerSource: clampExtractChunksPerSource(existingSearch?.extract?.chunksPerSource),
+      extractDepth:
+        existingSearch?.extract?.extractDepth === 'advanced' ||
+        existingSearch?.extract?.extractDepth === 'basic'
+          ? existingSearch.extract.extractDepth
+          : SEARCH_CONFIG.DEFAULT_EXTRACT_DEPTH,
+      format:
+        existingSearch?.extract?.format === 'markdown' || existingSearch?.extract?.format === 'text'
+          ? existingSearch.extract.format
+          : SEARCH_CONFIG.DEFAULT_EXTRACT_FORMAT,
+    },
+    search: {
+      maxResults: clampSearchMaxResults(existingSearch?.search?.maxResults),
+      searchDepth:
+        existingSearch?.search?.searchDepth === 'advanced' ||
+        existingSearch?.search?.searchDepth === 'basic'
+          ? existingSearch.search.searchDepth
+          : SEARCH_CONFIG.DEFAULT_SEARCH_DEPTH,
+      topic:
+        existingSearch?.search?.topic === 'finance' ||
+        existingSearch?.search?.topic === 'general' ||
+        existingSearch?.search?.topic === 'news'
+          ? existingSearch.search.topic
+          : SEARCH_CONFIG.DEFAULT_TOPIC,
+    },
     tavilyApiKey:
       typeof existingSearch?.tavilyApiKey === 'string' ? existingSearch.tavilyApiKey : '',
-    topic:
-      existingSearch?.topic === 'finance' ||
-      existingSearch?.topic === 'general' ||
-      existingSearch?.topic === 'news'
-        ? existingSearch.topic
-        : SEARCH_CONFIG.DEFAULT_TOPIC,
   };
 
   return { memory, models, search } satisfies AppProfileSettings;

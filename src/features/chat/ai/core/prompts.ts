@@ -21,7 +21,9 @@ ${options.memoryContext}`
     : '';
   const searchSection = options?.webSearchEnabled
     ? `
-- Web search is available. Use the web_search tool when the user asks for current events, recent changes, live information, or explicitly asks you to search the web.`
+- Web search is available. Use the web_search tool when the user asks for current events, recent changes, live information, or explicitly asks you to search the web.
+- Webpage extraction is available. Use the web_extract tool when the user provides one or more URLs or asks you to read a specific page directly.
+- Site crawling is available. Use the web_crawl tool when the user asks you to inspect a docs site, help center, or multi-page website section.`
     : '';
 
   return `${DEFAULT_SYSTEM_PROMPT}

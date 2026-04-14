@@ -34,11 +34,23 @@ export const chatPostSchema = z.object({
   messages: z.array(messageSchema).min(1),
   searchSettings: z
     .object({
+      crawl: z.object({
+        allowExternal: z.boolean(),
+        maxDepth: z.number().int(),
+        pageLimit: z.number().int(),
+      }),
       enabled: z.boolean(),
-      maxResults: z.number().int(),
-      searchDepth: z.enum(['advanced', 'basic']),
+      extract: z.object({
+        chunksPerSource: z.number().int(),
+        extractDepth: z.enum(['advanced', 'basic']),
+        format: z.enum(['markdown', 'text']),
+      }),
+      search: z.object({
+        maxResults: z.number().int(),
+        searchDepth: z.enum(['advanced', 'basic']),
+        topic: z.enum(['finance', 'general', 'news']),
+      }),
       tavilyApiKey: z.string(),
-      topic: z.enum(['finance', 'general', 'news']),
     })
     .optional(),
   runtimeModel: z
