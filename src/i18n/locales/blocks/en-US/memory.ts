@@ -2,31 +2,31 @@ export const enUSMemoryMessages = {
   memory_page: {
     controls: {
       title: 'Memory Settings',
-      description: 'Manage how summaries and long-term memories are written and reused.',
+      description: 'Choose how the app remembers important details from your chats.',
       export: 'Export JSON',
       enable_label: 'Enable memory',
-      enable_description:
-        'Allow the app to keep summaries and long-term memories for this account.',
+      enable_description: 'Let the app remember summaries and important details for this account.',
       auto_write_label: 'Auto-write memories',
-      auto_write_description: 'Save stable preferences and facts after a conversation finishes.',
+      auto_write_description: 'Save useful preferences and facts after a conversation ends.',
       cross_conversation_label: 'Use memories across conversations',
       cross_conversation_description:
-        'Reuse saved long-term memories in future chats when they are relevant.',
+        'Reuse saved memories in future chats when they are relevant.',
       advanced_title: 'Advanced thresholds',
-      advanced_description: 'Control when summaries are created and how much memory is injected.',
+      advanced_description:
+        'Fine-tune when summaries are created and how much past context is reused.',
       summary_min_messages_label: 'Summary trigger messages',
       summary_min_messages_description:
         'Generate or refresh a conversation summary once the thread reaches this many messages.',
       recent_message_window_label: 'Recent messages window',
       recent_message_window_description:
         'Keep this many latest messages alongside the stored summary.',
-      context_max_items_label: 'Injected memories limit',
+      context_max_items_label: 'Memory reuse limit',
       context_max_items_description:
-        'Limit how many long-term memories can be injected into chat context at once.',
+        'Limit how many saved memories can be reused in a single chat.',
     },
     saved_memories: {
       title: 'Saved Memories',
-      description: 'Review and edit the long-term memories available for future chats.',
+      description: 'Review and edit the details the app can remember for future chats.',
       edit: 'Edit',
       edit_title: 'Edit memory',
       edit_description: 'Update the stored content and kind for this memory record.',
@@ -49,10 +49,9 @@ export const enUSMemoryMessages = {
     },
     summaries: {
       title: 'Conversation Summaries',
-      description: 'These summaries are the compressed context reused in longer conversations.',
+      description: 'These summaries help the app keep track of longer conversations.',
       empty_title: 'No summaries yet',
-      empty_description:
-        'Summaries appear after a conversation grows beyond the short context window.',
+      empty_description: 'Summaries appear after a conversation becomes long enough to need one.',
     },
     toast: {
       delete_failed: 'Failed to delete memory.',
