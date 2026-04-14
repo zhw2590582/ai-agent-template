@@ -4,6 +4,7 @@ import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from '@/config/i18n';
 import { logger } from '@/lib/logger';
 import { createClient } from '@/lib/supabase/server';
 import { upsertProfileFromAuthUser } from '@/features/chat/storage';
+import { env } from '@/config/env';
 
 function getSafeNext(nextParam: string | null) {
   if (!nextParam || !nextParam.startsWith('/')) {
@@ -32,7 +33,7 @@ function getLocaleFromPath(pathname: string): Locale {
 }
 
 function getRedirectOrigin(request: Request, origin: string) {
-  if (process.env.NODE_ENV === 'development') {
+  if (env.NODE_ENV === 'development') {
     return origin;
   }
 

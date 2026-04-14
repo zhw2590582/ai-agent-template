@@ -6,16 +6,12 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  NEXT_PUBLIC_APP_URL: z.url().optional(),
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1).optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
-  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
-  UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
   SENTRY_ORG: z.string().min(1).optional(),
   SENTRY_PROJECT: z.string().min(1).optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
-  SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
 });
 
 const parseEnv = () => {
@@ -46,10 +42,7 @@ export function getSupabaseEnv() {
     );
   }
 
-  return {
-    url,
-    publishableKey,
-  };
+  return { url, publishableKey };
 }
 
 export function getSupabaseAdminEnv() {
@@ -62,10 +55,7 @@ export function getSupabaseAdminEnv() {
     );
   }
 
-  return {
-    serviceRoleKey,
-    url,
-  };
+  return { url, serviceRoleKey };
 }
 
 export type Env = z.infer<typeof envSchema>;
