@@ -1,6 +1,6 @@
 'use client';
 
-import { CopyIcon, PencilIcon, RefreshCcwIcon } from 'lucide-react';
+import { CopyIcon, PencilIcon, RefreshCcwIcon, SparklesIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { MessageAction, MessageActions } from '@/components/ai-elements/message';
@@ -33,7 +33,8 @@ export function ChatMessageActions({
 
   if (isAssistantStreaming) {
     return (
-      <div className="mt-3 pl-1">
+      <div className="text-muted-foreground mt-3 flex items-center gap-2 pl-1 text-sm">
+        <SparklesIcon className="size-3.5 shrink-0" />
         <Shimmer as="p" duration={1} className="text-muted-foreground text-sm">
           {t('chat.streaming.responding')}
         </Shimmer>
