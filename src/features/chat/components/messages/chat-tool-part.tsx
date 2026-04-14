@@ -26,7 +26,7 @@ export function ChatToolPart({
   part,
   partIndex,
 }: ChatToolPartProps) {
-  const toolName = part.type === 'dynamic-tool' ? 'tool' : part.type.replace('tool-', '');
+  const toolName = part.type === 'dynamic-tool' ? part.toolName : part.type.replace('tool-', '');
   const toolKey =
     'toolCallId' in part && part.toolCallId != null && String(part.toolCallId).trim() !== ''
       ? part.toolCallId
