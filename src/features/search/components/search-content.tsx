@@ -233,7 +233,7 @@ export function SearchContent({ onClose, onSearchSettingsChange, settings }: Sea
                 <label className="text-sm font-medium">{t('search_page.depth_label')}</label>
                 <Select
                   value={localSettings.search.searchDepth}
-                  onValueChange={(value: SearchSettings['searchDepth']) => {
+                  onValueChange={(value: SearchSettings['search']['searchDepth']) => {
                     setLocalSettings((current) => ({
                       ...current,
                       search: {
@@ -260,7 +260,7 @@ export function SearchContent({ onClose, onSearchSettingsChange, settings }: Sea
                 <label className="text-sm font-medium">{t('search_page.topic_label')}</label>
                 <Select
                   value={localSettings.search.topic}
-                  onValueChange={(value: SearchSettings['topic']) => {
+                  onValueChange={(value: SearchSettings['search']['topic']) => {
                     setLocalSettings((current) => ({
                       ...current,
                       search: {
