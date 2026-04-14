@@ -117,7 +117,7 @@ export function ChatMessageList({
         {showPendingThinking ? (
           <div className="text-muted-foreground flex items-center gap-2 pl-1 text-sm">
             <SparklesIcon className="size-3.5 shrink-0" />
-            <Shimmer as="p" duration={1} className="text-muted-foreground text-sm">
+            <Shimmer as="span" className="text-sm">
               {t('chat.status.thinking')}
             </Shimmer>
           </div>
