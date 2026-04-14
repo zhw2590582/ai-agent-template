@@ -39,7 +39,9 @@ export function WorkbenchDialog({ children, onOpenChange, open, t, view }: Workb
         showCloseButton
       >
         <DialogHeader className="shrink-0 border-b px-6 py-4 pr-12">
-          <DialogTitle>{t(`navigation.${view}`)}</DialogTitle>
+          <DialogTitle className="text-2xl font-semibold tracking-tight">
+            {t(`navigation.${view}`)}
+          </DialogTitle>
           <DialogDescription>{t(getDialogDescriptionKey(view))}</DialogDescription>
         </DialogHeader>
         {children}

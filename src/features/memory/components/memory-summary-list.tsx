@@ -31,7 +31,7 @@ export function MemorySummaryList({ locale, summaries, t }: MemorySummaryListPro
           title={t('memory_page.summaries.empty_title')}
         />
       ) : (
-        <div className="border-border flex flex-col border">
+        <div className="border-border overflow-hidden rounded-md border">
           {items.map((summary) => (
             <article
               className="border-border flex flex-col gap-3 border-b px-5 py-4 last:border-b-0"

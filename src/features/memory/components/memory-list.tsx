@@ -80,7 +80,7 @@ export function MemoryList({
             title={t('memory_page.saved_memories.empty_title')}
           />
         ) : (
-          <div className="border-border flex flex-col border">
+          <div className="border-border overflow-hidden rounded-md border">
             {memories.map((memory) => (
               <article
                 className="border-border flex flex-col gap-3 border-b px-5 py-4 last:border-b-0"
@@ -166,8 +166,8 @@ export function MemoryList({
               {t('common.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={pendingDeleteId != null}
+              variant="destructive"
               onClick={(event) => {
                 event.preventDefault();
                 void handleConfirmDelete();

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ interface ModelsContentProps {
 
 export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
   const t = useTranslations();
+  const [showSaved, setShowSaved] = useState(false);
   const {
     addCustomProvider,
     deleteSelectedProvider,
@@ -37,6 +39,18 @@ export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
     updateProvider,
     updateSelectedProviderId,
   } = useModelsPage({ open });
+
+  useEffect(() => {
+    if (!showSaved) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setShowSaved(false);
+    }, 1400);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [showSaved]);
 
   return (
     <WorkbenchDialogPanel
@@ -63,11 +77,12 @@ export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
               if (!success) {
                 return;
               }
+              setShowSaved(true);
               onSaved?.();
             }}
           >
             {isSavingChanges ? <Spinner data-icon="inline-start" /> : null}
-            {t('common.save')}
+            {showSaved ? t('models_page.actions.saved') : t('common.save')}
           </Button>
         </>
       }

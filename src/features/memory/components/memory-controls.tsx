@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { DownloadIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { MemorySettings } from '@/features/models/types';
@@ -98,33 +96,14 @@ export function MemoryControls({
         <div className="flex flex-wrap items-center gap-2">
           {onExport ? (
             <Button onClick={onExport} size="sm" type="button" variant="outline">
-              <DownloadIcon />
+              <DownloadIcon data-icon="inline-start" />
               {t('memory_page.controls.export')}
             </Button>
           ) : null}
-          <Badge variant={settings.enabled ? 'default' : 'secondary'}>
-            {settings.enabled
-              ? t('memory_page.controls.enabled')
-              : t('memory_page.controls.disabled')}
-          </Badge>
-          <Badge variant="secondary">
-            {isAuthenticated
-              ? t('memory_page.controls.scope_account')
-              : t('memory_page.controls.scope_guest')}
-          </Badge>
         </div>
       </div>
 
-      <Alert>
-        <AlertTitle>{t('memory_page.controls.notice_title')}</AlertTitle>
-        <AlertDescription>
-          {isAuthenticated
-            ? t('memory_page.controls.notice_authenticated')
-            : t('memory_page.controls.notice_guest')}
-        </AlertDescription>
-      </Alert>
-
-      <div className="border-border flex flex-col border">
+      <div className="border-border overflow-hidden rounded-md border">
         {(
           [
             {
@@ -170,7 +149,7 @@ export function MemoryControls({
         ))}
       </div>
 
-      <div className="border-border flex flex-col gap-4 border px-5 py-4">
+      <div className="border-border flex flex-col gap-4 rounded-md border px-5 py-4">
         <div className="flex flex-col gap-1">
           <h3 className="text-sm font-medium">{t('memory_page.controls.advanced_title')}</h3>
           <p className="text-muted-foreground text-sm">

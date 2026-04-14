@@ -1,23 +1,19 @@
 export const enUSMemoryMessages = {
   memory_page: {
     controls: {
-      title: 'Memory Controls',
-      description:
-        'Memory configuration will build on Supabase-backed summaries and long-term records.',
-      enabled: 'Enabled',
-      disabled: 'Disabled',
+      title: 'Memory Settings',
+      description: 'Manage how summaries and long-term memories are written and reused.',
       export: 'Export JSON',
       enable_label: 'Enable memory',
       enable_description:
-        'Allow the app to maintain summaries and long-term memories for this account.',
+        'Allow the app to keep summaries and long-term memories for this account.',
       auto_write_label: 'Auto-write memories',
-      auto_write_description:
-        'Automatically extract stable preferences and facts after a conversation finishes.',
+      auto_write_description: 'Save stable preferences and facts after a conversation finishes.',
       cross_conversation_label: 'Use memories across conversations',
       cross_conversation_description:
-        'Inject saved long-term memories into future chats when they are relevant.',
+        'Reuse saved long-term memories in future chats when they are relevant.',
       advanced_title: 'Advanced thresholds',
-      advanced_description: 'Tune when summaries are generated and how much memory is injected.',
+      advanced_description: 'Control when summaries are created and how much memory is injected.',
       summary_min_messages_label: 'Summary trigger messages',
       summary_min_messages_description:
         'Generate or refresh a conversation summary once the thread reaches this many messages.',
@@ -27,18 +23,10 @@ export const enUSMemoryMessages = {
       context_max_items_label: 'Injected memories limit',
       context_max_items_description:
         'Limit how many long-term memories can be injected into chat context at once.',
-      scope_account: 'Account memory',
-      scope_guest: 'Guest mode',
-      notice_title: 'Memory V1',
-      notice_authenticated:
-        'Conversation summaries and long-term memories now use Supabase as the source of truth for context compression and cross-conversation recall.',
-      notice_guest:
-        'Guest mode can keep local conversations, but long-term memory will only be available for signed-in accounts.',
     },
     saved_memories: {
       title: 'Saved Memories',
-      description:
-        'Long-term user preferences and facts will appear here once memory writing is enabled.',
+      description: 'Review and edit the long-term memories available for future chats.',
       edit: 'Edit',
       edit_title: 'Edit memory',
       edit_description: 'Update the stored content and kind for this memory record.',
@@ -61,11 +49,10 @@ export const enUSMemoryMessages = {
     },
     summaries: {
       title: 'Conversation Summaries',
-      description:
-        'These summaries are the compressed context that can later be injected back into chat.',
+      description: 'These summaries are the compressed context reused in longer conversations.',
       empty_title: 'No summaries yet',
       empty_description:
-        'Conversation summaries appear after a thread grows beyond the short context window and the assistant finishes a reply.',
+        'Summaries appear after a conversation grows beyond the short context window.',
     },
     toast: {
       delete_failed: 'Failed to delete memory.',

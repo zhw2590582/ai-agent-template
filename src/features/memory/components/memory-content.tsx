@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ export function MemoryContent({
   summaries,
 }: MemoryContentProps) {
   const t = useTranslations();
+  const [showSaved, setShowSaved] = useState(false);
   const {
     handleDeleteMemory,
     handleEditMemory,
@@ -57,6 +59,18 @@ export function MemoryContent({
     summaries,
     t,
   });
+
+  useEffect(() => {
+    if (!showSaved) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setShowSaved(false);
+    }, 1400);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [showSaved]);
 
   return (
     <WorkbenchDialogPanel
@@ -83,10 +97,11 @@ export function MemoryContent({
               if (!success) {
                 return;
               }
+              setShowSaved(true);
             }}
           >
             {isSavingSettings ? <Spinner data-icon="inline-start" /> : null}
-            {t('common.save')}
+            {showSaved ? t('models_page.actions.saved') : t('common.save')}
           </Button>
         </>
       }
