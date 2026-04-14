@@ -7,7 +7,7 @@ vi.mock('@/features/chat/ai/core/prompts', () => ({
   getSystemPrompt: vi.fn(() => 'mock'),
 }));
 vi.mock('@/features/chat/ai/tools', () => ({
-  agentTools: {},
+  buildAgentTools: vi.fn(() => ({})),
 }));
 vi.mock('@/config/chat', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/config/chat')>();

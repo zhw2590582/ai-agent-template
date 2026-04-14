@@ -2,6 +2,7 @@ import { zhCNAuthMessages } from '@/i18n/locales/blocks/zh-CN/auth';
 import { zhCNChatMessages } from '@/i18n/locales/blocks/zh-CN/chat';
 import { zhCNMemoryMessages } from '@/i18n/locales/blocks/zh-CN/memory';
 import { zhCNModelsMessages } from '@/i18n/locales/blocks/zh-CN/models';
+import { zhCNSearchMessages } from '@/i18n/locales/blocks/zh-CN/search';
 import { zhCNSharedMessages } from '@/i18n/locales/blocks/zh-CN/shared';
 
 const zhCN = {
@@ -9,6 +10,7 @@ const zhCN = {
   ...zhCNChatMessages,
   ...zhCNMemoryMessages,
   ...zhCNModelsMessages,
+  ...zhCNSearchMessages,
   ...zhCNAuthMessages,
 };
 

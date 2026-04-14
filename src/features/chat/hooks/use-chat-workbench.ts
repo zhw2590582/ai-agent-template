@@ -9,6 +9,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { normalizeLocale } from '@/config/i18n';
 import { CHAT_UI_CONFIG } from '@/config/chat';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
+import { useAppProfile } from '@/features/auth/profile/use-app-profile';
 import { createConversationRecord } from '@/features/chat/data/conversation-operations';
 import { useChatBrowserTitle } from '@/features/chat/hooks/use-chat-browser-title';
 import { useChatController } from '@/features/chat/hooks/use-chat-controller';
@@ -20,8 +21,7 @@ import { useChatSync } from '@/features/chat/hooks/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/hooks/use-sidebar-conversations';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { getInitialMessages } from '@/features/chat/utils/chat-config';
-import { useModelProfile } from '@/features/models/hooks/use-model-profile';
-import { getChatModelOptions } from '@/features/models/utils/profile';
+import { getChatModelOptions } from '@/features/models/utils/runtime-model';
 
 interface UseChatWorkbenchOptions {
   initialConversationId: string | null;
@@ -45,7 +45,7 @@ export function useChatWorkbench({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user } = useAuthUser();
-  const models = useModelProfile(user);
+  const models = useAppProfile(user);
   const persistedSelectedModelId = models.profile.settings.models.selectedChatModelId;
   const { updateMemorySettings, updateSelectedChatModelId } = models;
 
@@ -256,10 +256,12 @@ export function useChatWorkbench({
     isBusy,
     isSidebarOpen,
     isStartingThread,
-    memorySettings: models.profile.settings.memory,
-    setMemorySettings: updateMemorySettings,
     isModelsLoading: models.isLoading,
     locale,
+    memorySettings: models.profile.settings.memory,
+    searchSettings: models.profile.settings.search,
+    setSearchSettings: models.updateSearchSettings,
+    setMemorySettings: updateMemorySettings,
     messages,
     regenerate: guardedRegenerate,
     renameConversation: conversationRecordActions.renameConversation,

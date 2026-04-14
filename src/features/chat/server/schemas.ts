@@ -32,6 +32,12 @@ export const chatPostSchema = z.object({
   conversationId: z.string().min(1).optional(),
   conversationSummary: z.string().trim().min(1).optional(),
   messages: z.array(messageSchema).min(1),
+  searchSettings: z
+    .object({
+      enabled: z.boolean(),
+      tavilyApiKey: z.string(),
+    })
+    .optional(),
   runtimeModel: z
     .object({
       apiFormat: z.enum(['anthropic', 'openai']),

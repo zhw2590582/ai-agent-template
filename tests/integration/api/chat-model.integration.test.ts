@@ -19,7 +19,7 @@ vi.mock('@/features/chat/ai/core/prompts', () => ({
 }));
 
 vi.mock('@/features/chat/ai/tools', () => ({
-  agentTools: {},
+  buildAgentTools: vi.fn(() => ({})),
 }));
 
 vi.mock('@/config/chat', async (importOriginal) => {

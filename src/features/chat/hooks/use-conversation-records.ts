@@ -1,30 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
 import type { UIMessage } from 'ai';
-import { toast } from 'sonner';
-import { useTranslations } from 'next-intl';
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
 import type { Locale } from '@/config/i18n';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
-import {
-  deleteConversationRecord,
-  generateConversationRecordTitle,
-  generateConversationRecordSummary,
-  getConversationMessages,
-  persistConversationMessages,
-  renameConversationRecord,
-} from '@/features/chat/data/conversation-operations';
-import {
-  buildConversationTitleFromText,
-  getMessageText,
-} from '@/features/chat/storage/conversation-analysis';
+import { useConversationRecordActions } from '@/features/chat/hooks/use-conversation-record-actions';
+import { useConversationRecordSync } from '@/features/chat/hooks/use-conversation-record-sync';
 import type { ChatRuntimeModel } from '@/features/models/types';
-
-function isLocalConversationId(conversationId: string | null) {
-  return Boolean(conversationId?.startsWith('local-'));
-}
 
 interface UseConversationRecordsOptions {
   activeThreadId: string | null;
@@ -65,124 +48,7 @@ export function useConversationRecords({
   urlConversationId,
   user,
 }: UseConversationRecordsOptions) {
-  const t = useTranslations();
-  const generatedTitleKeyRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (user || !urlConversationId || !isLocalConversationId(urlConversationId) || isBusy) {
-      return;
-    }
-
-    const localMessages = getConversationMessages({
-      conversationId: urlConversationId,
-      user,
-    });
-    if (!localMessages) {
-      return;
-    }
-
-    setMessages(localMessages);
-  }, [isBusy, setMessages, urlConversationId, user]);
-
-  useEffect(() => {
-    if (
-      user ||
-      !activeThreadId ||
-      !isLocalConversationId(activeThreadId) ||
-      messages.length === 0
-    ) {
-      return;
-    }
-
-    persistConversationMessages({
-      conversationId: activeThreadId,
-      locale,
-      messages,
-      runtimeModel,
-      user,
-    });
-  }, [activeThreadId, locale, messages, runtimeModel, user]);
-
-  useEffect(() => {
-    if (
-      user ||
-      isBusy ||
-      !activeThreadId ||
-      !isLocalConversationId(activeThreadId) ||
-      messages.length === 0 ||
-      !runtimeModel
-    ) {
-      return;
-    }
-
-    generateConversationRecordTitle({
-      conversationId: activeThreadId,
-      locale,
-      runtimeModel,
-      user,
-    });
-  }, [activeThreadId, isBusy, locale, messages.length, runtimeModel, user]);
-
-  useEffect(() => {
-    if (!user || isBusy || !activeThreadId || !runtimeModel || messages.length === 0) {
-      return;
-    }
-
-    const firstUserMessage = messages.find(
-      (message) => message.role === 'user' && getMessageText(message).length > 0
-    );
-
-    if (!firstUserMessage) {
-      return;
-    }
-
-    const input = getMessageText(firstUserMessage);
-    const fallbackTitle = buildConversationTitleFromText(input);
-
-    if (activeThreadTitle && activeThreadTitle.trim() !== fallbackTitle) {
-      return;
-    }
-
-    const requestKey = `${activeThreadId}:${input}`;
-    if (generatedTitleKeyRef.current === requestKey) {
-      return;
-    }
-
-    generatedTitleKeyRef.current = requestKey;
-
-    void (async () => {
-      try {
-        const response = await fetch('/api/chat/title', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            input,
-            locale,
-            runtimeModel,
-          }),
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const data = (await response.json()) as { title?: string };
-        const generatedTitle = data.title?.trim();
-
-        if (!generatedTitle) {
-          return;
-        }
-
-        onOptimisticPatchConversation(activeThreadId, {
-          title: generatedTitle,
-        });
-      } catch {
-        // Keep the existing sidebar title if generation fails.
-      }
-    })();
-  }, [
+  useConversationRecordSync({
     activeThreadId,
     activeThreadTitle,
     isBusy,
@@ -190,81 +56,19 @@ export function useConversationRecords({
     messages,
     onOptimisticPatchConversation,
     runtimeModel,
+    setMessages,
+    urlConversationId,
     user,
-  ]);
+  });
 
-  useEffect(() => {
-    if (
-      user ||
-      isBusy ||
-      !activeThreadId ||
-      !isLocalConversationId(activeThreadId) ||
-      messages.length === 0 ||
-      !runtimeModel
-    ) {
-      return;
-    }
-
-    generateConversationRecordSummary({
-      conversationId: activeThreadId,
-      locale,
-      runtimeModel,
-      user,
-    });
-  }, [activeThreadId, isBusy, locale, messages.length, runtimeModel, user]);
-
-  const renameConversation = useCallback(
-    async (conversationId: string, title: string) => {
-      const success = await renameConversationRecord({
-        conversationId,
-        title,
-        user,
-      });
-
-      if (!success) {
-        toast.error(t('chat.errors.rename_conversation_failed'));
-        return false;
-      }
-
-      onOptimisticPatchConversation(conversationId, {
-        title: title.trim(),
-      });
-
-      if (user) {
-        router.refresh();
-      }
-
-      return true;
-    },
-    [onOptimisticPatchConversation, router, t, user]
-  );
-
-  const deleteConversation = useCallback(
-    async (conversationId: string) => {
-      const success = await deleteConversationRecord({
-        conversationId,
-        user,
-      });
-
-      if (!success) {
-        toast.error(t('chat.errors.delete_conversation_failed'));
-        return false;
-      }
-
-      onOptimisticRemoveConversation(conversationId);
-
-      if (activeThreadId === conversationId) {
-        handleClearChat();
-      }
-
-      if (user) {
-        router.refresh();
-      }
-
-      return true;
-    },
-    [activeThreadId, handleClearChat, onOptimisticRemoveConversation, router, t, user]
-  );
+  const { deleteConversation, renameConversation } = useConversationRecordActions({
+    activeThreadId,
+    handleClearChat,
+    onOptimisticPatchConversation,
+    onOptimisticRemoveConversation,
+    router,
+    user,
+  });
 
   return {
     deleteConversation,

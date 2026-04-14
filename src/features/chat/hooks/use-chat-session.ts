@@ -5,8 +5,8 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 
 import type { AppProfileSettings, ChatModelOption } from '@/features/models/types';
+import { resolveChatRuntimeModel } from '@/features/models/utils/runtime-model';
 import { readApiError } from '@/lib/api-client';
-import { resolveChatRuntimeModel } from '@/features/models/utils/profile';
 import { CHAT_RATE_LIMIT_ERROR_CODE } from '@/features/chat/utils/chat-errors';
 
 interface UseChatSessionOptions {
@@ -94,6 +94,7 @@ export function useChatSession({
             messageId,
             messages,
             conversationSummary: conversationSummaryRef.current ?? undefined,
+            searchSettings: profileSettings?.search ?? undefined,
             runtimeModel: runtimeModelRef.current ?? undefined,
             conversationId:
               (requestBody.conversationId as string | undefined) ??

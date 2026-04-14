@@ -118,6 +118,10 @@ export function createProfileDraft(options: {
         summaryMinMessages: MEMORY_CONFIG.SUMMARY_MIN_MESSAGES,
       },
       models: { providers: {}, selectedChatModelId: null, selectedProviderId: '' },
+      search: {
+        enabled: false,
+        tavilyApiKey: '',
+      },
     },
     theme: options.existing?.theme ?? options.theme,
     updated_at: now,

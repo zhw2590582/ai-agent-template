@@ -49,9 +49,15 @@ export interface MemorySettings {
   summaryMinMessages: number;
 }
 
+export interface SearchSettings {
+  enabled: boolean;
+  tavilyApiKey: string;
+}
+
 export interface AppProfileSettings {
   memory: MemorySettings;
   models: ModelsSettings;
+  search: SearchSettings;
 }
 
 export interface AppProfile extends Omit<ProfileRecord, 'settings'> {

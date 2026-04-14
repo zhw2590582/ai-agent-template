@@ -10,6 +10,7 @@ export function getSystemPrompt(
   locale: Locale = DEFAULT_LOCALE,
   options?: {
     memoryContext?: string | null;
+    webSearchEnabled?: boolean;
   }
 ): string {
   const memorySection = options?.memoryContext
@@ -18,11 +19,15 @@ export function getSystemPrompt(
 Long-term memory:
 ${options.memoryContext}`
     : '';
+  const searchSection = options?.webSearchEnabled
+    ? `
+- Web search is available. Use the web_search tool when the user asks for current events, recent changes, live information, or explicitly asks you to search the web.`
+    : '';
 
   return `${DEFAULT_SYSTEM_PROMPT}
 
 Context:
-- User locale: ${locale}${memorySection}`;
+- User locale: ${locale}${searchSection}${memorySection}`;
 }
 
 export { DEFAULT_SYSTEM_PROMPT };

@@ -13,12 +13,11 @@ import { ProviderSettingsPanel } from '@/features/models/components/provider-set
 import { useModelsPage } from '@/features/models/hooks/use-models-page';
 
 interface ModelsContentProps {
-  open: boolean;
   onClose: () => void;
   onSaved?: () => void;
 }
 
-export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
+export function ModelsContent({ onClose, onSaved }: ModelsContentProps) {
   const t = useTranslations();
   const [showSaved, setShowSaved] = useState(false);
   const {
@@ -40,7 +39,7 @@ export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
     removeModel,
     updateProvider,
     updateSelectedProviderId,
-  } = useModelsPage({ open });
+  } = useModelsPage();
 
   useEffect(() => {
     if (!showSaved) {

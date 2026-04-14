@@ -5,14 +5,14 @@ import { toast } from 'sonner';
 
 import type { ThemeMode } from '@/config/theme';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
-import type { AppProfile } from '@/features/models/types';
-import { getApiErrorToastMessage } from '@/lib/api-client';
 import {
   buildProfileFromSource,
   emitProfileUpdated,
   profileCache,
   writeLocalProfile,
-} from '@/features/models/hooks/profile-storage';
+} from '@/features/auth/profile/profile-storage';
+import type { AppProfile } from '@/features/models/types';
+import { getApiErrorToastMessage } from '@/lib/api-client';
 
 interface PersistProfileOptions {
   silent?: boolean;
@@ -20,15 +20,15 @@ interface PersistProfileOptions {
 
 interface CreatePersistProfileOptions {
   locale: string;
-  setProfile: (profile: AppProfile) => void;
-  t: (key: string) => string;
-  theme: ThemeMode;
-  user: AuthUserSnapshot | null;
   queuedSaveRef: MutableRefObject<{
     nextProfile: AppProfile;
     options?: PersistProfileOptions;
   } | null>;
   saveInFlightRef: MutableRefObject<Promise<boolean> | null>;
+  setProfile: (profile: AppProfile) => void;
+  t: (key: string) => string;
+  theme: ThemeMode;
+  user: AuthUserSnapshot | null;
 }
 
 export function createPersistProfile({

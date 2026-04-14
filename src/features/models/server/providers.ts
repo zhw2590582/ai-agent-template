@@ -2,7 +2,7 @@ import { MODEL_SYNC_CONFIG } from '@/config/models';
 import { AppError, ErrorCode } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import type { ModelApiFormat, ProviderProbeResult } from '@/features/models/types';
-import { normalizeProviderBaseUrl } from '@/features/models/utils/profile';
+import { normalizeProviderBaseUrl } from '@/features/models/utils/runtime-model';
 
 interface ProbeProviderOptions {
   apiFormat: ModelApiFormat;

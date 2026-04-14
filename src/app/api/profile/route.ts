@@ -12,7 +12,7 @@ import {
   updateProfileSettings,
   upsertProfileFromAuthUser,
 } from '@/features/auth/storage/profiles';
-import { normalizeProfileSettings } from '@/features/models/utils/profile';
+import { normalizeProfileSettings } from '@/features/auth/profile/profile-settings';
 
 async function requireAuth() {
   const supabase = await createSupabaseServerClient();
@@ -41,6 +41,10 @@ const profilePatchSchema = z.object({
       providers: z.record(z.string(), z.unknown()),
       selectedChatModelId: z.string().nullable().optional(),
       selectedProviderId: z.string().min(1),
+    }),
+    search: z.object({
+      enabled: z.boolean().optional(),
+      tavilyApiKey: z.string().optional(),
     }),
   }),
 });

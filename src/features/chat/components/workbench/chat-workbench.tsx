@@ -18,6 +18,7 @@ import type { WorkbenchView } from '@/features/chat/types';
 import { MemoryContent } from '@/features/memory/components/memory-content';
 import type { MemoryListItem } from '@/features/memory/types';
 import { ModelsContent } from '@/features/models/components/models-content';
+import { SearchContent } from '@/features/search/components/search-content';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -128,7 +129,7 @@ export function ChatWorkbench({
           }}
         >
           {activeDialogView === 'models' ? (
-            <ModelsContent open onClose={closeDialog} />
+            <ModelsContent onClose={closeDialog} />
           ) : activeDialogView === 'memory' ? (
             <MemoryContent
               isAuthenticated={workbench.isAuthenticated}
@@ -138,6 +139,12 @@ export function ChatWorkbench({
               onMemorySettingsChange={workbench.setMemorySettings}
               settings={workbench.memorySettings}
               summaries={initialConversations}
+            />
+          ) : activeDialogView === 'search' ? (
+            <SearchContent
+              onClose={closeDialog}
+              onSearchSettingsChange={workbench.setSearchSettings}
+              settings={workbench.searchSettings}
             />
           ) : (
             <WorkbenchDialogPanel

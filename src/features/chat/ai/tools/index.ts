@@ -1,9 +1,10 @@
-/**
- * Chat tool registry.
- *
- * The early demo tools were removed. Keep this module as the single
- * registration point so future tools can plug into the chat pipeline
- * without changing server entrypoints again.
- */
+import { createWebSearchTool } from '@/features/chat/ai/tools/web_search';
+import type { SearchSettings } from '@/features/models/types';
 
-export const agentTools = {};
+export function buildAgentTools(options: { searchSettings?: SearchSettings | null }) {
+  const webSearchTool = createWebSearchTool(options.searchSettings);
+
+  return {
+    ...(webSearchTool ? { web_search: webSearchTool } : {}),
+  };
+}

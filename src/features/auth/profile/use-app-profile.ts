@@ -6,19 +6,22 @@ import { toast } from 'sonner';
 
 import { useTheme } from '@/components/ui-settings/theme-provider';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
-import { createProfileActions } from '@/features/models/hooks/profile-actions';
-import { createPersistProfile } from '@/features/models/hooks/profile-persistence';
+import { createProfileActions } from '@/features/auth/profile/profile-actions';
+import { createPersistProfile } from '@/features/auth/profile/profile-persistence';
 import {
+  getOrderedProviders,
+  normalizeProfileSettings,
+} from '@/features/auth/profile/profile-settings';
+import {
+  APP_PROFILE_UPDATED_EVENT,
   buildProfileFromSource,
   loadRemoteProfile,
-  MODEL_PROFILE_UPDATED_EVENT,
   profileCache,
   readLocalProfile,
-} from '@/features/models/hooks/profile-storage';
+} from '@/features/auth/profile/profile-storage';
 import type { AppProfile } from '@/features/models/types';
-import { getOrderedProviders, normalizeProfileSettings } from '@/features/models/utils/profile';
 
-export function useModelProfile(user: AuthUserSnapshot | null) {
+export function useAppProfile(user: AuthUserSnapshot | null) {
   const t = useTranslations();
   const locale = useLocale();
   const { theme } = useTheme();
@@ -127,13 +130,10 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
       );
     };
 
-    window.addEventListener(MODEL_PROFILE_UPDATED_EVENT, handleProfileUpdated as EventListener);
+    window.addEventListener(APP_PROFILE_UPDATED_EVENT, handleProfileUpdated as EventListener);
 
     return () => {
-      window.removeEventListener(
-        MODEL_PROFILE_UPDATED_EVENT,
-        handleProfileUpdated as EventListener
-      );
+      window.removeEventListener(APP_PROFILE_UPDATED_EVENT, handleProfileUpdated as EventListener);
     };
   }, [locale, theme, user]);
 
@@ -155,7 +155,9 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
       ...current,
       locale,
       settings: normalizeProfileSettings({
+        memory: current.settings.memory,
         models: nextModels,
+        search: current.settings.search,
       }),
       theme,
       updated_at: new Date().toISOString(),
@@ -214,6 +216,33 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     [locale, persistProfile, theme]
   );
 
+  const updateSearchSettings = useMemo(
+    () =>
+      async (
+        updater: (search: AppProfile['settings']['search']) => AppProfile['settings']['search'],
+        options?: { silent?: boolean }
+      ) => {
+        const current = profileRef.current;
+        const nextProfile = {
+          ...current,
+          locale,
+          settings: normalizeProfileSettings({
+            memory: current.settings.memory,
+            models: current.settings.models,
+            search: updater(current.settings.search),
+          }),
+          theme,
+          updated_at: new Date().toISOString(),
+        };
+
+        profileRef.current = nextProfile;
+        setProfile(nextProfile);
+
+        return persistProfile(nextProfile, { silent: options?.silent });
+      },
+    [locale, persistProfile, theme]
+  );
+
   return {
     addCustomProvider: actions.addCustomProvider,
     isLoading,
@@ -224,6 +253,7 @@ export function useModelProfile(user: AuthUserSnapshot | null) {
     saveProviderEnabled: actions.saveProviderEnabled,
     selectedProvider,
     updateMemorySettings,
+    updateSearchSettings,
     updateProvider: actions.updateProvider,
     updateSelectedChatModelId: actions.updateSelectedChatModelId,
     updateSelectedProviderId: actions.updateSelectedProviderId,

@@ -3,7 +3,7 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 
 import type { AppProfile, ModelsSettings, ProviderSettings } from '@/features/models/types';
-import { buildCustomProviderSettings } from '@/features/models/utils/profile';
+import { buildCustomProviderSettings } from '@/features/models/utils/provider-factories';
 
 interface PersistOptions {
   silent?: boolean;
