@@ -2,11 +2,12 @@
 
 import type { UIMessage } from 'ai';
 
+import { STORAGE_KEYS, WINDOW_EVENTS } from '@/config/keys';
 import { buildConversationTitleFromText } from '@/features/chat/storage/conversations';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 
-const LOCAL_CHAT_CONVERSATIONS_STORAGE_KEY = 'agent-local-chat-conversations';
-const LOCAL_CHAT_CONVERSATIONS_UPDATED_EVENT = 'agent-local-chat-conversations-updated';
+const LOCAL_CHAT_CONVERSATIONS_STORAGE_KEY = STORAGE_KEYS.LOCAL_CHAT_CONVERSATIONS;
+const LOCAL_CHAT_CONVERSATIONS_UPDATED_EVENT = WINDOW_EVENTS.LOCAL_CHAT_CONVERSATIONS_UPDATED;
 const EMPTY_LOCAL_CONVERSATION_THREADS: LocalConversationThread[] = [];
 const EMPTY_LOCAL_CONVERSATION_SUMMARIES: ConversationSummary[] = [];
 

@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
+import { API_NAMESPACES } from '@/config/namespaces';
+import { SERVER_MESSAGES } from '@/config/strings';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
@@ -19,7 +21,7 @@ async function requireAuth() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new AppError(ErrorCode.INPUT_INVALID, 'Authentication required.', 401);
+    throw new AppError(ErrorCode.INPUT_INVALID, SERVER_MESSAGES.AUTHENTICATION_REQUIRED, 401);
   }
 
   return { supabase, user };
@@ -49,7 +51,7 @@ export async function GET(request: Request) {
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.PROFILE_READ,
       identityKey: user.id,
-      namespace: 'api:profile:read',
+      namespace: API_NAMESPACES.PROFILE_READ,
     });
     await upsertProfileFromAuthUser(user, {}, supabase);
     const profile = await getProfileById(user.id, supabase);
@@ -74,7 +76,7 @@ export async function PATCH(request: Request) {
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.PROFILE_WRITE,
       identityKey: user.id,
-      namespace: 'api:profile:write',
+      namespace: API_NAMESPACES.PROFILE_WRITE,
     });
     await upsertProfileFromAuthUser(user, {}, supabase);
 

@@ -5,6 +5,7 @@ import { AI_CONFIG } from '@/config/chat';
 import { TEXT_LIMITS } from '@/config/limits';
 import { MEMORY_CONFIG } from '@/config/memory';
 import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
+import { CHAT_STRINGS } from '@/config/strings';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';
 import type { ChatRuntimeModel, MemorySettings } from '@/features/models/types';
@@ -49,7 +50,7 @@ export function buildConversationSummaryContext(summary: string) {
   }
 
   return {
-    id: 'conversation-summary-context',
+    id: CHAT_STRINGS.CONVERSATION_SUMMARY_CONTEXT_ID,
     role: 'system' as const,
     parts: [
       {

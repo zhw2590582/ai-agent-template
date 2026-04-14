@@ -10,6 +10,7 @@
 import * as Sentry from '@sentry/nextjs';
 
 import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
+import { SERVER_MESSAGES } from '@/config/strings';
 import { logger } from './logger';
 import { t } from './i18n';
 
@@ -152,7 +153,7 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.CONFIG_MISSING]: 'Required configuration is missing. Contact the administrator.',
   [ErrorCode.CONFIG_INVALID]: 'Configuration is invalid. Contact the administrator.',
   [ErrorCode.API_KEY_INVALID]: 'The API key is invalid. Check your configuration.',
-  [ErrorCode.API_RATE_LIMIT]: 'Too many requests. Please try again later.',
+  [ErrorCode.API_RATE_LIMIT]: SERVER_MESSAGES.TOO_MANY_REQUESTS,
   [ErrorCode.API_TIMEOUT]: 'The request timed out. Please try again.',
   [ErrorCode.API_NETWORK]: 'Network request failed. Check your connection.',
   [ErrorCode.INPUT_INVALID]: 'The input is invalid.',

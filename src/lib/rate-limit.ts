@@ -1,4 +1,5 @@
 import { API_CONFIG } from '@/config/api';
+import { SERVER_MESSAGES } from '@/config/strings';
 import { AppError, ErrorCode } from '@/lib/errors';
 
 type RateLimitConfig = {
@@ -74,15 +75,10 @@ export function enforceRateLimit(
   if (existingEntry.count >= options.config.maxRequests) {
     const retryAfterSeconds = Math.max(1, Math.ceil((existingEntry.resetAt - now) / 1000));
 
-    throw new AppError(
-      ErrorCode.API_RATE_LIMIT,
-      'Too many requests. Please try again later.',
-      429,
-      {
-        namespace: options.namespace,
-        retryAfterSeconds,
-      }
-    );
+    throw new AppError(ErrorCode.API_RATE_LIMIT, SERVER_MESSAGES.TOO_MANY_REQUESTS, 429, {
+      namespace: options.namespace,
+      retryAfterSeconds,
+    });
   }
 
   existingEntry.count += 1;

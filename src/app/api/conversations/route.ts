@@ -3,6 +3,8 @@ import type { UIMessage } from 'ai';
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
 import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/chat';
 import { PAGINATION_CONFIG } from '@/config/limits';
+import { API_NAMESPACES } from '@/config/namespaces';
+import { SERVER_MESSAGES } from '@/config/strings';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
@@ -32,7 +34,7 @@ async function requireAuth() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new AppError(ErrorCode.INPUT_INVALID, 'Authentication required.', 401);
+    throw new AppError(ErrorCode.INPUT_INVALID, SERVER_MESSAGES.AUTHENTICATION_REQUIRED, 401);
   }
 
   return { supabase, user };
@@ -55,7 +57,7 @@ export async function GET(request: Request) {
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.CONVERSATIONS_READ,
       identityKey: user.id,
-      namespace: 'api:conversations:read',
+      namespace: API_NAMESPACES.CONVERSATIONS_READ,
     });
     await upsertProfileFromAuthUser(user, {}, supabase);
 
@@ -86,14 +88,14 @@ export async function POST(request: Request) {
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.CONVERSATIONS_WRITE,
       identityKey: user.id,
-      namespace: 'api:conversations:write',
+      namespace: API_NAMESPACES.CONVERSATIONS_WRITE,
     });
     await upsertProfileFromAuthUser(user, {}, supabase);
 
     const conversation = await createConversation({ initialMessage, userId: user.id }, supabase);
 
     if (!conversation) {
-      throw new AppError(ErrorCode.UNKNOWN, 'Conversation creation failed.', 500);
+      throw new AppError(ErrorCode.UNKNOWN, SERVER_MESSAGES.CONVERSATION_CREATION_FAILED, 500);
     }
 
     return Response.json({
@@ -117,7 +119,7 @@ export async function PATCH(request: Request) {
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.CONVERSATIONS_WRITE,
       identityKey: user.id,
-      namespace: 'api:conversations:write',
+      namespace: API_NAMESPACES.CONVERSATIONS_WRITE,
     });
     await upsertProfileFromAuthUser(user, {}, supabase);
 
@@ -163,7 +165,7 @@ export async function DELETE(request: Request) {
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.CONVERSATIONS_WRITE,
       identityKey: user.id,
-      namespace: 'api:conversations:write',
+      namespace: API_NAMESPACES.CONVERSATIONS_WRITE,
     });
     await upsertProfileFromAuthUser(user, {}, supabase);
 

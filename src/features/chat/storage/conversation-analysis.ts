@@ -1,5 +1,6 @@
 import type { UIMessage } from 'ai';
 import { TEXT_LIMITS } from '@/config/limits';
+import { CHAT_STRINGS } from '@/config/strings';
 
 import type {
   ConversationAnalysis,
@@ -30,7 +31,10 @@ export function truncateText(
 }
 
 export function buildConversationTitleFromText(text: string) {
-  return truncateText(text.trim(), TEXT_LIMITS.GENERATED_TITLE) ?? 'New chat';
+  return (
+    truncateText(text.trim(), TEXT_LIMITS.GENERATED_TITLE) ??
+    CHAT_STRINGS.DEFAULT_CONVERSATION_TITLE
+  );
 }
 
 export function buildConversationAnalysis(messages: UIMessage[]): ConversationAnalysis {

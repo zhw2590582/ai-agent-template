@@ -2,6 +2,7 @@ import { API_RATE_LIMITS } from '@/config/api-rate-limit';
 import type { UIMessage } from 'ai';
 
 import { DEFAULT_LOCALE } from '@/config/i18n';
+import { API_NAMESPACES } from '@/config/namespaces';
 import { generateConversationSummary } from '@/features/chat/ai/memory/summary';
 import { chatSummaryPostSchema } from '@/features/chat/server/schemas';
 import { handleErrorWithLocale } from '@/lib/errors';
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
   try {
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.CHAT_SUMMARY,
-      namespace: 'api:chat-summary',
+      namespace: API_NAMESPACES.CHAT_SUMMARY,
     });
 
     const { existingSummary, locale, messages, runtimeModel } = await validateRequest(

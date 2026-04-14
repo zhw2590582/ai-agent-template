@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
 import { TEXT_LIMITS } from '@/config/limits';
+import { API_NAMESPACES } from '@/config/namespaces';
+import { SERVER_MESSAGES } from '@/config/strings';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
@@ -21,7 +23,7 @@ async function requireAuth() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new AppError(ErrorCode.INPUT_INVALID, 'Authentication required.', 401);
+    throw new AppError(ErrorCode.INPUT_INVALID, SERVER_MESSAGES.AUTHENTICATION_REQUIRED, 401);
   }
 
   return { supabase, user };
@@ -43,7 +45,7 @@ export async function GET(request: Request) {
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.MEMORIES_READ,
       identityKey: user.id,
-      namespace: 'api:memories:read',
+      namespace: API_NAMESPACES.MEMORIES_READ,
     });
     await upsertProfileFromAuthUser(user, {}, supabase);
     const memories = await listMemoriesForUser(user.id, supabase);
@@ -61,7 +63,7 @@ export async function DELETE(request: Request) {
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.MEMORIES_WRITE,
       identityKey: user.id,
-      namespace: 'api:memories:write',
+      namespace: API_NAMESPACES.MEMORIES_WRITE,
     });
     await upsertProfileFromAuthUser(user, {}, supabase);
     await deleteMemoryForUser({ id, userId: user.id }, supabase);
@@ -79,7 +81,7 @@ export async function PATCH(request: Request) {
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.MEMORIES_WRITE,
       identityKey: user.id,
-      namespace: 'api:memories:write',
+      namespace: API_NAMESPACES.MEMORIES_WRITE,
     });
     await upsertProfileFromAuthUser(user, {}, supabase);
     await updateMemoryForUser({ ...input, userId: user.id }, supabase);

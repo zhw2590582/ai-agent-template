@@ -1,12 +1,14 @@
 'use client';
 
+import { STORAGE_KEYS, WINDOW_EVENTS } from '@/config/keys';
+import { SERVER_MESSAGES } from '@/config/strings';
 import type { ThemeMode } from '@/config/theme';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import type { AppProfile } from '@/features/models/types';
 import { createProfileDraft } from '@/features/models/utils/profile';
 
-export const LOCAL_MODEL_PROFILE_STORAGE_KEY = 'agent-model-profile';
-export const MODEL_PROFILE_UPDATED_EVENT = 'agent-model-profile-updated';
+export const LOCAL_MODEL_PROFILE_STORAGE_KEY = STORAGE_KEYS.LOCAL_MODEL_PROFILE;
+export const MODEL_PROFILE_UPDATED_EVENT = WINDOW_EVENTS.MODEL_PROFILE_UPDATED;
 
 export const profileCache = new Map<string, Partial<AppProfile>>();
 export const profileRequestCache = new Map<string, Promise<Partial<AppProfile> | null>>();
@@ -55,7 +57,7 @@ export async function loadRemoteProfile(userId: string) {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to load profile');
+      throw new Error(SERVER_MESSAGES.PROFILE_LOAD_FAILED);
     }
 
     const data = (await response.json()) as { profile: Partial<AppProfile> | null };

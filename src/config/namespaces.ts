@@ -1,0 +1,12 @@
+export const API_NAMESPACES = {
+  CHAT: 'api:chat',
+  CHAT_SUMMARY: 'api:chat-summary',
+  CHAT_TITLE: 'api:chat-title',
+  CONVERSATIONS_READ: 'api:conversations:read',
+  CONVERSATIONS_WRITE: 'api:conversations:write',
+  MCP: 'api:mcp',
+  MEMORIES_READ: 'api:memories:read',
+  MEMORIES_WRITE: 'api:memories:write',
+  PROFILE_READ: 'api:profile:read',
+  PROFILE_WRITE: 'api:profile:write',
+} as const;

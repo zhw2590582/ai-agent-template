@@ -1,6 +1,7 @@
 import type { UIMessage } from 'ai';
 
 import type { Locale } from '@/config/i18n';
+import { CHAT_STRINGS } from '@/config/strings';
 import { generateConversationSummary } from '@/features/chat/ai/memory/summary';
 import { generateConversationTitle } from '@/features/chat/ai/memory/title';
 import type { ChatRuntimeModel } from '@/features/models/types';
@@ -84,7 +85,7 @@ export async function saveConversationMessages(
     existingConversation?.title ??
     (analysis.first_user_message != null
       ? buildConversationTitleFromText(analysis.first_user_message)
-      : 'New chat');
+      : CHAT_STRINGS.DEFAULT_CONVERSATION_TITLE);
 
   if (!analysis.title_generated && analysis.first_user_message) {
     try {
