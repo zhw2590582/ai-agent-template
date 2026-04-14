@@ -59,6 +59,7 @@ export const enUSModelsMessages = {
       load_failed: 'Failed to load model settings.',
       provider_config_required: 'Enter the API key and base URL first.',
       save_failed: 'Failed to save model settings.',
+      save_success: 'Model settings saved.',
       test_connection_success: 'Connection succeeded and synced {count} models.',
       test_connection_failed:
         'Connection failed. Check the API key, base URL, and protocol format.',

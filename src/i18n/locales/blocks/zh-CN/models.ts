@@ -55,6 +55,7 @@ export const zhCNModelsMessages = {
       load_failed: '加载模型配置失败',
       provider_config_required: '请先填写 API Key 和 Base URL',
       save_failed: '模型配置保存失败',
+      save_success: '模型配置已保存',
       test_connection_success: '连接成功，已同步 {count} 个模型。',
       test_connection_failed: '连接失败，请检查 API Key、Base URL 和协议格式。',
     },

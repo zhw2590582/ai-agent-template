@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
@@ -78,6 +79,7 @@ export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
                 return;
               }
               setShowSaved(true);
+              toast.success(t('models_page.toast.save_success'));
               onSaved?.();
             }}
           >

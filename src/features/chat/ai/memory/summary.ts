@@ -93,6 +93,8 @@ Context:
 
 Requirements:
 - Output summary only
+- Match the language of the conversation first
+- Use locale only as a fallback when the conversation language is ambiguous
 - Keep it concise and factual
 - Preserve stable user preferences, ongoing tasks, constraints, and unresolved follow-ups
 - Prefer recent messages when they change earlier context
@@ -110,6 +112,8 @@ Context:
 
 Requirements:
 - Output summary only
+- Match the language of the conversation first
+- Use locale only as a fallback when the conversation language is ambiguous
 - Keep it concise and factual
 - Capture stable user preferences, ongoing tasks, important decisions, and unresolved follow-ups
 - Do not include markdown headings or bullet nesting

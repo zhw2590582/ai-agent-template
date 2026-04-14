@@ -49,6 +49,8 @@ Context:
 - User locale: ${options.locale}
 
 Rules:
+- Match the language of the conversation first
+- Use locale only as a fallback when the conversation language is ambiguous
 - Keep only stable preferences, profile facts, or durable workflow defaults
 - Ignore temporary requests, one-off tasks, and transient debugging details
 - Prefer at most 3 memories

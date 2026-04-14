@@ -11,18 +11,18 @@ export const enUSMemoryMessages = {
       cross_conversation_label: 'Use memories across conversations',
       cross_conversation_description:
         'Reuse saved memories in future chats when they are relevant.',
-      advanced_title: 'Advanced thresholds',
+      advanced_title: 'Memory Limits',
       advanced_description:
-        'Fine-tune when summaries are created and how much past context is reused.',
-      summary_min_messages_label: 'Summary trigger messages',
+        'Control when chat summaries start, how much recent chat is kept, and how many saved memories can be reused.',
+      summary_min_messages_label: 'When to start summaries',
       summary_min_messages_description:
-        'Generate or refresh a conversation summary once the thread reaches this many messages.',
-      recent_message_window_label: 'Recent messages window',
+        'Start creating a summary after a conversation reaches this many messages.',
+      recent_message_window_label: 'Recent messages to keep',
       recent_message_window_description:
-        'Keep this many latest messages alongside the stored summary.',
-      context_max_items_label: 'Memory reuse limit',
+        'Keep this many latest messages alongside the summary in longer chats.',
+      context_max_items_label: 'Saved memories to reuse',
       context_max_items_description:
-        'Limit how many saved memories can be reused in a single chat.',
+        'Limit how many saved memories can be brought into a new chat.',
     },
     saved_memories: {
       title: 'Saved Memories',
@@ -55,6 +55,7 @@ export const enUSMemoryMessages = {
     },
     toast: {
       delete_failed: 'Failed to delete memory.',
+      settings_update_success: 'Memory settings saved.',
       settings_update_failed: 'Failed to update memory settings.',
       update_failed: 'Failed to update memory.',
     },

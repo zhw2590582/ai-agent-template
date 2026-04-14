@@ -10,14 +10,15 @@ export const zhCNMemoryMessages = {
       auto_write_description: '在对话结束后自动保存有用的偏好和事实。',
       cross_conversation_label: '跨会话使用记忆',
       cross_conversation_description: '在后续聊天中按相关性复用已保存的记忆。',
-      advanced_title: '高级阈值',
-      advanced_description: '微调摘要生成时机，以及复用多少历史信息。',
-      summary_min_messages_label: '摘要触发消息数',
-      summary_min_messages_description: '当会话达到这个消息数时生成或刷新摘要。',
-      recent_message_window_label: '最近消息窗口',
-      recent_message_window_description: '在摘要之外，额外保留这么多条最近消息进入模型上下文。',
-      context_max_items_label: '记忆复用上限',
-      context_max_items_description: '限制单次聊天最多复用多少条已保存记忆。',
+      advanced_title: '记忆限制',
+      advanced_description:
+        '设置什么时候开始生成摘要、长对话里保留多少最近消息，以及新聊天最多带入多少条已保存记忆。',
+      summary_min_messages_label: '何时开始生成摘要',
+      summary_min_messages_description: '当会话达到这个消息数后，系统会开始生成摘要。',
+      recent_message_window_label: '保留最近消息数',
+      recent_message_window_description: '在摘要之外，长对话里还会额外保留这么多条最近消息。',
+      context_max_items_label: '复用记忆条数',
+      context_max_items_description: '限制一次新聊天最多带入多少条已保存记忆。',
     },
     saved_memories: {
       title: '已保存记忆',
@@ -38,8 +39,7 @@ export const zhCNMemoryMessages = {
       kind_profile: '档案',
       kind_workflow: '工作流',
       empty_title: '还没有已保存记忆',
-      empty_description:
-        '对话中形成的稳定偏好和事实会出现在这里，并在后续聊天中按需复用。',
+      empty_description: '对话中形成的稳定偏好和事实会出现在这里，并在后续聊天中按需复用。',
     },
     summaries: {
       title: '会话摘要',
@@ -49,6 +49,7 @@ export const zhCNMemoryMessages = {
     },
     toast: {
       delete_failed: '删除记忆失败。',
+      settings_update_success: '记忆设置已保存。',
       settings_update_failed: '更新记忆设置失败。',
       update_failed: '更新记忆失败。',
     },

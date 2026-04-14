@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -98,6 +99,7 @@ export function MemoryContent({
                 return;
               }
               setShowSaved(true);
+              toast.success(t('memory_page.toast.settings_update_success'));
             }}
           >
             {isSavingSettings ? <Spinner data-icon="inline-start" /> : null}

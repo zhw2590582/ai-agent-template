@@ -38,7 +38,8 @@ Context:
 
 Requirements:
 - Output title only
-- Use the language that best matches the user's message and locale
+- Match the language of the user's message first
+- Use locale only as a fallback when the message language is ambiguous
 - Keep it short and specific
 - Do not use quotes
 - Do not add trailing punctuation
