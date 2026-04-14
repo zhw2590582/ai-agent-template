@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
-import { TEXT_LIMITS } from '@/config/app';
+import { TEXT_LIMITS } from '@/config/limits';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 
 interface SummaryEditorDialogProps {

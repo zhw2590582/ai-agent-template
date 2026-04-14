@@ -1,6 +1,7 @@
 import { generateText } from 'ai';
 
-import { AI_CONFIG, TEXT_LIMITS } from '@/config/app';
+import { AI_CONFIG } from '@/config/chat';
+import { TEXT_LIMITS } from '@/config/limits';
 import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import type { ChatRuntimeModel } from '@/features/models/types';

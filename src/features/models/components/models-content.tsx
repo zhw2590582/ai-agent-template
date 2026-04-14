@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { CHAT_UI_CONFIG } from '@/config/app';
+import { CHAT_UI_CONFIG } from '@/config/chat';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import { ProviderList } from '@/features/models/components/provider-list';
 import { ProviderSettingsPanel } from '@/features/models/components/provider-settings-panel';

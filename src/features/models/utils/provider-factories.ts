@@ -1,8 +1,8 @@
-import { MEMORY_CONFIG } from '@/config/app';
+import { MEMORY_CONFIG } from '@/config/memory';
 import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
 import type { AppProfile, ProviderModelItem, ProviderSettings } from '@/features/models/types';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
-import type { ThemeMode } from '@/config/app';
+import type { ThemeMode } from '@/config/theme';
 
 function slugifyProviderId(value: string) {
   return value

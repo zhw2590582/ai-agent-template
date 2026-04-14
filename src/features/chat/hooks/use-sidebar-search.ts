@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { CHAT_UI_CONFIG, CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/app';
+import { CHAT_UI_CONFIG, CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/chat';
 import { fetchConversationPage } from '@/features/chat/data/sidebar-conversation-service';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 

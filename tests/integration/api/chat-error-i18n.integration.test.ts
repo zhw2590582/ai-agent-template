@@ -9,16 +9,22 @@ vi.mock('@/features/chat/ai/core/prompts', () => ({
 vi.mock('@/features/chat/ai/tools', () => ({
   agentTools: {},
 }));
-vi.mock('@/config/app', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/config/app')>();
+vi.mock('@/config/chat', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/config/chat')>();
 
   return {
     ...actual,
     AI_CONFIG: { ...actual.AI_CONFIG, DEFAULT_MAX_TOKENS: 1024 },
+  };
+});
+vi.mock('@/config/dev', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/config/dev')>();
+
+  return {
+    ...actual,
     DEV_CONFIG: {
       ...actual.DEV_CONFIG,
       ENABLE_DEBUG_LOGS: false,
-      SHOW_PERFORMANCE_METRICS: false,
     },
   };
 });

@@ -1,4 +1,4 @@
-import { MODEL_SYNC_CONFIG } from '@/config/app';
+import { MODEL_SYNC_CONFIG } from '@/config/models';
 import { AppError, ErrorCode } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import type { ModelApiFormat, ProviderProbeResult } from '@/features/models/types';

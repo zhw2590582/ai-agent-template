@@ -1,4 +1,4 @@
-import { API_CONFIG } from '@/config/app';
+import { API_CONFIG } from '@/config/api';
 import { AppError, ErrorCode } from '@/lib/errors';
 
 type RateLimitConfig = {

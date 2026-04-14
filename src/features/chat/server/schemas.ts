@@ -7,7 +7,7 @@
  */
 
 import { z } from 'zod';
-import { TEXT_LIMITS } from '@/config/app';
+import { TEXT_LIMITS } from '@/config/limits';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
 
 /**

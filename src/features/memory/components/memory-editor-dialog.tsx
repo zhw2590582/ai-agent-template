@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
-import { TEXT_LIMITS } from '@/config/app';
+import { TEXT_LIMITS } from '@/config/limits';
 import { MEMORY_KINDS, type MemoryKind, type MemoryListItem } from '@/features/memory/types';
 
 interface MemoryEditorDialogProps {

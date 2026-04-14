@@ -1,6 +1,6 @@
 'use client';
 
-import type { ThemeMode } from '@/config/app';
+import type { ThemeMode } from '@/config/theme';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import type { AppProfile } from '@/features/models/types';
 import { createProfileDraft } from '@/features/models/utils/profile';

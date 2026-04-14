@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { CHAT_UI_CONFIG } from '@/config/app';
+import { CHAT_UI_CONFIG } from '@/config/chat';
 
 interface UseInvalidConversationGuardOptions {
   bootstrappingThreadId: string | null;

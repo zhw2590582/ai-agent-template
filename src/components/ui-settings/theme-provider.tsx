@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-import type { ThemeMode } from '@/config/app';
+import type { ThemeMode } from '@/config/theme';
 
 type ThemeContextValue = {
   setTheme: (theme: ThemeMode) => void;

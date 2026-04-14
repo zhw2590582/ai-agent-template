@@ -11,7 +11,7 @@ import { isSupabaseConfigured } from '@/config/env';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
 import { AuthUserProvider } from '@/features/auth/components/auth-user-provider';
 import { toAuthUserSnapshot } from '@/features/auth/lib/auth-user';
-import { THEME_COOKIE_KEY, type ThemeMode } from '@/config/app';
+import { THEME_COOKIE_KEY, type ThemeMode } from '@/config/theme';
 import type { Locale } from '@/config/i18n';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import '../globals.css';

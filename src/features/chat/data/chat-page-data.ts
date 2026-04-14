@@ -1,7 +1,7 @@
 import type { UIMessage } from 'ai';
 import { unstable_noStore as noStore } from 'next/cache';
 
-import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/app';
+import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/chat';
 import { isSupabaseConfigured } from '@/config/env';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import {

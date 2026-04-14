@@ -1,7 +1,8 @@
 import { generateText, Output, type UIMessage } from 'ai';
 import { z } from 'zod';
 
-import { AI_CONFIG, MEMORY_EXTRACTION_CONFIG } from '@/config/app';
+import { AI_CONFIG } from '@/config/chat';
+import { MEMORY_EXTRACTION_CONFIG } from '@/config/memory';
 import type { Locale } from '@/config/i18n';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';

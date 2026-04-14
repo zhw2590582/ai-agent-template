@@ -1,4 +1,4 @@
-import { API_CONFIG } from '@/config/app';
+import { API_CONFIG } from '@/config/api';
 
 export const API_RATE_LIMITS = {
   CHAT: {

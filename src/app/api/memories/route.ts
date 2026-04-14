@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
-import { TEXT_LIMITS } from '@/config/app';
+import { TEXT_LIMITS } from '@/config/limits';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';

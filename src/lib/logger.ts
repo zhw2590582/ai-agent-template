@@ -7,7 +7,7 @@
  * 3. 开发环境友好的日志输出
  */
 
-import { DEV_CONFIG } from '@/config/app';
+import { DEV_CONFIG } from '@/config/dev';
 
 /**
  * 日志级别

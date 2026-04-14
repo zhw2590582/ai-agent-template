@@ -1,6 +1,6 @@
 import { convertToModelMessages, streamText, type UIMessage } from 'ai';
 
-import { AI_CONFIG } from '@/config/app';
+import { AI_CONFIG } from '@/config/chat';
 import {
   DEFAULT_LOCALE,
   LOCALE_DETECTION_STRATEGY,

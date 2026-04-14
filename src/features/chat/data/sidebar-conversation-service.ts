@@ -1,4 +1,4 @@
-import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/app';
+import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/chat';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 
 export interface ConversationPageResult {

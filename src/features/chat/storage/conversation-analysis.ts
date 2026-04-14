@@ -1,5 +1,5 @@
 import type { UIMessage } from 'ai';
-import { TEXT_LIMITS } from '@/config/app';
+import { TEXT_LIMITS } from '@/config/limits';
 
 import type {
   ConversationAnalysis,

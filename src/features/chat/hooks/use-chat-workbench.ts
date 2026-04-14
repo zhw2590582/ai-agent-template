@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { normalizeLocale } from '@/config/i18n';
-import { CHAT_UI_CONFIG } from '@/config/app';
+import { CHAT_UI_CONFIG } from '@/config/chat';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
 import { createConversationRecord } from '@/features/chat/data/conversation-operations';
 import { useChatBrowserTitle } from '@/features/chat/hooks/use-chat-browser-title';

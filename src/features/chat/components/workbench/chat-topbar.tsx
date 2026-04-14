@@ -13,7 +13,7 @@ import {
 import { LanguageSwitcher } from '@/components/ui-settings/language-switcher';
 import { ThemeToggle } from '@/components/ui-settings/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { HEADER_NAV_ITEMS } from '@/config/app';
+import { HEADER_NAV_ITEMS } from '@/config/navigation';
 import { AuthDialog } from '@/features/auth/components/auth-dialog';
 import type { WorkbenchView } from '@/features/chat/types';
 

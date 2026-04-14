@@ -1,4 +1,4 @@
-import { MEMORY_CONFIG } from '@/config/app';
+import { MEMORY_CONFIG } from '@/config/memory';
 
 import type { MemorySettings } from '@/features/models/types';
 import type { MemoryListItem } from '@/features/memory/types';

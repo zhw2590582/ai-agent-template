@@ -1,7 +1,9 @@
 import type { UIMessage } from 'ai';
 import { generateText } from 'ai';
 
-import { AI_CONFIG, MEMORY_CONFIG, TEXT_LIMITS } from '@/config/app';
+import { AI_CONFIG } from '@/config/chat';
+import { TEXT_LIMITS } from '@/config/limits';
+import { MEMORY_CONFIG } from '@/config/memory';
 import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';

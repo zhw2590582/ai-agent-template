@@ -3,7 +3,8 @@ import { DownloadIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CHAT_UI_CONFIG, MEMORY_EXTRACTION_CONFIG } from '@/config/app';
+import { CHAT_UI_CONFIG } from '@/config/chat';
+import { MEMORY_EXTRACTION_CONFIG } from '@/config/memory';
 import type { MemorySettings } from '@/features/models/types';
 
 interface MemoryControlsProps {

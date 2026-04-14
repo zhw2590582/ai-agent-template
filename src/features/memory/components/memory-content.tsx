@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
-import { CHAT_UI_CONFIG } from '@/config/app';
+import { CHAT_UI_CONFIG } from '@/config/chat';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import { MemoryControls } from '@/features/memory/components/memory-controls';

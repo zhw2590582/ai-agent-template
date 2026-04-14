@@ -1,7 +1,8 @@
 import type { UIMessage } from 'ai';
 
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
-import { CONVERSATION_SIDEBAR_PAGE_SIZE, PAGINATION_CONFIG } from '@/config/app';
+import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/chat';
+import { PAGINATION_CONFIG } from '@/config/limits';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
