@@ -22,7 +22,24 @@
 - `src/features/chat/server/`
 - `src/features/chat/storage/`
 
-### 2. Provider / Models 整理
+### 2. Search 产品化补强
+
+目标：把当前已可用的 Tavily 搜索能力，从一期功能提升到更稳定、更可观测的产品能力。
+
+优先做：
+
+1. 细化 Tavily 错误反馈，区分 `401 / 429 / quota / network`
+2. 补搜索结果展示和引用样式
+3. 增加基础缓存与请求观测
+4. 优化 tool 使用策略，而不只依赖 prompt
+
+推荐落点：
+
+- `src/features/search/`
+- `src/features/chat/ai/tools/`
+- `src/features/chat/ai/workflows/`
+
+### 3. Provider / Models 整理
 
 目标：把当前较浅的模型配置整理成更可扩展的 provider abstraction。
 
@@ -41,7 +58,7 @@
 
 ## Next
 
-### 3. 页面去占位化
+### 4. 页面去占位化
 
 目标：让导航中的关键页面变成真实页面，而不是 workbench 占位视图。
 
@@ -52,7 +69,7 @@
 3. `MCP`
 4. `Settings`
 
-### 4. RAG
+### 5. RAG
 
 目标：让回答可以基于外部知识源。
 
@@ -65,15 +82,15 @@
 
 ## Later
 
-### 5. Planning
+### 6. Planning
 
 目标：支持多步骤任务拆解与执行。
 
-### 6. Multi-Agent / Subagent
+### 7. Multi-Agent / Subagent
 
 目标：支持多个 specialized agents 协作。
 
-### 7. Production Readiness
+### 8. Production Readiness
 
 目标：补齐 tracing、权限、审计、E2E，并在需要时把当前内存限流升级为集中式后端。
 

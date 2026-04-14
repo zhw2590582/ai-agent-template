@@ -204,14 +204,20 @@ API rate limiting
 - 当前判断这不是标题生成或 sidebar 数据本身的问题，而是 `router.refresh()` 之后的 metadata / remount 时序覆盖问题
 - 页面手动刷新后标题通常会恢复正确，说明问题集中在会话内的自动更新链路
 - Memory consolidation 当前没有 job 历史、snapshot、rollback 和质量观测，只是最小可用版
+- Search 功能当前已经可用，但仍停留在一期能力：
+  - Tavily 错误反馈还比较粗，只区分成功/失败，没有细化 `401 / 429 / quota`
+  - 当前缺少搜索结果缓存、使用统计和成本观测
+  - 当前没有针对 search / extract / crawl 的更细粒度 UI 引用展示
+  - 当前 tool 使用策略主要依赖 prompt 和基础 loop，没有更强的路由或策略层
 
 ## 下一优先级
 
 1. Memory：继续做导入/导出、相关性检索优化、记忆归并和编辑体验
 2. Models：继续补 provider 重命名、失败回滚、会话级模型偏好等细节
-3. 页面去占位化：至少让 `Sandbox`、`MCP`、`Settings` 成为真实页面
-4. 测试补齐：补聊天主链路边界、工具展示、Memory 行为和 hydration 场景，之后再补 E2E
-5. 文档继续收敛：让 README、Setup、Roadmap 与代码现状同步
+3. Search：补 Tavily 错误分层、搜索结果展示、缓存与观测
+4. 页面去占位化：至少让 `Sandbox`、`MCP`、`Settings` 成为真实页面
+5. 测试补齐：补聊天主链路边界、工具展示、Memory / Search 行为和 hydration 场景，之后再补 E2E
+6. 文档继续收敛：让 README、Setup、Roadmap 与代码现状同步
 
 ## AI 协作建议
 
