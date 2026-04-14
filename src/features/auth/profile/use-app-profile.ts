@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
-import { useTheme } from '@/components/ui-settings/theme-provider';
+import { useTheme } from '@/features/chat/components/preferences/theme-provider';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import { createProfileActions } from '@/features/auth/profile/profile-actions';
 import { createPersistProfile } from '@/features/auth/profile/profile-persistence';

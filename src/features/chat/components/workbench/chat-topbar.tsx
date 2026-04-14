@@ -10,8 +10,8 @@ import {
   ShieldEllipsisIcon,
 } from 'lucide-react';
 
-import { LanguageSwitcher } from '@/components/ui-settings/language-switcher';
-import { ThemeToggle } from '@/components/ui-settings/theme-toggle';
+import { LanguageSwitcher } from '@/features/chat/components/preferences/language-switcher';
+import { ThemeToggle } from '@/features/chat/components/preferences/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { HEADER_NAV_ITEMS } from '@/config/navigation';
 import { AuthDialog } from '@/features/auth/components/auth-dialog';

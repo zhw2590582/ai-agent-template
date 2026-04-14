@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
-import { LanguageSwitcher } from '@/components/ui-settings/language-switcher';
+import { LanguageSwitcher } from '@/features/chat/components/preferences/language-switcher';
 
 const mockPush = vi.fn();
 

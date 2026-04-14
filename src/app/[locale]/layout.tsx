@@ -4,7 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { ThemeProvider } from '@/components/ui-settings/theme-provider';
+import { ThemeProvider } from '@/features/chat/components/preferences/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { isSupabaseConfigured } from '@/config/env';
