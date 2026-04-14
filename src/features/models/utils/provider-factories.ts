@@ -1,8 +1,5 @@
-import { MEMORY_CONFIG } from '@/config/memory';
 import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
-import type { AppProfile, ProviderModelItem, ProviderSettings } from '@/features/models/types';
-import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
-import type { ThemeMode } from '@/config/theme';
+import type { ProviderModelItem, ProviderSettings } from '@/features/models/types';
 
 function slugifyProviderId(value: string) {
   return value
@@ -90,40 +87,4 @@ export function buildCustomProviderSettings(options: {
     models: buildProviderModels(options.existing?.models),
     name: normalizedName,
   } satisfies ProviderSettings;
-}
-
-export function createProfileDraft(options: {
-  existing?: Partial<AppProfile>;
-  locale: string;
-  theme: ThemeMode;
-  user: AuthUserSnapshot | null;
-}): AppProfile {
-  const now = new Date().toISOString();
-
-  return {
-    avatar_url: options.existing?.avatar_url ?? options.user?.avatarUrl ?? null,
-    created_at: options.existing?.created_at ?? now,
-    display_name: options.existing?.display_name ?? options.user?.fullName ?? null,
-    email: options.existing?.email ?? options.user?.email ?? null,
-    id: options.existing?.id ?? options.user?.id ?? 'guest-local',
-    locale: options.existing?.locale ?? options.locale,
-    memory_summary: options.existing?.memory_summary ?? null,
-    settings: (options.existing?.settings as AppProfile['settings'] | undefined) ?? {
-      memory: {
-        autoWrite: true,
-        contextMaxItems: MEMORY_CONFIG.CONTEXT_MAX_ITEMS,
-        crossConversation: true,
-        enabled: true,
-        recentMessageWindow: MEMORY_CONFIG.SUMMARY_RECENT_MESSAGE_WINDOW,
-        summaryMinMessages: MEMORY_CONFIG.SUMMARY_MIN_MESSAGES,
-      },
-      models: { providers: {}, selectedChatModelId: null, selectedProviderId: '' },
-      search: {
-        enabled: false,
-        tavilyApiKey: '',
-      },
-    },
-    theme: options.existing?.theme ?? options.theme,
-    updated_at: now,
-  };
 }

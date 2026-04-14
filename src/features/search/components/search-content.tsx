@@ -11,7 +11,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { CHAT_UI_CONFIG } from '@/config/chat';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
-import type { SearchSettings } from '@/features/models/types';
+import type { SearchSettings } from '@/features/search/types';
 
 interface SearchContentProps {
   onClose?: () => void;

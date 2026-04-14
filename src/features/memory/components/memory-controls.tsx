@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CHAT_UI_CONFIG } from '@/config/chat';
 import { MEMORY_EXTRACTION_CONFIG } from '@/config/memory';
-import type { MemorySettings } from '@/features/models/types';
+import type { MemorySettings } from '@/features/auth/profile/types';
 
 interface MemoryControlsProps {
   onExport?: () => void;

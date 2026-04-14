@@ -15,7 +15,7 @@ import { MemoryList } from '@/features/memory/components/memory-list';
 import { MemorySummaryList } from '@/features/memory/components/memory-summary-list';
 import { useMemoryPage } from '@/features/memory/hooks/use-memory-page';
 import type { MemoryListItem } from '@/features/memory/types';
-import type { MemorySettings } from '@/features/models/types';
+import type { MemorySettings } from '@/features/auth/profile/types';
 
 interface MemoryContentProps {
   isAuthenticated: boolean;

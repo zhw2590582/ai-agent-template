@@ -2,7 +2,7 @@ import { tool } from 'ai';
 import { z } from 'zod';
 
 import { SEARCH_CONFIG } from '@/config/search';
-import type { SearchSettings } from '@/features/models/types';
+import type { SearchSettings } from '@/features/search/types';
 
 const tavilySearchResultSchema = z.object({
   content: z.string().nullable().optional(),

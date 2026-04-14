@@ -4,8 +4,8 @@ import type { Locale } from '@/config/i18n';
 import { CHAT_STRINGS } from '@/config/strings';
 import { generateConversationSummary } from '@/features/chat/ai/memory/summary';
 import { generateConversationTitle } from '@/features/chat/ai/memory/title';
+import type { MemorySettings } from '@/features/auth/profile/types';
 import type { ChatRuntimeModel } from '@/features/models/types';
-import type { MemorySettings } from '@/features/models/types';
 import {
   buildConversationAnalysis,
   buildConversationTitleFromText,

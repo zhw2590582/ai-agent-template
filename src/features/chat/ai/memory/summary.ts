@@ -8,7 +8,8 @@ import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
 import { CHAT_STRINGS } from '@/config/strings';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';
-import type { ChatRuntimeModel, MemorySettings } from '@/features/models/types';
+import type { MemorySettings } from '@/features/auth/profile/types';
+import type { ChatRuntimeModel } from '@/features/models/types';
 
 export function resolveConversationSummaryConfig(memorySettings?: Partial<MemorySettings> | null) {
   return {

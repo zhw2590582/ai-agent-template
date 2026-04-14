@@ -1,6 +1,6 @@
 import { MEMORY_CONFIG } from '@/config/memory';
 
-import type { MemorySettings } from '@/features/models/types';
+import type { MemorySettings } from '@/features/auth/profile/types';
 import type { MemoryListItem } from '@/features/memory/types';
 import { normalizeMemoryContent } from '@/features/memory/storage/memory-utils';
 

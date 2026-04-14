@@ -1,5 +1,3 @@
-import type { ProfileRecord } from '@/features/auth/storage/types';
-
 export type ModelApiFormat = 'anthropic' | 'openai';
 
 export interface ProviderModelItem {
@@ -38,30 +36,6 @@ export interface ModelsSettings {
   selectedChatModelId: string | null;
   providers: Record<string, ProviderSettings>;
   selectedProviderId: string;
-}
-
-export interface MemorySettings {
-  autoWrite: boolean;
-  contextMaxItems: number;
-  crossConversation: boolean;
-  enabled: boolean;
-  recentMessageWindow: number;
-  summaryMinMessages: number;
-}
-
-export interface SearchSettings {
-  enabled: boolean;
-  tavilyApiKey: string;
-}
-
-export interface AppProfileSettings {
-  memory: MemorySettings;
-  models: ModelsSettings;
-  search: SearchSettings;
-}
-
-export interface AppProfile extends Omit<ProfileRecord, 'settings'> {
-  settings: AppProfileSettings;
 }
 
 export interface ChatRuntimeModel {

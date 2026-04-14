@@ -2,7 +2,8 @@
 
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 
-import type { AppProfile, ModelsSettings, ProviderSettings } from '@/features/models/types';
+import type { AppProfile } from '@/features/auth/profile/types';
+import type { ModelsSettings, ProviderSettings } from '@/features/models/types';
 import { buildCustomProviderSettings } from '@/features/models/utils/provider-factories';
 
 interface PersistOptions {

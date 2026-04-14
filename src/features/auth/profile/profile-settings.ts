@@ -1,12 +1,8 @@
 import { MEMORY_CONFIG } from '@/config/memory';
 import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
-import type {
-  AppProfileSettings,
-  MemorySettings,
-  ModelsSettings,
-  ProviderSettings,
-  SearchSettings,
-} from '@/features/models/types';
+import type { AppProfileSettings, MemorySettings } from '@/features/auth/profile/types';
+import type { ModelsSettings, ProviderSettings } from '@/features/models/types';
+import type { SearchSettings } from '@/features/search/types';
 import {
   buildCustomProviderSettings,
   buildProviderSettings,

@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 
-import type { AppProfileSettings, ChatModelOption } from '@/features/models/types';
+import type { AppProfileSettings } from '@/features/auth/profile/types';
+import type { ChatModelOption } from '@/features/models/types';
 import { resolveChatRuntimeModel } from '@/features/models/utils/runtime-model';
 import { readApiError } from '@/lib/api-client';
 import { CHAT_RATE_LIMIT_ERROR_CODE } from '@/features/chat/utils/chat-errors';
@@ -55,12 +56,14 @@ export function useChatSession({
   const runtimeModelRef = useRef(runtimeModel);
   const activeThreadIdRef = useRef(activeThreadId);
   const conversationSummaryRef = useRef(conversationSummary);
+  const searchSettingsRef = useRef(profileSettings?.search);
 
   useEffect(() => {
     runtimeModelRef.current = runtimeModel;
     activeThreadIdRef.current = activeThreadId;
     conversationSummaryRef.current = conversationSummary;
-  }, [activeThreadId, conversationSummary, runtimeModel]);
+    searchSettingsRef.current = profileSettings?.search;
+  }, [activeThreadId, conversationSummary, profileSettings?.search, runtimeModel]);
 
   /* eslint-disable react-hooks/refs */
   const [transport] = useState(
@@ -94,7 +97,7 @@ export function useChatSession({
             messageId,
             messages,
             conversationSummary: conversationSummaryRef.current ?? undefined,
-            searchSettings: profileSettings?.search ?? undefined,
+            searchSettings: searchSettingsRef.current ?? undefined,
             runtimeModel: runtimeModelRef.current ?? undefined,
             conversationId:
               (requestBody.conversationId as string | undefined) ??

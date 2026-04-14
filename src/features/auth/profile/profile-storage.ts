@@ -5,7 +5,7 @@ import { SERVER_MESSAGES } from '@/config/strings';
 import type { ThemeMode } from '@/config/theme';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import { createProfileDraft } from '@/features/auth/profile/profile-draft';
-import type { AppProfile } from '@/features/models/types';
+import type { AppProfile } from '@/features/auth/profile/types';
 
 export const LOCAL_APP_PROFILE_STORAGE_KEY = STORAGE_KEYS.LOCAL_MODEL_PROFILE;
 export const APP_PROFILE_UPDATED_EVENT = WINDOW_EVENTS.MODEL_PROFILE_UPDATED;

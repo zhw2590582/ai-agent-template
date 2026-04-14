@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import type { MemoryKind, MemoryListItem } from '@/features/memory/types';
-import type { MemorySettings } from '@/features/models/types';
+import type { MemorySettings } from '@/features/auth/profile/types';
 import { getApiErrorToastMessage } from '@/lib/api-client';
 
 interface UseMemoryPageOptions {

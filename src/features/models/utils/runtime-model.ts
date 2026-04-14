@@ -1,10 +1,10 @@
 import type {
-  AppProfileSettings,
   ChatModelOption,
   ChatRuntimeModel,
   ProviderModelItem,
   ProviderSettings,
 } from '@/features/models/types';
+import type { AppProfileSettings } from '@/features/auth/profile/types';
 
 export function normalizeProviderBaseUrl(
   apiFormat: ProviderSettings['apiFormat'],

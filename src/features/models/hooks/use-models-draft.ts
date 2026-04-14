@@ -2,12 +2,9 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
+import type { AppProfileSettings } from '@/features/auth/profile/types';
 import { getOrderedProviders } from '@/features/auth/profile/profile-settings';
-import type {
-  AppProfileSettings,
-  ModelsSettings,
-  ProviderModelItem,
-} from '@/features/models/types';
+import type { ModelsSettings, ProviderModelItem } from '@/features/models/types';
 import { buildCustomProviderSettings } from '@/features/models/utils/provider-factories';
 
 function cloneModelsSettings(models: ModelsSettings): ModelsSettings {

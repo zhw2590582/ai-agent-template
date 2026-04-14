@@ -19,7 +19,7 @@ import {
   profileCache,
   readLocalProfile,
 } from '@/features/auth/profile/profile-storage';
-import type { AppProfile } from '@/features/models/types';
+import type { AppProfile } from '@/features/auth/profile/types';
 
 export function useAppProfile(user: AuthUserSnapshot | null) {
   const t = useTranslations();

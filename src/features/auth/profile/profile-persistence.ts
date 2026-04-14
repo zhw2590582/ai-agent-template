@@ -11,7 +11,7 @@ import {
   profileCache,
   writeLocalProfile,
 } from '@/features/auth/profile/profile-storage';
-import type { AppProfile } from '@/features/models/types';
+import type { AppProfile } from '@/features/auth/profile/types';
 import { getApiErrorToastMessage } from '@/lib/api-client';
 
 interface PersistProfileOptions {
