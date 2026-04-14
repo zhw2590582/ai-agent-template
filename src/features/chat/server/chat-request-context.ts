@@ -104,6 +104,12 @@ export async function loadChatRequestContext({
   let memoryContext: string | null = null;
   let memorySettings: ChatProfileMemorySettings | null = null;
   let mcpServerNames: string[] = [];
+  let mcpInjectedTools: Array<{
+    injectedToolName: string;
+    originalToolName: string;
+    serverId: string;
+    serverName: string;
+  }> = [];
   let closeAgentResources: (() => Promise<void>) | undefined;
 
   const resolvedSearchSettings = resolveSearchSettings(searchSettings);
@@ -123,10 +129,18 @@ export async function loadChatRequestContext({
         ...searchAgentTools,
         ...mcpBundle.tools,
       };
+      mcpInjectedTools = mcpBundle.injectedTools;
       mcpServerNames = mcpBundle.serverNames;
       closeAgentResources = async () => {
         await Promise.all(mcpBundle.clients.map((client) => client.close()));
       };
+
+      logger.info('Chat request: initialized MCP tools', {
+        injectedToolNames: mcpBundle.injectedTools.map((tool) => tool.injectedToolName),
+        mcpServerNames: mcpBundle.serverNames,
+        serverCount: mcpBundle.serverNames.length,
+        toolCount: mcpBundle.injectedTools.length,
+      });
     } catch (error) {
       logger.warn('Chat request: failed to initialize MCP tools', {
         error: error instanceof Error ? error.message : String(error),
@@ -167,6 +181,7 @@ export async function loadChatRequestContext({
       hasSearchTools: Object.keys(searchAgentTools).length > 0,
       memoryContext,
       memorySettings,
+      mcpInjectedTools,
       mcpServerNames,
       persistedConversationSummary,
     };

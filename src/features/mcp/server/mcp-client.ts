@@ -69,11 +69,23 @@ export async function listRemoteMcpTools(server: McpServerSettings) {
 
 export async function createMcpAgentToolBundles(settings: McpSettings): Promise<{
   clients: MCPClient[];
+  injectedTools: Array<{
+    injectedToolName: string;
+    originalToolName: string;
+    serverId: string;
+    serverName: string;
+  }>;
   serverNames: string[];
   tools: ToolSet;
 }> {
   const tools: ToolSet = {};
   const clients: MCPClient[] = [];
+  const injectedTools: Array<{
+    injectedToolName: string;
+    originalToolName: string;
+    serverId: string;
+    serverName: string;
+  }> = [];
   const serverNames: string[] = [];
 
   for (const server of settings.servers) {
@@ -95,10 +107,17 @@ export async function createMcpAgentToolBundles(settings: McpSettings): Promise<
     Object.assign(
       tools,
       Object.fromEntries(
-        Object.entries(rawTools).map(([name, tool]) => [
-          `${toolPrefix}_${sanitizeToolToken(name)}`,
-          tool,
-        ])
+        Object.entries(rawTools).map(([name, tool]) => {
+          const injectedToolName = `${toolPrefix}_${sanitizeToolToken(name)}`;
+          injectedTools.push({
+            injectedToolName,
+            originalToolName: name,
+            serverId: server.id,
+            serverName,
+          });
+
+          return [injectedToolName, tool];
+        })
       )
     );
 
@@ -108,6 +127,7 @@ export async function createMcpAgentToolBundles(settings: McpSettings): Promise<
 
   return {
     clients,
+    injectedTools,
     serverNames,
     tools,
   };

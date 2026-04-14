@@ -48,6 +48,7 @@ export async function handleChatPost(request: Request) {
       hasSearchTools,
       memoryContext,
       memorySettings,
+      mcpInjectedTools,
       mcpServerNames,
       persistedConversationSummary,
     } = await loadChatRequestContext({
@@ -69,6 +70,7 @@ export async function handleChatPost(request: Request) {
         memoryContext,
         memorySettings,
         messages: messages as unknown as UIMessage[],
+        mcpInjectedTools,
         mcpServerNames,
         persistedConversationSummary,
         runtimeModel,

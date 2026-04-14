@@ -27,62 +27,69 @@ export function createChatFinishHandler({
   supabase,
   user,
 }: CreateChatFinishHandlerOptions) {
-  return async ({ messages: responseMessages }: { messages: UIMessage[] }) => {
+  return ({ messages: responseMessages }: { messages: UIMessage[] }) => {
     if (!conversationId) {
-      await closeAgentResources?.();
+      void closeAgentResources?.();
       return;
     }
 
-    try {
-      if (!user) {
-        logger.warn('Chat onFinish: user not authenticated, messages not saved', {
-          conversationId,
-        });
-        return;
-      }
-
+    void (async () => {
       try {
-        await saveConversationMessages(
-          {
+        if (!user) {
+          logger.warn('Chat onFinish: user not authenticated, messages not saved', {
             conversationId,
-            locale,
-            memorySettings,
-            messages: responseMessages,
-            runtimeModel,
-            userId: user.id,
-          },
-          supabase
-        );
-      } catch (saveError) {
-        logger.error('Chat onFinish: failed to save messages', {
-          conversationId,
-          error: saveError instanceof Error ? saveError.message : String(saveError),
-        });
-      }
+          });
+          return;
+        }
 
-      if (!memorySettings?.enabled || !memorySettings.autoWrite) {
-        return;
-      }
-
-      try {
-        await saveConversationMemories(
-          {
+        try {
+          await saveConversationMessages(
+            {
+              conversationId,
+              locale,
+              memorySettings,
+              messages: responseMessages,
+              runtimeModel,
+              userId: user.id,
+            },
+            supabase
+          );
+        } catch (saveError) {
+          logger.error('Chat onFinish: failed to save messages', {
             conversationId,
-            locale,
-            messages: responseMessages,
-            runtimeModel,
-            userId: user.id,
-          },
-          supabase
-        );
-      } catch (memoryError) {
-        logger.error('Chat onFinish: failed to save memories', {
-          conversationId,
-          error: memoryError instanceof Error ? memoryError.message : String(memoryError),
-        });
+            error: saveError instanceof Error ? saveError.message : String(saveError),
+          });
+        }
+
+        if (!memorySettings?.enabled || !memorySettings.autoWrite) {
+          return;
+        }
+
+        try {
+          await saveConversationMemories(
+            {
+              conversationId,
+              locale,
+              messages: responseMessages,
+              runtimeModel,
+              userId: user.id,
+            },
+            supabase
+          );
+        } catch (memoryError) {
+          logger.error('Chat onFinish: failed to save memories', {
+            conversationId,
+            error: memoryError instanceof Error ? memoryError.message : String(memoryError),
+          });
+        }
+      } finally {
+        await closeAgentResources?.();
       }
-    } finally {
-      await closeAgentResources?.();
-    }
+    })().catch((error) => {
+      logger.error('Chat onFinish: unexpected background failure', {
+        conversationId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
   };
 }
