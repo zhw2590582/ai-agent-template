@@ -1,14 +1,11 @@
 export const enUSMcpMessages = {
   mcp_page: {
     title: 'MCP',
-    description:
-      'Connect external MCP services so the assistant can use more tools in chat.',
+    description: 'Connect external MCP services so the assistant can use more tools in chat.',
     connection_title: 'Connection',
-    connection_description:
-      'Choose whether MCP is available in chat.',
+    connection_description: 'Choose whether MCP is available in chat.',
     enabled_label: 'Enable MCP tools',
-    enabled_description:
-      'Let the assistant use tools from your enabled MCP services when needed.',
+    enabled_description: 'Let the assistant use tools from your enabled MCP services when needed.',
     servers_title: 'Servers',
     servers_description: 'Add the MCP services you want to use, then edit, test, or remove them.',
     add_server: 'Add server',

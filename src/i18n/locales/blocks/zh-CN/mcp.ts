@@ -15,8 +15,7 @@ export const zhCNMcpMessages = {
     edit_server_title: '编辑 MCP 服务端',
     edit_server_description: '更新这个 MCP 服务的连接信息。',
     delete_server_title: '删除服务端',
-    delete_server_description:
-      '要从列表中移除 {serverName} 吗？这不会影响服务本身。',
+    delete_server_description: '要从列表中移除 {serverName} 吗？这不会影响服务本身。',
     server_enabled_label: '启用当前服务端',
     server_enabled_description: '只有已启用的服务才会在聊天中可用。',
     server_name_label: '服务名称',
