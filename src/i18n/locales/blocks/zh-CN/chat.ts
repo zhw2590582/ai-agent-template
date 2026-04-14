@@ -54,7 +54,7 @@ export const zhCNChatMessages = {
     },
     status: {
       ready: '就绪',
-      thinking: '思考中',
+      thinking: '思考中...',
     },
     errors: {
       rate_limit: '请求过于频繁',

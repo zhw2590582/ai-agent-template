@@ -55,7 +55,7 @@ export const enUSChatMessages = {
     },
     status: {
       ready: 'Ready',
-      thinking: 'Thinking',
+      thinking: 'Thinking...',
     },
     errors: {
       rate_limit: 'Too many requests',

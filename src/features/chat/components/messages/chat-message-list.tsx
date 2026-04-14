@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import type { UIMessage } from 'ai';
+import { SparklesIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -10,6 +11,7 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from '@/components/ai-elements/conversation';
+import { Shimmer } from '@/components/ai-elements/shimmer';
 import { ChatMessageRow } from '@/features/chat/components/messages/chat-message-row';
 import { isChatRateLimitError } from '@/features/chat/utils/chat-errors';
 import { cn } from '@/lib/utils';
@@ -49,6 +51,9 @@ export function ChatMessageList({
   const lastAssistantMessageId = [...messages]
     .reverse()
     .find((message) => message.role === 'assistant')?.id;
+  const latestMessage = messages[messages.length - 1];
+  const showPendingThinking =
+    status === 'submitted' && latestMessage?.role === 'user' && messages.length > 0;
 
   const handleCopy = useCallback(
     async (text: string) => {
@@ -108,6 +113,15 @@ export function ChatMessageList({
             />
           );
         })}
+
+        {showPendingThinking ? (
+          <div className="text-muted-foreground flex items-center gap-2 pl-1 text-sm">
+            <SparklesIcon className="size-3.5 shrink-0" />
+            <Shimmer as="p" duration={1} className="text-muted-foreground text-sm">
+              {t('chat.status.thinking')}
+            </Shimmer>
+          </div>
+        ) : null}
 
         {errorMessage ? (
           <div className="border-destructive/20 bg-destructive/10 text-destructive rounded-2xl border px-5 py-4 text-sm">
