@@ -11,6 +11,16 @@ export const enUSChatMessages = {
     },
     composer: {
       placeholder: 'Send a message to AI Agent',
+      suggestions: {
+        latest_ai_trends: 'What are the latest trends in AI?',
+        machine_learning: 'How does machine learning work?',
+        quantum_computing: 'Explain quantum computing',
+        react_best_practices: 'Best practices for React development',
+        typescript_benefits: 'Tell me about TypeScript benefits',
+        optimize_database_queries: 'How to optimize database queries?',
+        sql_vs_nosql: 'What is the difference between SQL and NoSQL?',
+        cloud_computing_basics: 'Explain cloud computing basics',
+      },
       workspace_hint: 'Wide workspace with streaming responses and tool calling',
       model_label: 'Model',
       model_missing: 'Configure a model first',

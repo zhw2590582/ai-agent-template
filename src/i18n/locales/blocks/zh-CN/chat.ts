@@ -12,6 +12,16 @@ export const zhCNChatMessages = {
     composer: {
       placeholder: '给 AI Agent 发送消息',
       workspace_hint: '宽屏工作区，支持流式回复与工具调用',
+      suggestions: {
+        latest_ai_trends: 'AI 的最新趋势是什么？',
+        machine_learning: '机器学习是如何工作的？',
+        quantum_computing: '解释一下量子计算',
+        react_best_practices: 'React 开发的最佳实践',
+        typescript_benefits: '说说 TypeScript 的优势',
+        optimize_database_queries: '如何优化数据库查询？',
+        sql_vs_nosql: 'SQL 和 NoSQL 有什么区别？',
+        cloud_computing_basics: '解释一下云计算基础',
+      },
       model_label: '模型',
       model_missing: '先配置模型',
       model_selector_title: '选择模型',

@@ -11,11 +11,13 @@ import {
   PromptInputTextarea,
   PromptInputTools,
 } from '@/components/ai-elements/prompt-input';
+import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import { ChatModelSelector } from '@/features/chat/components/composer/chat-model-selector';
 import type { ChatModelOption } from '@/features/models/types';
 
 interface ChatComposerProps {
   availableModels: ChatModelOption[];
+  hasActiveConversation?: boolean;
   input: string;
   isBusy: boolean;
   isCreatingThread?: boolean;
@@ -30,6 +32,7 @@ interface ChatComposerProps {
 
 export function ChatComposer({
   availableModels,
+  hasActiveConversation = false,
   input,
   isBusy,
   isCreatingThread = false,
@@ -42,12 +45,30 @@ export function ChatComposer({
   status,
 }: ChatComposerProps) {
   const t = useTranslations();
+  const composerSuggestions = [
+    t('chat.composer.suggestions.latest_ai_trends'),
+    t('chat.composer.suggestions.machine_learning'),
+    t('chat.composer.suggestions.quantum_computing'),
+    t('chat.composer.suggestions.react_best_practices'),
+    t('chat.composer.suggestions.typescript_benefits'),
+    t('chat.composer.suggestions.optimize_database_queries'),
+    t('chat.composer.suggestions.sql_vs_nosql'),
+    t('chat.composer.suggestions.cloud_computing_basics'),
+  ];
 
   return (
-    <div className="border-border bg-background border-t px-6 py-5 select-none">
+    <div className="bg-background px-6 py-5 select-none">
       <div
         className={`mx-auto w-full transition-[max-width] duration-300 ease-out ${isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl'}`}
       >
+        {!hasActiveConversation && input.trim().length === 0 ? (
+          <Suggestions className="mb-3">
+            {composerSuggestions.map((suggestion) => (
+              <Suggestion key={suggestion} suggestion={suggestion} onClick={onInputChange} />
+            ))}
+          </Suggestions>
+        ) : null}
+
         <PromptInput
           className="w-full **:data-[slot=input-group]:has-disabled:bg-transparent **:data-[slot=input-group]:has-disabled:opacity-100 dark:**:data-[slot=input-group]:has-disabled:bg-transparent"
           onSubmit={(_, event) => onSubmit(event)}

@@ -106,6 +106,7 @@ export function ChatWorkbench({
             />
             <ChatComposer
               availableModels={workbench.availableModels}
+              hasActiveConversation={Boolean(workbench.activeThreadId)}
               input={workbench.input}
               isBusy={workbench.isBusy || workbench.isStartingThread}
               isCreatingThread={workbench.isStartingThread}
