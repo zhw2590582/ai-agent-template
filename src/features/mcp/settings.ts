@@ -61,15 +61,8 @@ export function normalizeMcpSettings(input: unknown): McpSettings {
   const servers = serversInput.map((server, index) => normalizeMcpServer(server, index));
   const fallbackServers = servers.length > 0 ? servers : [createDefaultServer(1)];
 
-  const selectedServerId =
-    typeof existing.selectedServerId === 'string' &&
-    fallbackServers.some((server) => server.id === existing.selectedServerId)
-      ? existing.selectedServerId
-      : (fallbackServers[0]?.id ?? null);
-
   return {
     enabled: typeof existing.enabled === 'boolean' ? existing.enabled : false,
-    selectedServerId,
     servers: fallbackServers,
   };
 }

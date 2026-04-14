@@ -29,14 +29,6 @@ interface McpServerListProps {
   onRunConnectionTest: (serverId: string) => Promise<void> | void;
   onToggleServerEnabled: (serverId: string, enabled: boolean) => void;
   servers: McpServerSettings[];
-  testResults: Record<
-    string,
-    {
-      serverName: string | null;
-      serverVersion: string | null;
-      toolNames: string[];
-    }
-  >;
   testingServerId: string | null;
 }
 
@@ -50,7 +42,6 @@ export function McpServerList({
   onRunConnectionTest,
   onToggleServerEnabled,
   servers,
-  testResults: _testResults,
   testingServerId,
 }: McpServerListProps) {
   const t = useTranslations();

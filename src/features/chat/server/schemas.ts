@@ -34,7 +34,6 @@ export const chatPostSchema = z.object({
   mcpSettings: z
     .object({
       enabled: z.boolean(),
-      selectedServerId: z.string().nullable(),
       servers: z.array(
         z.object({
           bearerToken: z.string(),

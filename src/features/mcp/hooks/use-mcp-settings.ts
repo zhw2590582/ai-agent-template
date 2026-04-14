@@ -34,6 +34,7 @@ export function useMcpSettings({
   testFailedMessage,
   testSuccessMessage,
 }: UseMcpSettingsOptions) {
+  const [savedSettings, setSavedSettings] = useState(settings);
   const [localSettings, setLocalSettings] = useState(settings);
   const [isSaving, setIsSaving] = useState(false);
   const [testingServerId, setTestingServerId] = useState<string | null>(null);
@@ -41,6 +42,7 @@ export function useMcpSettings({
   const [testResults, setTestResults] = useState<Record<string, McpTestResult>>({});
 
   useEffect(() => {
+    setSavedSettings(settings);
     setLocalSettings(settings);
   }, [settings]);
 
@@ -62,7 +64,7 @@ export function useMcpSettings({
       localSettings.servers.map((item) => item.id)
     );
 
-  const isDirty = JSON.stringify(localSettings) !== JSON.stringify(settings);
+  const isDirty = JSON.stringify(localSettings) !== JSON.stringify(savedSettings);
 
   const updateSettings = (updater: (settings: McpSettings) => McpSettings) => {
     setLocalSettings((current) => updater(current));
@@ -80,16 +82,9 @@ export function useMcpSettings({
 
   const removeServer = (serverId: string) => {
     setLocalSettings((current) => {
-      const nextServers = current.servers.filter((server) => server.id !== serverId);
-      const nextSelectedServerId =
-        current.selectedServerId === serverId
-          ? (nextServers[0]?.id ?? null)
-          : current.selectedServerId;
-
       return {
         ...current,
-        selectedServerId: nextSelectedServerId,
-        servers: nextServers,
+        servers: current.servers.filter((server) => server.id !== serverId),
       };
     });
 
@@ -101,7 +96,7 @@ export function useMcpSettings({
   };
 
   const resetAndClose = () => {
-    setLocalSettings(settings);
+    setLocalSettings(savedSettings);
     setTestResults({});
     onClose?.();
   };
@@ -156,20 +151,75 @@ export function useMcpSettings({
   };
 
   const save = async () => {
-    return saveSettings(localSettings);
-  };
-
-  const saveSettings = async (nextSettings: McpSettings) => {
     setIsSaving(true);
     try {
-      const success = await onMcpSettingsChange(() => nextSettings);
+      const success = await onMcpSettingsChange(() => localSettings);
 
       if (success === false) {
         toast.error(saveFailedMessage);
         return false;
       }
 
-      setLocalSettings(nextSettings);
+      setSavedSettings(localSettings);
+      setShowSaved(true);
+      toast.success(saveSuccessMessage);
+      return true;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const saveServer = async (server: McpServerSettings, mode: 'add' | 'edit') => {
+    const nextSavedSettings: McpSettings = {
+      ...savedSettings,
+      servers:
+        mode === 'add'
+          ? [...savedSettings.servers, server]
+          : savedSettings.servers.map((item) => (item.id === server.id ? server : item)),
+    };
+
+    setIsSaving(true);
+    try {
+      const success = await onMcpSettingsChange(() => nextSavedSettings);
+
+      if (success === false) {
+        toast.error(saveFailedMessage);
+        return false;
+      }
+
+      setSavedSettings(nextSavedSettings);
+      setLocalSettings((current) => ({
+        ...current,
+        servers:
+          mode === 'add'
+            ? [...current.servers, server]
+            : current.servers.map((item) => (item.id === server.id ? server : item)),
+      }));
+      setShowSaved(true);
+      toast.success(saveSuccessMessage);
+      return true;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const deleteServer = async (serverId: string) => {
+    const nextSavedSettings: McpSettings = {
+      ...savedSettings,
+      servers: savedSettings.servers.filter((server) => server.id !== serverId),
+    };
+
+    setIsSaving(true);
+    try {
+      const success = await onMcpSettingsChange(() => nextSavedSettings);
+
+      if (success === false) {
+        toast.error(saveFailedMessage);
+        return false;
+      }
+
+      setSavedSettings(nextSavedSettings);
+      removeServer(serverId);
       setShowSaved(true);
       toast.success(saveSuccessMessage);
       return true;
@@ -180,14 +230,14 @@ export function useMcpSettings({
 
   return {
     createServerDraft,
+    deleteServer,
     isDirty,
     isSaving,
     localSettings,
-    removeServer,
     resetAndClose,
     runConnectionTest,
     save,
-    saveSettings,
+    saveServer,
     showSaved,
     testResults,
     testingServerId,

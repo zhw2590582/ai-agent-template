@@ -39,7 +39,6 @@ const profilePatchSchema = z.object({
     }),
     mcp: z.object({
       enabled: z.boolean().optional(),
-      selectedServerId: z.string().nullable().optional(),
       servers: z
         .array(
           z.object({

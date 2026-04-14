@@ -11,6 +11,5 @@ export interface McpServerSettings {
 
 export interface McpSettings {
   enabled: boolean;
-  selectedServerId: string | null;
   servers: McpServerSettings[];
 }

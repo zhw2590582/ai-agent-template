@@ -29,16 +29,15 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
   const [testResultDialog, setTestResultDialog] = useState<McpTestResult | null>(null);
   const {
     createServerDraft,
+    deleteServer,
     isDirty,
     isSaving,
     localSettings,
-    removeServer,
     resetAndClose,
     runConnectionTest,
     save,
-    saveSettings,
     showSaved,
-    testResults,
+    saveServer,
     testingServerId,
     updateServer,
     updateSettings,
@@ -102,7 +101,6 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
           clearDeleteTarget={() => setDeleteTargetId(null)}
           deleteTargetId={deleteTargetId}
           servers={localSettings.servers}
-          testResults={testResults}
           testingServerId={testingServerId}
           onAddServer={() => {
             setEditorMode('add');
@@ -113,27 +111,10 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
             if (!deleteTargetId) {
               return;
             }
-
-            const nextServers = localSettings.servers.filter(
-              (server) => server.id !== deleteTargetId
-            );
-            const nextSelectedServerId =
-              localSettings.selectedServerId === deleteTargetId
-                ? (nextServers[0]?.id ?? null)
-                : localSettings.selectedServerId;
-
-            const success = await saveSettings({
-              ...localSettings,
-              selectedServerId: nextSelectedServerId,
-              servers: nextServers,
-            });
-
-            if (!success) {
-              return;
+            const success = await deleteServer(deleteTargetId);
+            if (success) {
+              setDeleteTargetId(null);
             }
-
-            removeServer(deleteTargetId);
-            setDeleteTargetId(null);
           }}
           onDeleteServer={(serverId) => setDeleteTargetId(serverId)}
           onEditServer={(serverId) => {
@@ -175,18 +156,7 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
           }
         }}
         onSave={async (server) => {
-          if (editorMode === 'add') {
-            return saveSettings({
-              ...localSettings,
-              selectedServerId: server.id,
-              servers: [...localSettings.servers, server],
-            });
-          } else {
-            return saveSettings({
-              ...localSettings,
-              servers: localSettings.servers.map((item) => (item.id === server.id ? server : item)),
-            });
-          }
+          return saveServer(server, editorMode);
         }}
       />
 
