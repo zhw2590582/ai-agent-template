@@ -20,13 +20,16 @@
 
 - 用户在应用里配置多个远程 MCP server
 - 聊天请求时把这些 server 的 tools 接进现有 agent tools
-- 用户可以在 MCP 弹窗里测试单个远程 server，并查看它暴露的 tools
+- 用户可以在 MCP 弹窗里测试单个远程 server，并查看它暴露的：
+  - tools
+  - resources
+  - prompts
+  - capabilities（只展示是否支持）
 
 当前还没有实现的是：
 
 - 本项目自己的 MCP server
-- MCP resources 浏览
-- MCP prompts 浏览
+- MCP resources / prompts 的实际消费流程
 - elicitation / approval UI
 - stdio server 管理
 - 多 server 权限策略
@@ -89,7 +92,6 @@ interface McpServerSettings {
 
 interface McpSettings {
   enabled: boolean;
-  selectedServerId: string | null;
   servers: McpServerSettings[];
 }
 ```
@@ -99,10 +101,11 @@ interface McpSettings {
 - `enabled`
   - MCP 全局开关
   - 决定聊天时是否允许把 MCP tools 接进来
-- `selectedServerId`
-  - 当前在弹窗里正在编辑/测试哪一个 server
 - `servers[]`
   - 用户配置的多个远程 MCP server
+
+当前已经不再维护 `selectedServerId`。
+MCP UI 现在是纯列表模型，编辑状态只存在于弹窗本地 state。
 
 ## Source Of Truth
 
@@ -124,9 +127,11 @@ MCP 配置并不是单独的数据库表。
 - `src/features/mcp/components/mcp-content.tsx`
   - MCP 弹窗整体内容
 - `src/features/mcp/components/mcp-server-list.tsx`
-  - 左侧 server 列表
-- `src/features/mcp/components/mcp-server-settings-panel.tsx`
-  - 右侧当前 server 设置面板
+  - server 列表与操作区
+- `src/features/mcp/components/mcp-server-editor-dialog.tsx`
+  - 新增 / 编辑远程 MCP server
+- `src/features/mcp/components/mcp-test-result-dialog.tsx`
+  - 测试结果弹窗
 - `src/features/mcp/hooks/use-mcp-settings.ts`
   - MCP settings draft、测试连接、保存
 
@@ -165,10 +170,24 @@ MCP 配置并不是单独的数据库表。
 
 - `src/app/api/mcp/test/route.ts`
 
-当前只做：
+当前会返回：
 
 - 单个 server 连接测试
-- 返回 server name / version / toolNames
+- `serverName`
+- `serverVersion`
+- `toolNames`
+- `resources`
+- `prompts`
+- `capabilities`
+
+说明：
+
+- `resources / prompts`
+  - 当前只做测试结果展示
+  - 还没有接入聊天运行时
+- `capabilities`
+  - 当前只展示“是否支持”
+  - 不是这些能力已经完整接入项目
 
 ## 当前工具接入流程
 
@@ -257,6 +276,43 @@ const tools = await mcpClient.tools();
 后续更稳的方案可以是：
 
 - 在前缀里带 server id 的短 hash
+
+## 当前测试弹窗展示边界
+
+当前 MCP 测试结果弹窗会展示四块：
+
+1. 基本信息
+   - server name
+   - server version
+2. capabilities
+   - tools
+   - resources
+   - prompts
+   - logging
+   - elicitation
+   - sampling
+   - roots
+3. resources 列表
+4. prompts 列表
+5. tools 列表
+
+这里要注意：
+
+- `tools / resources / prompts`
+  - 是从远程 server 读取到的真实列表
+- `logging / elicitation`
+  - 当前根据 server 初始化能力显示支持状态
+- `sampling / roots`
+  - 当前显示的是“本项目这个 MCP client 侧是否声明支持”
+  - 现在还没有真正实现，因此会显示为不支持
+
+所以这块 UI 的语义应理解为：
+
+- “当前测试可观察到的 MCP 能力”
+
+而不是：
+
+- “这些能力已经全部接入产品”
 
 ## 当前关闭策略
 

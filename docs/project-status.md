@@ -39,6 +39,7 @@
 - `Memory` 顶部弹窗：控制项、记忆编辑/删除/导出、会话摘要编辑/删除
 - `Search` 顶部弹窗：Tavily key 配置、Search / Extract / Crawl 三类能力设置、连接测试
 - `MCP` 顶部弹窗：多远程 MCP server 配置、单 server 测试、聊天时挂载 MCP tools
+- `MCP` 测试结果弹窗：可查看远程 server 的 tools / resources / prompts，以及 capabilities 支持状态
 - Tavily tools：`web_search`、`web_extract`、`web_crawl`
 - MCP tools：已支持多个远程 MCP server，并在聊天请求里合并进 agent tools
 - 聊天 workflow 已抽到 `src/features/chat/ai/workflows/generateText.ts`
@@ -219,6 +220,7 @@ API rate limiting
 - 当前 Memory 仍是 Supabase-first 的基础版，不包含向量检索和外部 memory provider
 - 当前 Search 使用 Tavily，不做自建向量检索或搜索索引
 - 当前 MCP 只做“远程 MCP tools integration”，不做 resources/prompts/elicitations，也不做本项目自己的 MCP server
+- 当前 MCP 测试弹窗虽然会展示 resources / prompts / capabilities，但这些能力还没有真正接入聊天运行时
 - 当前测试覆盖的是基础链路，不是完整产品行为
 - 多数工作台页面仍是占位，不要把导航存在误认为功能完成
 

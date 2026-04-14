@@ -133,7 +133,7 @@ src/
 
 当前已经是一个真实 feature，但范围还只限于“远程 MCP tools integration”。
 
-- `components/`: MCP 弹窗、server 列表、当前 server 设置面板
+- `components/`: MCP 弹窗、server 列表、编辑弹窗、测试结果弹窗
 - `hooks/`: MCP settings draft、保存、测试
 - `server/`: 远程 MCP client 初始化、tools 列表、tool set 构建
 - `settings.ts`: MCP settings normalize / access 判断
@@ -143,12 +143,13 @@ src/
 
 - `use-mcp-settings.ts`: MCP 弹窗的 settings controller
 - `mcp-client.ts`: 远程 MCP client 生命周期和多 server tool merge
-- `app/api/mcp/test/route.ts`: 测试远程 MCP server
+- `app/api/mcp/test/route.ts`: 测试远程 MCP server，并返回 tools / resources / prompts / capabilities
 
 注意：
 
 - `src/features/mcp` 现在描述的是“本项目作为 MCP client”
 - 不是“本项目自己的 MCP server”
+- 测试弹窗里展示 resources / prompts / capabilities，不代表这些能力已经接入聊天运行时
 
 ### `src/features/auth`
 
