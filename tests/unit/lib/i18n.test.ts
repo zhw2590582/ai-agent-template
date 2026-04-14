@@ -45,7 +45,7 @@ describe('i18n', () => {
       const translator = createTranslator('zh-CN');
       const result = translator('chat.status.thinking');
 
-      expect(result).toBe('思考中');
+      expect(result).toBe('思考中...');
     });
   });
 
