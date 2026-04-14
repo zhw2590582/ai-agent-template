@@ -20,7 +20,8 @@ src/
 │   ├── [locale]/               # 路由和布局入口
 │   ├── api/chat/route.ts       # 聊天 API 入口，保持很薄
 │   ├── api/conversations/      # 会话读写、分页、搜索
-│   ├── api/mcp/route.ts        # 当前仅占位
+│   ├── api/mcp/route.ts        # 预留给未来本项目自己的 MCP server
+│   ├── api/mcp/test/route.ts   # 当前用于测试远程 MCP server
 │   └── auth/callback/route.ts  # Supabase OAuth 回调
 ├── components/
 │   ├── ai-elements/            # AI Elements 组件源码
@@ -32,6 +33,7 @@ src/
 │   ├── chat/                   # 聊天工作台与会话链路
 │   ├── memory/                 # 长期记忆、摘要与 Memory 弹窗内容
 │   ├── models/                 # provider 配置、模型同步、自定义 provider/model
+│   ├── mcp/                    # 远程 MCP server 配置、测试、tool client
 │   └── search/                 # Tavily 搜索设置、连接测试、服务端 client
 ├── i18n/                       # next-intl 请求配置
 ├── lib/                        # 共享工具、错误处理、日志、Supabase client
@@ -127,6 +129,27 @@ src/
 - `tavily-client.ts`: Tavily 请求与错误处理统一入口
 - `chat/ai/tools/*`: 只负责 AI tool 封装，不再各自手写 Tavily fetch
 
+### `src/features/mcp`
+
+当前已经是一个真实 feature，但范围还只限于“远程 MCP tools integration”。
+
+- `components/`: MCP 弹窗、server 列表、当前 server 设置面板
+- `hooks/`: MCP settings draft、保存、测试
+- `server/`: 远程 MCP client 初始化、tools 列表、tool set 构建
+- `settings.ts`: MCP settings normalize / access 判断
+- `types.ts`: MCP 多 server 结构定义
+
+当前关键边界：
+
+- `use-mcp-settings.ts`: MCP 弹窗的 settings controller
+- `mcp-client.ts`: 远程 MCP client 生命周期和多 server tool merge
+- `app/api/mcp/test/route.ts`: 测试远程 MCP server
+
+注意：
+
+- `src/features/mcp` 现在描述的是“本项目作为 MCP client”
+- 不是“本项目自己的 MCP server”
+
 ### `src/features/auth`
 
 负责认证相关的最小闭环：
@@ -212,6 +235,12 @@ Search UI
   -> useSearchSettings
   -> /api/profile + /api/search/test
   -> Tavily-backed tools
+
+MCP UI
+  -> workbench dialog
+  -> useMcpSettings
+  -> /api/profile + /api/mcp/test
+  -> remote MCP tools
 
 API routes
   -> src/lib/rate-limit.ts

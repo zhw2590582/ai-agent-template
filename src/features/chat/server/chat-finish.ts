@@ -9,6 +9,7 @@ import { saveConversationMemories } from '@/features/memory/storage/memories';
 import type { ChatProfileMemorySettings } from '@/features/chat/server/chat-request-context';
 
 interface CreateChatFinishHandlerOptions {
+  closeAgentResources?: (() => Promise<void>) | undefined;
   conversationId: string | null;
   locale: Locale;
   memorySettings: ChatProfileMemorySettings | null;
@@ -18,6 +19,7 @@ interface CreateChatFinishHandlerOptions {
 }
 
 export function createChatFinishHandler({
+  closeAgentResources,
   conversationId,
   locale,
   memorySettings,
@@ -25,12 +27,13 @@ export function createChatFinishHandler({
   supabase,
   user,
 }: CreateChatFinishHandlerOptions) {
-  return ({ messages: responseMessages }: { messages: UIMessage[] }) => {
+  return async ({ messages: responseMessages }: { messages: UIMessage[] }) => {
     if (!conversationId) {
+      await closeAgentResources?.();
       return;
     }
 
-    void (async () => {
+    try {
       if (!user) {
         logger.warn('Chat onFinish: user not authenticated, messages not saved', {
           conversationId,
@@ -78,6 +81,8 @@ export function createChatFinishHandler({
           error: memoryError instanceof Error ? memoryError.message : String(memoryError),
         });
       }
-    })();
+    } finally {
+      await closeAgentResources?.();
+    }
   };
 }

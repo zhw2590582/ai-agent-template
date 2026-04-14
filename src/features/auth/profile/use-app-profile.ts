@@ -156,6 +156,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
       locale,
       settings: normalizeProfileSettings({
         memory: current.settings.memory,
+        mcp: current.settings.mcp,
         models: nextModels,
         search: current.settings.search,
       }),
@@ -228,8 +229,37 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
           locale,
           settings: normalizeProfileSettings({
             memory: current.settings.memory,
+            mcp: current.settings.mcp,
             models: current.settings.models,
             search: updater(current.settings.search),
+          }),
+          theme,
+          updated_at: new Date().toISOString(),
+        };
+
+        profileRef.current = nextProfile;
+        setProfile(nextProfile);
+
+        return persistProfile(nextProfile, { silent: options?.silent });
+      },
+    [locale, persistProfile, theme]
+  );
+
+  const updateMcpSettings = useMemo(
+    () =>
+      async (
+        updater: (mcp: AppProfile['settings']['mcp']) => AppProfile['settings']['mcp'],
+        options?: { silent?: boolean }
+      ) => {
+        const current = profileRef.current;
+        const nextProfile = {
+          ...current,
+          locale,
+          settings: normalizeProfileSettings({
+            memory: current.settings.memory,
+            mcp: updater(current.settings.mcp),
+            models: current.settings.models,
+            search: current.settings.search,
           }),
           theme,
           updated_at: new Date().toISOString(),
@@ -252,6 +282,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
     saveProfile: actions.saveProfile,
     saveProviderEnabled: actions.saveProviderEnabled,
     selectedProvider,
+    updateMcpSettings,
     updateMemorySettings,
     updateSearchSettings,
     updateProvider: actions.updateProvider,

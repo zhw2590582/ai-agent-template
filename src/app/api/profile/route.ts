@@ -37,6 +37,22 @@ const profilePatchSchema = z.object({
       recentMessageWindow: z.number().int().optional(),
       summaryMinMessages: z.number().int().optional(),
     }),
+    mcp: z.object({
+      enabled: z.boolean().optional(),
+      selectedServerId: z.string().nullable().optional(),
+      servers: z
+        .array(
+          z.object({
+            bearerToken: z.string().optional(),
+            enabled: z.boolean().optional(),
+            id: z.string().optional(),
+            serverName: z.string().optional(),
+            serverUrl: z.string().optional(),
+            transport: z.enum(['http', 'sse']).optional(),
+          })
+        )
+        .optional(),
+    }),
     models: z.object({
       providers: z.record(z.string(), z.unknown()),
       selectedChatModelId: z.string().nullable().optional(),

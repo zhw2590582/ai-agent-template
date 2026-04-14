@@ -7,8 +7,16 @@ vi.mock('@/features/chat/ai/core/prompts', () => ({
   getSystemPrompt: vi.fn(() => 'mock'),
 }));
 vi.mock('@/features/chat/ai/tools', () => ({
-  buildAgentTools: vi.fn(() => ({})),
+  buildSearchAgentTools: vi.fn(() => ({})),
 }));
+vi.mock('ai', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('ai')>();
+
+  return {
+    ...actual,
+    stepCountIs: vi.fn(() => () => false),
+  };
+});
 vi.mock('@/config/chat', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/config/chat')>();
 

@@ -1,6 +1,8 @@
 import { MEMORY_CONFIG } from '@/config/memory';
 import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
 import type { AppProfileSettings, MemorySettings } from '@/features/auth/profile/types';
+import type { McpSettings } from '@/features/mcp/types';
+import { normalizeMcpSettings } from '@/features/mcp/settings';
 import type { ModelsSettings, ProviderSettings } from '@/features/models/types';
 import type { SearchSettings } from '@/features/search/types';
 import { normalizeSearchSettings } from '@/features/search/settings';
@@ -106,6 +108,20 @@ function readSearchSettings(input: unknown): Partial<SearchSettings> | undefined
   return undefined;
 }
 
+function readMcpSettings(input: unknown): Partial<McpSettings> | undefined {
+  if (
+    typeof input === 'object' &&
+    input != null &&
+    'mcp' in input &&
+    typeof input.mcp === 'object' &&
+    input.mcp != null
+  ) {
+    return input.mcp as Partial<McpSettings>;
+  }
+
+  return undefined;
+}
+
 function clampMemoryNumber(value: unknown, fallback: number, min: number, max: number) {
   if (typeof value !== 'number' || Number.isNaN(value)) {
     return fallback;
@@ -182,8 +198,9 @@ export function normalizeProfileSettings(input?: unknown) {
   };
 
   const search = normalizeSearchSettings(readSearchSettings(input));
+  const mcp = normalizeMcpSettings(readMcpSettings(input));
 
-  return { memory, models, search } satisfies AppProfileSettings;
+  return { memory, mcp, models, search } satisfies AppProfileSettings;
 }
 
 export function getOrderedProviders(settings: AppProfileSettings) {

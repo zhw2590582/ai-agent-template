@@ -9,7 +9,9 @@ If information is missing, say so directly instead of guessing.`;
 export function getSystemPrompt(
   locale: Locale = DEFAULT_LOCALE,
   options?: {
+    hasMcpTools?: boolean;
     memoryContext?: string | null;
+    mcpServerNames?: string[] | null;
     webSearchEnabled?: boolean;
   }
 ): string {
@@ -25,11 +27,15 @@ ${options.memoryContext}`
 - Webpage extraction is available. Use the web_extract tool when the user provides one or more URLs or asks you to read a specific page directly.
 - Site crawling is available. Use the web_crawl tool when the user asks you to inspect a docs site, help center, or multi-page website section.`
     : '';
+  const mcpSection = options?.hasMcpTools
+    ? `
+- Additional MCP tools are available${options.mcpServerNames?.length ? ` from ${options.mcpServerNames.join(', ')}` : ''}. Use them when they clearly match the user's request and can provide more accurate external capabilities or live data.`
+    : '';
 
   return `${DEFAULT_SYSTEM_PROMPT}
 
 Context:
-- User locale: ${locale}${searchSection}${memorySection}`;
+- User locale: ${locale}${searchSection}${mcpSection}${memorySection}`;
 }
 
 export { DEFAULT_SYSTEM_PROMPT };

@@ -28,6 +28,10 @@ function getDialogDescriptionKey(view: Exclude<WorkbenchView, 'chat'>) {
     return 'memory_page.controls.description';
   }
 
+  if (view === 'mcp') {
+    return 'mcp_page.description';
+  }
+
   if (view === 'search') {
     return 'search_page.description';
   }

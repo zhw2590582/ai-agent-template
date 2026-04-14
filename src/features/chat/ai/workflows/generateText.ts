@@ -1,9 +1,8 @@
-import { stepCountIs, streamText, type UIMessage } from 'ai';
+import { stepCountIs, streamText, type ToolSet, type UIMessage } from 'ai';
 
 import { AI_CONFIG } from '@/config/chat';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import { getSystemPrompt } from '@/features/chat/ai/core/prompts';
-import { buildAgentTools } from '@/features/chat/ai/tools';
 import { buildChatMessagesWithSummary } from '@/features/chat/server/chat-message-context';
 import type { ChatProfileMemorySettings } from '@/features/chat/server/chat-request-context';
 import type { Locale } from '@/config/i18n';
@@ -12,22 +11,28 @@ import type { ChatRuntimeModel } from '@/features/models/types';
 interface RunGenerateTextWorkflowOptions {
   conversationSummary?: string | null;
   hasAgentTools: boolean;
+  hasMcpTools?: boolean;
+  hasSearchTools?: boolean;
   locale: Locale;
   memoryContext?: string | null;
   memorySettings?: ChatProfileMemorySettings | null;
   messages: UIMessage[];
+  mcpServerNames?: string[] | null;
   persistedConversationSummary?: string | null;
   runtimeModel: ChatRuntimeModel;
-  tools: ReturnType<typeof buildAgentTools>;
+  tools: ToolSet;
 }
 
 export async function runGenerateTextWorkflow({
   conversationSummary,
   hasAgentTools,
+  hasMcpTools,
+  hasSearchTools,
   locale,
   memoryContext,
   memorySettings,
   messages,
+  mcpServerNames,
   persistedConversationSummary,
   runtimeModel,
   tools,
@@ -35,8 +40,10 @@ export async function runGenerateTextWorkflow({
   return streamText({
     model: getRuntimeChatModel(runtimeModel),
     system: getSystemPrompt(locale, {
+      hasMcpTools,
       memoryContext,
-      webSearchEnabled: hasAgentTools,
+      mcpServerNames,
+      webSearchEnabled: hasSearchTools,
     }),
     messages: await buildChatMessagesWithSummary(
       messages,

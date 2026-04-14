@@ -19,8 +19,14 @@ export async function handleChatPost(request: Request) {
   const locale = resolveChatRequestLocale(request);
 
   try {
-    const { conversationId, conversationSummary, messages, runtimeModel, searchSettings } =
-      await validateRequest(request, chatPostSchema);
+    const {
+      conversationId,
+      conversationSummary,
+      mcpSettings,
+      messages,
+      runtimeModel,
+      searchSettings,
+    } = await validateRequest(request, chatPostSchema);
     const resolvedConversationId = conversationId ?? null;
 
     if (!runtimeModel) {
@@ -37,34 +43,48 @@ export async function handleChatPost(request: Request) {
     } = await supabase.auth.getUser();
     const {
       agentTools,
+      closeAgentResources,
       hasAgentTools,
+      hasSearchTools,
       memoryContext,
       memorySettings,
+      mcpServerNames,
       persistedConversationSummary,
     } = await loadChatRequestContext({
       conversationId: resolvedConversationId,
+      mcpSettings,
       searchSettings,
       supabase,
       user,
     });
 
-    const result = await runGenerateTextWorkflow({
-      conversationSummary,
-      hasAgentTools,
-      locale,
-      memoryContext,
-      memorySettings,
-      messages: messages as unknown as UIMessage[],
-      persistedConversationSummary,
-      runtimeModel,
-      tools: agentTools,
-    });
+    let result;
+    try {
+      result = await runGenerateTextWorkflow({
+        conversationSummary,
+        hasAgentTools,
+        hasMcpTools: mcpServerNames.length > 0,
+        hasSearchTools,
+        locale,
+        memoryContext,
+        memorySettings,
+        messages: messages as unknown as UIMessage[],
+        mcpServerNames,
+        persistedConversationSummary,
+        runtimeModel,
+        tools: agentTools,
+      });
+    } catch (workflowError) {
+      await closeAgentResources?.();
+      throw workflowError;
+    }
 
     result.consumeStream();
 
     return result.toUIMessageStreamResponse({
       originalMessages: messages as unknown as UIMessage[],
       onFinish: createChatFinishHandler({
+        closeAgentResources,
         conversationId: resolvedConversationId,
         locale,
         memorySettings,

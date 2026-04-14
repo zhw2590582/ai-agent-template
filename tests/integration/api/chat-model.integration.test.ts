@@ -5,6 +5,7 @@ const mockConvertToModelMessages = vi.fn(async (messages) => messages);
 
 vi.mock('ai', () => ({
   convertToModelMessages: mockConvertToModelMessages,
+  stepCountIs: vi.fn(() => () => false),
   streamText: mockStreamText,
 }));
 
@@ -19,7 +20,7 @@ vi.mock('@/features/chat/ai/core/prompts', () => ({
 }));
 
 vi.mock('@/features/chat/ai/tools', () => ({
-  buildAgentTools: vi.fn(() => ({})),
+  buildSearchAgentTools: vi.fn(() => ({})),
 }));
 
 vi.mock('@/config/chat', async (importOriginal) => {

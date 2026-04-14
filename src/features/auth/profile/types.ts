@@ -1,4 +1,5 @@
 import type { ProfileRecord } from '@/features/auth/storage/types';
+import type { McpSettings } from '@/features/mcp/types';
 import type { ModelsSettings } from '@/features/models/types';
 import type { SearchSettings } from '@/features/search/types';
 
@@ -13,6 +14,7 @@ export interface MemorySettings {
 
 export interface AppProfileSettings {
   memory: MemorySettings;
+  mcp: McpSettings;
   models: ModelsSettings;
   search: SearchSettings;
 }

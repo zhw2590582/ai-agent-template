@@ -8,5 +8,6 @@ export async function POST(request: Request) {
     config: API_RATE_LIMITS.MCP,
     namespace: API_NAMESPACES.MCP,
   });
+
   return Response.json({ message: SERVER_MESSAGES.MCP_UNDER_CONSTRUCTION });
 }

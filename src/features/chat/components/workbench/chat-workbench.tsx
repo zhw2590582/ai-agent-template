@@ -16,6 +16,7 @@ import { useChatWorkbench } from '@/features/chat/hooks/use-chat-workbench';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import type { WorkbenchView } from '@/features/chat/types';
 import { MemoryContent } from '@/features/memory/components/memory-content';
+import { McpContent } from '@/features/mcp/components/mcp-content';
 import type { MemoryListItem } from '@/features/memory/types';
 import { ModelsContent } from '@/features/models/components/models-content';
 import { SearchContent } from '@/features/search/components/search-content';
@@ -141,6 +142,12 @@ export function ChatWorkbench({
               onMemorySettingsChange={workbench.setMemorySettings}
               settings={workbench.memorySettings}
               summaries={initialConversations}
+            />
+          ) : activeDialogView === 'mcp' ? (
+            <McpContent
+              onClose={closeDialog}
+              onMcpSettingsChange={workbench.setMcpSettings}
+              settings={workbench.mcpSettings}
             />
           ) : activeDialogView === 'search' ? (
             <SearchContent

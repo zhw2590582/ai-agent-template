@@ -56,14 +56,22 @@ export function useChatSession({
   const runtimeModelRef = useRef(runtimeModel);
   const activeThreadIdRef = useRef(activeThreadId);
   const conversationSummaryRef = useRef(conversationSummary);
+  const mcpSettingsRef = useRef(profileSettings?.mcp);
   const searchSettingsRef = useRef(profileSettings?.search);
 
   useEffect(() => {
     runtimeModelRef.current = runtimeModel;
     activeThreadIdRef.current = activeThreadId;
     conversationSummaryRef.current = conversationSummary;
+    mcpSettingsRef.current = profileSettings?.mcp;
     searchSettingsRef.current = profileSettings?.search;
-  }, [activeThreadId, conversationSummary, profileSettings?.search, runtimeModel]);
+  }, [
+    activeThreadId,
+    conversationSummary,
+    profileSettings?.mcp,
+    profileSettings?.search,
+    runtimeModel,
+  ]);
 
   /* eslint-disable react-hooks/refs */
   const [transport] = useState(
@@ -97,6 +105,7 @@ export function useChatSession({
             messageId,
             messages,
             conversationSummary: conversationSummaryRef.current ?? undefined,
+            mcpSettings: mcpSettingsRef.current ?? undefined,
             searchSettings: searchSettingsRef.current ?? undefined,
             runtimeModel: runtimeModelRef.current ?? undefined,
             conversationId:

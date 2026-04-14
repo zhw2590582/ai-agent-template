@@ -1,6 +1,7 @@
 import { zhCNAuthMessages } from '@/i18n/locales/blocks/zh-CN/auth';
 import { zhCNChatMessages } from '@/i18n/locales/blocks/zh-CN/chat';
 import { zhCNMemoryMessages } from '@/i18n/locales/blocks/zh-CN/memory';
+import { zhCNMcpMessages } from '@/i18n/locales/blocks/zh-CN/mcp';
 import { zhCNModelsMessages } from '@/i18n/locales/blocks/zh-CN/models';
 import { zhCNSearchMessages } from '@/i18n/locales/blocks/zh-CN/search';
 import { zhCNSharedMessages } from '@/i18n/locales/blocks/zh-CN/shared';
@@ -9,6 +10,7 @@ const zhCN = {
   ...zhCNSharedMessages,
   ...zhCNChatMessages,
   ...zhCNMemoryMessages,
+  ...zhCNMcpMessages,
   ...zhCNModelsMessages,
   ...zhCNSearchMessages,
   ...zhCNAuthMessages,

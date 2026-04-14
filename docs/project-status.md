@@ -38,7 +38,9 @@
 - Memory V1：已接入最小版单维度 memory consolidation
 - `Memory` 顶部弹窗：控制项、记忆编辑/删除/导出、会话摘要编辑/删除
 - `Search` 顶部弹窗：Tavily key 配置、Search / Extract / Crawl 三类能力设置、连接测试
+- `MCP` 顶部弹窗：多远程 MCP server 配置、单 server 测试、聊天时挂载 MCP tools
 - Tavily tools：`web_search`、`web_extract`、`web_crawl`
+- MCP tools：已支持多个远程 MCP server，并在聊天请求里合并进 agent tools
 - 聊天 workflow 已抽到 `src/features/chat/ai/workflows/generateText.ts`
 - 聊天已开启基础 tool loop（step 上限控制）
 - 聊天消息区已支持：
@@ -54,7 +56,8 @@
 - 顶部工作台导航已统一成弹窗，但除聊天、Models、Memory、Search 外大多仍是占位内容
 - 聊天模型选择已接入，但会话级模型偏好仍保存在 `profile.settings`
 - 默认系统提示词目前仍是内置配置，后续计划交给用户自定义
-- `/api/mcp` 已有占位 endpoint，但没有真实 MCP 管理能力
+- `/api/mcp` 仍保留为未来“本项目自己的 MCP server”入口
+- 当前远程 MCP 管理能力已落到 `src/features/mcp/*` 和 `/api/mcp/test`
 - `server/types.ts` 已为 RAG / Planning / Multi-Agent 预留类型
 
 ### 仍是占位
@@ -63,11 +66,16 @@
 - Planning
 - Multi-Agent / Subagent
 - Sandbox 页面
-- MCP 管理页
 - Skills 管理页
 - Settings 页面
 - E2E 自动化测试
 - 长期记忆、用户偏好、工具市场等完整产品能力
+
+说明：
+
+- MCP 已经不再是纯占位
+- 但当前只完成“远程 MCP tools integration”
+- 本项目自己的 MCP server 还没实现
 
 ## 当前产品范围
 
@@ -143,6 +151,17 @@ Tavily tool execution
   -> src/features/search/server/tavily-client.ts
   -> Tavily search / extract / crawl
 
+MCP UI
+  -> MCP dialog
+  -> src/features/mcp/hooks/use-mcp-settings.ts
+  -> /api/profile
+  -> profile.settings.mcp
+
+Remote MCP tools
+  -> /api/mcp/test
+  -> src/features/mcp/server/mcp-client.ts
+  -> merged into chat tools
+
 API rate limiting
   -> src/lib/rate-limit.ts
   -> src/config/api-rate-limit.ts
@@ -179,6 +198,10 @@ API rate limiting
 - Search 内容：[src/features/search/components/search-content.tsx](../src/features/search/components/search-content.tsx)
 - Search settings 状态：[src/features/search/hooks/use-search-settings.ts](../src/features/search/hooks/use-search-settings.ts)
 - Tavily client：[src/features/search/server/tavily-client.ts](../src/features/search/server/tavily-client.ts)
+- MCP 内容：[src/features/mcp/components/mcp-content.tsx](../src/features/mcp/components/mcp-content.tsx)
+- MCP settings 状态：[src/features/mcp/hooks/use-mcp-settings.ts](../src/features/mcp/hooks/use-mcp-settings.ts)
+- MCP client：[src/features/mcp/server/mcp-client.ts](../src/features/mcp/server/mcp-client.ts)
+- MCP 远程测试 API：[src/app/api/mcp/test/route.ts](../src/app/api/mcp/test/route.ts)
 - rate limiting 配置：[src/config/api-rate-limit.ts](../src/config/api-rate-limit.ts)
 - rate limiting 实现：[src/lib/rate-limit.ts](../src/lib/rate-limit.ts)
 - 工具注册：[src/features/chat/ai/tools/index.ts](../src/features/chat/ai/tools/index.ts)
@@ -195,6 +218,7 @@ API rate limiting
 - provider 配置是 `profile.settings` 的一部分，不是独立数据库表
 - 当前 Memory 仍是 Supabase-first 的基础版，不包含向量检索和外部 memory provider
 - 当前 Search 使用 Tavily，不做自建向量检索或搜索索引
+- 当前 MCP 只做“远程 MCP tools integration”，不做 resources/prompts/elicitations，也不做本项目自己的 MCP server
 - 当前测试覆盖的是基础链路，不是完整产品行为
 - 多数工作台页面仍是占位，不要把导航存在误认为功能完成
 

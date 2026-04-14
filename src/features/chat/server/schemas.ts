@@ -31,6 +31,22 @@ const messageSchema = z
 export const chatPostSchema = z.object({
   conversationId: z.string().min(1).optional(),
   conversationSummary: z.string().trim().min(1).optional(),
+  mcpSettings: z
+    .object({
+      enabled: z.boolean(),
+      selectedServerId: z.string().nullable(),
+      servers: z.array(
+        z.object({
+          bearerToken: z.string(),
+          enabled: z.boolean(),
+          id: z.string(),
+          serverName: z.string(),
+          serverUrl: z.string(),
+          transport: z.enum(['http', 'sse']),
+        })
+      ),
+    })
+    .optional(),
   messages: z.array(messageSchema).min(1),
   searchSettings: z
     .object({
