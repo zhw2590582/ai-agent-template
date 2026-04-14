@@ -22,7 +22,6 @@ import type { McpServerSettings } from '@/features/mcp/types';
 interface McpServerListProps {
   clearDeleteTarget: () => void;
   deleteTargetId: string | null;
-  isTesting: boolean;
   onAddServer: () => void;
   onConfirmDelete: () => Promise<void> | void;
   onDeleteServer: (serverId: string) => void;
@@ -38,12 +37,12 @@ interface McpServerListProps {
       toolNames: string[];
     }
   >;
+  testingServerId: string | null;
 }
 
 export function McpServerList({
   clearDeleteTarget,
   deleteTargetId,
-  isTesting,
   onAddServer,
   onConfirmDelete,
   onDeleteServer,
@@ -52,6 +51,7 @@ export function McpServerList({
   onToggleServerEnabled,
   servers,
   testResults: _testResults,
+  testingServerId,
 }: McpServerListProps) {
   const t = useTranslations();
   const deleteTarget = servers.find((server) => server.id === deleteTargetId) ?? null;
@@ -107,14 +107,14 @@ export function McpServerList({
                       {t('mcp_page.edit_server')}
                     </Button>
                     <Button
-                      disabled={!server.serverUrl.trim() || isTesting}
+                      disabled={!server.serverUrl.trim() || testingServerId != null}
                       size="sm"
                       type="button"
                       variant="ghost"
                       onClick={() => void onRunConnectionTest(server.id)}
                     >
-                      {!isTesting ? <PlugZapIcon /> : null}
-                      {isTesting ? <Spinner data-icon="inline-start" /> : null}
+                      {testingServerId !== server.id ? <PlugZapIcon /> : null}
+                      {testingServerId === server.id ? <Spinner data-icon="inline-start" /> : null}
                       {t('mcp_page.test')}
                     </Button>
                     <Button
