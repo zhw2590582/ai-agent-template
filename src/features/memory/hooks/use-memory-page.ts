@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { ConversationSummary } from '@/features/chat/storage/types';
@@ -28,6 +28,7 @@ export function useMemoryPage({
   t,
 }: UseMemoryPageOptions) {
   const [localMemories, setLocalMemories] = useState(memories);
+  const [localSettings, setLocalSettings] = useState(settings);
   const [pendingEditId, setPendingEditId] = useState<string | null>(null);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -36,10 +37,23 @@ export function useMemoryPage({
     setLocalMemories(memories);
   }, [memories]);
 
-  const handleSettingsChange = async (updater: (settings: MemorySettings) => MemorySettings) => {
+  useEffect(() => {
+    setLocalSettings(settings);
+  }, [settings]);
+
+  const isSettingsDirty = useMemo(
+    () => JSON.stringify(localSettings) !== JSON.stringify(settings),
+    [localSettings, settings]
+  );
+
+  const updateDraftSettings = (updater: (settings: MemorySettings) => MemorySettings) => {
+    setLocalSettings((current) => updater(current));
+  };
+
+  const saveSettings = async () => {
     setIsSavingSettings(true);
     try {
-      const result = await onMemorySettingsChange(updater);
+      const result = await onMemorySettingsChange(() => localSettings);
       if (result === false) {
         toast.error(t('memory_page.toast.settings_update_failed'));
         return false;
@@ -138,10 +152,14 @@ export function useMemoryPage({
     handleDeleteMemory,
     handleEditMemory,
     handleExport,
-    handleSettingsChange,
     isSavingSettings,
+    isSettingsDirty,
     localMemories,
+    localSettings,
     pendingDeleteId,
     pendingEditId,
+    resetDraftSettings: () => setLocalSettings(settings),
+    saveSettings,
+    updateDraftSettings,
   };
 }

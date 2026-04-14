@@ -1,19 +1,20 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { ProviderList } from '@/features/models/components/provider-list';
 import { ProviderSettingsPanel } from '@/features/models/components/provider-settings-panel';
 import { useModelsPage } from '@/features/models/hooks/use-models-page';
-import { useTranslations } from 'next-intl';
 
-interface ModelsPageProps {
+interface ModelsContentProps {
   open: boolean;
   onClose: () => void;
   onSaved?: () => void;
 }
 
-export function ModelsPage({ open, onClose, onSaved }: ModelsPageProps) {
+export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
   const t = useTranslations();
   const {
     addCustomProvider,
@@ -38,7 +39,7 @@ export function ModelsPage({ open, onClose, onSaved }: ModelsPageProps) {
 
   return (
     <div className="text-foreground flex h-full min-h-0 flex-col">
-      <div className="flex min-h-0 flex-1 overflow-hidden">
+      <div className="mx-auto flex w-full max-w-5xl gap-8 px-6 py-8">
         <div className="shrink-0 border-r lg:w-80">
           <ProviderList
             providers={providers}
@@ -48,8 +49,7 @@ export function ModelsPage({ open, onClose, onSaved }: ModelsPageProps) {
             onToggleProvider={toggleProviderEnabled}
           />
         </div>
-
-        <div className="min-h-0 max-w-4xl flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           <ProviderSettingsPanel
             isApiKeyVisible={isApiKeyVisible}
             isTestingConnection={isTestingConnection}
@@ -62,6 +62,7 @@ export function ModelsPage({ open, onClose, onSaved }: ModelsPageProps) {
                 baseUrl: value,
               }))
             }
+            onDeleteProvider={deleteSelectedProvider}
             onFormatChange={(value) =>
               updateProvider(selectedProvider.id, (provider) => ({
                 ...provider,
@@ -76,12 +77,10 @@ export function ModelsPage({ open, onClose, onSaved }: ModelsPageProps) {
                 apiKey: value,
               }))
             }
-            onDeleteProvider={deleteSelectedProvider}
             onTestConnection={() => void handleTestConnection()}
           />
         </div>
       </div>
-
       <div className="bg-muted/50 flex shrink-0 items-center justify-end gap-3 border-t px-6 py-4">
         <Button
           type="button"

@@ -10,10 +10,7 @@ import type { MemorySettings } from '@/features/models/types';
 interface MemoryControlsProps {
   onExport?: () => void;
   isAuthenticated: boolean;
-  isSaving?: boolean;
-  onSettingsChange: (
-    updater: (settings: MemorySettings) => MemorySettings
-  ) => Promise<boolean> | void;
+  onSettingsChange: (updater: (settings: MemorySettings) => MemorySettings) => void;
   settings: MemorySettings;
   t: (key: string) => string;
 }
@@ -21,7 +18,6 @@ interface MemoryControlsProps {
 export function MemoryControls({
   onExport,
   isAuthenticated,
-  isSaving = false,
   onSettingsChange,
   settings,
   t,
@@ -60,7 +56,7 @@ export function MemoryControls({
       return false;
     }
 
-    void onSettingsChange((current) => ({
+    onSettingsChange((current) => ({
       ...current,
       [key]: parsed,
     }));
@@ -162,9 +158,9 @@ export function MemoryControls({
             <Switch
               checked={item.checked}
               className="data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
-              disabled={!isAuthenticated || isSaving}
+              disabled={!isAuthenticated}
               onCheckedChange={(checked) => {
-                void onSettingsChange((current) => ({
+                onSettingsChange((current) => ({
                   ...current,
                   [item.key]: checked,
                 }));

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import {
   BotIcon,
   BrainIcon,
@@ -35,18 +34,14 @@ type TranslateFn = (key: string, values?: Record<string, string | number>) => st
 
 interface ChatTopBarProps {
   activeView: WorkbenchView;
-  isModelsOpen?: boolean;
-  locale: string;
-  onOpenModels: () => void;
+  onOpenView: (view: Exclude<WorkbenchView, 'chat'>) => void;
   profileSaveStatus?: 'idle' | 'saved' | 'saving';
   t: TranslateFn;
 }
 
 export function ChatTopBar({
   activeView,
-  isModelsOpen = false,
-  locale,
-  onOpenModels,
+  onOpenView,
   profileSaveStatus = 'idle',
   t,
 }: ChatTopBarProps) {
@@ -58,32 +53,16 @@ export function ChatTopBar({
             {HEADER_NAV_ITEMS.map((item) => {
               const Icon = NAV_ICONS[item.id];
 
-              if (item.id === 'models') {
-                return (
-                  <Button
-                    key={item.id}
-                    size="sm"
-                    type="button"
-                    variant={activeView === item.id || isModelsOpen ? 'secondary' : 'ghost'}
-                    onClick={onOpenModels}
-                  >
-                    <Icon data-icon="inline-start" />
-                    {t(item.translationKey)}
-                  </Button>
-                );
-              }
-
               return (
                 <Button
                   key={item.id}
-                  asChild
                   size="sm"
+                  type="button"
                   variant={activeView === item.id ? 'secondary' : 'ghost'}
+                  onClick={() => onOpenView(item.id)}
                 >
-                  <Link href={`/${locale}/${item.id}`}>
-                    <Icon data-icon="inline-start" />
-                    {t(item.translationKey)}
-                  </Link>
+                  <Icon data-icon="inline-start" />
+                  {t(item.translationKey)}
                 </Button>
               );
             })}
@@ -99,10 +78,14 @@ export function ChatTopBar({
             ) : null}
             <LanguageSwitcher triggerClassName="w-10" />
             <ThemeToggle />
-            <Button asChild size="icon" type="button" variant="outline">
-              <Link aria-label={t('navigation.settings')} href={`/${locale}/settings`}>
-                <SettingsIcon />
-              </Link>
+            <Button
+              aria-label={t('navigation.settings')}
+              size="icon"
+              type="button"
+              variant="outline"
+              onClick={() => onOpenView('settings')}
+            >
+              <SettingsIcon />
             </Button>
             <AuthDialog
               configurationMissingDescription={t('auth.configuration_missing_description')}

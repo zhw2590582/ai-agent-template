@@ -1,28 +1,21 @@
 'use client';
 
 import type { UIMessage } from 'ai';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { ChatComposer } from '@/features/chat/components/composer/chat-composer';
 import { ChatMessageList } from '@/features/chat/components/messages/chat-message-list';
 import { ChatSidebar } from '@/features/chat/components/sidebar/chat-sidebar';
 import { ChatPlaceholder } from '@/features/chat/components/workbench/chat-placeholder';
+import { WorkbenchDialog } from '@/features/chat/components/workbench/workbench-dialog';
 import { ChatTopBar } from '@/features/chat/components/workbench/chat-topbar';
 import { useChatWorkbench } from '@/features/chat/hooks/use-chat-workbench';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import type { WorkbenchView } from '@/features/chat/types';
+import { MemoryContent } from '@/features/memory/components/memory-content';
 import type { MemoryListItem } from '@/features/memory/types';
-import { MemoryPage } from '@/features/memory/pages/memory-page';
-import { ModelsPage } from '@/features/models/pages/models-page';
+import { ModelsContent } from '@/features/models/components/models-content';
 import { cn } from '@/lib/utils';
 
 interface ChatWorkbenchProps {
@@ -30,9 +23,9 @@ interface ChatWorkbenchProps {
   initialConversationId: string | null;
   initialConversations: ConversationSummary[];
   initialConversationsHasMore: boolean;
-  invalidConversationId: boolean;
   initialMemories: MemoryListItem[];
   initialMessages: UIMessage[];
+  invalidConversationId: boolean;
 }
 
 export function ChatWorkbench({
@@ -45,7 +38,6 @@ export function ChatWorkbench({
   initialMessages,
 }: ChatWorkbenchProps) {
   const t = useTranslations();
-  const router = useRouter();
   const workbench = useChatWorkbench({
     initialConversationId,
     initialConversations,
@@ -54,29 +46,16 @@ export function ChatWorkbench({
     initialMessages,
   });
 
-  const isChatView = activeView === 'chat';
-  const isMemoryView = activeView === 'memory';
-  const isModelsRoute = activeView === 'models';
-  const [isModelsDialogOpen, setIsModelsDialogOpen] = useState(false);
-  const isModelsDialogVisible = isModelsRoute || isModelsDialogOpen;
+  const [activeDialogView, setActiveDialogView] = useState<Exclude<WorkbenchView, 'chat'> | null>(
+    activeView === 'chat' ? null : activeView
+  );
 
-  const closeModelsDialog = () => {
-    setIsModelsDialogOpen(false);
-
-    if (!isModelsRoute) {
-      setIsModelsDialogOpen(false);
-      return;
-    }
-
-    router.replace(
-      workbench.activeThreadId
-        ? `/${workbench.locale}?conversation=${workbench.activeThreadId}`
-        : `/${workbench.locale}`
-    );
+  const closeDialog = () => {
+    setActiveDialogView(null);
   };
 
-  const openModelsDialog = () => {
-    setIsModelsDialogOpen(true);
+  const openView = (view: Exclude<WorkbenchView, 'chat'>) => {
+    setActiveDialogView(view);
   };
 
   return (
@@ -106,64 +85,62 @@ export function ChatWorkbench({
 
         <section className="bg-background flex min-h-0 flex-1 flex-col transition-[width] duration-300 ease-out">
           <ChatTopBar
-            activeView={activeView}
-            isModelsOpen={isModelsDialogVisible}
-            locale={workbench.locale}
-            onOpenModels={openModelsDialog}
+            activeView={activeDialogView ?? 'chat'}
+            onOpenView={openView}
             profileSaveStatus={workbench.profileSaveStatus}
             t={t}
           />
-          {isChatView || isModelsRoute ? (
-            <>
-              <ChatMessageList
-                error={workbench.error}
-                isSidebarOpen={workbench.isSidebarOpen}
-                messages={workbench.messages}
-                onRetry={() => workbench.regenerate()}
-              />
-              <ChatComposer
-                availableModels={workbench.availableModels}
-                input={workbench.input}
-                isBusy={workbench.isBusy || workbench.isStartingThread}
-                isCreatingThread={workbench.isStartingThread}
-                isSidebarOpen={workbench.isSidebarOpen}
-                model={workbench.selectedModel}
-                onInputChange={workbench.setInput}
-                onModelChange={workbench.setSelectedModel}
-                onStop={workbench.stop}
-                onSubmit={workbench.handleSubmit}
-                status={workbench.isStartingThread ? 'submitted' : workbench.status}
-              />
-            </>
-          ) : isMemoryView ? (
-            <MemoryPage
+          <>
+            <ChatMessageList
+              error={workbench.error}
+              isSidebarOpen={workbench.isSidebarOpen}
+              messages={workbench.messages}
+              onRetry={() => workbench.regenerate()}
+            />
+            <ChatComposer
+              availableModels={workbench.availableModels}
+              input={workbench.input}
+              isBusy={workbench.isBusy || workbench.isStartingThread}
+              isCreatingThread={workbench.isStartingThread}
+              isSidebarOpen={workbench.isSidebarOpen}
+              model={workbench.selectedModel}
+              onInputChange={workbench.setInput}
+              onModelChange={workbench.setSelectedModel}
+              onStop={workbench.stop}
+              onSubmit={workbench.handleSubmit}
+              status={workbench.isStartingThread ? 'submitted' : workbench.status}
+            />
+          </>
+        </section>
+      </div>
+      {activeDialogView ? (
+        <WorkbenchDialog
+          open
+          t={t}
+          view={activeDialogView}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeDialog();
+            }
+          }}
+        >
+          {activeDialogView === 'models' ? (
+            <ModelsContent open onClose={closeDialog} />
+          ) : activeDialogView === 'memory' ? (
+            <MemoryContent
               isAuthenticated={workbench.isAuthenticated}
               locale={workbench.locale}
               memories={initialMemories}
+              onClose={closeDialog}
               onMemorySettingsChange={workbench.setMemorySettings}
               settings={workbench.memorySettings}
               summaries={workbench.sidebar.conversations}
             />
           ) : (
-            <ChatPlaceholder activeView={activeView} t={t} />
+            <ChatPlaceholder activeView={activeDialogView} t={t} />
           )}
-        </section>
-      </div>
-      <Dialog
-        open={isModelsDialogVisible}
-        onOpenChange={(open) => (open ? openModelsDialog() : closeModelsDialog())}
-      >
-        <DialogContent
-          className="flex h-[min(90vh,56rem)] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-6xl"
-          showCloseButton
-        >
-          <DialogHeader className="shrink-0 border-b px-6 py-4 pr-12">
-            <DialogTitle>{t('navigation.models')}</DialogTitle>
-            <DialogDescription>{t('models_page.sidebar.description')}</DialogDescription>
-          </DialogHeader>
-          <ModelsPage open={isModelsDialogVisible} onClose={closeModelsDialog} />
-        </DialogContent>
-      </Dialog>
+        </WorkbenchDialog>
+      ) : null}
     </main>
   );
 }
