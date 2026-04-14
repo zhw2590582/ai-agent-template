@@ -24,7 +24,6 @@ import { saveConversationMessages, verifyConversationOwnership } from '@/feature
 import { getProfileById } from '@/features/auth/storage/profiles';
 import {
   buildMemoryContext,
-  buildMemoryRetrievalQuery,
   listMemoriesForUser,
   saveConversationMemories,
 } from '@/features/memory/storage/memories';
@@ -134,7 +133,6 @@ export async function handleChatPost(request: Request) {
         const memories = await listMemoriesForUser(user.id, supabase);
         memoryContext = buildMemoryContext(memories, {
           memorySettings,
-          query: buildMemoryRetrievalQuery(messages as unknown as UIMessage[]),
         });
       }
     }

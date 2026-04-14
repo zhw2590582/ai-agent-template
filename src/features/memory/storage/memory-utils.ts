@@ -4,12 +4,33 @@ export function normalizeMemoryContent(value: string) {
   return value.replace(/\s+/g, ' ').trim();
 }
 
-export function tokenizeMemoryContent(value: string) {
+function extractWordTokens(value: string) {
   return normalizeMemoryContent(value)
     .toLowerCase()
     .replace(/[^\p{L}\p{N}\s]/gu, ' ')
     .split(/\s+/)
     .filter((token) => token.length > 2);
+}
+
+function extractCharacterNGrams(value: string, size = 2) {
+  const normalized = normalizeMemoryContent(value)
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]/gu, '');
+  const ngrams: string[] = [];
+
+  if (normalized.length < size) {
+    return ngrams;
+  }
+
+  for (let index = 0; index <= normalized.length - size; index += 1) {
+    ngrams.push(normalized.slice(index, index + size));
+  }
+
+  return ngrams;
+}
+
+function tokenizeMemoryContent(value: string) {
+  return [...extractWordTokens(value), ...extractCharacterNGrams(value)];
 }
 
 export function getMemorySimilarity(left: string, right: string) {

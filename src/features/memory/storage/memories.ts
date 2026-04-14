@@ -13,13 +13,11 @@ import {
 } from '@/features/memory/storage/memory-repository';
 import {
   buildMemoryContext,
-  buildMemoryRetrievalQuery,
 } from '@/features/memory/storage/memory-retrieval';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
 export {
   buildMemoryContext,
-  buildMemoryRetrievalQuery,
   deleteMemoryForUser,
   listMemoriesForUser,
   updateMemoryForUser,

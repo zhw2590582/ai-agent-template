@@ -109,7 +109,9 @@ export function useChatWorkbench({
     initialMessages: useChatInitialMessages,
     locale,
     onFinish: () => {
-      router.refresh();
+      window.setTimeout(() => {
+        router.refresh();
+      }, 1200);
     },
     profileSettings: models.profile.settings,
   });
