@@ -154,7 +154,7 @@ export function ChatWorkbench({
         onOpenChange={(open) => (open ? openModelsDialog() : closeModelsDialog())}
       >
         <DialogContent
-          className="flex h-[min(90vh,56rem)] max-w-[calc(100%-2rem)] flex-col overflow-hidden p-0 sm:max-w-6xl"
+          className="flex h-[min(90vh,56rem)] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-6xl"
           showCloseButton
         >
           <DialogHeader className="shrink-0 border-b px-6 py-4 pr-12">

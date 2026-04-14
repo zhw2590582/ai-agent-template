@@ -181,7 +181,7 @@ export function ProviderModelList({
           {models.map((model, index) => (
             <div
               key={`${model.id || 'custom'}-${index}`}
-              className="bg-background hover:bg-accent/10 flex items-start gap-4 px-4 py-4 transition-colors"
+              className="hover:bg-accent/10 flex items-start gap-4 px-4 py-4 transition-colors"
             >
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium">{model.name || model.id}</div>
