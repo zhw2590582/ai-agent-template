@@ -8,6 +8,7 @@ export {
   mapConversationSummary,
   renameConversation,
   saveConversationMessages,
+  updateConversationSummary,
   verifyConversationOwnership,
 } from '@/features/chat/storage/conversations';
 export { upsertProfileFromAuthUser } from '@/features/auth/storage/profiles';

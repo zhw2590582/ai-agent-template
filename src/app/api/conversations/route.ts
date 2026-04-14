@@ -14,6 +14,7 @@ import {
   mapConversationSummary,
   renameConversation,
   saveConversationMessages,
+  updateConversationSummary,
   upsertProfileFromAuthUser,
 } from '@/features/chat/storage';
 import {
@@ -109,7 +110,7 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const { conversationId, messages, title } = await validateRequest(
+    const { conversationId, messages, summary, title } = await validateRequest(
       request,
       patchConversationSchema
     );
@@ -126,6 +127,15 @@ export async function PATCH(request: Request) {
         {
           conversationId,
           messages: messages as unknown as UIMessage[],
+          userId: user.id,
+        },
+        supabase
+      );
+    } else if (summary !== undefined) {
+      await updateConversationSummary(
+        {
+          conversationId,
+          summary,
           userId: user.id,
         },
         supabase

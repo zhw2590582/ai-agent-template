@@ -167,6 +167,38 @@ export async function renameConversation(
   }
 }
 
+export async function updateConversationSummary(
+  input: {
+    conversationId: string;
+    summary: string | null;
+    userId: string;
+  },
+  client: ConversationsClient
+) {
+  const conversations = getConversationsTable(client);
+  const existingConversation = await verifyConversationOwnership(
+    input.conversationId,
+    input.userId,
+    client
+  );
+  const nextSummary = input.summary?.trim() || null;
+
+  const { error } = await conversations
+    .update({
+      analysis: existingConversation.analysis,
+      last_message_at: existingConversation.last_message_at,
+      messages: existingConversation.messages,
+      summary: nextSummary,
+      summary_updated_at: nextSummary ? new Date().toISOString() : null,
+      title: existingConversation.title,
+    })
+    .eq('id', input.conversationId);
+
+  if (error) {
+    throw error;
+  }
+}
+
 export async function deleteConversation(
   input: {
     conversationId: string;

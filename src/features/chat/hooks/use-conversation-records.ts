@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { UIMessage } from 'ai';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
@@ -16,6 +16,7 @@ import {
   persistConversationMessages,
   renameConversationRecord,
 } from '@/features/chat/data/conversation-operations';
+import { getMessageText } from '@/features/chat/storage/conversation-analysis';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
 function isLocalConversationId(conversationId: string | null) {
@@ -60,6 +61,7 @@ export function useConversationRecords({
   user,
 }: UseConversationRecordsOptions) {
   const t = useTranslations();
+  const generatedTitleKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (user || !urlConversationId || !isLocalConversationId(urlConversationId) || isBusy) {
@@ -115,6 +117,61 @@ export function useConversationRecords({
       user,
     });
   }, [activeThreadId, isBusy, locale, messages.length, runtimeModel, user]);
+
+  useEffect(() => {
+    if (!user || isBusy || !activeThreadId || !runtimeModel || messages.length === 0) {
+      return;
+    }
+
+    const firstUserMessage = messages.find(
+      (message) => message.role === 'user' && getMessageText(message).length > 0
+    );
+
+    if (!firstUserMessage) {
+      return;
+    }
+
+    const input = getMessageText(firstUserMessage);
+    const requestKey = `${activeThreadId}:${input}`;
+    if (generatedTitleKeyRef.current === requestKey) {
+      return;
+    }
+
+    generatedTitleKeyRef.current = requestKey;
+
+    void (async () => {
+      try {
+        const response = await fetch('/api/chat/title', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            input,
+            locale,
+            runtimeModel,
+          }),
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as { title?: string };
+        const generatedTitle = data.title?.trim();
+
+        if (!generatedTitle) {
+          return;
+        }
+
+        onOptimisticPatchConversation(activeThreadId, {
+          title: generatedTitle,
+        });
+      } catch {
+        // Keep the existing sidebar title if generation fails.
+      }
+    })();
+  }, [activeThreadId, isBusy, locale, messages, onOptimisticPatchConversation, runtimeModel, user]);
 
   useEffect(() => {
     if (

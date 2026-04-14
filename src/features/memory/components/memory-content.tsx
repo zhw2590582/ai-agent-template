@@ -41,14 +41,19 @@ export function MemoryContent({
   const [showSaved, setShowSaved] = useState(false);
   const {
     handleDeleteMemory,
+    handleDeleteSummary,
     handleEditMemory,
+    handleEditSummary,
     handleExport,
     isSavingSettings,
     isSettingsDirty,
     localMemories,
     localSettings,
+    localSummaries,
     pendingDeleteId,
     pendingEditId,
+    pendingSummaryDeleteId,
+    pendingSummaryEditId,
     resetDraftSettings,
     saveSettings,
     updateDraftSettings,
@@ -128,7 +133,15 @@ export function MemoryContent({
           t={t}
         />
         <Separator />
-        <MemorySummaryList locale={locale} summaries={summaries} t={t} />
+        <MemorySummaryList
+          locale={locale}
+          onDeleteSummary={handleDeleteSummary}
+          onEditSummary={handleEditSummary}
+          pendingDeleteId={pendingSummaryDeleteId}
+          pendingEditId={pendingSummaryEditId}
+          summaries={localSummaries}
+          t={t}
+        />
       </div>
     </WorkbenchDialogPanel>
   );

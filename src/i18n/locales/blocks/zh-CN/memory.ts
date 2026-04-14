@@ -44,11 +44,18 @@ export const zhCNMemoryMessages = {
     summaries: {
       title: '会话摘要',
       description: '这些摘要帮助应用在长对话里保留重点。',
+      edit_title: '编辑摘要',
+      edit_description: '更新这条会话的已保存摘要。',
+      delete_title: '删除摘要',
+      delete_description: '确认删除这条会话摘要吗？之后仍然可以重新生成。',
+      content_label: '摘要',
       empty_title: '还没有摘要',
       empty_description: '当某个会话足够长时，这里会开始出现摘要。',
     },
     toast: {
       delete_failed: '删除记忆失败。',
+      summary_delete_failed: '删除摘要失败。',
+      summary_update_failed: '更新摘要失败。',
       settings_update_success: '记忆设置已保存。',
       settings_update_failed: '更新记忆设置失败。',
       update_failed: '更新记忆失败。',

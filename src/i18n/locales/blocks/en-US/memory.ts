@@ -50,11 +50,19 @@ export const enUSMemoryMessages = {
     summaries: {
       title: 'Conversation Summaries',
       description: 'These summaries help the app keep track of longer conversations.',
+      edit_title: 'Edit summary',
+      edit_description: 'Update the saved summary for this conversation.',
+      delete_title: 'Delete Summary',
+      delete_description:
+        'Delete this conversation summary? A new one can be generated again later.',
+      content_label: 'Summary',
       empty_title: 'No summaries yet',
       empty_description: 'Summaries appear after a conversation becomes long enough to need one.',
     },
     toast: {
       delete_failed: 'Failed to delete memory.',
+      summary_delete_failed: 'Failed to delete summary.',
+      summary_update_failed: 'Failed to update summary.',
       settings_update_success: 'Memory settings saved.',
       settings_update_failed: 'Failed to update memory settings.',
       update_failed: 'Failed to update memory.',

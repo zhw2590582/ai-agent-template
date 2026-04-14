@@ -89,10 +89,11 @@ export const patchConversationSchema = z
   .object({
     conversationId: z.string().min(1, 'Conversation ID is required'),
     messages: z.array(messageSchema).min(1, 'Messages are required').optional(),
+    summary: z.string().trim().max(4000, 'Summary is too long').nullable().optional(),
     title: z.string().trim().min(1, 'Title is required').max(100, 'Title is too long').optional(),
   })
-  .refine((value) => value.messages || value.title, {
-    message: 'Either messages or title is required',
+  .refine((value) => value.messages || value.title || value.summary !== undefined, {
+    message: 'Either messages, title, or summary is required',
     path: ['messages'],
   });
 

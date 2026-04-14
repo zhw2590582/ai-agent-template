@@ -11,17 +11,10 @@ import {
   updateMemoryForUser,
   updateMemoryRecord,
 } from '@/features/memory/storage/memory-repository';
-import {
-  buildMemoryContext,
-} from '@/features/memory/storage/memory-retrieval';
+import { buildMemoryContext } from '@/features/memory/storage/memory-retrieval';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
-export {
-  buildMemoryContext,
-  deleteMemoryForUser,
-  listMemoriesForUser,
-  updateMemoryForUser,
-};
+export { buildMemoryContext, deleteMemoryForUser, listMemoriesForUser, updateMemoryForUser };
 
 export async function saveConversationMemories(
   input: {

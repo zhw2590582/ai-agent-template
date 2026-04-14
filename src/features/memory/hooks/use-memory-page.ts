@@ -29,9 +29,12 @@ export function useMemoryPage({
 }: UseMemoryPageOptions) {
   const [localMemories, setLocalMemories] = useState(memories);
   const [localSettings, setLocalSettings] = useState(settings);
+  const [localSummaries, setLocalSummaries] = useState(summaries);
   const [pendingEditId, setPendingEditId] = useState<string | null>(null);
+  const [pendingSummaryEditId, setPendingSummaryEditId] = useState<string | null>(null);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [pendingSummaryDeleteId, setPendingSummaryDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     setLocalMemories(memories);
@@ -40,6 +43,10 @@ export function useMemoryPage({
   useEffect(() => {
     setLocalSettings(settings);
   }, [settings]);
+
+  useEffect(() => {
+    setLocalSummaries(summaries);
+  }, [summaries]);
 
   const isSettingsDirty = useMemo(
     () => JSON.stringify(localSettings) !== JSON.stringify(settings),
@@ -134,8 +141,8 @@ export function useMemoryPage({
     const payload = {
       exportedAt: new Date().toISOString(),
       memories: localMemories,
-      settings,
-      summaries,
+      settings: localSettings,
+      summaries: localSummaries,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: 'application/json',
@@ -148,16 +155,100 @@ export function useMemoryPage({
     URL.revokeObjectURL(url);
   };
 
+  const handleDeleteSummary = async (conversationId: string) => {
+    if (!isAuthenticated) {
+      return false;
+    }
+
+    setPendingSummaryDeleteId(conversationId);
+    try {
+      const response = await fetch('/api/conversations', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ conversationId, summary: null }),
+      });
+
+      if (!response.ok) {
+        toast.error(
+          await getApiErrorToastMessage(response, t, 'memory_page.toast.summary_delete_failed')
+        );
+        return false;
+      }
+
+      setLocalSummaries((current) =>
+        current.map((summary) =>
+          summary.id === conversationId
+            ? {
+                ...summary,
+                summary: null,
+              }
+            : summary
+        )
+      );
+      return true;
+    } finally {
+      setPendingSummaryDeleteId(null);
+    }
+  };
+
+  const handleEditSummary = async (input: { conversationId: string; summary: string }) => {
+    if (!isAuthenticated) {
+      return false;
+    }
+
+    setPendingSummaryEditId(input.conversationId);
+    try {
+      const response = await fetch('/api/conversations', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversationId: input.conversationId,
+          summary: input.summary.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        toast.error(
+          await getApiErrorToastMessage(response, t, 'memory_page.toast.summary_update_failed')
+        );
+        return false;
+      }
+
+      setLocalSummaries((current) =>
+        current.map((summary) =>
+          summary.id === input.conversationId
+            ? {
+                ...summary,
+                summary: input.summary.trim(),
+              }
+            : summary
+        )
+      );
+      return true;
+    } finally {
+      setPendingSummaryEditId(null);
+    }
+  };
+
   return {
+    handleDeleteSummary,
     handleDeleteMemory,
+    handleEditSummary,
     handleEditMemory,
     handleExport,
     isSavingSettings,
     isSettingsDirty,
     localMemories,
     localSettings,
+    localSummaries,
     pendingDeleteId,
     pendingEditId,
+    pendingSummaryDeleteId,
+    pendingSummaryEditId,
     resetDraftSettings: () => setLocalSettings(settings),
     saveSettings,
     updateDraftSettings,
