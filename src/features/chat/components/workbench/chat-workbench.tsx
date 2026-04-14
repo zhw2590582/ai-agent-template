@@ -2,6 +2,7 @@
 
 import type { UIMessage } from 'ai';
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
@@ -15,13 +16,48 @@ import { ChatTopBar } from '@/features/chat/components/workbench/chat-topbar';
 import { useChatWorkbench } from '@/features/chat/hooks/use-chat-workbench';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import type { WorkbenchView } from '@/features/chat/types';
-import { MemoryContent } from '@/features/memory/components/memory-content';
-import { McpContent } from '@/features/mcp/components/mcp-content';
 import type { MemoryListItem } from '@/features/memory/types';
-import { ModelsContent } from '@/features/models/components/models-content';
-import { SearchContent } from '@/features/search/components/search-content';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function DialogContentLoading() {
+  return (
+    <div className="flex min-h-105 flex-col px-6 py-6">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+        <div className="space-y-3">
+          <Skeleton className="h-6 w-40 rounded-md" />
+          <Skeleton className="h-4 w-72 rounded-md" />
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-28 w-full rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const ModelsContent = dynamic(
+  () => import('@/features/models/components/models-content').then((mod) => mod.ModelsContent),
+  { loading: DialogContentLoading }
+);
+
+const MemoryContent = dynamic(
+  () => import('@/features/memory/components/memory-content').then((mod) => mod.MemoryContent),
+  { loading: DialogContentLoading }
+);
+
+const McpContent = dynamic(
+  () => import('@/features/mcp/components/mcp-content').then((mod) => mod.McpContent),
+  { loading: DialogContentLoading }
+);
+
+const SearchContent = dynamic(
+  () => import('@/features/search/components/search-content').then((mod) => mod.SearchContent),
+  { loading: DialogContentLoading }
+);
 
 interface ChatWorkbenchProps {
   activeView: WorkbenchView;
