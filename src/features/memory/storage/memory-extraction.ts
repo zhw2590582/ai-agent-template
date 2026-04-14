@@ -8,10 +8,13 @@ import type { ChatRuntimeModel } from '@/features/models/types';
 import { MEMORY_KINDS, type MemoryKind } from '@/features/memory/types';
 import { normalizeMemoryContent } from '@/features/memory/storage/memory-utils';
 
+const AUTO_MEMORY_KINDS = MEMORY_KINDS.filter((kind) => kind !== 'manual');
+
 const memoryExtractionItemSchema = z.object({
   content: z.string().min(1).max(280),
-  kind: z.enum(MEMORY_KINDS),
+  kind: z.enum(AUTO_MEMORY_KINDS),
 });
+const memoryExtractionArraySchema = z.array(memoryExtractionItemSchema).max(3);
 
 function formatMessages(messages: UIMessage[]) {
   return messages
@@ -34,7 +37,7 @@ export async function extractConversationMemories(
     runtimeModel?: ChatRuntimeModel | null;
   }
 ): Promise<Array<{ content: string; kind: MemoryKind }>> {
-  if (!options.runtimeModel || messages.length < 4) {
+  if (!options.runtimeModel || messages.length < 2) {
     return [];
   }
 
@@ -55,25 +58,57 @@ Rules:
 - Ignore temporary requests, one-off tasks, and transient debugging details
 - Prefer at most 3 memories
 - Each item must have: kind, content
-- Valid kinds only: ${MEMORY_KINDS.join(', ')}
+- Valid kinds only: ${AUTO_MEMORY_KINDS.join(', ')}
 - Use:
   - preference for stable stylistic or behavioral preferences
   - profile for durable identity or background information
   - workflow for repeated tools, stacks, defaults, or working patterns
   - fact for other stable facts that do not fit the categories above
-  - manual should almost never be used for automatic extraction
 
 Conversation:
 ${transcript}`;
 
-  const { output } = await generateText({
-    model: getRuntimeChatModel(options.runtimeModel),
-    output: Output.array({
-      element: memoryExtractionItemSchema,
-    }),
-    prompt,
-    maxOutputTokens: 220,
-  });
+  let output: Array<{ content: string; kind: (typeof AUTO_MEMORY_KINDS)[number] }>;
+
+  try {
+    const result = await generateText({
+      model: getRuntimeChatModel(options.runtimeModel),
+      output: Output.array({
+        element: memoryExtractionItemSchema,
+      }),
+      prompt,
+      maxOutputTokens: 220,
+    });
+
+    output = result.output;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    if (!message.toLowerCase().includes('response_format')) {
+      throw error;
+    }
+
+    const fallbackPrompt = `${prompt}
+
+Return valid JSON only.
+- Output a JSON array
+- Do not wrap the JSON in markdown fences
+- Each item must follow this shape: {"kind":"preference|profile|workflow|fact","content":"..."}
+- Return [] when there is nothing worth saving`;
+
+    const { text } = await generateText({
+      model: getRuntimeChatModel(options.runtimeModel),
+      prompt: fallbackPrompt,
+      maxOutputTokens: 220,
+    });
+
+    try {
+      const parsed = memoryExtractionArraySchema.safeParse(JSON.parse(text));
+      output = parsed.success ? parsed.data : [];
+    } catch {
+      output = [];
+    }
+  }
 
   return output
     .map((item) => ({

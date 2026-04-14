@@ -173,14 +173,14 @@ export async function handleChatPost(request: Request) {
         }
 
         void (async () => {
-          try {
-            if (!user) {
-              logger.warn('Chat onFinish: user not authenticated, messages not saved', {
-                conversationId,
-              });
-              return;
-            }
+          if (!user) {
+            logger.warn('Chat onFinish: user not authenticated, messages not saved', {
+              conversationId,
+            });
+            return;
+          }
 
+          try {
             await saveConversationMessages(
               {
                 conversationId,
@@ -192,23 +192,32 @@ export async function handleChatPost(request: Request) {
               },
               supabase
             );
-
-            if (memorySettings?.enabled && memorySettings.autoWrite) {
-              await saveConversationMemories(
-                {
-                  conversationId,
-                  locale,
-                  messages: responseMessages,
-                  runtimeModel,
-                  userId: user.id,
-                },
-                supabase
-              );
-            }
           } catch (saveError) {
             logger.error('Chat onFinish: failed to save messages', {
               conversationId,
               error: saveError instanceof Error ? saveError.message : String(saveError),
+            });
+          }
+
+          if (!memorySettings?.enabled || !memorySettings.autoWrite) {
+            return;
+          }
+
+          try {
+            await saveConversationMemories(
+              {
+                conversationId,
+                locale,
+                messages: responseMessages,
+                runtimeModel,
+                userId: user.id,
+              },
+              supabase
+            );
+          } catch (memoryError) {
+            logger.error('Chat onFinish: failed to save memories', {
+              conversationId,
+              error: memoryError instanceof Error ? memoryError.message : String(memoryError),
             });
           }
         })();

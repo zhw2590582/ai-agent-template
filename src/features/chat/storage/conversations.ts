@@ -89,6 +89,7 @@ export async function saveConversationMessages(
   if (!analysis.title_generated && analysis.first_user_message) {
     try {
       const generatedTitle = await generateConversationTitle(analysis.first_user_message, {
+        locale: input.locale,
         runtimeModel: input.runtimeModel,
       });
       if (generatedTitle) {
