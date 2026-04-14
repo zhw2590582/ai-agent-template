@@ -83,7 +83,6 @@ export function MemoryContent({
               if (!success) {
                 return;
               }
-              onClose?.();
             }}
           >
             {isSavingSettings ? <Spinner data-icon="inline-start" /> : null}
