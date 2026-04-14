@@ -43,6 +43,7 @@ export function McpServerEditorDialog({
   const t = useTranslations();
   const [server, setServer] = useState<McpServerSettings | null>(initialServer);
   const [isTokenVisible, setIsTokenVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isInvalid = useMemo(() => {
     if (!server) {
@@ -180,15 +181,21 @@ export function McpServerEditorDialog({
             {t('common.cancel')}
           </Button>
           <Button
-            disabled={isInvalid}
+            disabled={isInvalid || isSubmitting}
             type="button"
             onClick={async () => {
-              const success = await onSave(server);
-              if (success !== false) {
-                onOpenChange(false);
+              setIsSubmitting(true);
+              try {
+                const success = await onSave(server);
+                if (success !== false) {
+                  onOpenChange(false);
+                }
+              } finally {
+                setIsSubmitting(false);
               }
             }}
           >
+            {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
             {t('common.save')}
           </Button>
         </DialogFooter>

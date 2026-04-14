@@ -156,15 +156,20 @@ export function useMcpSettings({
   };
 
   const save = async () => {
+    return saveSettings(localSettings);
+  };
+
+  const saveSettings = async (nextSettings: McpSettings) => {
     setIsSaving(true);
     try {
-      const success = await onMcpSettingsChange(() => localSettings);
+      const success = await onMcpSettingsChange(() => nextSettings);
 
       if (success === false) {
         toast.error(saveFailedMessage);
         return false;
       }
 
+      setLocalSettings(nextSettings);
       setShowSaved(true);
       toast.success(saveSuccessMessage);
       return true;
@@ -182,6 +187,7 @@ export function useMcpSettings({
     resetAndClose,
     runConnectionTest,
     save,
+    saveSettings,
     showSaved,
     testResults,
     testingServerId,

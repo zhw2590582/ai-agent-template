@@ -1,5 +1,6 @@
 'use client';
 
+import { ExternalLinkIcon, PlugZapIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -66,18 +67,37 @@ export function SearchContent({ onClose, onSearchSettingsChange, settings }: Sea
     >
       <div className="text-foreground mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-8">
         <section className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-xl font-semibold">{t('search_page.title')}</h2>
-            <p className="text-muted-foreground max-w-2xl text-sm">
-              {t('search_page.description')}
-            </p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-xl font-semibold">{t('search_page.title')}</h2>
+              <p className="text-muted-foreground max-w-2xl text-sm">
+                {t('search_page.description')}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                disabled={!localSettings.tavilyApiKey.trim() || isTesting}
+                size="sm"
+                type="button"
+                variant="outline"
+                onClick={() => void runConnectionTest()}
+              >
+                {!isTesting ? <PlugZapIcon data-icon="inline-start" /> : null}
+                {isTesting ? <Spinner data-icon="inline-start" /> : null}
+                {t('search_page.test_connection')}
+              </Button>
+              <Button asChild size="sm" type="button" variant="outline">
+                <a href="https://app.tavily.com/home" rel="noreferrer" target="_blank">
+                  <ExternalLinkIcon data-icon="inline-start" />
+                  {t('search_page.get_api_key')}
+                </a>
+              </Button>
+            </div>
           </div>
 
           <SearchConnectionSection
             isApiKeyVisible={isApiKeyVisible}
-            isTesting={isTesting}
             settings={localSettings}
-            onRunConnectionTest={() => void runConnectionTest()}
             onToggleApiKeyVisibility={() => setIsApiKeyVisible((current) => !current)}
             onUpdateSettings={updateSettings}
           />

@@ -36,6 +36,7 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
     resetAndClose,
     runConnectionTest,
     save,
+    saveSettings,
     showSaved,
     testResults,
     testingServerId,
@@ -113,6 +114,22 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
               return;
             }
 
+            const nextServers = localSettings.servers.filter((server) => server.id !== deleteTargetId);
+            const nextSelectedServerId =
+              localSettings.selectedServerId === deleteTargetId
+                ? (nextServers[0]?.id ?? null)
+                : localSettings.selectedServerId;
+
+            const success = await saveSettings({
+              ...localSettings,
+              selectedServerId: nextSelectedServerId,
+              servers: nextServers,
+            });
+
+            if (!success) {
+              return;
+            }
+
             removeServer(deleteTargetId);
             setDeleteTargetId(null);
           }}
@@ -157,15 +174,16 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
         }}
         onSave={async (server) => {
           if (editorMode === 'add') {
-            updateSettings((current) => ({
-              ...current,
+            return saveSettings({
+              ...localSettings,
               selectedServerId: server.id,
-              servers: [...current.servers, server],
-            }));
-            return true;
+              servers: [...localSettings.servers, server],
+            });
           } else {
-            updateServer(server.id, () => server);
-            return true;
+            return saveSettings({
+              ...localSettings,
+              servers: localSettings.servers.map((item) => (item.id === server.id ? server : item)),
+            });
           }
         }}
       />
