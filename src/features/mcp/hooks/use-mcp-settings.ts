@@ -210,12 +210,15 @@ export function useMcpSettings({
                       .filter((argument) => typeof argument?.name === 'string')
                       .map((argument) => ({
                         description:
-                          typeof argument.description === 'string' ? argument.description : undefined,
+                          typeof argument.description === 'string'
+                            ? argument.description
+                            : undefined,
                         name: argument.name!,
                         required: Boolean(argument.required),
                       }))
                   : [],
-                description: typeof prompt.description === 'string' ? prompt.description : undefined,
+                description:
+                  typeof prompt.description === 'string' ? prompt.description : undefined,
                 name: prompt.name!,
                 title: typeof prompt.title === 'string' ? prompt.title : undefined,
               }))
@@ -223,7 +226,8 @@ export function useMcpSettings({
         resources: Array.isArray(data.resources)
           ? data.resources
               .filter(
-                (resource) => typeof resource?.name === 'string' && typeof resource?.uri === 'string'
+                (resource) =>
+                  typeof resource?.name === 'string' && typeof resource?.uri === 'string'
               )
               .map((resource) => ({
                 description:

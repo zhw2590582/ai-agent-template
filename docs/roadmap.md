@@ -69,6 +69,23 @@
 3. `MCP`
 4. `Settings`
 
+### 4.5 MCP 全能力研究
+
+目标：在当前 demo server 基础上，逐步理解并落地 MCP 的完整能力。
+
+优先做：
+
+1. 先把 `tools / resources / prompts` 的消费链路做完整
+2. 再单独研究 `logging`
+3. 再研究 `elicitation`
+4. 再研究 `sampling`
+5. 最后研究 `roots`
+
+参考：
+
+- [docs/mcp-server-demo.md](./mcp-server-demo.md)
+- [docs/mcp-implementation.md](./mcp-implementation.md)
+
 ### 5. RAG
 
 目标：让回答可以基于外部知识源。

@@ -1,11 +1,17 @@
 import { MCP_CONFIG } from '@/config/mcp';
 import type { McpServerSettings, McpSettings } from '@/features/mcp/types';
 
+function createServerId() {
+  return typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? `mcp-server-${crypto.randomUUID()}`
+    : `mcp-server-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 function createDefaultServer(index = 1): McpServerSettings {
   return {
     bearerToken: '',
     enabled: true,
-    id: `mcp-server-${index}`,
+    id: createServerId(),
     serverName: `${MCP_CONFIG.DEFAULT_SERVER_NAME} ${index}`,
     serverUrl: '',
     transport: MCP_CONFIG.DEFAULT_TRANSPORT,
@@ -35,8 +41,7 @@ export function createMcpServerDraft(index: number, existingIds: string[] = []) 
   let server = createDefaultServer(index);
 
   while (existingIds.includes(server.id)) {
-    server = createDefaultServer(index + 1);
-    index += 1;
+    server = createDefaultServer(index);
   }
 
   return server;

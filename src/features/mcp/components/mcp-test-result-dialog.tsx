@@ -83,7 +83,7 @@ export function McpTestResultDialog({ open, onOpenChange, result }: McpTestResul
 
             <div className="flex flex-col gap-3">
               <p className="text-sm font-medium">{t('mcp_page.capabilities_label')}</p>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {(
                   [
                     ['tools', result.capabilities.tools],
@@ -136,7 +136,7 @@ export function McpTestResultDialog({ open, onOpenChange, result }: McpTestResul
                   {result.resources.map((resource) => (
                     <div key={resource.uri} className="border-border rounded-md border px-4 py-3">
                       <p className="text-sm font-medium">{resource.title || resource.name}</p>
-                      <p className="text-muted-foreground mt-1 break-all text-xs">{resource.uri}</p>
+                      <p className="text-muted-foreground mt-1 text-xs break-all">{resource.uri}</p>
                       {resource.description ? (
                         <p className="text-muted-foreground mt-2 text-sm">{resource.description}</p>
                       ) : null}

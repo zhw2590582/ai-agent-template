@@ -28,7 +28,7 @@
 
 当前还没有实现的是：
 
-- 本项目自己的 MCP server
+- 本项目自己的正式 MCP server
 - MCP resources / prompts 的实际消费流程
 - elicitation / approval UI
 - stdio server 管理
@@ -59,16 +59,22 @@
 - 让外部 client 连到我们自己的 `/api/mcp`
 - 对外暴露我们自己的 tools / resources / prompts
 
-这条链目前还没实现。
+这条链目前只实现了一个**学习用 demo server**，还不是正式产品能力。
 
 因此当前路由语义是：
 
 - `src/app/api/mcp/route.ts`
-  - 预留给未来的“本项目自己的 MCP server”
+  - 当前是最小 demo MCP server
 - `src/app/api/mcp/test/route.ts`
   - 当前用于测试外部远程 MCP server
 
 这两个方向不要混在同一个 route 里。
+
+另外：
+
+- [docs/mcp-server-demo.md](./mcp-server-demo.md)
+  - 记录了当前 demo server 暴露了哪些能力
+  - 以及哪些只是 server 侧示例，还没被当前产品完整消费
 
 ## 当前数据结构
 
