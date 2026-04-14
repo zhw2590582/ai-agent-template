@@ -1,7 +1,7 @@
 import type { UIMessage } from 'ai';
 import { generateText } from 'ai';
 
-import { MEMORY_CONFIG } from '@/config/app';
+import { AI_CONFIG, MEMORY_CONFIG, TEXT_LIMITS } from '@/config/app';
 import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';
@@ -16,7 +16,7 @@ export function resolveConversationSummaryConfig(memorySettings?: Partial<Memory
 }
 
 function trimSummary(value: string) {
-  return value.replace(/\s+/g, ' ').trim().slice(0, 1200);
+  return value.replace(/\s+/g, ' ').trim().slice(0, TEXT_LIMITS.GENERATED_SUMMARY);
 }
 
 function formatMessages(messages: UIMessage[]) {
@@ -124,7 +124,7 @@ ${transcript}`;
   const { text } = await generateText({
     model: getRuntimeChatModel(options.runtimeModel),
     prompt,
-    maxOutputTokens: 220,
+    maxOutputTokens: AI_CONFIG.SUMMARY_MAX_OUTPUT_TOKENS,
   });
 
   const summary = trimSummary(text);

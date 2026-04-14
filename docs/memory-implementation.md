@@ -67,7 +67,7 @@ Memory V1 不绑定任何单一模型供应商，也不绑定外部 memory 平�
 
 - 避免长会话持续膨胀
 - 让未来消息生成时不必总是带完整历史
-- 为 Memory 页面提供“会话摘要”可视化
+- 为 Memory 弹窗提供“会话摘要”可视化
 
 当前存储位置：
 
@@ -284,27 +284,25 @@ guest 用户：
 - conversations 持久化
 - summaries 持久化
 - long-term memories 持久化
-- Memory 页面查看
-- Memory 页面编辑、删除、导出
+- Memory 弹窗查看
+- Memory 弹窗编辑、删除、导出
 - cross-conversation memory injection
 
 ## 长期记忆注入策略
 
-当前不是简单按更新时间截断，而是：
+当前是更简单、更稳定的策略：
 
-1. 从最近几条用户消息构造 retrieval query
-2. 对当前用户的 `active` memories 做规则级相关性排序
-3. 对 `preference / profile / workflow` 做轻微权重提升
-4. 低于阈值的 memory 不注入
-5. 最终按 `contextMaxItems` 截断成 top-k
+1. 读取当前用户的 `active` memories
+2. 直接组装成 memory context
+3. 最终按 `contextMaxItems` 做数量上限截断
 
-这意味着当前 prompt 注入更接近：
+也就是说，当前跨会话注入更接近：
 
-- relevant memory retrieval
+- append active memories with a fixed cap
 
 而不是：
 
-- blindly append recent memories
+- semantic retrieval
 
 ## 当前触发阈值
 

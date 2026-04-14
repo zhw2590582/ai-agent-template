@@ -28,7 +28,7 @@ import {
   saveConversationMemories,
 } from '@/features/memory/storage/memories';
 
-export const maxDuration = 30;
+export const maxDuration = AI_CONFIG.CHAT_MAX_DURATION;
 
 function getLocaleFromRequest(request: Request): Locale {
   const url = new URL(request.url);

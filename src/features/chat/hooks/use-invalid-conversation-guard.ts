@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { CHAT_UI_CONFIG } from '@/config/app';
 
 interface UseInvalidConversationGuardOptions {
   bootstrappingThreadId: string | null;
@@ -41,7 +42,7 @@ export function useInvalidConversationGuard({
     toastError(t('chat.errors.invalid_conversation'));
     window.setTimeout(() => {
       handleClearChat();
-    }, 350);
+    }, CHAT_UI_CONFIG.INVALID_CONVERSATION_RESET_DELAY_MS);
   }, [
     bootstrappingThreadId,
     effectivePendingThreadId,

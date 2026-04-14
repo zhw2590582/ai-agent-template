@@ -20,10 +20,10 @@
 
 - 基于 `useChat` 的流式聊天
 - 服务端 `/api/chat` 到 `streamText(...)` 的主链路
-- `/models` 页面已成为真实页面
+- `Models` 顶部弹窗已成为真实配置入口
 - 运行时模型配置：OpenAI 兼容 / Anthropic 兼容
 - provider 配置持久化：guest 存本地，登录用户写入 `profiles.settings`
-- 自定义 provider：新增、删除、自动保存
+- 自定义 provider：新增、删除、显式保存
 - 自定义模型：新增、编辑、删除
 - 测试连接：真实请求 provider，并同步模型列表
 - 国际化：`en-US` / `zh-CN`，默认语言为英文
@@ -35,14 +35,14 @@
 - guest 本地会话列表，以及 sidebar 的乐观插入 / 重命名 / 删除
 - guest 本地会话标题在流式回复完成后再单独生成，避免和消息流写入互相覆盖
 - Memory V1：会话摘要压缩、长期记忆写入、跨会话注入
-- Memory 页面：控制项、编辑、删除、导出
+- `Memory` 顶部弹窗：控制项、记忆编辑/删除/导出、会话摘要编辑/删除
 - API rate limiting：主要 `/api/*` 路由已接统一频率限制和 429 错误处理
 - 环境变量校验、错误处理、日志、CI
 - 测试基础：Vitest 单元测试和集成测试
 
 ### 半完成
 
-- 顶部工作台导航已存在，但除聊天和 Models 外大多仍是占位页面
+- 顶部工作台导航已统一成弹窗，但除聊天、Models、Memory 外大多仍是占位内容
 - 聊天模型选择已接入，但会话级模型偏好仍保存在 `profile.settings`
 - 默认系统提示词目前仍是内置配置，后续计划交给用户自定义
 - `/api/mcp` 已有占位 endpoint，但没有真实 MCP 管理能力
@@ -132,6 +132,8 @@ API rate limiting
 
 - 聊天页面：[src/features/chat/pages/chat-home-page.tsx](../src/features/chat/pages/chat-home-page.tsx)
 - 页面壳层：[src/features/chat/pages/chat-shell-page.tsx](../src/features/chat/pages/chat-shell-page.tsx)
+- 工作台弹窗壳：[src/features/chat/components/workbench/workbench-dialog.tsx](../src/features/chat/components/workbench/workbench-dialog.tsx)
+- 工作台弹窗面板：[src/features/chat/components/workbench/workbench-dialog-panel.tsx](../src/features/chat/components/workbench/workbench-dialog-panel.tsx)
 - 聊天服务端入口：[src/features/chat/server/chat.ts](../src/features/chat/server/chat.ts)
 - 会话 API：[src/app/api/conversations/route.ts](../src/app/api/conversations/route.ts)
 - 会话存储：[src/features/chat/storage/conversations.ts](../src/features/chat/storage/conversations.ts)
@@ -143,12 +145,12 @@ API rate limiting
 - 默认 prompt：[src/features/chat/ai/core/prompts.ts](../src/features/chat/ai/core/prompts.ts)
 - 标题生成：[src/features/chat/ai/memory/title.ts](../src/features/chat/ai/memory/title.ts)
 - 摘要生成：[src/features/chat/ai/memory/summary.ts](../src/features/chat/ai/memory/summary.ts)
-- Models 页面：[src/features/models/pages/models-page.tsx](../src/features/models/pages/models-page.tsx)
+- Models 内容：[src/features/models/components/models-content.tsx](../src/features/models/components/models-content.tsx)
 - Models 状态持久化：[src/features/models/hooks/use-model-profile.ts](../src/features/models/hooks/use-model-profile.ts)
 - Models 页面编排：[src/features/models/hooks/use-models-page.ts](../src/features/models/hooks/use-models-page.ts)
 - provider / model 归一化：[src/features/models/utils/profile.ts](../src/features/models/utils/profile.ts)
 - provider 探测与模型同步：[src/features/models/server/providers.ts](../src/features/models/server/providers.ts)
-- Memory 页面：[src/features/memory/pages/memory-page.tsx](../src/features/memory/pages/memory-page.tsx)
+- Memory 内容：[src/features/memory/components/memory-content.tsx](../src/features/memory/components/memory-content.tsx)
 - Memory 页面状态：[src/features/memory/hooks/use-memory-page.ts](../src/features/memory/hooks/use-memory-page.ts)
 - Memory 存储入口：[src/features/memory/storage/memories.ts](../src/features/memory/storage/memories.ts)
 - rate limiting 配置：[src/config/api-rate-limit.ts](../src/config/api-rate-limit.ts)
@@ -161,13 +163,19 @@ API rate limiting
 
 ## 已知现实约束
 
-- 聊天能力依赖用户在 `/models` 页面先完成 provider 和模型配置
+- 聊天能力依赖用户先在顶部 `Models` 弹窗里完成 provider 和模型配置
 - 未配置 Supabase 时，登录和会话持久化不可用
 - 当前 `profiles`、`conversations`、`memories` 表都已接上真实业务
 - provider 配置是 `profile.settings` 的一部分，不是独立数据库表
 - 当前 Memory 仍是 Supabase-first 的基础版，不包含向量检索和外部 memory provider
 - 当前测试覆盖的是基础链路，不是完整产品行为
 - 多数工作台页面仍是占位，不要把导航存在误认为功能完成
+
+## 当前已知问题
+
+- 浏览器标签页标题在会话标题自动生成后，可能会先更新成 `{appName} - {conversationTitle}`，随后又被重置回默认站名
+- 当前判断这不是标题生成或 sidebar 数据本身的问题，而是 `router.refresh()` 之后的 metadata / remount 时序覆盖问题
+- 页面手动刷新后标题通常会恢复正确，说明问题集中在会话内的自动更新链路
 
 ## 下一优先级
 

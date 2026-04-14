@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { TEXT_LIMITS } from '@/config/app';
 import { MEMORY_KINDS, type MemoryKind, type MemoryListItem } from '@/features/memory/types';
 
 interface MemoryEditorDialogProps {
@@ -94,7 +95,7 @@ export function MemoryEditorDialog({
             </label>
             <Textarea
               id="memory-content"
-              maxLength={280}
+              maxLength={TEXT_LIMITS.MEMORY_CONTENT}
               onChange={(event) => setContent(event.target.value)}
               value={content}
             />

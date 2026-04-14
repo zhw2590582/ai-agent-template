@@ -20,10 +20,10 @@
 
 - 基于 `useChat` 的流式聊天
 - 服务端 `/api/chat` 到 `streamText(...)` 的主链路
-- `/models` 页面已落地
+- `Models` 配置弹窗已落地
 - 运行时模型配置：OpenAI 兼容 / Anthropic 兼容
 - provider 配置持久化：guest 存本地，登录用户写入 `profile.settings`
-- 自定义 provider：可新增、删除、自动保存
+- 自定义 provider：可新增、删除、显式保存
 - 模型同步和自定义模型管理
 - 国际化：`en-US` / `zh-CN`，默认语言为英文
 - 主题切换
@@ -33,7 +33,7 @@
 - guest 本地会话线程、列表与标题生成
 - sidebar 的乐观插入 / 重命名 / 删除
 - Memory V1：会话摘要、长期记忆、跨会话注入
-- Memory 页面：控制项、编辑、删除、导出
+- `Memory` 配置弹窗：控制项、记忆编辑/删除/导出、会话摘要编辑/删除
 - API 频率限制与 429 错误提示
 - 环境变量校验、错误处理、日志、CI
 - Vitest 单元测试和集成测试
@@ -43,7 +43,7 @@
 - RAG
 - Planning
 - Multi-Agent
-- 除聊天和 Models 外的大多数工作台页面的真实业务实现
+- 除聊天、Models、Memory 外的大多数工作台弹窗的真实业务实现
 - E2E 自动化测试
 
 更准确的状态说明见 [docs/project-status.md](./docs/project-status.md)。
@@ -66,7 +66,7 @@ bun run dev
 
 - 无
 
-聊天模型改为在 `/models` 页面由用户自行配置。
+聊天模型改为在顶部 `Models` 弹窗里由用户自行配置。
 
 未登录用户也可以使用聊天，但模型配置和会话线程只保存在当前浏览器本地。
 

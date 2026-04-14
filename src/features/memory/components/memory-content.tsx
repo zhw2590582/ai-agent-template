@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
+import { CHAT_UI_CONFIG } from '@/config/app';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import { MemoryControls } from '@/features/memory/components/memory-controls';
@@ -73,7 +74,7 @@ export function MemoryContent({
 
     const timeoutId = window.setTimeout(() => {
       setShowSaved(false);
-    }, 1400);
+    }, CHAT_UI_CONFIG.SAVE_FEEDBACK_DURATION_MS);
 
     return () => window.clearTimeout(timeoutId);
   }, [showSaved]);

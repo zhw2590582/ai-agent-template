@@ -1,7 +1,7 @@
 import type { UIMessage } from 'ai';
 
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
-import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/app';
+import { CONVERSATION_SIDEBAR_PAGE_SIZE, PAGINATION_CONFIG } from '@/config/app';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
@@ -37,19 +37,17 @@ async function requireAuth() {
   return { supabase, user };
 }
 
-const MAX_OFFSET = 10_000;
-
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const query = (searchParams.get('query') ?? '').trim();
     const offset = Math.min(
-      MAX_OFFSET,
+      PAGINATION_CONFIG.CONVERSATIONS_MAX_OFFSET,
       Math.max(0, Number.parseInt(searchParams.get('offset') ?? '0', 10) || 0)
     );
     const limitParam = Number.parseInt(searchParams.get('limit') ?? '', 10);
     const limit = Number.isFinite(limitParam)
-      ? Math.min(50, Math.max(1, limitParam))
+      ? Math.min(PAGINATION_CONFIG.CONVERSATIONS_MAX_LIMIT, Math.max(1, limitParam))
       : CONVERSATION_SIDEBAR_PAGE_SIZE;
 
     const { supabase, user } = await requireAuth();

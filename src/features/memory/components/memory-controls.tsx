@@ -3,6 +3,7 @@ import { DownloadIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CHAT_UI_CONFIG, MEMORY_EXTRACTION_CONFIG } from '@/config/app';
 import type { MemorySettings } from '@/features/models/types';
 
 interface MemoryControlsProps {
@@ -73,7 +74,7 @@ export function MemoryControls({
     debounceTimeoutsRef.current[key] = window.setTimeout(() => {
       commitNumberSetting(key, value);
       debounceTimeoutsRef.current[key] = undefined;
-    }, 600);
+    }, CHAT_UI_CONFIG.MEMORY_SETTINGS_INPUT_DEBOUNCE_MS);
   };
 
   const updateDraftNumber = (
@@ -165,7 +166,7 @@ export function MemoryControls({
             <Input
               disabled={!isAuthenticated}
               id="memory-summary-min-messages"
-              min={2}
+              min={MEMORY_EXTRACTION_CONFIG.MIN_MESSAGES}
               onBlur={(event) => {
                 const existingTimeout = debounceTimeoutsRef.current.summaryMinMessages;
                 if (existingTimeout) {
@@ -206,7 +207,7 @@ export function MemoryControls({
             <Input
               disabled={!isAuthenticated}
               id="memory-recent-message-window"
-              min={2}
+              min={MEMORY_EXTRACTION_CONFIG.MIN_MESSAGES}
               onBlur={(event) => {
                 const existingTimeout = debounceTimeoutsRef.current.recentMessageWindow;
                 if (existingTimeout) {

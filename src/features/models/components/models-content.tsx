@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { CHAT_UI_CONFIG } from '@/config/app';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import { ProviderList } from '@/features/models/components/provider-list';
 import { ProviderSettingsPanel } from '@/features/models/components/provider-settings-panel';
@@ -48,7 +49,7 @@ export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
 
     const timeoutId = window.setTimeout(() => {
       setShowSaved(false);
-    }, 1400);
+    }, CHAT_UI_CONFIG.SAVE_FEEDBACK_DURATION_MS);
 
     return () => window.clearTimeout(timeoutId);
   }, [showSaved]);

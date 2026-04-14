@@ -1,6 +1,7 @@
 import { generateText, Output, type UIMessage } from 'ai';
 import { z } from 'zod';
 
+import { AI_CONFIG, MEMORY_EXTRACTION_CONFIG } from '@/config/app';
 import type { Locale } from '@/config/i18n';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import { getMessageText } from '@/features/chat/storage/conversation-analysis';
@@ -11,10 +12,12 @@ import { normalizeMemoryContent } from '@/features/memory/storage/memory-utils';
 const AUTO_MEMORY_KINDS = MEMORY_KINDS.filter((kind) => kind !== 'manual');
 
 const memoryExtractionItemSchema = z.object({
-  content: z.string().min(1).max(280),
+  content: z.string().min(1).max(MEMORY_EXTRACTION_CONFIG.MAX_CONTENT_LENGTH),
   kind: z.enum(AUTO_MEMORY_KINDS),
 });
-const memoryExtractionArraySchema = z.array(memoryExtractionItemSchema).max(3);
+const memoryExtractionArraySchema = z
+  .array(memoryExtractionItemSchema)
+  .max(MEMORY_EXTRACTION_CONFIG.MAX_ITEMS);
 
 function formatMessages(messages: UIMessage[]) {
   return messages
@@ -37,11 +40,13 @@ export async function extractConversationMemories(
     runtimeModel?: ChatRuntimeModel | null;
   }
 ): Promise<Array<{ content: string; kind: MemoryKind }>> {
-  if (!options.runtimeModel || messages.length < 2) {
+  if (!options.runtimeModel || messages.length < MEMORY_EXTRACTION_CONFIG.MIN_MESSAGES) {
     return [];
   }
 
-  const transcript = formatMessages(messages.slice(-12));
+  const transcript = formatMessages(
+    messages.slice(-MEMORY_EXTRACTION_CONFIG.TRANSCRIPT_MESSAGE_WINDOW)
+  );
   if (!transcript) {
     return [];
   }
@@ -77,7 +82,7 @@ ${transcript}`;
         element: memoryExtractionItemSchema,
       }),
       prompt,
-      maxOutputTokens: 220,
+      maxOutputTokens: AI_CONFIG.MEMORY_EXTRACTION_MAX_OUTPUT_TOKENS,
     });
 
     output = result.output;
@@ -99,7 +104,7 @@ Return valid JSON only.
     const { text } = await generateText({
       model: getRuntimeChatModel(options.runtimeModel),
       prompt: fallbackPrompt,
-      maxOutputTokens: 220,
+      maxOutputTokens: AI_CONFIG.MEMORY_EXTRACTION_MAX_OUTPUT_TOKENS,
     });
 
     try {

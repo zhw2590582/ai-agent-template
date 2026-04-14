@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
+import { TEXT_LIMITS } from '@/config/app';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
@@ -31,7 +32,7 @@ const deleteMemorySchema = z.object({
 });
 
 const updateMemorySchema = z.object({
-  content: z.string().trim().min(1).max(280),
+  content: z.string().trim().min(1).max(TEXT_LIMITS.MEMORY_CONTENT),
   id: z.string().min(1),
   kind: z.enum(MEMORY_KINDS),
 });

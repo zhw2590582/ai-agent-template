@@ -1,3 +1,4 @@
+import { API_CONFIG } from '@/config/app';
 import { AppError, ErrorCode } from '@/lib/errors';
 
 type RateLimitConfig = {
@@ -36,7 +37,7 @@ function getClientIp(request: Request) {
 }
 
 function cleanupExpiredEntries(now: number) {
-  if (rateLimitStore.size < 500) {
+  if (rateLimitStore.size < API_CONFIG.RATE_LIMIT_STORE_CLEANUP_THRESHOLD) {
     return;
   }
 

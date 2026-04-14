@@ -7,6 +7,7 @@
  */
 
 import { z } from 'zod';
+import { TEXT_LIMITS } from '@/config/app';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
 
 /**
@@ -79,7 +80,7 @@ export const createConversationSchema = z.object({
   initialMessage: z
     .string()
     .min(1, 'Initial message is required')
-    .max(10000, 'Initial message is too long')
+    .max(TEXT_LIMITS.INITIAL_MESSAGE, 'Initial message is too long')
     .transform((v) => v.trim()),
 });
 
@@ -89,8 +90,18 @@ export const patchConversationSchema = z
   .object({
     conversationId: z.string().min(1, 'Conversation ID is required'),
     messages: z.array(messageSchema).min(1, 'Messages are required').optional(),
-    summary: z.string().trim().max(4000, 'Summary is too long').nullable().optional(),
-    title: z.string().trim().min(1, 'Title is required').max(100, 'Title is too long').optional(),
+    summary: z
+      .string()
+      .trim()
+      .max(TEXT_LIMITS.CONVERSATION_SUMMARY, 'Summary is too long')
+      .nullable()
+      .optional(),
+    title: z
+      .string()
+      .trim()
+      .min(1, 'Title is required')
+      .max(TEXT_LIMITS.CONVERSATION_TITLE, 'Title is too long')
+      .optional(),
   })
   .refine((value) => value.messages || value.title || value.summary !== undefined, {
     message: 'Either messages, title, or summary is required',

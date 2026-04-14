@@ -30,7 +30,7 @@ src/
 ├── features/
 │   ├── auth/                   # 登录 UI、用户快照、profile 同步
 │   ├── chat/                   # 聊天工作台与会话链路
-│   ├── memory/                 # 长期记忆、摘要与 Memory 页面
+│   ├── memory/                 # 长期记忆、摘要与 Memory 弹窗内容
 │   └── models/                 # provider 配置、模型同步、自定义 provider/model
 ├── i18n/                       # next-intl 请求配置
 ├── lib/                        # 共享工具、错误处理、日志、Supabase client
@@ -59,6 +59,7 @@ src/
 - `storage/`: 已登录会话存储、guest 本地会话 store、标题生成
 - `utils/`: 轻量纯函数和配置辅助
 - `ai/`: 模型、prompt、记忆辅助生成、工具、workflow 入口
+- `components/workbench/*`: 顶部工作台弹窗壳与共享布局
 
 当前已经形成的关键边界：
 
@@ -75,7 +76,6 @@ src/
 
 当前已经是第三个真实业务域。
 
-- `pages/`: Memory 页面
 - `components/`: controls、memory list、summary list、编辑弹窗
 - `hooks/`: 页面编排
 - `storage/`: repository、抽取、归并、检索、导出等 memory 管理逻辑
@@ -87,13 +87,12 @@ src/
 - `memory-repository.ts`: Supabase 读写
 - `memory-extraction.ts`: AI SDK structured output 抽取
 - `memory-merge.ts`: dedupe / merge / canonical kind
-- `memory-retrieval.ts`: relevance top-k 检索和上下文拼接
+- `memory-retrieval.ts`: 记忆注入上下文拼接与数量上限控制
 
 ### `src/features/models`
 
 当前第二个真实业务域。
 
-- `pages/`: models 工作台页面
 - `components/`: provider 列表、provider 设置、模型列表
 - `hooks/`: profile.settings 的读写、保存串行化、页面编排
 - `server/`: provider 测试连接和模型同步
@@ -107,7 +106,7 @@ src/
 - `profile-storage.ts`: localStorage / remote profile / event 同步
 - `profile-persistence.ts`: 保存串行化与写库
 - `profile-actions.ts`: provider / model 更新动作
-- `use-models-page.ts`: Models 页面级编排
+- `use-models-page.ts`: Models 内容级编排
 
 ### `src/features/auth`
 
@@ -158,6 +157,7 @@ UI input
   -> chat UI
 
 Models UI
+  -> workbench dialog
   -> useModelsPage
   -> useModelProfile
   -> /api/profile
@@ -177,6 +177,12 @@ Memory extraction / retrieval
   -> src/features/chat/server/chat.ts
   -> src/features/memory/storage/*
   -> conversations.summary / public.memories
+
+Memory UI
+  -> workbench dialog
+  -> useMemoryPage
+  -> /api/profile + /api/memories + /api/conversations
+  -> settings / memories / summaries
 
 API routes
   -> src/lib/rate-limit.ts

@@ -98,9 +98,8 @@ Recommended feature structure:
 
 ```text
 src/features/memory/
-├── pages/
-│   └── memory-page.tsx
 ├── components/
+│   ├── memory-content.tsx
 │   ├── memory-controls.tsx
 │   ├── memory-list.tsx
 │   ├── memory-summary-list.tsx

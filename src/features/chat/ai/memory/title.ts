@@ -1,5 +1,6 @@
 import { generateText } from 'ai';
 
+import { AI_CONFIG, TEXT_LIMITS } from '@/config/app';
 import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import type { ChatRuntimeModel } from '@/features/models/types';
@@ -9,7 +10,7 @@ export function cleanTitle(value: string) {
     .replace(/\s+/g, ' ')
     .replace(/^["'`]+|["'`]+$/g, '')
     .trim()
-    .slice(0, 60);
+    .slice(0, TEXT_LIMITS.GENERATED_TITLE);
 }
 
 export async function generateConversationTitle(
@@ -50,7 +51,7 @@ User message: ${normalized}`;
   const { text } = await generateText({
     model: getRuntimeChatModel(options.runtimeModel),
     prompt,
-    maxOutputTokens: 32,
+    maxOutputTokens: AI_CONFIG.TITLE_MAX_OUTPUT_TOKENS,
   });
 
   const cleaned = cleanTitle(text);

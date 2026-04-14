@@ -16,7 +16,10 @@ import {
   persistConversationMessages,
   renameConversationRecord,
 } from '@/features/chat/data/conversation-operations';
-import { getMessageText } from '@/features/chat/storage/conversation-analysis';
+import {
+  buildConversationTitleFromText,
+  getMessageText,
+} from '@/features/chat/storage/conversation-analysis';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
 function isLocalConversationId(conversationId: string | null) {
@@ -25,6 +28,7 @@ function isLocalConversationId(conversationId: string | null) {
 
 interface UseConversationRecordsOptions {
   activeThreadId: string | null;
+  activeThreadTitle: string | null;
   handleClearChat: () => void;
   isBusy: boolean;
   locale: Locale;
@@ -48,6 +52,7 @@ interface UseConversationRecordsOptions {
 
 export function useConversationRecords({
   activeThreadId,
+  activeThreadTitle,
   handleClearChat,
   isBusy,
   locale,
@@ -132,6 +137,12 @@ export function useConversationRecords({
     }
 
     const input = getMessageText(firstUserMessage);
+    const fallbackTitle = buildConversationTitleFromText(input);
+
+    if (activeThreadTitle && activeThreadTitle.trim() !== fallbackTitle) {
+      return;
+    }
+
     const requestKey = `${activeThreadId}:${input}`;
     if (generatedTitleKeyRef.current === requestKey) {
       return;
@@ -171,7 +182,16 @@ export function useConversationRecords({
         // Keep the existing sidebar title if generation fails.
       }
     })();
-  }, [activeThreadId, isBusy, locale, messages, onOptimisticPatchConversation, runtimeModel, user]);
+  }, [
+    activeThreadId,
+    activeThreadTitle,
+    isBusy,
+    locale,
+    messages,
+    onOptimisticPatchConversation,
+    runtimeModel,
+    user,
+  ]);
 
   useEffect(() => {
     if (

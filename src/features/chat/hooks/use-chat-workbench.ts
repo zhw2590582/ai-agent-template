@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { normalizeLocale } from '@/config/i18n';
+import { CHAT_UI_CONFIG } from '@/config/app';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
 import { createConversationRecord } from '@/features/chat/data/conversation-operations';
 import { useChatBrowserTitle } from '@/features/chat/hooks/use-chat-browser-title';
@@ -91,6 +92,12 @@ export function useChatWorkbench({
       null,
     [activeThreadId, sidebar.conversations]
   );
+  const activeConversationTitle = useMemo(
+    () =>
+      sidebar.conversations.find((conversation) => conversation.id === activeThreadId)?.title ??
+      null,
+    [activeThreadId, sidebar.conversations]
+  );
 
   const {
     messages,
@@ -111,7 +118,7 @@ export function useChatWorkbench({
     onFinish: () => {
       window.setTimeout(() => {
         router.refresh();
-      }, 1200);
+      }, CHAT_UI_CONFIG.POST_FINISH_REFRESH_DELAY_MS);
     },
     profileSettings: models.profile.settings,
   });
@@ -166,6 +173,7 @@ export function useChatWorkbench({
 
   const conversationRecordActions = useConversationRecords({
     activeThreadId,
+    activeThreadTitle: activeConversationTitle,
     handleClearChat,
     isBusy,
     locale: titleLocale,
@@ -223,13 +231,6 @@ export function useChatWorkbench({
 
     void regenerate();
   }, [models.isLoading, regenerate, runtimeModel, t]);
-
-  const activeConversationTitle = useMemo(
-    () =>
-      sidebar.conversations.find((conversation) => conversation.id === activeThreadId)?.title ??
-      null,
-    [activeThreadId, sidebar.conversations]
-  );
 
   useChatBrowserTitle(t('common.app_name'), activeConversationTitle);
 

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { TEXT_LIMITS } from '@/config/app';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 
 interface SummaryEditorDialogProps {
@@ -64,7 +65,7 @@ export function SummaryEditorDialog({
           </label>
           <Textarea
             id="conversation-summary-content"
-            maxLength={4000}
+            maxLength={TEXT_LIMITS.CONVERSATION_SUMMARY}
             onChange={(event) => setContent(event.target.value)}
             rows={8}
             value={content}
