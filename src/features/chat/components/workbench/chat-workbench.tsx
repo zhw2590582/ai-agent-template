@@ -99,6 +99,7 @@ export function ChatWorkbench({
               error={workbench.error}
               isSidebarOpen={workbench.isSidebarOpen}
               messages={workbench.messages}
+              onEditUserMessage={workbench.setInput}
               onRetry={() => workbench.regenerate()}
             />
             <ChatComposer

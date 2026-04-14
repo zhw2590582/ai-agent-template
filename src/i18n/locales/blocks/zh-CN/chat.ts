@@ -4,7 +4,10 @@ export const zhCNChatMessages = {
       retry: '重试',
       regenerate: '重新生成',
       copy: '复制',
+      edit: '编辑',
+      copy_message: '复制消息',
       copy_response: '复制回答',
+      edit_message: '编辑消息',
     },
     composer: {
       placeholder: '给 AI Agent 发送消息',

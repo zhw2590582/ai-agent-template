@@ -2,7 +2,7 @@
 
 import { memo, useCallback } from 'react';
 import type { UIMessage } from 'ai';
-import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
+import { CopyIcon, PencilIcon, RefreshCcwIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -33,6 +33,7 @@ interface ChatMessageListProps {
   error?: Error;
   isSidebarOpen: boolean;
   messages: UIMessage[];
+  onEditUserMessage: (text: string) => void;
   onRetry: () => void;
 }
 
@@ -58,6 +59,7 @@ interface ChatMessageRowProps {
   message: UIMessage;
   messageKey: string;
   onCopy: (text: string) => void;
+  onEditUserMessage: (text: string) => void;
   onRetry: () => void;
 }
 
@@ -68,13 +70,14 @@ const ChatMessageRow = memo(function ChatMessageRow({
   message,
   messageKey,
   onCopy,
+  onEditUserMessage,
   onRetry,
 }: ChatMessageRowProps) {
   const t = useTranslations();
   const textContent = getTextContent(message);
 
   return (
-    <div className="w-full">
+    <div className={cn('w-full', message.role === 'user' && 'group')}>
       {message.parts.map((part, partIndex) => {
         if (part.type === 'text') {
           if (!part.text) {
@@ -155,11 +158,36 @@ const ChatMessageRow = memo(function ChatMessageRow({
           </MessageAction>
         </MessageActions>
       ) : null}
+
+      {message.role === 'user' && textContent ? (
+        <MessageActions className="mt-2 justify-end opacity-0 transition-opacity group-hover:opacity-100">
+          <MessageAction
+            label={t('chat.actions.edit')}
+            onClick={() => onEditUserMessage(textContent)}
+            tooltip={t('chat.actions.edit_message')}
+          >
+            <PencilIcon className="size-3.5" />
+          </MessageAction>
+          <MessageAction
+            label={t('chat.actions.copy')}
+            onClick={() => onCopy(textContent)}
+            tooltip={t('chat.actions.copy_message')}
+          >
+            <CopyIcon className="size-3.5" />
+          </MessageAction>
+        </MessageActions>
+      ) : null}
     </div>
   );
 });
 
-export function ChatMessageList({ error, isSidebarOpen, messages, onRetry }: ChatMessageListProps) {
+export function ChatMessageList({
+  error,
+  isSidebarOpen,
+  messages,
+  onEditUserMessage,
+  onRetry,
+}: ChatMessageListProps) {
   const t = useTranslations();
   const errorMessage = error
     ? isChatRateLimitError(error)
@@ -222,6 +250,7 @@ export function ChatMessageList({ error, isSidebarOpen, messages, onRetry }: Cha
               message={message}
               messageKey={messageKey}
               onCopy={handleCopy}
+              onEditUserMessage={onEditUserMessage}
               onRetry={onRetry}
             />
           );

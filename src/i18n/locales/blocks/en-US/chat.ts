@@ -4,7 +4,10 @@ export const enUSChatMessages = {
       retry: 'Retry',
       regenerate: 'Regenerate',
       copy: 'Copy',
+      edit: 'Edit',
+      copy_message: 'Copy message',
       copy_response: 'Copy response',
+      edit_message: 'Edit message',
     },
     composer: {
       placeholder: 'Send a message to AI Agent',
