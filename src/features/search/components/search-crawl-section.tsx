@@ -3,7 +3,13 @@
 import { useTranslations } from 'next-intl';
 
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { SEARCH_CONFIG } from '@/config/search';
 import type { SearchSettings } from '@/features/search/types';
 
@@ -87,24 +93,29 @@ export function SearchCrawlSection({ onUpdateSettings, settings }: SearchCrawlSe
 
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium">{t('search_page.crawl_external_label')}</label>
-          <div className="border-border flex min-h-10 items-center justify-between rounded-md border px-3">
-            <span className="text-muted-foreground text-sm">
-              {t('search_page.crawl_external_description')}
-            </span>
-            <Switch
-              checked={settings.crawl.allowExternal}
-              className="data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
-              onCheckedChange={(checked) => {
-                onUpdateSettings((current) => ({
-                  ...current,
-                  crawl: {
-                    ...current.crawl,
-                    allowExternal: checked,
-                  },
-                }));
-              }}
-            />
-          </div>
+          <Select
+            value={settings.crawl.allowExternal ? 'enabled' : 'disabled'}
+            onValueChange={(value: 'disabled' | 'enabled') => {
+              onUpdateSettings((current) => ({
+                ...current,
+                crawl: {
+                  ...current.crawl,
+                  allowExternal: value === 'enabled',
+                },
+              }));
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="enabled">{t('common.enabled')}</SelectItem>
+              <SelectItem value="disabled">{t('common.disabled')}</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-muted-foreground text-xs">
+            {t('search_page.crawl_external_description')}
+          </p>
         </div>
       </div>
     </div>

@@ -5,6 +5,8 @@ export const enUSSharedMessages = {
     cancel: 'Cancel',
     confirm: 'Confirm',
     delete: 'Delete',
+    disabled: 'Disabled',
+    enabled: 'Enabled',
     save: 'Save',
   },
   theme: {

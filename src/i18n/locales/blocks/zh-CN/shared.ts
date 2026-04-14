@@ -5,6 +5,8 @@ export const zhCNSharedMessages = {
     cancel: '取消',
     confirm: '确认',
     delete: '删除',
+    disabled: '未开启',
+    enabled: '已开启',
     save: '保存',
   },
   theme: {
