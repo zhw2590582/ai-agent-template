@@ -50,8 +50,6 @@ export async function handleChatPost(request: Request) {
       user,
     });
 
-    console.log({ agentTools });
-
     const result = streamText({
       model: getRuntimeChatModel(runtimeModel),
       system: getSystemPrompt(locale, {

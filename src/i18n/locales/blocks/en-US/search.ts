@@ -3,11 +3,13 @@ export const enUSSearchMessages = {
     title: 'Web Search',
     description: 'Choose when the assistant can look things up online and how it should browse.',
     connection_title: 'Connection',
-    connection_description: 'Add your Tavily API key and decide whether online search is available.',
+    connection_description:
+      'Add your Tavily API key and decide whether online search is available.',
     search_title: 'Web search',
     search_description: 'Choose how the assistant should search the web by default.',
     enabled_label: 'Enable web search',
-    enabled_description: 'Let the assistant search the web when a question needs up-to-date information.',
+    enabled_description:
+      'Let the assistant search the web when a question needs up-to-date information.',
     api_key_label: 'Tavily API key',
     api_key_description: 'This key is saved to your profile and used only for your own requests.',
     api_key_placeholder: 'Enter your Tavily API key',
@@ -36,9 +38,11 @@ export const enUSSearchMessages = {
     extract_chunks_label: 'Chunks per page',
     extract_chunks_description: 'How many useful sections to keep from each page.',
     crawl_title: 'Site crawl',
-    crawl_description: 'Choose how far the assistant can move through a docs site or multi-page website.',
+    crawl_description:
+      'Choose how far the assistant can move through a docs site or multi-page website.',
     crawl_max_depth_label: 'Max depth',
-    crawl_max_depth_description: 'How many layers of links the assistant may follow from the starting page.',
+    crawl_max_depth_description:
+      'How many layers of links the assistant may follow from the starting page.',
     crawl_page_limit_label: 'Page limit',
     crawl_page_limit_description: 'The most pages the assistant can collect in one crawl.',
     crawl_external_label: 'Allow external pages',
