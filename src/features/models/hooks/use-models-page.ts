@@ -1,36 +1,102 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
 import { useModelProfile } from '@/features/models/hooks/use-model-profile';
-import type { ProviderModelItem, ProviderProbeResult } from '@/features/models/types';
+import type {
+  ModelsSettings,
+  ProviderModelItem,
+  ProviderProbeResult,
+} from '@/features/models/types';
+import { buildCustomProviderSettings, getOrderedProviders } from '@/features/models/utils/profile';
 import { getApiErrorToastMessage } from '@/lib/api-client';
 
-export function useModelsPage() {
+function cloneModelsSettings(models: ModelsSettings): ModelsSettings {
+  return {
+    selectedChatModelId: models.selectedChatModelId,
+    selectedProviderId: models.selectedProviderId,
+    providers: Object.fromEntries(
+      Object.entries(models.providers).map(([providerId, provider]) => [
+        providerId,
+        {
+          ...provider,
+          models: provider.models.map((model) => ({ ...model })),
+        },
+      ])
+    ),
+  };
+}
+
+export function useModelsPage({ open }: { open: boolean }) {
   const t = useTranslations();
   const { user } = useAuthUser();
   const modelProfile = useModelProfile(user);
-  const {
-    addCustomProvider,
-    isLoading,
-    profile,
-    providers,
-    removeCustomProvider,
-    saveProviderEnabled,
-    saveProfile,
-    selectedProvider,
-    updateProvider,
-    updateSelectedProviderId,
-  } = modelProfile;
+  const { isLoading, profile, providers, saveProfile } = modelProfile;
+  const [draftModels, setDraftModels] = useState<ModelsSettings>(() =>
+    cloneModelsSettings(profile.settings.models)
+  );
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
-  const hasInitializedAutoSaveRef = useRef(false);
-  const suppressNextAutoSaveRef = useRef(false);
-  const autoSaveTimeoutRef = useRef<number | null>(null);
-  const hasPendingAutoSaveRef = useRef(false);
+  const [isSavingChanges, setIsSavingChanges] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    setDraftModels(cloneModelsSettings(profile.settings.models));
+    setIsApiKeyVisible(false);
+  }, [open, profile.settings.models]);
+
+  const orderedDraftProviders = useMemo(
+    () =>
+      getOrderedProviders({
+        ...profile.settings,
+        models: draftModels,
+      }),
+    [draftModels, profile.settings]
+  );
+
+  const selectedProvider = useMemo(
+    () =>
+      draftModels.providers[draftModels.selectedProviderId] ??
+      orderedDraftProviders[0] ??
+      providers[0],
+    [draftModels.providers, draftModels.selectedProviderId, orderedDraftProviders, providers]
+  );
+
+  const isDirty = useMemo(
+    () => JSON.stringify(draftModels) !== JSON.stringify(profile.settings.models),
+    [draftModels, profile.settings.models]
+  );
+
+  const updateSelectedProviderId = useCallback((providerId: string) => {
+    setDraftModels((current) => ({
+      ...current,
+      selectedProviderId: providerId,
+    }));
+  }, []);
+
+  const updateProvider = useCallback(
+    (
+      providerId: string,
+      updater: (
+        provider: ModelsSettings['providers'][string]
+      ) => ModelsSettings['providers'][string]
+    ) => {
+      setDraftModels((current) => ({
+        ...current,
+        providers: {
+          ...current.providers,
+          [providerId]: updater(current.providers[providerId]),
+        },
+      }));
+    },
+    []
+  );
 
   const handleAddModel = useCallback(
     (model: Pick<ProviderModelItem, 'id' | 'name'>) => {
@@ -162,101 +228,99 @@ export function useModelsPage() {
     }
   }, [probeProvider]);
 
-  const autoSaveKey = useMemo(
-    () =>
-      JSON.stringify({
-        providers: profile.settings.models.providers,
-        selectedChatModelId: profile.settings.models.selectedChatModelId,
-      }),
-    [profile.settings.models.providers, profile.settings.models.selectedChatModelId]
-  );
-
-  useEffect(() => {
-    if (isLoading) {
-      return;
-    }
-
-    if (!hasInitializedAutoSaveRef.current) {
-      hasInitializedAutoSaveRef.current = true;
-      return;
-    }
-
-    if (suppressNextAutoSaveRef.current) {
-      suppressNextAutoSaveRef.current = false;
-      hasPendingAutoSaveRef.current = false;
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      autoSaveTimeoutRef.current = null;
-      void saveProfile(undefined, { silent: true }).then((success) => {
-        hasPendingAutoSaveRef.current = false;
-        if (!success) {
-          return;
-        }
+  const addCustomProvider = useCallback((providerName: string) => {
+    setDraftModels((current) => {
+      const nextProvider = buildCustomProviderSettings({
+        existingIds: Object.keys(current.providers),
+        name: providerName,
       });
-    }, 600);
-    autoSaveTimeoutRef.current = timeoutId;
-    hasPendingAutoSaveRef.current = true;
 
-    return () => {
-      if (autoSaveTimeoutRef.current === timeoutId) {
-        window.clearTimeout(timeoutId);
-        autoSaveTimeoutRef.current = null;
+      return {
+        ...current,
+        providers: {
+          ...current.providers,
+          [nextProvider.id]: nextProvider,
+        },
+        selectedProviderId: nextProvider.id,
+      };
+    });
+  }, []);
+
+  const toggleProviderEnabled = useCallback((providerId: string) => {
+    setDraftModels((current) => ({
+      ...current,
+      providers: {
+        ...current.providers,
+        [providerId]: {
+          ...current.providers[providerId],
+          enabled: !current.providers[providerId].enabled,
+        },
+      },
+    }));
+  }, []);
+
+  const deleteSelectedProvider = useCallback(() => {
+    setDraftModels((current) => {
+      const provider = current.providers[selectedProvider.id];
+
+      if (!provider?.isCustom) {
+        return current;
       }
-    };
-  }, [autoSaveKey, isLoading, saveProfile]);
 
-  useEffect(() => {
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        window.clearTimeout(autoSaveTimeoutRef.current);
-        autoSaveTimeoutRef.current = null;
-      }
+      const nextProviders = { ...current.providers };
+      delete nextProviders[selectedProvider.id];
 
-      if (hasPendingAutoSaveRef.current) {
-        void saveProfile(undefined, { silent: true });
-        hasPendingAutoSaveRef.current = false;
-      }
-    };
-  }, [saveProfile]);
+      const remainingProviders = Object.values(nextProviders);
+      const fallbackProviderId =
+        remainingProviders.find((item) => !item.isCustom)?.id ?? remainingProviders[0]?.id ?? '';
 
-  const addCustomProviderAndPersist = useCallback(
-    (providerName: string) => {
-      suppressNextAutoSaveRef.current = true;
-      void addCustomProvider(providerName);
-    },
-    [addCustomProvider]
-  );
+      return {
+        ...current,
+        providers: nextProviders,
+        selectedProviderId:
+          current.selectedProviderId === selectedProvider.id
+            ? fallbackProviderId
+            : current.selectedProviderId,
+      };
+    });
+  }, [selectedProvider.id]);
 
-  const toggleProviderEnabled = useCallback(
-    (providerId: string) => {
-      suppressNextAutoSaveRef.current = true;
-      void saveProviderEnabled(providerId, !profile.settings.models.providers[providerId].enabled);
-    },
-    [profile.settings.models.providers, saveProviderEnabled]
-  );
+  const resetDraft = useCallback(() => {
+    setDraftModels(cloneModelsSettings(profile.settings.models));
+    setIsApiKeyVisible(false);
+  }, [profile.settings.models]);
 
-  const deleteSelectedProvider = useCallback(async () => {
-    suppressNextAutoSaveRef.current = true;
-    await removeCustomProvider(selectedProvider.id);
-  }, [removeCustomProvider, selectedProvider.id]);
+  const saveChanges = useCallback(async () => {
+    setIsSavingChanges(true);
+
+    try {
+      return await saveProfile(() => draftModels, {
+        trackSavingState: true,
+      });
+    } finally {
+      setIsSavingChanges(false);
+    }
+  }, [draftModels, saveProfile]);
 
   return {
+    addCustomProvider,
+    deleteSelectedProvider,
     handleAddModel,
     handleTestConnection,
     isApiKeyVisible,
+    isDirty,
     isLoading,
+    isSavingChanges,
     isTestingConnection,
-    providers,
+    providers: orderedDraftProviders,
+    resetDraft,
+    saveChanges,
     selectedProvider,
     setIsApiKeyVisible,
+    toggleProviderEnabled,
     updateModel,
-    removeModel,
     updateProvider,
     updateSelectedProviderId,
-    addCustomProviderAndPersist,
-    toggleProviderEnabled,
-    deleteSelectedProvider,
+    removeModel,
   };
 }

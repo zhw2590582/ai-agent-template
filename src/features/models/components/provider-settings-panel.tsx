@@ -59,8 +59,8 @@ export function ProviderSettingsPanel({
 
   return (
     <>
-      <div className="bg-background mb-24 flex flex-col">
-        <header className="bg-background sticky top-0 z-10 flex items-center justify-between gap-4 border-b px-6 py-5">
+      <div className="mb-24 flex flex-col">
+        <header className="bg-popover sticky top-0 z-10 flex items-center justify-between gap-4 border-b px-6 py-5">
           <div className="flex min-w-0 items-center gap-3">
             <ProviderIcon
               docsUrl={provider.docsUrl}

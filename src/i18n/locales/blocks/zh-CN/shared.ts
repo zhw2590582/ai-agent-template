@@ -5,6 +5,7 @@ export const zhCNSharedMessages = {
     cancel: '取消',
     confirm: '确认',
     delete: '删除',
+    save: '保存',
   },
   theme: {
     switch_to_light: '切换到浅色模式',

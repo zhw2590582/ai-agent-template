@@ -5,6 +5,7 @@ export const enUSSharedMessages = {
     cancel: 'Cancel',
     confirm: 'Confirm',
     delete: 'Delete',
+    save: 'Save',
   },
   theme: {
     switch_to_light: 'Switch to light mode',

@@ -35,12 +35,21 @@ type TranslateFn = (key: string, values?: Record<string, string | number>) => st
 
 interface ChatTopBarProps {
   activeView: WorkbenchView;
+  isModelsOpen?: boolean;
   locale: string;
+  onOpenModels: () => void;
   profileSaveStatus?: 'idle' | 'saved' | 'saving';
   t: TranslateFn;
 }
 
-export function ChatTopBar({ activeView, locale, profileSaveStatus = 'idle', t }: ChatTopBarProps) {
+export function ChatTopBar({
+  activeView,
+  isModelsOpen = false,
+  locale,
+  onOpenModels,
+  profileSaveStatus = 'idle',
+  t,
+}: ChatTopBarProps) {
   return (
     <div className="border-border h-12 border-b px-4 py-2">
       <div className="flex w-full flex-col gap-4">
@@ -48,6 +57,22 @@ export function ChatTopBar({ activeView, locale, profileSaveStatus = 'idle', t }
           <div className="flex flex-wrap gap-2">
             {HEADER_NAV_ITEMS.map((item) => {
               const Icon = NAV_ICONS[item.id];
+
+              if (item.id === 'models') {
+                return (
+                  <Button
+                    key={item.id}
+                    size="sm"
+                    type="button"
+                    variant={activeView === item.id || isModelsOpen ? 'secondary' : 'ghost'}
+                    onClick={onOpenModels}
+                  >
+                    <Icon data-icon="inline-start" />
+                    {t(item.translationKey)}
+                  </Button>
+                );
+              }
+
               return (
                 <Button
                   key={item.id}
