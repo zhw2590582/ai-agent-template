@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { CHAT_UI_CONFIG } from '@/config/chat';
+import { readApiError } from '@/lib/api-client';
 import { createMcpServerDraft } from '@/features/mcp/settings';
 import type { McpServerSettings, McpSettings } from '@/features/mcp/types';
 
@@ -21,7 +22,7 @@ interface UseMcpSettingsOptions {
   saveFailedMessage: string;
   saveSuccessMessage: string;
   settings: McpSettings;
-  testFailedMessage: string;
+  testMessageByReason: (reason: string | null, fallbackMessage: string | null) => string;
   testSuccessMessage: (count: string, serverName: string) => string;
 }
 
@@ -31,7 +32,7 @@ export function useMcpSettings({
   saveFailedMessage,
   saveSuccessMessage,
   settings,
-  testFailedMessage,
+  testMessageByReason,
   testSuccessMessage,
 }: UseMcpSettingsOptions) {
   const [savedSettings, setSavedSettings] = useState(settings);
@@ -115,12 +116,20 @@ export function useMcpSettings({
       });
 
       if (!response.ok) {
+        const error = await readApiError(response);
         setTestResults((results) => {
           const nextResults = { ...results };
           delete nextResults[server.id];
           return nextResults;
         });
-        toast.error(testFailedMessage);
+        const reason =
+          typeof error.details === 'object' &&
+          error.details != null &&
+          'reason' in error.details &&
+          typeof error.details.reason === 'string'
+            ? error.details.reason
+            : null;
+        toast.error(testMessageByReason(reason, error.message));
         return null;
       }
 

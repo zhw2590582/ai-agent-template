@@ -49,7 +49,14 @@ export const enUSMcpMessages = {
       save_failed: 'MCP settings could not be saved.',
       save_success: 'MCP settings saved.',
       test_failed: 'MCP connection test failed.',
+      test_auth_failed: 'Authentication failed. Check the bearer token or server credentials.',
+      test_handshake_failed:
+        'The MCP handshake failed. Check the endpoint, transport type, and server compatibility.',
+      test_network_failed:
+        'The MCP server could not be reached. Check the URL, network access, and server status.',
+      test_not_found: 'The MCP endpoint was not found. Check the server URL and transport type.',
       test_success: '{serverName} is reachable. {count} tools found.',
+      test_timeout: 'The MCP connection timed out. The server may be slow or unreachable.',
     },
   },
 } as const;

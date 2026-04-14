@@ -47,7 +47,22 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
     saveFailedMessage: t('mcp_page.toast.save_failed'),
     saveSuccessMessage: t('mcp_page.toast.save_success'),
     settings,
-    testFailedMessage: t('mcp_page.toast.test_failed'),
+    testMessageByReason: (reason, fallbackMessage) => {
+      switch (reason) {
+        case 'auth':
+          return t('mcp_page.toast.test_auth_failed');
+        case 'not_found':
+          return t('mcp_page.toast.test_not_found');
+        case 'timeout':
+          return t('mcp_page.toast.test_timeout');
+        case 'network':
+          return t('mcp_page.toast.test_network_failed');
+        case 'handshake':
+          return t('mcp_page.toast.test_handshake_failed');
+        default:
+          return fallbackMessage ?? t('mcp_page.toast.test_failed');
+      }
+    },
     testSuccessMessage: (count, serverName) =>
       t('mcp_page.toast.test_success', { count, serverName }),
   });

@@ -46,7 +46,12 @@ export const zhCNMcpMessages = {
       save_failed: 'MCP 设置保存失败。',
       save_success: 'MCP 设置已保存。',
       test_failed: 'MCP 连接测试失败。',
+      test_auth_failed: '鉴权失败，请检查 Bearer Token 或服务端凭证。',
+      test_handshake_failed: 'MCP 握手失败，请检查端点地址、传输方式和服务端兼容性。',
+      test_network_failed: '无法连接到 MCP 服务端，请检查地址、网络访问和服务状态。',
+      test_not_found: '没有找到 MCP 端点，请检查服务地址和传输方式。',
       test_success: '{serverName} 已连接成功，共发现 {count} 个工具。',
+      test_timeout: 'MCP 连接超时，服务端可能响应过慢或暂时不可达。',
     },
   },
 } as const;

@@ -1,6 +1,7 @@
 import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
 import type { ToolSet } from 'ai';
 
+import { AppError, ErrorCode } from '@/lib/errors';
 import { hasMcpConnectionSettings } from '@/features/mcp/settings';
 import type { McpServerSettings, McpSettings } from '@/features/mcp/types';
 
@@ -27,6 +28,68 @@ function createTransportHeaders(server: McpServerSettings) {
   return {
     Authorization: `Bearer ${token}`,
   };
+}
+
+function classifyMcpConnectionError(error: unknown): AppError {
+  const message = error instanceof Error ? error.message : String(error);
+  const normalized = message.toLowerCase();
+
+  if (
+    normalized.includes('401') ||
+    normalized.includes('403') ||
+    normalized.includes('unauthorized') ||
+    normalized.includes('forbidden')
+  ) {
+    return new AppError(
+      ErrorCode.API_KEY_INVALID,
+      'MCP server authentication failed. Check the bearer token or server key settings.',
+      401,
+      { reason: 'auth' }
+    );
+  }
+
+  if (normalized.includes('404') || normalized.includes('not found')) {
+    return new AppError(
+      ErrorCode.INPUT_INVALID,
+      'MCP endpoint was not found. Check the server URL and transport type.',
+      404,
+      { reason: 'not_found' }
+    );
+  }
+
+  if (
+    normalized.includes('timeout') ||
+    normalized.includes('timed out') ||
+    normalized.includes('abort')
+  ) {
+    return new AppError(
+      ErrorCode.API_TIMEOUT,
+      'MCP connection timed out. The server may be slow or unreachable.',
+      504,
+      { reason: 'timeout' }
+    );
+  }
+
+  if (
+    normalized.includes('fetch failed') ||
+    normalized.includes('network') ||
+    normalized.includes('econnrefused') ||
+    normalized.includes('enotfound')
+  ) {
+    return new AppError(
+      ErrorCode.API_NETWORK,
+      'MCP server could not be reached. Check the URL, network access, and server status.',
+      502,
+      { reason: 'network' }
+    );
+  }
+
+  return new AppError(
+    ErrorCode.TOOL_EXECUTION_ERROR,
+    'MCP server handshake failed. Check the endpoint, transport type, and server compatibility.',
+    502,
+    { reason: 'handshake', rawMessage: message }
+  );
 }
 
 export async function createRemoteMcpClient(server: McpServerSettings) {
@@ -62,6 +125,8 @@ export async function listRemoteMcpTools(server: McpServerSettings) {
       serverVersion: client.serverInfo.version,
       toolNames: definitions.tools.map((tool) => tool.name),
     };
+  } catch (error) {
+    throw classifyMcpConnectionError(error);
   } finally {
     await client.close();
   }

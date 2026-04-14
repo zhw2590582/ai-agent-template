@@ -3,6 +3,7 @@ type TranslationFn = (key: string) => string;
 type ApiErrorResponse = {
   error?: {
     code?: string;
+    details?: unknown;
     message?: string;
   };
 };
@@ -12,12 +13,14 @@ export async function readApiError(response: Response) {
     const data = (await response.clone().json()) as ApiErrorResponse;
     return {
       code: data.error?.code ?? null,
+      details: data.error?.details ?? null,
       message: data.error?.message ?? null,
       retryAfter: response.headers.get('Retry-After'),
     };
   } catch {
     return {
       code: null,
+      details: null,
       message: null,
       retryAfter: response.headers.get('Retry-After'),
     };
