@@ -8,7 +8,9 @@ export const zhCNSharedMessages = {
     delete: '删除',
     disabled: '未开启',
     enabled: '已开启',
+    not_supported: '不支持',
     save: '保存',
+    supported: '支持',
   },
   theme: {
     switch_to_light: '切换到浅色模式',

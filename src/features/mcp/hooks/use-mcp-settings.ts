@@ -9,6 +9,15 @@ import { createMcpServerDraft } from '@/features/mcp/settings';
 import type { McpServerSettings, McpSettings } from '@/features/mcp/types';
 
 interface McpTestResult {
+  capabilities: {
+    elicitation: boolean;
+    logging: boolean;
+    prompts: boolean;
+    resources: boolean;
+    roots: boolean;
+    sampling: boolean;
+    tools: boolean;
+  };
   prompts: Array<{
     arguments: Array<{
       description?: string;
@@ -151,6 +160,15 @@ export function useMcpSettings({
       }
 
       const data = (await response.json()) as {
+        capabilities?: {
+          elicitation?: boolean;
+          logging?: boolean;
+          prompts?: boolean;
+          resources?: boolean;
+          roots?: boolean;
+          sampling?: boolean;
+          tools?: boolean;
+        };
         prompts?: Array<{
           arguments?: Array<{
             description?: string;
@@ -174,6 +192,15 @@ export function useMcpSettings({
       };
 
       const result = {
+        capabilities: {
+          elicitation: Boolean(data.capabilities?.elicitation),
+          logging: Boolean(data.capabilities?.logging),
+          prompts: Boolean(data.capabilities?.prompts),
+          resources: Boolean(data.capabilities?.resources),
+          roots: Boolean(data.capabilities?.roots),
+          sampling: Boolean(data.capabilities?.sampling),
+          tools: Boolean(data.capabilities?.tools),
+        },
         prompts: Array.isArray(data.prompts)
           ? data.prompts
               .filter((prompt) => typeof prompt?.name === 'string')

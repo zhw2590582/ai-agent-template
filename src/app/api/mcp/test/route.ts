@@ -35,6 +35,15 @@ export async function POST(request: Request) {
 
     return Response.json(
       result ?? {
+        capabilities: {
+          elicitation: false,
+          logging: false,
+          prompts: false,
+          resources: false,
+          roots: false,
+          sampling: false,
+          tools: false,
+        },
         prompts: [],
         resources: [],
         serverName: null,

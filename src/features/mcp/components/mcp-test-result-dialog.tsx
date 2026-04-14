@@ -16,6 +16,15 @@ interface McpTestResultDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   result: {
+    capabilities: {
+      elicitation: boolean;
+      logging: boolean;
+      prompts: boolean;
+      resources: boolean;
+      roots: boolean;
+      sampling: boolean;
+      tools: boolean;
+    };
     prompts: Array<{
       arguments: Array<{
         description?: string;
@@ -41,6 +50,15 @@ interface McpTestResultDialogProps {
 
 export function McpTestResultDialog({ open, onOpenChange, result }: McpTestResultDialogProps) {
   const t = useTranslations();
+  const capabilityLabels = {
+    elicitation: t('mcp_page.capability_elicitation'),
+    logging: t('mcp_page.capability_logging'),
+    prompts: t('mcp_page.capability_prompts'),
+    resources: t('mcp_page.capability_resources'),
+    roots: t('mcp_page.capability_roots'),
+    sampling: t('mcp_page.capability_sampling'),
+    tools: t('mcp_page.capability_tools'),
+  } as const;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -60,6 +78,33 @@ export function McpTestResultDialog({ open, onOpenChange, result }: McpTestResul
               <div className="border-border rounded-md border px-4 py-3">
                 <p className="text-muted-foreground text-xs">{t('mcp_page.test_version_label')}</p>
                 <p className="mt-1 text-sm font-medium">{result.serverVersion ?? '—'}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <p className="text-sm font-medium">{t('mcp_page.capabilities_label')}</p>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {(
+                  [
+                    ['tools', result.capabilities.tools],
+                    ['resources', result.capabilities.resources],
+                    ['prompts', result.capabilities.prompts],
+                    ['logging', result.capabilities.logging],
+                    ['elicitation', result.capabilities.elicitation],
+                    ['sampling', result.capabilities.sampling],
+                    ['roots', result.capabilities.roots],
+                  ] as const
+                ).map(([capability, supported]) => (
+                  <div
+                    key={capability}
+                    className="border-border flex items-center justify-between rounded-md border px-4 py-3"
+                  >
+                    <p className="text-sm font-medium">{capabilityLabels[capability]}</p>
+                    <Badge variant={supported ? 'default' : 'secondary'}>
+                      {supported ? t('common.supported') : t('common.not_supported')}
+                    </Badge>
+                  </div>
+                ))}
               </div>
             </div>
 

@@ -18,6 +18,20 @@ function getServerLabel(server: McpServerSettings, client: MCPClient) {
   return server.serverName.trim() || client.serverInfo.name || 'MCP';
 }
 
+function getServerCapabilities(client: MCPClient) {
+  const candidate = client as MCPClient & {
+    serverCapabilities?: {
+      elicitation?: object;
+      logging?: object;
+      prompts?: object;
+      resources?: object;
+      tools?: object;
+    };
+  };
+
+  return candidate.serverCapabilities ?? {};
+}
+
 function createTransportHeaders(server: McpServerSettings) {
   const token = server.bearerToken.trim();
 
@@ -118,6 +132,7 @@ export async function listRemoteMcpTools(server: McpServerSettings) {
 
   try {
     const definitions = await client.listTools();
+    const serverCapabilities = getServerCapabilities(client);
     const [resourcesResult, promptsResult] = await Promise.allSettled([
       client.listResources(),
       client.experimental_listPrompts(),
@@ -152,6 +167,15 @@ export async function listRemoteMcpTools(server: McpServerSettings) {
       serverId: server.id,
       serverName: getServerLabel(server, client),
       serverVersion: client.serverInfo.version,
+      capabilities: {
+        elicitation: Boolean(serverCapabilities.elicitation),
+        logging: Boolean(serverCapabilities.logging),
+        prompts: Boolean(serverCapabilities.prompts),
+        resources: Boolean(serverCapabilities.resources),
+        roots: false,
+        sampling: false,
+        tools: Boolean(serverCapabilities.tools),
+      },
       prompts,
       resources,
       toolNames: definitions.tools.map((tool) => tool.name),
