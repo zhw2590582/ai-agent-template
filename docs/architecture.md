@@ -31,7 +31,8 @@ src/
 │   ├── auth/                   # 登录 UI、用户快照、profile 同步
 │   ├── chat/                   # 聊天工作台与会话链路
 │   ├── memory/                 # 长期记忆、摘要与 Memory 弹窗内容
-│   └── models/                 # provider 配置、模型同步、自定义 provider/model
+│   ├── models/                 # provider 配置、模型同步、自定义 provider/model
+│   └── search/                 # Tavily 搜索设置、连接测试、服务端 client
 ├── i18n/                       # next-intl 请求配置
 ├── lib/                        # 共享工具、错误处理、日志、Supabase client
 └── proxy.ts                    # locale 检测和 session 更新
@@ -71,6 +72,8 @@ src/
 - `local-conversation-title.ts`: guest 标题生成
 - `ai/core/*`: 运行时模型与默认 prompt
 - `ai/memory/*`: 标题和摘要生成
+- `ai/tools/*`: search / extract / crawl 等 tool 封装
+- `ai/workflows/*`: 最基础的 `streamText` workflow，以及后续更复杂编排的落点
 
 ### `src/features/memory`
 
@@ -78,6 +81,7 @@ src/
 
 - `components/`: controls、memory list、summary list、编辑弹窗
 - `hooks/`: 页面编排
+- `hooks/use-memory-settings-draft.ts`: settings draft、保存、重置
 - `storage/`: repository、抽取、归并、检索、导出等 memory 管理逻辑
 - `types.ts`: canonical memory kinds 与结构定义
 
@@ -88,6 +92,7 @@ src/
 - `memory-extraction.ts`: AI SDK structured output 抽取
 - `memory-merge.ts`: dedupe / merge / canonical kind
 - `memory-retrieval.ts`: 记忆注入上下文拼接与数量上限控制
+- `memory-consolidation.ts`: 单维度 memory consolidation（达到阈值后用 LLM 做归并）
 
 ### `src/features/models`
 
@@ -102,11 +107,25 @@ src/
 
 当前已经形成的关键边界：
 
-- `use-model-profile`: profile 加载、同步和对外 API
-- `profile-storage.ts`: localStorage / remote profile / event 同步
-- `profile-persistence.ts`: 保存串行化与写库
-- `profile-actions.ts`: provider / model 更新动作
 - `use-models-page.ts`: Models 内容级编排
+- `use-models-draft.ts`: provider / model draft state
+- `use-provider-probe.ts`: provider 连接测试
+
+### `src/features/search`
+
+当前已成为一个真实 feature，而不是占位页。
+
+- `components/`: Search 弹窗内容和三类设置分组
+- `hooks/`: Search settings draft、保存、连接测试
+- `server/`: Tavily client 和 test helper
+- `settings.ts`: Search settings normalize / access 判断
+- `types.ts`: Search settings 结构
+
+当前已经形成的关键边界：
+
+- `use-search-settings.ts`: Search 弹窗的 settings controller
+- `tavily-client.ts`: Tavily 请求与错误处理统一入口
+- `chat/ai/tools/*`: 只负责 AI tool 封装，不再各自手写 Tavily fetch
 
 ### `src/features/auth`
 
@@ -116,7 +135,7 @@ src/
 - 用户快照上下文
 - 从认证用户同步 `profiles` 表
 
-它是一个真实 feature，但范围明显小于 `features/chat`。
+它是一个真实 feature，但范围明显小于 `features/chat`。另外，`profile.settings` 的聚合、归一化、持久化已经收敛在 `src/features/auth/profile/*`。
 
 ### `src/components`
 
@@ -127,12 +146,16 @@ src/
 
 ### `src/config`
 
-放所有集中配置。
+放所有集中配置，已经按主题拆分。
 
 - `env.ts`: 环境变量校验
-- `app.ts`: 模型、导航、主题等应用配置
-- `api-rate-limit.ts`: API 频率限制配置
+- `chat.ts`: AI / chat / UI 时序相关配置
+- `memory.ts`: memory 与 consolidation 相关配置
+- `models.ts`: model sync 配置
+- `search.ts`: Tavily endpoint 和默认搜索配置
+- `api.ts` / `api-rate-limit.ts`: API 相关配置
 - `i18n.ts`: locale 配置
+- `limits.ts` / `navigation.ts` / `theme.ts` / `dev.ts`: 其余主题配置
 
 ### `src/lib`
 
@@ -159,7 +182,7 @@ UI input
 Models UI
   -> workbench dialog
   -> useModelsPage
-  -> useModelProfile
+  -> useAppProfile
   -> /api/profile
   -> localStorage or Supabase profile.settings
 
@@ -183,6 +206,12 @@ Memory UI
   -> useMemoryPage
   -> /api/profile + /api/memories + /api/conversations
   -> settings / memories / summaries
+
+Search UI
+  -> workbench dialog
+  -> useSearchSettings
+  -> /api/profile + /api/search/test
+  -> Tavily-backed tools
 
 API routes
   -> src/lib/rate-limit.ts

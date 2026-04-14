@@ -12,6 +12,7 @@
 - 用户自配置的模型/provider 接入
 - 登录、会话持久化、分页和搜索
 - 已落地的 Memory V1
+- 已落地的 Search / Tavily 工具接入
 - 为 RAG、Planning、多代理预留结构边界
 
 ## 当前真实状态
@@ -33,7 +34,11 @@
 - guest 本地会话线程、列表与标题生成
 - sidebar 的乐观插入 / 重命名 / 删除
 - Memory V1：会话摘要、长期记忆、跨会话注入
+- Memory V1：最小版单维度 consolidation
 - `Memory` 配置弹窗：控制项、记忆编辑/删除/导出、会话摘要编辑/删除
+- `Search` 配置弹窗：Tavily key、Search / Extract / Crawl 设置、连接测试
+- Tavily tools：`web_search`、`web_extract`、`web_crawl`
+- 基础 tool loop 与聊天 workflow 分层
 - API 频率限制与 429 错误提示
 - 环境变量校验、错误处理、日志、CI
 - Vitest 单元测试和集成测试
@@ -43,7 +48,7 @@
 - RAG
 - Planning
 - Multi-Agent
-- 除聊天、Models、Memory 外的大多数工作台弹窗的真实业务实现
+- 除聊天、Models、Memory、Search 外的大多数工作台弹窗的真实业务实现
 - E2E 自动化测试
 
 更准确的状态说明见 [docs/project-status.md](./docs/project-status.md)。
@@ -94,12 +99,13 @@ bun run dev
 src/
 ├── app/                  # Next.js 路由入口与 API route
 ├── components/           # 基础 UI 和 AI Elements 组件
-├── config/               # env / app / i18n 等配置
+├── config/               # 按主题拆分的配置
 ├── features/
 │   ├── auth/             # 登录和 profile 同步
 │   ├── chat/             # 聊天工作台、消息链路、会话存储
 │   ├── memory/           # 长期记忆、摘要列表、Memory 页面
-│   └── models/           # provider 配置、模型同步、自定义 provider/model
+│   ├── models/           # provider 配置、模型同步、自定义 provider/model
+│   └── search/           # Tavily 搜索设置、连接测试、服务端 client
 ├── i18n/                 # next-intl 请求配置
 ├── lib/                  # 通用工具、错误处理、日志、Supabase client
 └── proxy.ts              # locale 检测与 session 更新

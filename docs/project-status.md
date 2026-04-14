@@ -1,6 +1,6 @@
 # Project Status
 
-最后核对时间：2026-04-13
+最后核对时间：2026-04-14
 
 ## 项目定位
 
@@ -37,13 +37,21 @@
 - Memory V1：会话摘要压缩、长期记忆写入、跨会话注入
 - Memory V1：已接入最小版单维度 memory consolidation
 - `Memory` 顶部弹窗：控制项、记忆编辑/删除/导出、会话摘要编辑/删除
+- `Search` 顶部弹窗：Tavily key 配置、Search / Extract / Crawl 三类能力设置、连接测试
+- Tavily tools：`web_search`、`web_extract`、`web_crawl`
+- 聊天 workflow 已抽到 `src/features/chat/ai/workflows/generateText.ts`
+- 聊天已开启基础 tool loop（step 上限控制）
+- 聊天消息区已支持：
+  - 用户消息 `Edit / Copy`
+  - assistant 工具调用按真实 part 顺序展示
+  - assistant 流式回复底部 shimmer
 - API rate limiting：主要 `/api/*` 路由已接统一频率限制和 429 错误处理
 - 环境变量校验、错误处理、日志、CI
 - 测试基础：Vitest 单元测试和集成测试
 
 ### 半完成
 
-- 顶部工作台导航已统一成弹窗，但除聊天、Models、Memory 外大多仍是占位内容
+- 顶部工作台导航已统一成弹窗，但除聊天、Models、Memory、Search 外大多仍是占位内容
 - 聊天模型选择已接入，但会话级模型偏好仍保存在 `profile.settings`
 - 默认系统提示词目前仍是内置配置，后续计划交给用户自定义
 - `/api/mcp` 已有占位 endpoint，但没有真实 MCP 管理能力
@@ -57,7 +65,6 @@
 - Sandbox 页面
 - MCP 管理页
 - Skills 管理页
-- Search 页面
 - Settings 页面
 - E2E 自动化测试
 - 长期记忆、用户偏好、工具市场等完整产品能力
@@ -85,8 +92,9 @@ src/
 ├── features/
 │   ├── auth/               # 登录与 profile 同步
 │   ├── chat/               # 聊天工作台、消息链路、会话存储
-│   ├── memory/             # 长期记忆、摘要、Memory 页面
-│   └── models/             # provider 配置、模型同步、自定义 provider/model
+│   ├── memory/             # 长期记忆、摘要、Memory 弹窗内容
+│   ├── models/             # provider 配置、模型同步、自定义 provider/model
+│   └── search/             # Tavily 搜索设置、连接测试、服务端 client
 ├── i18n/                   # next-intl 请求配置
 ├── lib/                    # 通用工具、错误处理、日志、Supabase client
 └── proxy.ts                # i18n + session 代理
@@ -99,12 +107,13 @@ Chat UI
   -> useChat + runtimeModel
   -> /api/chat
   -> src/features/chat/server/chat.ts
-  -> model + tools
+  -> src/features/chat/ai/workflows/generateText.ts
+  -> model + tools + step loop
   -> UI message stream
 
 Models UI
   -> src/features/models/hooks/use-models-page.ts
-  -> src/features/models/hooks/use-model-profile.ts
+  -> src/features/auth/profile/use-app-profile.ts
   -> localStorage or Supabase profile.settings
 
 Test connection / sync models
@@ -123,6 +132,17 @@ Memory write/read
   -> src/features/memory/storage/*
   -> Supabase conversations.summary / memories
 
+Search tool settings
+  -> Search dialog
+  -> src/features/search/hooks/use-search-settings.ts
+  -> /api/profile
+  -> profile.settings.search
+
+Tavily tool execution
+  -> src/features/chat/ai/tools/*
+  -> src/features/search/server/tavily-client.ts
+  -> Tavily search / extract / crawl
+
 API rate limiting
   -> src/lib/rate-limit.ts
   -> src/config/api-rate-limit.ts
@@ -136,6 +156,7 @@ API rate limiting
 - 工作台弹窗壳：[src/features/chat/components/workbench/workbench-dialog.tsx](../src/features/chat/components/workbench/workbench-dialog.tsx)
 - 工作台弹窗面板：[src/features/chat/components/workbench/workbench-dialog-panel.tsx](../src/features/chat/components/workbench/workbench-dialog-panel.tsx)
 - 聊天服务端入口：[src/features/chat/server/chat.ts](../src/features/chat/server/chat.ts)
+- 聊天 workflow：[src/features/chat/ai/workflows/generateText.ts](../src/features/chat/ai/workflows/generateText.ts)
 - 会话 API：[src/app/api/conversations/route.ts](../src/app/api/conversations/route.ts)
 - 会话存储：[src/features/chat/storage/conversations.ts](../src/features/chat/storage/conversations.ts)
 - guest 本地会话存储：[src/features/chat/storage/local-conversation-store.ts](../src/features/chat/storage/local-conversation-store.ts)
@@ -147,13 +168,17 @@ API rate limiting
 - 标题生成：[src/features/chat/ai/memory/title.ts](../src/features/chat/ai/memory/title.ts)
 - 摘要生成：[src/features/chat/ai/memory/summary.ts](../src/features/chat/ai/memory/summary.ts)
 - Models 内容：[src/features/models/components/models-content.tsx](../src/features/models/components/models-content.tsx)
-- Models 状态持久化：[src/features/models/hooks/use-model-profile.ts](../src/features/models/hooks/use-model-profile.ts)
+- Profile / settings 状态持久化：[src/features/auth/profile/use-app-profile.ts](../src/features/auth/profile/use-app-profile.ts)
 - Models 页面编排：[src/features/models/hooks/use-models-page.ts](../src/features/models/hooks/use-models-page.ts)
-- provider / model 归一化：[src/features/models/utils/profile.ts](../src/features/models/utils/profile.ts)
+- profile settings 归一化：[src/features/auth/profile/profile-settings.ts](../src/features/auth/profile/profile-settings.ts)
 - provider 探测与模型同步：[src/features/models/server/providers.ts](../src/features/models/server/providers.ts)
 - Memory 内容：[src/features/memory/components/memory-content.tsx](../src/features/memory/components/memory-content.tsx)
 - Memory 页面状态：[src/features/memory/hooks/use-memory-page.ts](../src/features/memory/hooks/use-memory-page.ts)
+- Memory settings draft：[src/features/memory/hooks/use-memory-settings-draft.ts](../src/features/memory/hooks/use-memory-settings-draft.ts)
 - Memory 存储入口：[src/features/memory/storage/memories.ts](../src/features/memory/storage/memories.ts)
+- Search 内容：[src/features/search/components/search-content.tsx](../src/features/search/components/search-content.tsx)
+- Search settings 状态：[src/features/search/hooks/use-search-settings.ts](../src/features/search/hooks/use-search-settings.ts)
+- Tavily client：[src/features/search/server/tavily-client.ts](../src/features/search/server/tavily-client.ts)
 - rate limiting 配置：[src/config/api-rate-limit.ts](../src/config/api-rate-limit.ts)
 - rate limiting 实现：[src/lib/rate-limit.ts](../src/lib/rate-limit.ts)
 - 工具注册：[src/features/chat/ai/tools/index.ts](../src/features/chat/ai/tools/index.ts)
@@ -169,6 +194,7 @@ API rate limiting
 - 当前 `profiles`、`conversations`、`memories` 表都已接上真实业务
 - provider 配置是 `profile.settings` 的一部分，不是独立数据库表
 - 当前 Memory 仍是 Supabase-first 的基础版，不包含向量检索和外部 memory provider
+- 当前 Search 使用 Tavily，不做自建向量检索或搜索索引
 - 当前测试覆盖的是基础链路，不是完整产品行为
 - 多数工作台页面仍是占位，不要把导航存在误认为功能完成
 
