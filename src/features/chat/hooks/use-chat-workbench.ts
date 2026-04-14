@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { UIMessage } from 'ai';
 import { toast } from 'sonner';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { normalizeLocale } from '@/config/i18n';
@@ -15,6 +15,7 @@ import { useChatBrowserTitle } from '@/features/chat/hooks/use-chat-browser-titl
 import { useChatController } from '@/features/chat/hooks/use-chat-controller';
 import { useChatModelSelection } from '@/features/chat/hooks/use-chat-model-selection';
 import { useConversationRecords } from '@/features/chat/hooks/use-conversation-records';
+import { useChatThreadState } from '@/features/chat/hooks/use-chat-thread-state';
 import { useInvalidConversationGuard } from '@/features/chat/hooks/use-invalid-conversation-guard';
 import { useChatSession } from '@/features/chat/hooks/use-chat-session';
 import { useChatSync } from '@/features/chat/hooks/use-chat-sync';
@@ -43,32 +44,31 @@ export function useChatWorkbench({
   const titleLocale = locale;
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { user } = useAuthUser();
   const models = useAppProfile(user);
   const persistedSelectedModelId = models.profile.settings.models.selectedChatModelId;
   const { updateMemorySettings, updateSelectedChatModelId } = models;
 
   const starterMessages = useMemo(() => getInitialMessages(), []);
-  const urlConversationId = useMemo(
-    () => searchParams.get('id') ?? searchParams.get('conversation') ?? null,
-    [searchParams]
-  );
-
   const availableModels = useMemo(
     () => getChatModelOptions(models.profile.settings),
     [models.profile.settings]
   );
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [input, setInput] = useState('');
-  const [isStartingThread, setIsStartingThread] = useState(false);
   const [sidebarSearchQuery, setSidebarSearchQuery] = useState('');
-  const [pendingThreadId, setPendingThreadId] = useState<string | null>(null);
-  const [bootstrappingThreadId, setBootstrappingThreadId] = useState<string | null>(null);
-
-  const effectivePendingThreadId = urlConversationId ? null : pendingThreadId;
-  const activeThreadId = urlConversationId ?? effectivePendingThreadId;
+  const {
+    activeThreadId,
+    bootstrappingThreadId,
+    effectivePendingThreadId,
+    input,
+    isStartingThread,
+    setBootstrappingThreadId,
+    setInput,
+    setIsStartingThread,
+    setPendingThreadId,
+    urlConversationId,
+  } = useChatThreadState();
 
   const sidebar = useSidebarConversations({
     initialConversations,
@@ -136,7 +136,7 @@ export function useChatWorkbench({
     bootstrappingThreadId,
     clearBootstrapping: useCallback(() => {
       setBootstrappingThreadId(null);
-    }, []),
+    }, [setBootstrappingThreadId]),
   });
 
   const createConversation = useCallback(

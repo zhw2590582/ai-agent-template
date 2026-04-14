@@ -5,20 +5,11 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
+import { ProviderDeleteDialog } from '@/features/models/components/provider-delete-dialog';
 import { ProviderIcon } from '@/features/models/components/provider-icon';
 import { ProviderModelList } from '@/features/models/components/provider-model-list';
 import type { ProviderModelItem, ProviderSettings } from '@/features/models/types';
@@ -214,40 +205,22 @@ export function ProviderSettingsPanel({
           />
         </div>
       </div>
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent size="default">
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('models_page.providers.delete_title')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('models_page.providers.delete_description', {
-                provider: provider.name,
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>
-              {t('common.cancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={isDeletingProvider}
-              variant="destructive"
-              onClick={async (event) => {
-                event.preventDefault();
-                setIsDeletingProvider(true);
-                try {
-                  await onDeleteProvider();
-                  setIsDeleteDialogOpen(false);
-                } finally {
-                  setIsDeletingProvider(false);
-                }
-              }}
-            >
-              {isDeletingProvider ? <Spinner data-icon="inline-start" /> : null}
-              {t('common.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ProviderDeleteDialog
+        isDeleting={isDeletingProvider}
+        open={isDeleteDialogOpen}
+        providerName={provider.name}
+        t={t}
+        onConfirm={async () => {
+          setIsDeletingProvider(true);
+          try {
+            await onDeleteProvider();
+            setIsDeleteDialogOpen(false);
+          } finally {
+            setIsDeletingProvider(false);
+          }
+        }}
+        onOpenChange={setIsDeleteDialogOpen}
+      />
     </>
   );
 }
