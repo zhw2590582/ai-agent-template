@@ -37,6 +37,19 @@ function normalizeMcpServer(input: unknown, index: number): McpServerSettings {
   };
 }
 
+function dedupeServersById(servers: McpServerSettings[]) {
+  const seenIds = new Set<string>();
+
+  return servers.filter((server) => {
+    if (seenIds.has(server.id)) {
+      return false;
+    }
+
+    seenIds.add(server.id);
+    return true;
+  });
+}
+
 export function createMcpServerDraft(index: number) {
   return createDefaultServer(index);
 }
@@ -57,7 +70,9 @@ export function normalizeMcpSettings(input: unknown): McpSettings {
     typeof input === 'object' && input != null ? (input as Record<string, unknown>) : {};
 
   const serversInput = Array.isArray(existing.servers) ? existing.servers : [];
-  const servers = serversInput.map((server, index) => normalizeMcpServer(server, index));
+  const servers = dedupeServersById(
+    serversInput.map((server, index) => normalizeMcpServer(server, index))
+  );
   const fallbackServers = servers.length > 0 ? servers : [createDefaultServer(1)];
 
   return {

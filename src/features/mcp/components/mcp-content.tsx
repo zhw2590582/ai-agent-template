@@ -171,7 +171,7 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
           }
         }}
         onSave={async (server) => {
-          return saveServer(server, editorMode);
+          return saveServer(server);
         }}
       />
 

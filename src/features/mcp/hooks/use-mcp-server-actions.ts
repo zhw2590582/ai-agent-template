@@ -68,6 +68,16 @@ export function useMcpServerActions({
   const [testingServerId, setTestingServerId] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<Record<string, McpTestResult>>({});
 
+  const upsertServer = (servers: McpServerSettings[], server: McpServerSettings) => {
+    const existingIndex = servers.findIndex((item) => item.id === server.id);
+
+    if (existingIndex === -1) {
+      return [...servers, server];
+    }
+
+    return servers.map((item) => (item.id === server.id ? server : item));
+  };
+
   const clearTestResult = (serverId: string) => {
     setTestResults((results) => {
       const nextResults = { ...results };
@@ -209,13 +219,10 @@ export function useMcpServerActions({
     }
   };
 
-  const saveServer = async (server: McpServerSettings, mode: 'add' | 'edit') => {
+  const saveServer = async (server: McpServerSettings) => {
     const nextSavedSettings: McpSettings = {
       ...savedSettings,
-      servers:
-        mode === 'add'
-          ? [...savedSettings.servers, server]
-          : savedSettings.servers.map((item) => (item.id === server.id ? server : item)),
+      servers: upsertServer(savedSettings.servers, server),
     };
 
     setIsSaving(true);
@@ -230,10 +237,7 @@ export function useMcpServerActions({
       setSavedSettings(nextSavedSettings);
       setLocalSettings((current) => ({
         ...current,
-        servers:
-          mode === 'add'
-            ? [...current.servers, server]
-            : current.servers.map((item) => (item.id === server.id ? server : item)),
+        servers: upsertServer(current.servers, server),
       }));
       setShowSaved(true);
       toast.success(saveSuccessMessage);
