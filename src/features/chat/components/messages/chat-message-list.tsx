@@ -26,7 +26,7 @@ import {
   ToolOutput,
 } from '@/components/ai-elements/tool';
 import { isChatRateLimitError } from '@/features/chat/utils/chat-errors';
-import { getTextContent, getToolParts } from '@/features/chat/utils/message-utils';
+import { getTextContent } from '@/features/chat/utils/message-utils';
 import { cn } from '@/lib/utils';
 
 interface ChatMessageListProps {
@@ -43,6 +43,12 @@ function formatToolTitle(toolName: string) {
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .trim()
     .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function isToolPart(
+  part: UIMessage['parts'][number]
+): part is Extract<UIMessage['parts'][number], { type: `tool-${string}` | 'dynamic-tool' }> {
+  return part.type === 'dynamic-tool' || part.type.startsWith('tool-');
 }
 
 interface ChatMessageRowProps {
@@ -65,39 +71,57 @@ const ChatMessageRow = memo(function ChatMessageRow({
   onRetry,
 }: ChatMessageRowProps) {
   const t = useTranslations();
-  const toolParts = getToolParts(message);
   const textContent = getTextContent(message);
 
   return (
     <div className="w-full">
-      {textContent ? (
-        <Message from={message.role}>
-          <MessageContent
-            className={cn(message.role === 'user' ? 'max-w-[85%] rounded-[1.6rem]' : 'max-w-none')}
-          >
-            <MessageResponse>{textContent}</MessageResponse>
-          </MessageContent>
-        </Message>
-      ) : null}
+      {message.parts.map((part, partIndex) => {
+        if (part.type === 'text') {
+          if (!part.text) {
+            return null;
+          }
 
-      {toolParts.length > 0 ? (
-        <div className={cn('mt-3 ml-0', isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl')}>
-          {toolParts.map((part, partIndex) => {
-            const toolName = part.type.replace('tool-', '');
-            const toolKey =
-              'toolCallId' in part &&
-              part.toolCallId != null &&
-              String(part.toolCallId).trim() !== ''
-                ? part.toolCallId
-                : `tool-${messageKey}-${partIndex}`;
+          return (
+            <Message from={message.role} key={`${messageKey}-text-${partIndex}`}>
+              <MessageContent
+                className={cn(
+                  message.role === 'user' ? 'max-w-[85%] rounded-[1.6rem]' : 'max-w-none'
+                )}
+              >
+                <MessageResponse>{part.text}</MessageResponse>
+              </MessageContent>
+            </Message>
+          );
+        }
 
-            return (
+        if (!isToolPart(part)) {
+          return null;
+        }
+
+        const toolName = part.type === 'dynamic-tool' ? 'tool' : part.type.replace('tool-', '');
+        const toolKey =
+          'toolCallId' in part && part.toolCallId != null && String(part.toolCallId).trim() !== ''
+            ? part.toolCallId
+            : `tool-${messageKey}-${partIndex}`;
+        const toolStateKey = `${toolKey}:${part.state}`;
+
+        return (
+          <div className={cn('ml-0', isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl')} key={toolStateKey}>
+            <div className="pt-3">
               <Tool
-                key={toolKey}
                 className="border-border/80 bg-card/60"
                 defaultOpen={part.state !== 'output-available'}
               >
-                <ToolHeader state={part.state} title={getToolTitle(toolName)} type={part.type} />
+                {part.type === 'dynamic-tool' ? (
+                  <ToolHeader
+                    state={part.state}
+                    title={getToolTitle(toolName)}
+                    toolName={toolName}
+                    type={part.type}
+                  />
+                ) : (
+                  <ToolHeader state={part.state} title={getToolTitle(toolName)} type={part.type} />
+                )}
                 <ToolContent>
                   {'input' in part && part.input !== undefined ? (
                     <ToolInput input={part.input} />
@@ -108,10 +132,10 @@ const ChatMessageRow = memo(function ChatMessageRow({
                   />
                 </ToolContent>
               </Tool>
-            );
-          })}
-        </div>
-      ) : null}
+            </div>
+          </div>
+        );
+      })}
 
       {message.role === 'assistant' && isLastAssistant && textContent ? (
         <MessageActions className="mt-2">

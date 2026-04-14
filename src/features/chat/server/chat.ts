@@ -1,13 +1,11 @@
-import { streamText, type UIMessage } from 'ai';
+import type { UIMessage } from 'ai';
 
 import { AI_CONFIG } from '@/config/chat';
 import { AppError, ErrorCode, handleErrorWithLocale } from '@/lib/errors';
 import { t } from '@/lib/i18n';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { validateRequest } from '@/lib/validation';
-import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
-import { getSystemPrompt } from '@/features/chat/ai/core/prompts';
-import { buildChatMessagesWithSummary } from '@/features/chat/server/chat-message-context';
+import { runGenerateTextWorkflow } from '@/features/chat/ai/workflows';
 import { createChatFinishHandler } from '@/features/chat/server/chat-finish';
 import {
   loadChatRequestContext,
@@ -50,19 +48,16 @@ export async function handleChatPost(request: Request) {
       user,
     });
 
-    const result = streamText({
-      model: getRuntimeChatModel(runtimeModel),
-      system: getSystemPrompt(locale, {
-        memoryContext,
-        webSearchEnabled: hasAgentTools,
-      }),
-      messages: await buildChatMessagesWithSummary(
-        messages as unknown as UIMessage[],
-        persistedConversationSummary ?? conversationSummary ?? null,
-        memorySettings
-      ),
-      ...(hasAgentTools ? { tools: agentTools } : {}),
-      maxOutputTokens: AI_CONFIG.DEFAULT_MAX_TOKENS,
+    const result = await runGenerateTextWorkflow({
+      conversationSummary,
+      hasAgentTools,
+      locale,
+      memoryContext,
+      memorySettings,
+      messages: messages as unknown as UIMessage[],
+      persistedConversationSummary,
+      runtimeModel,
+      tools: agentTools,
     });
 
     result.consumeStream();
