@@ -44,7 +44,10 @@ const profilePatchSchema = z.object({
     }),
     search: z.object({
       enabled: z.boolean().optional(),
+      maxResults: z.number().int().optional(),
+      searchDepth: z.enum(['advanced', 'basic']).optional(),
       tavilyApiKey: z.string().optional(),
+      topic: z.enum(['finance', 'general', 'news']).optional(),
     }),
   }),
 });

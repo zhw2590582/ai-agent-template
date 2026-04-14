@@ -7,9 +7,17 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { CHAT_UI_CONFIG } from '@/config/chat';
+import { SEARCH_CONFIG } from '@/config/search';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import type { SearchSettings } from '@/features/search/types';
 
@@ -26,6 +34,7 @@ export function SearchContent({ onClose, onSearchSettingsChange, settings }: Sea
   const [localSettings, setLocalSettings] = useState(settings);
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
 
   useEffect(() => {
@@ -150,15 +159,138 @@ export function SearchContent({ onClose, onSearchSettingsChange, settings }: Sea
 
               <div className="flex items-center justify-between gap-3">
                 <p className="text-muted-foreground text-xs">{t('search_page.api_key_hint')}</p>
-                <a
-                  className="text-sm font-medium underline underline-offset-4"
-                  href="https://app.tavily.com/home"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <ExternalLinkIcon data-icon="inline-start" />
-                  {t('search_page.get_api_key')}
-                </a>
+                <div className="flex items-center gap-2">
+                  <Button
+                    disabled={!localSettings.tavilyApiKey.trim() || isTesting}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                    onClick={async () => {
+                      setIsTesting(true);
+                      try {
+                        const response = await fetch('/api/search/test', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            apiKey: localSettings.tavilyApiKey,
+                            maxResults: localSettings.maxResults,
+                            searchDepth: localSettings.searchDepth,
+                            topic: localSettings.topic,
+                          }),
+                        });
+
+                        if (!response.ok) {
+                          toast.error(t('search_page.toast.test_failed'));
+                          return;
+                        }
+
+                        const data = (await response.json()) as { resultCount?: number };
+                        toast.success(
+                          t('search_page.toast.test_success', {
+                            count: String(data.resultCount ?? 0),
+                          })
+                        );
+                      } finally {
+                        setIsTesting(false);
+                      }
+                    }}
+                  >
+                    {isTesting ? <Spinner data-icon="inline-start" /> : null}
+                    {t('search_page.test_connection')}
+                  </Button>
+                  <a
+                    className="text-sm font-medium underline underline-offset-4"
+                    href="https://app.tavily.com/home"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <ExternalLinkIcon data-icon="inline-start" />
+                    {t('search_page.get_api_key')}
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-border border-t px-5 py-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium">{t('search_page.depth_label')}</label>
+                  <Select
+                    value={localSettings.searchDepth}
+                    onValueChange={(value: SearchSettings['searchDepth']) => {
+                      setLocalSettings((current) => ({
+                        ...current,
+                        searchDepth: value,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basic">{t('search_page.depth_basic')}</SelectItem>
+                      <SelectItem value="advanced">{t('search_page.depth_advanced')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-muted-foreground text-xs">
+                    {t('search_page.depth_description')}
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium">{t('search_page.topic_label')}</label>
+                  <Select
+                    value={localSettings.topic}
+                    onValueChange={(value: SearchSettings['topic']) => {
+                      setLocalSettings((current) => ({
+                        ...current,
+                        topic: value,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="general">{t('search_page.topic_general')}</SelectItem>
+                      <SelectItem value="news">{t('search_page.topic_news')}</SelectItem>
+                      <SelectItem value="finance">{t('search_page.topic_finance')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-muted-foreground text-xs">
+                    {t('search_page.topic_description')}
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium" htmlFor="search-max-results">
+                    {t('search_page.max_results_label')}
+                  </label>
+                  <Input
+                    id="search-max-results"
+                    max={SEARCH_CONFIG.MAX_RESULTS_MAX}
+                    min={SEARCH_CONFIG.MAX_RESULTS_MIN}
+                    type="number"
+                    value={String(localSettings.maxResults)}
+                    onChange={(event) => {
+                      const parsed = Number.parseInt(event.target.value, 10);
+                      setLocalSettings((current) => ({
+                        ...current,
+                        maxResults: Number.isFinite(parsed)
+                          ? Math.min(
+                              SEARCH_CONFIG.MAX_RESULTS_MAX,
+                              Math.max(SEARCH_CONFIG.MAX_RESULTS_MIN, parsed)
+                            )
+                          : current.maxResults,
+                      }));
+                    }}
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    {t('search_page.max_results_description')}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

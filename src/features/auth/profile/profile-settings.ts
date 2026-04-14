@@ -3,6 +3,7 @@ import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
 import type { AppProfileSettings, MemorySettings } from '@/features/auth/profile/types';
 import type { ModelsSettings, ProviderSettings } from '@/features/models/types';
 import type { SearchSettings } from '@/features/search/types';
+import { SEARCH_CONFIG } from '@/config/search';
 import {
   buildCustomProviderSettings,
   buildProviderSettings,
@@ -113,6 +114,17 @@ function clampMemoryNumber(value: unknown, fallback: number, min: number, max: n
   return Math.min(max, Math.max(min, Math.round(value)));
 }
 
+function clampSearchMaxResults(value: unknown) {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return SEARCH_CONFIG.DEFAULT_MAX_RESULTS;
+  }
+
+  return Math.min(
+    SEARCH_CONFIG.MAX_RESULTS_MAX,
+    Math.max(SEARCH_CONFIG.MAX_RESULTS_MIN, Math.round(value))
+  );
+}
+
 export function normalizeProfileSettings(input?: unknown) {
   const existingProviders = readExistingProviders(input);
   const providers = Object.fromEntries(
@@ -183,8 +195,19 @@ export function normalizeProfileSettings(input?: unknown) {
   const existingSearch = readSearchSettings(input);
   const search: SearchSettings = {
     enabled: existingSearch?.enabled ?? false,
+    maxResults: clampSearchMaxResults(existingSearch?.maxResults),
+    searchDepth:
+      existingSearch?.searchDepth === 'advanced' || existingSearch?.searchDepth === 'basic'
+        ? existingSearch.searchDepth
+        : SEARCH_CONFIG.DEFAULT_SEARCH_DEPTH,
     tavilyApiKey:
       typeof existingSearch?.tavilyApiKey === 'string' ? existingSearch.tavilyApiKey : '',
+    topic:
+      existingSearch?.topic === 'finance' ||
+      existingSearch?.topic === 'general' ||
+      existingSearch?.topic === 'news'
+        ? existingSearch.topic
+        : SEARCH_CONFIG.DEFAULT_TOPIC,
   };
 
   return { memory, models, search } satisfies AppProfileSettings;

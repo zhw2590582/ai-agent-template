@@ -35,7 +35,10 @@ export const chatPostSchema = z.object({
   searchSettings: z
     .object({
       enabled: z.boolean(),
+      maxResults: z.number().int(),
+      searchDepth: z.enum(['advanced', 'basic']),
       tavilyApiKey: z.string(),
+      topic: z.enum(['finance', 'general', 'news']),
     })
     .optional(),
   runtimeModel: z

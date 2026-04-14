@@ -23,7 +23,10 @@ export interface ChatProfileMemorySettings {
 
 export interface ChatSearchSettings {
   enabled: boolean;
+  maxResults: number;
+  searchDepth: 'advanced' | 'basic';
   tavilyApiKey: string;
+  topic: 'finance' | 'general' | 'news';
 }
 
 export function resolveChatRequestLocale(request: Request): Locale {
@@ -79,7 +82,19 @@ export function resolveSearchSettings(input: unknown): ChatSearchSettings | null
   ) {
     return {
       enabled: input.enabled,
+      maxResults:
+        'maxResults' in input && typeof input.maxResults === 'number' ? input.maxResults : 5,
+      searchDepth:
+        'searchDepth' in input &&
+        (input.searchDepth === 'advanced' || input.searchDepth === 'basic')
+          ? input.searchDepth
+          : 'basic',
       tavilyApiKey: input.tavilyApiKey,
+      topic:
+        'topic' in input &&
+        (input.topic === 'finance' || input.topic === 'general' || input.topic === 'news')
+          ? input.topic
+          : 'general',
     };
   }
 
