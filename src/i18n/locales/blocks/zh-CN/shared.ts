@@ -3,6 +3,7 @@ export const zhCNSharedMessages = {
     app_name: 'AI Agent Template',
     welcome: '欢迎',
     cancel: '取消',
+    close: '关闭',
     confirm: '确认',
     delete: '删除',
     disabled: '未开启',

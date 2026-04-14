@@ -1,6 +1,6 @@
 'use client';
 
-import { PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { PencilIcon, PlusIcon, PlugZapIcon, Trash2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Badge } from '@/components/ui/badge';
@@ -51,7 +51,7 @@ export function McpServerList({
   onRunConnectionTest,
   onToggleServerEnabled,
   servers,
-  testResults,
+  testResults: _testResults,
 }: McpServerListProps) {
   const t = useTranslations();
   const deleteTarget = servers.find((server) => server.id === deleteTargetId) ?? null;
@@ -72,8 +72,6 @@ export function McpServerList({
 
         <div className="border-border overflow-hidden rounded-md border">
           {servers.map((server) => {
-            const testResult = testResults[server.id] ?? null;
-
             return (
               <article
                 className="border-border flex flex-col gap-3 border-b px-5 py-4 last:border-b-0"
@@ -91,14 +89,6 @@ export function McpServerList({
                     <p className="text-muted-foreground truncate text-sm">
                       {server.serverUrl || t('mcp_page.server_url_empty')}
                     </p>
-                    {testResult ? (
-                      <p className="text-muted-foreground text-xs">
-                        {t('mcp_page.server_tools_summary', {
-                          count: testResult.toolNames.length,
-                          version: testResult.serverVersion ?? '—',
-                        })}
-                      </p>
-                    ) : null}
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -123,8 +113,9 @@ export function McpServerList({
                       variant="ghost"
                       onClick={() => void onRunConnectionTest(server.id)}
                     >
+                      {!isTesting ? <PlugZapIcon /> : null}
                       {isTesting ? <Spinner data-icon="inline-start" /> : null}
-                      {t('mcp_page.test_connection')}
+                      {t('mcp_page.test')}
                     </Button>
                     <Button
                       size="sm"

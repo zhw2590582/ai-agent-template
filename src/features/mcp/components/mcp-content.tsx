@@ -1,18 +1,18 @@
 'use client';
 
-import { ExternalLinkIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import { useMcpSettings } from '@/features/mcp/hooks/use-mcp-settings';
 import { McpServerEditorDialog } from '@/features/mcp/components/mcp-server-editor-dialog';
 import { McpServerList } from '@/features/mcp/components/mcp-server-list';
+import { McpTestResultDialog } from '@/features/mcp/components/mcp-test-result-dialog';
 import type { McpServerSettings, McpSettings } from '@/features/mcp/types';
+import type { McpTestResult } from '@/features/mcp/hooks/use-mcp-settings';
 
 interface McpContentProps {
   onClose?: () => void;
@@ -26,11 +26,11 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
   const [editingServerDraft, setEditingServerDraft] = useState<McpServerSettings | null>(null);
   const [editorMode, setEditorMode] = useState<'add' | 'edit'>('edit');
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [testResultDialog, setTestResultDialog] = useState<McpTestResult | null>(null);
   const {
     createServerDraft,
     isDirty,
     isSaving,
-    isTesting,
     localSettings,
     removeServer,
     resetAndClose,
@@ -38,6 +38,7 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
     save,
     showSaved,
     testResults,
+    testingServerId,
     updateServer,
     updateSettings,
   } = useMcpSettings({
@@ -78,24 +79,7 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
     >
       <div className="text-foreground mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-8">
         <section className="border-border flex flex-col gap-4 rounded-md border px-5 py-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-xl font-semibold">{t('mcp_page.title')}</h2>
-              <p className="text-muted-foreground max-w-2xl text-sm">{t('mcp_page.description')}</p>
-            </div>
-            <Button asChild size="sm" type="button" variant="outline">
-              <a
-                href="https://ai-sdk.dev/docs/ai-sdk-core/mcp-tools"
-                rel="noreferrer"
-                target="_blank"
-              >
-                <ExternalLinkIcon data-icon="inline-start" />
-                {t('mcp_page.learn_more')}
-              </a>
-            </Button>
-          </div>
-
-          <div className="border-border flex items-center justify-between gap-4 border-t pt-4">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex flex-col gap-1">
               <h3 className="text-sm font-medium">{t('mcp_page.enabled_label')}</h3>
               <p className="text-muted-foreground text-sm">{t('mcp_page.enabled_description')}</p>
@@ -113,14 +97,12 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
           </div>
         </section>
 
-        <Separator />
-
         <McpServerList
           clearDeleteTarget={() => setDeleteTargetId(null)}
           deleteTargetId={deleteTargetId}
-          isTesting={isTesting}
           servers={localSettings.servers}
           testResults={testResults}
+          testingServerId={testingServerId}
           onAddServer={() => {
             setEditorMode('add');
             setEditingServerDraft(createServerDraft());
@@ -147,7 +129,11 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
               return;
             }
 
-            await runConnectionTest(server);
+            const result = await runConnectionTest(server);
+
+            if (result) {
+              setTestResultDialog(result);
+            }
           }}
           onToggleServerEnabled={(serverId, enabled) => {
             updateServer(serverId, (server) => ({
@@ -161,7 +147,6 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
       <McpServerEditorDialog
         key={editingServer?.id ?? 'mcp-server-editor'}
         initialServer={editingServer}
-        isTesting={isTesting}
         mode={editorMode}
         open={editingServer != null}
         onOpenChange={(open) => {
@@ -177,13 +162,22 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
               selectedServerId: server.id,
               servers: [...current.servers, server],
             }));
+            return true;
           } else {
             updateServer(server.id, () => server);
+            return true;
           }
-
-          return true;
         }}
-        onTest={async (server) => runConnectionTest(server)}
+      />
+
+      <McpTestResultDialog
+        open={testResultDialog != null}
+        result={testResultDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setTestResultDialog(null);
+          }
+        }}
       />
     </WorkbenchDialogPanel>
   );

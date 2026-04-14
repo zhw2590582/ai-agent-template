@@ -27,21 +27,17 @@ import type { McpServerSettings } from '@/features/mcp/types';
 
 interface McpServerEditorDialogProps {
   initialServer: McpServerSettings | null;
-  isTesting: boolean;
   mode: 'add' | 'edit';
   onOpenChange: (open: boolean) => void;
   onSave: (server: McpServerSettings) => Promise<boolean> | boolean;
-  onTest: (server: McpServerSettings) => Promise<boolean> | boolean;
   open: boolean;
 }
 
 export function McpServerEditorDialog({
   initialServer,
-  isTesting,
   mode,
   onOpenChange,
   onSave,
-  onTest,
   open,
 }: McpServerEditorDialogProps) {
   const t = useTranslations();
@@ -64,7 +60,7 @@ export function McpServerEditorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? t('mcp_page.edit_server_title') : t('mcp_page.add_server_title')}
@@ -93,45 +89,41 @@ export function McpServerEditorDialog({
             />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium" htmlFor="mcp-server-name">
-                {t('mcp_page.server_name_label')}
-              </label>
-              <Input
-                id="mcp-server-name"
-                placeholder={t('mcp_page.server_name_placeholder')}
-                value={server.serverName}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setServer((current) => (current ? { ...current, serverName: value } : current));
-                }}
-              />
-              <p className="text-muted-foreground text-xs">
-                {t('mcp_page.server_name_description')}
-              </p>
-            </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium" htmlFor="mcp-server-name">
+              {t('mcp_page.server_name_label')}
+            </label>
+            <Input
+              id="mcp-server-name"
+              placeholder={t('mcp_page.server_name_placeholder')}
+              value={server.serverName}
+              onChange={(event) => {
+                const value = event.target.value;
+                setServer((current) => (current ? { ...current, serverName: value } : current));
+              }}
+            />
+            <p className="text-muted-foreground text-xs">{t('mcp_page.server_name_description')}</p>
+          </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium" htmlFor="mcp-transport">
-                {t('mcp_page.transport_label')}
-              </label>
-              <Select
-                value={server.transport}
-                onValueChange={(value: 'http' | 'sse') => {
-                  setServer((current) => (current ? { ...current, transport: value } : current));
-                }}
-              >
-                <SelectTrigger className="w-full" id="mcp-transport">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="http">{t('mcp_page.transport_http')}</SelectItem>
-                  <SelectItem value="sse">{t('mcp_page.transport_sse')}</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-muted-foreground text-xs">{t('mcp_page.transport_description')}</p>
-            </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium" htmlFor="mcp-transport">
+              {t('mcp_page.transport_label')}
+            </label>
+            <Select
+              value={server.transport}
+              onValueChange={(value: 'http' | 'sse') => {
+                setServer((current) => (current ? { ...current, transport: value } : current));
+              }}
+            >
+              <SelectTrigger className="w-full" id="mcp-transport">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="http">{t('mcp_page.transport_http')}</SelectItem>
+                <SelectItem value="sse">{t('mcp_page.transport_sse')}</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-muted-foreground text-xs">{t('mcp_page.transport_description')}</p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -186,15 +178,6 @@ export function McpServerEditorDialog({
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             {t('common.cancel')}
-          </Button>
-          <Button
-            disabled={isInvalid || isTesting}
-            type="button"
-            variant="outline"
-            onClick={() => void onTest(server)}
-          >
-            {isTesting ? <Spinner data-icon="inline-start" /> : null}
-            {t('mcp_page.test_connection')}
           </Button>
           <Button
             disabled={isInvalid}

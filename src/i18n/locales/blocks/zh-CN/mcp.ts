@@ -33,7 +33,7 @@ export const zhCNMcpMessages = {
     bearer_token_label: 'Bearer Token',
     bearer_token_description: '可选。只有服务端要求 Authorization 时才需要填写。',
     bearer_token_placeholder: '输入可选的 Bearer Token',
-    test_connection: '测试连接',
+    test: '测试',
     learn_more: '查看文档',
     test_result_title: '可用工具',
     test_result_description: '这里展示当前远程 MCP 服务端实际暴露出来的工具。',

@@ -1,6 +1,6 @@
 'use client';
 
-import { EyeIcon, EyeOffIcon, ExternalLinkIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, ExternalLinkIcon, PlugZapIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -43,6 +43,7 @@ export function SearchConnectionSection({
             variant="outline"
             onClick={onRunConnectionTest}
           >
+            {!isTesting ? <PlugZapIcon data-icon="inline-start" /> : null}
             {isTesting ? <Spinner data-icon="inline-start" /> : null}
             {t('search_page.test_connection')}
           </Button>

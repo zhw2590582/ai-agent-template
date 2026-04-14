@@ -36,7 +36,7 @@ export const enUSMcpMessages = {
     bearer_token_label: 'Bearer token',
     bearer_token_description: 'Optional. Add it only if the server requires Authorization.',
     bearer_token_placeholder: 'Enter an optional bearer token',
-    test_connection: 'Test connection',
+    test: 'Test',
     learn_more: 'Learn more',
     test_result_title: 'Available tools',
     test_result_description: 'These are the tools currently exposed by the remote MCP server.',

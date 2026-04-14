@@ -3,6 +3,7 @@ export const enUSSharedMessages = {
     app_name: 'AI Agent Template',
     welcome: 'Welcome',
     cancel: 'Cancel',
+    close: 'Close',
     confirm: 'Confirm',
     delete: 'Delete',
     disabled: 'Disabled',

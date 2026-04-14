@@ -13,6 +13,8 @@ interface McpTestResult {
   toolNames: string[];
 }
 
+export type { McpTestResult };
+
 interface UseMcpSettingsOptions {
   onClose?: () => void;
   onMcpSettingsChange: (updater: (settings: McpSettings) => McpSettings) => Promise<boolean> | void;
@@ -34,7 +36,7 @@ export function useMcpSettings({
 }: UseMcpSettingsOptions) {
   const [localSettings, setLocalSettings] = useState(settings);
   const [isSaving, setIsSaving] = useState(false);
-  const [isTesting, setIsTesting] = useState(false);
+  const [testingServerId, setTestingServerId] = useState<string | null>(null);
   const [showSaved, setShowSaved] = useState(false);
   const [testResults, setTestResults] = useState<Record<string, McpTestResult>>({});
 
@@ -54,17 +56,17 @@ export function useMcpSettings({
     return () => window.clearTimeout(timeoutId);
   }, [showSaved]);
 
-  const isDirty = JSON.stringify(localSettings) !== JSON.stringify(settings);
-
-  const updateSettings = (updater: (settings: McpSettings) => McpSettings) => {
-    setLocalSettings((current) => updater(current));
-  };
-
   const createServerDraft = () =>
     createMcpServerDraft(
       localSettings.servers.length + 1,
       localSettings.servers.map((item) => item.id)
     );
+
+  const isDirty = JSON.stringify(localSettings) !== JSON.stringify(settings);
+
+  const updateSettings = (updater: (settings: McpSettings) => McpSettings) => {
+    setLocalSettings((current) => updater(current));
+  };
 
   const updateServer = (
     serverId: string,
@@ -105,7 +107,7 @@ export function useMcpSettings({
   };
 
   const runConnectionTest = async (server: McpServerSettings) => {
-    setIsTesting(true);
+    setTestingServerId(server.id);
     try {
       const response = await fetch('/api/mcp/test', {
         method: 'POST',
@@ -124,7 +126,7 @@ export function useMcpSettings({
           return nextResults;
         });
         toast.error(testFailedMessage);
-        return false;
+        return null;
       }
 
       const data = (await response.json()) as {
@@ -147,9 +149,9 @@ export function useMcpSettings({
       toast.success(
         testSuccessMessage(String(result.toolNames.length), result.serverName ?? server.serverName)
       );
-      return true;
+      return result;
     } finally {
-      setIsTesting(false);
+      setTestingServerId((current) => (current === server.id ? null : current));
     }
   };
 
@@ -175,7 +177,6 @@ export function useMcpSettings({
     createServerDraft,
     isDirty,
     isSaving,
-    isTesting,
     localSettings,
     removeServer,
     resetAndClose,
@@ -183,6 +184,7 @@ export function useMcpSettings({
     save,
     showSaved,
     testResults,
+    testingServerId,
     updateServer,
     updateSettings,
   };
