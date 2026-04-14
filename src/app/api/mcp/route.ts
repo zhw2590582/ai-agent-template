@@ -1,6 +1,7 @@
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
+import { MCP_CONFIG } from '@/config/mcp';
 import { API_NAMESPACES } from '@/config/namespaces';
 import { createDemoMcpServer } from '@/features/mcp/server/demo-mcp-server';
 import { enforceRateLimit } from '@/lib/rate-limit';
@@ -43,12 +44,11 @@ export async function OPTIONS() {
   return new Response(null, {
     status: 204,
     headers: {
-      Allow: 'GET, POST, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers':
-        'Content-Type, MCP-Protocol-Version, Last-Event-ID, mcp-session-id',
-      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Expose-Headers': 'MCP-Protocol-Version, mcp-session-id',
+      Allow: MCP_CONFIG.CORS_ALLOWED_METHODS.join(', '),
+      'Access-Control-Allow-Headers': MCP_CONFIG.CORS_ALLOWED_HEADERS.join(', '),
+      'Access-Control-Allow-Methods': MCP_CONFIG.CORS_ALLOWED_METHODS.join(', '),
+      'Access-Control-Allow-Origin': MCP_CONFIG.CORS_ALLOWED_ORIGIN,
+      'Access-Control-Expose-Headers': MCP_CONFIG.EXPOSED_HEADERS.join(', '),
     },
   });
 }

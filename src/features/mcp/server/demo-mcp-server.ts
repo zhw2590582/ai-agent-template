@@ -1,22 +1,33 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as z from 'zod/v4';
 
+const DEMO_SERVER_INFO = {
+  name: 'ai-agent-template-demo-server',
+  version: '0.1.0',
+} as const;
+
+function createUnavailableResult(capability: string, error: unknown) {
+  return {
+    content: [
+      {
+        type: 'text' as const,
+        text: `${capability} is not available with this client yet.\n${error instanceof Error ? error.message : String(error)}`,
+      },
+    ],
+    isError: true,
+  };
+}
+
 function formatJson(value: unknown) {
   return JSON.stringify(value, null, 2);
 }
 
 export function createDemoMcpServer() {
-  const server = new McpServer(
-    {
-      name: 'ai-agent-template-demo-server',
-      version: '0.1.0',
+  const server = new McpServer(DEMO_SERVER_INFO, {
+    capabilities: {
+      logging: {},
     },
-    {
-      capabilities: {
-        logging: {},
-      },
-    }
-  );
+  });
 
   server.registerTool(
     'hello',
@@ -106,15 +117,7 @@ export function createDemoMcpServer() {
           ],
         };
       } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Elicitation is not available with this client yet.\n${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-          isError: true,
-        };
+        return createUnavailableResult('Elicitation', error);
       }
     }
   );
@@ -155,15 +158,7 @@ export function createDemoMcpServer() {
           ],
         };
       } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Sampling is not available with this client yet.\n${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-          isError: true,
-        };
+        return createUnavailableResult('Sampling', error);
       }
     }
   );
@@ -187,15 +182,7 @@ export function createDemoMcpServer() {
           ],
         };
       } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Roots are not available with this client yet.\n${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-          isError: true,
-        };
+        return createUnavailableResult('Roots', error);
       }
     }
   );

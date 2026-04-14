@@ -37,14 +37,8 @@ function normalizeMcpServer(input: unknown, index: number): McpServerSettings {
   };
 }
 
-export function createMcpServerDraft(index: number, existingIds: string[] = []) {
-  let server = createDefaultServer(index);
-
-  while (existingIds.includes(server.id)) {
-    server = createDefaultServer(index);
-  }
-
-  return server;
+export function createMcpServerDraft(index: number) {
+  return createDefaultServer(index);
 }
 
 export function hasMcpConnectionSettings(server: McpServerSettings | null | undefined) {

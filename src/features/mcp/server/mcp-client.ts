@@ -19,6 +19,9 @@ function getServerLabel(server: McpServerSettings, client: MCPClient) {
 }
 
 function getServerCapabilities(client: MCPClient) {
+  // The AI SDK MCP client does not currently expose server capabilities as a public API.
+  // We read the initialized internal field as a best-effort fallback so the test dialog can
+  // show lightweight capability badges. If the SDK later exposes a stable getter, switch to it.
   const candidate = client as MCPClient & {
     serverCapabilities?: {
       elicitation?: object;
