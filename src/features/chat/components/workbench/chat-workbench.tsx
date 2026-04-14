@@ -2,6 +2,7 @@
 
 import type { UIMessage } from 'ai';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { ChatComposer } from '@/features/chat/components/composer/chat-composer';
@@ -40,6 +41,7 @@ export function ChatWorkbench({
   initialMessages,
 }: ChatWorkbenchProps) {
   const t = useTranslations();
+  const router = useRouter();
   const workbench = useChatWorkbench({
     initialConversationId,
     initialConversations,
@@ -58,6 +60,10 @@ export function ChatWorkbench({
 
   const openView = (view: Exclude<WorkbenchView, 'chat'>) => {
     setActiveDialogView(view);
+
+    if (view === 'memory') {
+      router.refresh();
+    }
   };
 
   return (
@@ -131,7 +137,7 @@ export function ChatWorkbench({
               onClose={closeDialog}
               onMemorySettingsChange={workbench.setMemorySettings}
               settings={workbench.memorySettings}
-              summaries={workbench.sidebar.conversations}
+              summaries={initialConversations}
             />
           ) : (
             <WorkbenchDialogPanel
