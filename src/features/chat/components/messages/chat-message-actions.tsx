@@ -28,8 +28,7 @@ export function ChatMessageActions({
   textContent,
 }: ChatMessageActionsProps) {
   const t = useTranslations();
-  const isAssistantStreaming =
-    role === 'assistant' && isLastAssistant && (status === 'streaming' || status === 'submitted');
+  const isAssistantStreaming = role === 'assistant' && isLastAssistant && status === 'streaming';
 
   if (isAssistantStreaming) {
     return (
@@ -42,7 +41,7 @@ export function ChatMessageActions({
     );
   }
 
-  if (role === 'assistant' && isLastAssistant && textContent && status === 'ready') {
+  if (role === 'assistant' && isLastAssistant && textContent && status !== 'streaming') {
     return (
       <MessageActions className="mt-2">
         <MessageAction

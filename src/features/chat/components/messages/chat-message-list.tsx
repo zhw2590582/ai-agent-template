@@ -11,6 +11,7 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from '@/components/ai-elements/conversation';
+import { Message, MessageContent } from '@/components/ai-elements/message';
 import { Shimmer } from '@/components/ai-elements/shimmer';
 import { ChatMessageRow } from '@/features/chat/components/messages/chat-message-row';
 import { isChatRateLimitError } from '@/features/chat/utils/chat-errors';
@@ -115,12 +116,14 @@ export function ChatMessageList({
         })}
 
         {showPendingThinking ? (
-          <div className="text-muted-foreground flex items-center gap-2 pl-1 text-sm">
-            <SparklesIcon className="size-3.5 shrink-0" />
-            <Shimmer as="span" className="text-sm">
-              {t('chat.status.thinking')}
-            </Shimmer>
-          </div>
+          <Message from="assistant">
+            <MessageContent className="text-muted-foreground flex-row items-center gap-2 text-sm">
+              <SparklesIcon className="size-3.5 shrink-0" />
+              <Shimmer as="span" className="text-sm">
+                {t('chat.status.thinking')}
+              </Shimmer>
+            </MessageContent>
+          </Message>
         ) : null}
 
         {errorMessage ? (
