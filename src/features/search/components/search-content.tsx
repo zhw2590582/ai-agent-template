@@ -32,8 +32,8 @@ export function SearchContent({ onClose, onSearchSettingsChange, settings }: Sea
     runConnectionTest,
     save,
     setIsApiKeyVisible,
-    setLocalSettings,
     showSaved,
+    updateSettings,
   } = useSearchSettings({
     onClose,
     onSearchSettingsChange,
@@ -79,23 +79,14 @@ export function SearchContent({ onClose, onSearchSettingsChange, settings }: Sea
             settings={localSettings}
             onRunConnectionTest={() => void runConnectionTest()}
             onToggleApiKeyVisibility={() => setIsApiKeyVisible((current) => !current)}
-            onUpdateSettings={(updater) => setLocalSettings((current) => updater(current))}
+            onUpdateSettings={updateSettings}
           />
 
-          <SearchWebSection
-            settings={localSettings}
-            onUpdateSettings={(updater) => setLocalSettings((current) => updater(current))}
-          />
+          <SearchWebSection settings={localSettings} onUpdateSettings={updateSettings} />
 
-          <SearchExtractSection
-            settings={localSettings}
-            onUpdateSettings={(updater) => setLocalSettings((current) => updater(current))}
-          />
+          <SearchExtractSection settings={localSettings} onUpdateSettings={updateSettings} />
 
-          <SearchCrawlSection
-            settings={localSettings}
-            onUpdateSettings={(updater) => setLocalSettings((current) => updater(current))}
-          />
+          <SearchCrawlSection settings={localSettings} onUpdateSettings={updateSettings} />
         </section>
       </div>
     </WorkbenchDialogPanel>

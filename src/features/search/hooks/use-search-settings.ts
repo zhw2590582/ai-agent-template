@@ -51,6 +51,10 @@ export function useSearchSettings({
 
   const isDirty = JSON.stringify(localSettings) !== JSON.stringify(settings);
 
+  const updateSettings = (updater: (settings: SearchSettings) => SearchSettings) => {
+    setLocalSettings((current) => updater(current));
+  };
+
   const runConnectionTest = async () => {
     setIsTesting(true);
     try {
@@ -113,5 +117,6 @@ export function useSearchSettings({
     setIsApiKeyVisible,
     setLocalSettings,
     showSaved,
+    updateSettings,
   };
 }
