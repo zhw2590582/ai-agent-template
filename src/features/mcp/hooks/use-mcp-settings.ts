@@ -9,6 +9,23 @@ import { createMcpServerDraft } from '@/features/mcp/settings';
 import type { McpServerSettings, McpSettings } from '@/features/mcp/types';
 
 interface McpTestResult {
+  prompts: Array<{
+    arguments: Array<{
+      description?: string;
+      name: string;
+      required: boolean;
+    }>;
+    description?: string;
+    name: string;
+    title?: string;
+  }>;
+  resources: Array<{
+    description?: string;
+    mimeType?: string;
+    name: string;
+    title?: string;
+    uri: string;
+  }>;
   serverName: string | null;
   serverVersion: string | null;
   toolNames: string[];
@@ -134,12 +151,62 @@ export function useMcpSettings({
       }
 
       const data = (await response.json()) as {
+        prompts?: Array<{
+          arguments?: Array<{
+            description?: string;
+            name?: string;
+            required?: boolean;
+          }>;
+          description?: string;
+          name?: string;
+          title?: string;
+        }>;
+        resources?: Array<{
+          description?: string;
+          mimeType?: string;
+          name?: string;
+          title?: string;
+          uri?: string;
+        }>;
         serverName?: string | null;
         serverVersion?: string | null;
         toolNames?: string[];
       };
 
       const result = {
+        prompts: Array.isArray(data.prompts)
+          ? data.prompts
+              .filter((prompt) => typeof prompt?.name === 'string')
+              .map((prompt) => ({
+                arguments: Array.isArray(prompt.arguments)
+                  ? prompt.arguments
+                      .filter((argument) => typeof argument?.name === 'string')
+                      .map((argument) => ({
+                        description:
+                          typeof argument.description === 'string' ? argument.description : undefined,
+                        name: argument.name!,
+                        required: Boolean(argument.required),
+                      }))
+                  : [],
+                description: typeof prompt.description === 'string' ? prompt.description : undefined,
+                name: prompt.name!,
+                title: typeof prompt.title === 'string' ? prompt.title : undefined,
+              }))
+          : [],
+        resources: Array.isArray(data.resources)
+          ? data.resources
+              .filter(
+                (resource) => typeof resource?.name === 'string' && typeof resource?.uri === 'string'
+              )
+              .map((resource) => ({
+                description:
+                  typeof resource.description === 'string' ? resource.description : undefined,
+                mimeType: typeof resource.mimeType === 'string' ? resource.mimeType : undefined,
+                name: resource.name!,
+                title: typeof resource.title === 'string' ? resource.title : undefined,
+                uri: resource.uri!,
+              }))
+          : [],
         serverName: data.serverName ?? null,
         serverVersion: data.serverVersion ?? null,
         toolNames: Array.isArray(data.toolNames) ? data.toolNames : [],

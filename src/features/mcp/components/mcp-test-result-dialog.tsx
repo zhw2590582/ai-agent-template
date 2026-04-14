@@ -16,6 +16,23 @@ interface McpTestResultDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   result: {
+    prompts: Array<{
+      arguments: Array<{
+        description?: string;
+        name: string;
+        required: boolean;
+      }>;
+      description?: string;
+      name: string;
+      title?: string;
+    }>;
+    resources: Array<{
+      description?: string;
+      mimeType?: string;
+      name: string;
+      title?: string;
+      uri: string;
+    }>;
     serverName: string | null;
     serverVersion: string | null;
     toolNames: string[];
@@ -27,14 +44,14 @@ export function McpTestResultDialog({ open, onOpenChange, result }: McpTestResul
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="max-h-[85vh] sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t('mcp_page.test_result_title')}</DialogTitle>
           <DialogDescription>{t('mcp_page.test_result_description')}</DialogDescription>
         </DialogHeader>
 
         {result ? (
-          <div className="flex flex-col gap-5">
+          <div className="flex max-h-[calc(85vh-10rem)] flex-col gap-6 overflow-y-auto pr-1">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="border-border rounded-md border px-4 py-3">
                 <p className="text-muted-foreground text-xs">{t('mcp_page.test_server_label')}</p>
@@ -61,6 +78,57 @@ export function McpTestResultDialog({ open, onOpenChange, result }: McpTestResul
                 </div>
               ) : (
                 <p className="text-muted-foreground text-sm">{t('mcp_page.no_tools')}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <p className="text-sm font-medium">
+                {t('mcp_page.resources_label', { count: result.resources.length })}
+              </p>
+
+              {result.resources.length > 0 ? (
+                <div className="grid gap-3">
+                  {result.resources.map((resource) => (
+                    <div key={resource.uri} className="border-border rounded-md border px-4 py-3">
+                      <p className="text-sm font-medium">{resource.title || resource.name}</p>
+                      <p className="text-muted-foreground mt-1 break-all text-xs">{resource.uri}</p>
+                      {resource.description ? (
+                        <p className="text-muted-foreground mt-2 text-sm">{resource.description}</p>
+                      ) : null}
+                      {resource.mimeType ? (
+                        <p className="text-muted-foreground mt-2 text-xs">{resource.mimeType}</p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">{t('mcp_page.no_resources')}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <p className="text-sm font-medium">
+                {t('mcp_page.prompts_label', { count: result.prompts.length })}
+              </p>
+
+              {result.prompts.length > 0 ? (
+                <div className="grid gap-3">
+                  {result.prompts.map((prompt) => (
+                    <div key={prompt.name} className="border-border rounded-md border px-4 py-3">
+                      <p className="text-sm font-medium">{prompt.title || prompt.name}</p>
+                      {prompt.description ? (
+                        <p className="text-muted-foreground mt-2 text-sm">{prompt.description}</p>
+                      ) : null}
+                      <p className="text-muted-foreground mt-2 text-xs">
+                        {t('mcp_page.prompt_arguments_label', {
+                          count: prompt.arguments.length,
+                        })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">{t('mcp_page.no_prompts')}</p>
               )}
             </div>
           </div>

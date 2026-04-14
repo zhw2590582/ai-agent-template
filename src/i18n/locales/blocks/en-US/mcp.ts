@@ -42,8 +42,13 @@ export const enUSMcpMessages = {
     test_result_description: 'These are the tools currently exposed by the remote MCP server.',
     test_server_label: 'Server',
     test_version_label: 'Version',
+    resources_label: '{count} resources found',
+    prompts_label: '{count} prompts found',
+    prompt_arguments_label: '{count} arguments',
     tools_label: '{count} tools found',
     server_tools_summary: '{count} tools available • version {version}',
+    no_prompts: 'No prompts were returned by this server.',
+    no_resources: 'No resources were returned by this server.',
     no_tools: 'No tools were returned by this server.',
     toast: {
       save_failed: 'MCP settings could not be saved.',

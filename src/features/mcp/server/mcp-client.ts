@@ -118,11 +118,42 @@ export async function listRemoteMcpTools(server: McpServerSettings) {
 
   try {
     const definitions = await client.listTools();
+    const [resourcesResult, promptsResult] = await Promise.allSettled([
+      client.listResources(),
+      client.experimental_listPrompts(),
+    ]);
+
+    const resources =
+      resourcesResult.status === 'fulfilled'
+        ? resourcesResult.value.resources.map((resource) => ({
+            uri: resource.uri,
+            name: resource.name,
+            title: resource.title,
+            description: resource.description,
+            mimeType: resource.mimeType,
+          }))
+        : [];
+
+    const prompts =
+      promptsResult.status === 'fulfilled'
+        ? promptsResult.value.prompts.map((prompt) => ({
+            name: prompt.name,
+            title: prompt.title,
+            description: prompt.description,
+            arguments: (prompt.arguments ?? []).map((argument) => ({
+              name: argument.name,
+              description: argument.description,
+              required: argument.required ?? false,
+            })),
+          }))
+        : [];
 
     return {
       serverId: server.id,
       serverName: getServerLabel(server, client),
       serverVersion: client.serverInfo.version,
+      prompts,
+      resources,
       toolNames: definitions.tools.map((tool) => tool.name),
     };
   } catch (error) {

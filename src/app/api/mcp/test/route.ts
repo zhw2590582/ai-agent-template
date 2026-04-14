@@ -33,7 +33,15 @@ export async function POST(request: Request) {
     });
     const result = await listRemoteMcpTools(normalizedSettings.servers[0]!);
 
-    return Response.json(result ?? { serverName: null, serverVersion: null, toolNames: [] });
+    return Response.json(
+      result ?? {
+        prompts: [],
+        resources: [],
+        serverName: null,
+        serverVersion: null,
+        toolNames: [],
+      }
+    );
   } catch (error) {
     return handleError(error);
   }

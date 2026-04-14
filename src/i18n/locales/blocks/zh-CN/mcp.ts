@@ -39,8 +39,13 @@ export const zhCNMcpMessages = {
     test_result_description: '这里展示当前远程 MCP 服务端实际暴露出来的工具。',
     test_server_label: '服务端',
     test_version_label: '版本',
+    resources_label: '已发现 {count} 个资源',
+    prompts_label: '已发现 {count} 个提示模板',
+    prompt_arguments_label: '{count} 个参数',
     tools_label: '已发现 {count} 个工具',
     server_tools_summary: '共 {count} 个工具 · 版本 {version}',
+    no_prompts: '这个服务端目前没有返回任何提示模板。',
+    no_resources: '这个服务端目前没有返回任何资源。',
     no_tools: '这个服务端目前没有返回任何工具。',
     toast: {
       save_failed: 'MCP 设置保存失败。',
