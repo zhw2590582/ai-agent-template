@@ -294,9 +294,7 @@ export function useModelsPage({ open }: { open: boolean }) {
     setIsSavingChanges(true);
 
     try {
-      return await saveProfile(() => draftModels, {
-        trackSavingState: true,
-      });
+      return await saveProfile(() => draftModels);
     } finally {
       setIsSavingChanges(false);
     }

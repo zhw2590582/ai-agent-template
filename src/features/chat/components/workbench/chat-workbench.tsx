@@ -86,12 +86,7 @@ export function ChatWorkbench({
         </div>
 
         <section className="bg-background flex min-h-0 flex-1 flex-col transition-[width] duration-300 ease-out">
-          <ChatTopBar
-            activeView={activeDialogView ?? 'chat'}
-            onOpenView={openView}
-            profileSaveStatus={workbench.profileSaveStatus}
-            t={t}
-          />
+          <ChatTopBar activeView={activeDialogView ?? 'chat'} onOpenView={openView} t={t} />
           <>
             <ChatMessageList
               error={workbench.error}

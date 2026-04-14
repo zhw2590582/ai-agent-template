@@ -7,7 +7,6 @@ import { buildCustomProviderSettings } from '@/features/models/utils/profile';
 
 interface PersistOptions {
   silent?: boolean;
-  trackSavingState?: boolean;
 }
 
 interface CreateProfileActionsOptions {
@@ -148,7 +147,6 @@ export function createProfileActions({
 
     return persistProfile(nextProfile, {
       silent: options?.silent,
-      trackSavingState: options?.trackSavingState,
     });
   };
 

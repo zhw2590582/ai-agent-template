@@ -64,7 +64,6 @@ export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
                 return;
               }
               onSaved?.();
-              onClose();
             }}
           >
             {isSavingChanges ? <Spinner data-icon="inline-start" /> : null}
