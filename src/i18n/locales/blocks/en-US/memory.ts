@@ -45,7 +45,7 @@ export const enUSMemoryMessages = {
       kind_workflow: 'Workflow',
       empty_title: 'No saved memories yet',
       empty_description:
-        'Memory V1 will store stable user preferences and facts in Supabase instead of keeping them only in prompts.',
+        'Stable preferences and facts from your conversations will appear here and can be reused in future chats.',
     },
     summaries: {
       title: 'Conversation Summaries',

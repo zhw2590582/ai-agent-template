@@ -39,7 +39,7 @@ export const zhCNMemoryMessages = {
       kind_workflow: '工作流',
       empty_title: '还没有已保存记忆',
       empty_description:
-        'Memory V1 会把稳定的用户偏好和事实存到 Supabase，而不是只临时拼进 prompt。',
+        '对话中形成的稳定偏好和事实会出现在这里，并在后续聊天中按需复用。',
     },
     summaries: {
       title: '会话摘要',
