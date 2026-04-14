@@ -11,6 +11,14 @@ export type MemoriesClient = {
 };
 
 type MemoriesTable = {
+  delete: () => {
+    eq: (
+      column: 'id',
+      value: string
+    ) => {
+      eq: (column: 'user_id', value: string) => PromiseLike<{ error: unknown }>;
+    };
+  };
   insert: (
     values:
       | Pick<
@@ -152,6 +160,21 @@ export async function deleteMemoryForUser(
     .update({ status: 'deleted' })
     .eq('id', input.id)
     .eq('user_id', input.userId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function hardDeleteMemoryRecord(
+  input: {
+    id: string;
+    userId: string;
+  },
+  client: MemoriesClient
+) {
+  const memories = getMemoriesTable(client);
+  const { error } = await memories.delete().eq('id', input.id).eq('user_id', input.userId);
 
   if (error) {
     throw error;

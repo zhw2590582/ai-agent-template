@@ -11,3 +11,14 @@ export const MEMORY_EXTRACTION_CONFIG = {
   MIN_MESSAGES: 2,
   TRANSCRIPT_MESSAGE_WINDOW: 12,
 } as const;
+
+export const MEMORY_CONSOLIDATION_CONFIG = {
+  MAX_ITEMS_PER_KIND: 3,
+  SOURCE_ITEMS_LIMIT: 12,
+  THRESHOLDS: {
+    fact: 8,
+    preference: 6,
+    profile: 5,
+    workflow: 5,
+  },
+} as const;

@@ -18,6 +18,7 @@ import {
   MessageContent,
   MessageResponse,
 } from '@/components/ai-elements/message';
+import { Shimmer } from '@/components/ai-elements/shimmer';
 import {
   Tool,
   ToolContent,
@@ -35,6 +36,7 @@ interface ChatMessageListProps {
   messages: UIMessage[];
   onEditUserMessage: (text: string) => void;
   onRetry: () => void;
+  status: 'error' | 'ready' | 'streaming' | 'submitted';
 }
 
 function formatToolTitle(toolName: string) {
@@ -61,6 +63,7 @@ interface ChatMessageRowProps {
   onCopy: (text: string) => void;
   onEditUserMessage: (text: string) => void;
   onRetry: () => void;
+  status: 'error' | 'ready' | 'streaming' | 'submitted';
 }
 
 const ChatMessageRow = memo(function ChatMessageRow({
@@ -72,9 +75,14 @@ const ChatMessageRow = memo(function ChatMessageRow({
   onCopy,
   onEditUserMessage,
   onRetry,
+  status,
 }: ChatMessageRowProps) {
   const t = useTranslations();
   const textContent = getTextContent(message);
+  const isAssistantStreaming =
+    message.role === 'assistant' &&
+    isLastAssistant &&
+    (status === 'streaming' || status === 'submitted');
 
   return (
     <div className={cn('w-full', message.role === 'user' && 'group')}>
@@ -140,7 +148,15 @@ const ChatMessageRow = memo(function ChatMessageRow({
         );
       })}
 
-      {message.role === 'assistant' && isLastAssistant && textContent ? (
+      {isAssistantStreaming ? (
+        <div className="mt-3 pl-1">
+          <Shimmer as="p" duration={1} className="text-muted-foreground text-sm">
+            {t('chat.streaming.responding')}
+          </Shimmer>
+        </div>
+      ) : null}
+
+      {message.role === 'assistant' && isLastAssistant && textContent && status === 'ready' ? (
         <MessageActions className="mt-2">
           <MessageAction
             label={t('chat.actions.retry')}
@@ -187,6 +203,7 @@ export function ChatMessageList({
   messages,
   onEditUserMessage,
   onRetry,
+  status,
 }: ChatMessageListProps) {
   const t = useTranslations();
   const errorMessage = error
@@ -252,6 +269,7 @@ export function ChatMessageList({
               onCopy={handleCopy}
               onEditUserMessage={onEditUserMessage}
               onRetry={onRetry}
+              status={status}
             />
           );
         })}

@@ -101,6 +101,7 @@ export function ChatWorkbench({
               messages={workbench.messages}
               onEditUserMessage={workbench.setInput}
               onRetry={() => workbench.regenerate()}
+              status={workbench.status}
             />
             <ChatComposer
               availableModels={workbench.availableModels}

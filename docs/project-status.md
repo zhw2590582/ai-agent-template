@@ -35,6 +35,7 @@
 - guest 本地会话列表，以及 sidebar 的乐观插入 / 重命名 / 删除
 - guest 本地会话标题在流式回复完成后再单独生成，避免和消息流写入互相覆盖
 - Memory V1：会话摘要压缩、长期记忆写入、跨会话注入
+- Memory V1：已接入最小版单维度 memory consolidation
 - `Memory` 顶部弹窗：控制项、记忆编辑/删除/导出、会话摘要编辑/删除
 - API rate limiting：主要 `/api/*` 路由已接统一频率限制和 429 错误处理
 - 环境变量校验、错误处理、日志、CI
@@ -176,6 +177,7 @@ API rate limiting
 - 浏览器标签页标题在会话标题自动生成后，可能会先更新成 `{appName} - {conversationTitle}`，随后又被重置回默认站名
 - 当前判断这不是标题生成或 sidebar 数据本身的问题，而是 `router.refresh()` 之后的 metadata / remount 时序覆盖问题
 - 页面手动刷新后标题通常会恢复正确，说明问题集中在会话内的自动更新链路
+- Memory consolidation 当前没有 job 历史、snapshot、rollback 和质量观测，只是最小可用版
 
 ## 下一优先级
 

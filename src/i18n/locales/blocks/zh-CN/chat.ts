@@ -61,5 +61,8 @@ export const zhCNChatMessages = {
       copied: '已复制到剪贴板',
       copy_failed: '复制失败',
     },
+    streaming: {
+      responding: '正在回复...',
+    },
   },
 } as const;

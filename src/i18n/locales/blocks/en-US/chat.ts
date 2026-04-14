@@ -62,5 +62,8 @@ export const enUSChatMessages = {
       copied: 'Copied to clipboard',
       copy_failed: 'Failed to copy',
     },
+    streaming: {
+      responding: 'Responding...',
+    },
   },
 } as const;

@@ -255,6 +255,48 @@ guest 用户：
 - 如果新旧记忆语义接近，会优先合并，而不是继续生成多条同义记录
 - `fact` 是兜底类别，优先级低于 `preference / profile / workflow`
 
+## 3.5. 单维度记忆整理（Consolidation）
+
+当前已经接入一个最简单的 LLM consolidation 方案，不新增表。
+
+触发规则：
+
+- 只针对 `auto` memories
+- 只针对单个 `kind`
+- 当某个 `kind` 的 active memory 数量达到阈值时触发
+
+默认阈值：
+
+- `profile >= 5`
+- `preference >= 6`
+- `workflow >= 5`
+- `fact >= 8`
+
+当前流程：
+
+1. 对话结束后正常抽取并写入新的 memories
+2. 统计本次触达的 `kind`
+3. 如果某个 `kind` 达到阈值
+   - 读取该 kind 下的 auto memories
+   - 发给 LLM 做 consolidation
+   - 返回一个更小、更干净的 canonical memory 集合
+4. 用现有 `public.memories` 直接回写
+   - 更新前几条保留记录
+   - 其余冗余 auto records 物理删除
+
+当前目标：
+
+- 先减少同维度重复
+- 先控制 memory 膨胀
+- 不引入新表或后台任务系统
+
+当前明确不做：
+
+- consolidation job 历史
+- consolidation snapshot / rollback
+- 人工审核流程
+- 跨 kind 联合 consolidation
+
 ## guest 与已登录用户的分流
 
 ### guest
@@ -378,6 +420,29 @@ Memory 页面不是 provider-first，而是 memory-first。
 - external memory provider integration
 - guest long-term memory
 - model-specific context window tuning
+
+## 后续仍需解决的问题
+
+当前 consolidation 只是最小版，后面仍然需要继续解决这些问题：
+
+1. 没有 job 表
+   - 现在看不到 consolidation 何时触发、是否成功、失败原因是什么
+
+2. 没有 snapshot / rollback
+   - 一旦 consolidation 结果不理想，当前没有结构化回滚能力
+
+3. 只按单个 kind 整理
+   - 还不能处理跨 `fact / profile / preference` 的深层重复
+
+4. manual 与 auto 之间仍可能存在重复
+   - 当前 manual 不会被覆盖，但也不会自动参与更高级的协调
+
+5. 没有稳定的异步任务层
+   - 现在 consolidation 跟随聊天保存链路执行
+   - 后面更适合迁移到后台任务或批处理
+
+6. 没有质量评分和观测
+   - 还不能系统判断 consolidation 是否真的让 memory 更干净
 
 ## 未来扩展顺序
 
