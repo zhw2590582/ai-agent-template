@@ -114,7 +114,9 @@ export function McpContent({ onClose, onMcpSettingsChange, settings }: McpConten
               return;
             }
 
-            const nextServers = localSettings.servers.filter((server) => server.id !== deleteTargetId);
+            const nextServers = localSettings.servers.filter(
+              (server) => server.id !== deleteTargetId
+            );
             const nextSelectedServerId =
               localSettings.selectedServerId === deleteTargetId
                 ? (nextServers[0]?.id ?? null)
