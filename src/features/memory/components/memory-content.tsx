@@ -64,6 +64,7 @@ export function MemoryContent({
       footer={
         <>
           <Button
+            className="min-w-24"
             type="button"
             variant="outline"
             onClick={() => {
@@ -74,6 +75,7 @@ export function MemoryContent({
             {t('common.cancel')}
           </Button>
           <Button
+            className="min-w-24"
             disabled={!isSettingsDirty || isSavingSettings}
             type="button"
             onClick={async () => {

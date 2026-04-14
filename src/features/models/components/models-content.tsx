@@ -44,6 +44,7 @@ export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
       footer={
         <>
           <Button
+            className="min-w-24"
             type="button"
             variant="outline"
             onClick={() => {
@@ -54,6 +55,7 @@ export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
             {t('common.cancel')}
           </Button>
           <Button
+            className="min-w-24"
             disabled={!isDirty || isSavingChanges}
             type="button"
             onClick={async () => {
@@ -71,8 +73,8 @@ export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
         </>
       }
     >
-      <div className="text-foreground mx-auto flex h-full w-full max-w-5xl gap-8 px-6 py-8">
-        <div className="min-h-0 shrink-0 border-r lg:w-80">
+      <div className="text-foreground mx-auto flex h-full w-full max-w-5xl gap-2">
+        <div className="min-h-0 shrink-0 lg:w-80">
           <ProviderList
             providers={providers}
             selectedProviderId={selectedProvider.id}

@@ -58,7 +58,7 @@ export function ProviderList({
   return (
     <>
       <ScrollArea className="h-full overflow-hidden">
-        <div className="mb-24 space-y-2 p-2">
+        <div className="mb-12 space-y-2 p-2 pr-4">
           {providers.map((provider) => {
             const isSelected = provider.id === selectedProviderId;
 

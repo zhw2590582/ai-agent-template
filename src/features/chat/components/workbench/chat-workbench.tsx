@@ -142,7 +142,7 @@ export function ChatWorkbench({
             <WorkbenchDialogPanel
               bodyClassName="overflow-y-auto"
               footer={
-                <Button type="button" variant="outline" onClick={closeDialog}>
+                <Button className="min-w-24" type="button" variant="outline" onClick={closeDialog}>
                   {t('common.cancel')}
                 </Button>
               }
