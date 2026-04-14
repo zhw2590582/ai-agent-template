@@ -9,6 +9,7 @@ import { ChatMessageList } from '@/features/chat/components/messages/chat-messag
 import { ChatSidebar } from '@/features/chat/components/sidebar/chat-sidebar';
 import { ChatPlaceholder } from '@/features/chat/components/workbench/chat-placeholder';
 import { WorkbenchDialog } from '@/features/chat/components/workbench/workbench-dialog';
+import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import { ChatTopBar } from '@/features/chat/components/workbench/chat-topbar';
 import { useChatWorkbench } from '@/features/chat/hooks/use-chat-workbench';
 import type { ConversationSummary } from '@/features/chat/storage/types';
@@ -17,6 +18,7 @@ import { MemoryContent } from '@/features/memory/components/memory-content';
 import type { MemoryListItem } from '@/features/memory/types';
 import { ModelsContent } from '@/features/models/components/models-content';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface ChatWorkbenchProps {
   activeView: WorkbenchView;
@@ -137,7 +139,16 @@ export function ChatWorkbench({
               summaries={workbench.sidebar.conversations}
             />
           ) : (
-            <ChatPlaceholder activeView={activeDialogView} t={t} />
+            <WorkbenchDialogPanel
+              bodyClassName="overflow-y-auto"
+              footer={
+                <Button type="button" variant="outline" onClick={closeDialog}>
+                  {t('common.cancel')}
+                </Button>
+              }
+            >
+              <ChatPlaceholder activeView={activeDialogView} t={t} />
+            </WorkbenchDialogPanel>
           )}
         </WorkbenchDialog>
       ) : null}

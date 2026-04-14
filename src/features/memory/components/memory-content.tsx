@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import type { ConversationSummary } from '@/features/chat/storage/types';
+import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import { MemoryControls } from '@/features/memory/components/memory-controls';
 import { MemoryList } from '@/features/memory/components/memory-list';
 import { MemorySummaryList } from '@/features/memory/components/memory-summary-list';
@@ -58,8 +59,38 @@ export function MemoryContent({
   });
 
   return (
-    <div className="text-foreground flex h-full min-h-0 flex-col">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-8">
+    <WorkbenchDialogPanel
+      bodyClassName="overflow-y-auto"
+      footer={
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              resetDraftSettings();
+              onClose?.();
+            }}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button
+            disabled={!isSettingsDirty || isSavingSettings}
+            type="button"
+            onClick={async () => {
+              const success = await saveSettings();
+              if (!success) {
+                return;
+              }
+              onClose?.();
+            }}
+          >
+            {isSavingSettings ? <Spinner data-icon="inline-start" /> : null}
+            {t('common.save')}
+          </Button>
+        </>
+      }
+    >
+      <div className="text-foreground mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-8">
         <MemoryControls
           isAuthenticated={isAuthenticated}
           key={`${localSettings.summaryMinMessages}-${localSettings.recentMessageWindow}-${localSettings.contextMaxItems}`}
@@ -81,32 +112,6 @@ export function MemoryContent({
         <Separator />
         <MemorySummaryList locale={locale} summaries={summaries} t={t} />
       </div>
-      <div className="bg-muted/50 flex shrink-0 items-center justify-end gap-3 border-t px-6 py-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            resetDraftSettings();
-            onClose?.();
-          }}
-        >
-          {t('common.cancel')}
-        </Button>
-        <Button
-          disabled={!isSettingsDirty || isSavingSettings}
-          type="button"
-          onClick={async () => {
-            const success = await saveSettings();
-            if (!success) {
-              return;
-            }
-            onClose?.();
-          }}
-        >
-          {isSavingSettings ? <Spinner data-icon="inline-start" /> : null}
-          {t('common.save')}
-        </Button>
-      </div>
-    </div>
+    </WorkbenchDialogPanel>
   );
 }

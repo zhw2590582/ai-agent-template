@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import { ProviderList } from '@/features/models/components/provider-list';
 import { ProviderSettingsPanel } from '@/features/models/components/provider-settings-panel';
 import { useModelsPage } from '@/features/models/hooks/use-models-page';
@@ -38,9 +39,40 @@ export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
   } = useModelsPage({ open });
 
   return (
-    <div className="text-foreground flex h-full min-h-0 flex-col">
-      <div className="mx-auto flex w-full max-w-5xl gap-8 px-6 py-8">
-        <div className="shrink-0 border-r lg:w-80">
+    <WorkbenchDialogPanel
+      bodyClassName="overflow-hidden"
+      footer={
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              resetDraft();
+              onClose();
+            }}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button
+            disabled={!isDirty || isSavingChanges}
+            type="button"
+            onClick={async () => {
+              const success = await saveChanges();
+              if (!success) {
+                return;
+              }
+              onSaved?.();
+              onClose();
+            }}
+          >
+            {isSavingChanges ? <Spinner data-icon="inline-start" /> : null}
+            {t('common.save')}
+          </Button>
+        </>
+      }
+    >
+      <div className="text-foreground mx-auto flex h-full w-full max-w-5xl gap-8 px-6 py-8">
+        <div className="min-h-0 shrink-0 border-r lg:w-80">
           <ProviderList
             providers={providers}
             selectedProviderId={selectedProvider.id}
@@ -81,33 +113,6 @@ export function ModelsContent({ open, onClose, onSaved }: ModelsContentProps) {
           />
         </div>
       </div>
-      <div className="bg-muted/50 flex shrink-0 items-center justify-end gap-3 border-t px-6 py-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            resetDraft();
-            onClose();
-          }}
-        >
-          {t('common.cancel')}
-        </Button>
-        <Button
-          disabled={!isDirty || isSavingChanges}
-          type="button"
-          onClick={async () => {
-            const success = await saveChanges();
-            if (!success) {
-              return;
-            }
-            onSaved?.();
-            onClose();
-          }}
-        >
-          {isSavingChanges ? <Spinner data-icon="inline-start" /> : null}
-          {t('common.save')}
-        </Button>
-      </div>
-    </div>
+    </WorkbenchDialogPanel>
   );
 }
