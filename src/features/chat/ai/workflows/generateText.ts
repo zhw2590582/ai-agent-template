@@ -12,9 +12,6 @@ import type { ChatRuntimeModel } from '@/features/models/types';
 interface RunGenerateTextWorkflowOptions {
   conversationSummary?: string | null;
   hasAgentTools: boolean;
-  hasMcpTools?: boolean;
-  hasSandboxTools?: boolean;
-  hasSearchTools?: boolean;
   locale: Locale;
   memoryContext?: string | null;
   memorySettings?: ChatProfileMemorySettings | null;
@@ -25,7 +22,6 @@ interface RunGenerateTextWorkflowOptions {
     serverId: string;
     serverName: string;
   }>;
-  mcpServerNames?: string[] | null;
   persistedConversationSummary?: string | null;
   runtimeModel: ChatRuntimeModel;
   tools: ToolSet;
@@ -34,15 +30,11 @@ interface RunGenerateTextWorkflowOptions {
 export async function runGenerateTextWorkflow({
   conversationSummary,
   hasAgentTools,
-  hasMcpTools,
-  hasSandboxTools,
-  hasSearchTools,
   locale,
   memoryContext,
   memorySettings,
   messages,
   mcpInjectedTools = [],
-  mcpServerNames,
   persistedConversationSummary,
   runtimeModel,
   tools,
@@ -54,11 +46,7 @@ export async function runGenerateTextWorkflow({
   return streamText({
     model: getRuntimeChatModel(runtimeModel),
     system: getSystemPrompt(locale, {
-      hasMcpTools,
       memoryContext,
-      mcpServerNames,
-      sandboxEnabled: hasSandboxTools,
-      webSearchEnabled: hasSearchTools,
     }),
     messages: await buildChatMessagesWithSummary(
       messages,

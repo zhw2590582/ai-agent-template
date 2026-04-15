@@ -4,16 +4,13 @@ const DEFAULT_SYSTEM_PROMPT = `You are a general-purpose AI Agent assistant.
 Your answers should be clear, direct, and actionable.
 Prefer using the user's language when replying.
 Do not claim capabilities that are not available.
-If information is missing, say so directly instead of guessing.`;
+If information is missing, say so directly instead of guessing.
+Prefer available tools over guessing when the task requires external actions or current information.`;
 
 export function getSystemPrompt(
   locale: Locale = DEFAULT_LOCALE,
   options?: {
-    hasMcpTools?: boolean;
     memoryContext?: string | null;
-    mcpServerNames?: string[] | null;
-    sandboxEnabled?: boolean;
-    webSearchEnabled?: boolean;
   }
 ): string {
   const memorySection = options?.memoryContext
@@ -22,25 +19,11 @@ export function getSystemPrompt(
 Long-term memory:
 ${options.memoryContext}`
     : '';
-  const searchSection = options?.webSearchEnabled
-    ? `
-- Web search is available. Use the web_search tool when the user asks for current events, recent changes, live information, or explicitly asks you to search the web.
-- Webpage extraction is available. Use the web_extract tool when the user provides one or more URLs or asks you to read a specific page directly.
-- Site crawling is available. Use the web_crawl tool when the user asks you to inspect a docs site, help center, or multi-page website section.`
-    : '';
-  const mcpSection = options?.hasMcpTools
-    ? `
-- Additional MCP tools are available${options.mcpServerNames?.length ? ` from ${options.mcpServerNames.join(', ')}` : ''}. Use them when they clearly match the user's request and can provide more accurate external capabilities or live data.`
-    : '';
-  const sandboxSection = options?.sandboxEnabled
-    ? `
-- Sandbox tools are available for isolated command execution and file operations. Use them when the task requires running shell commands or reading and writing files in an isolated environment.`
-    : '';
 
   return `${DEFAULT_SYSTEM_PROMPT}
 
 Context:
-- User locale: ${locale}${searchSection}${mcpSection}${sandboxSection}${memorySection}`;
+- User locale: ${locale}${memorySection}`;
 }
 
 export { DEFAULT_SYSTEM_PROMPT };

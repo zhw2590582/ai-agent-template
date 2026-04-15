@@ -46,11 +46,9 @@ export async function handleChatPost(request: Request) {
       agentTools,
       closeAgentResources,
       hasAgentTools,
-      hasSearchTools,
       memoryContext,
       memorySettings,
       mcpInjectedTools,
-      mcpServerNames,
       persistedConversationSummary,
     } = await loadChatRequestContext({
       conversationId: resolvedConversationId,
@@ -66,17 +64,11 @@ export async function handleChatPost(request: Request) {
       result = await runGenerateTextWorkflow({
         conversationSummary,
         hasAgentTools,
-        hasMcpTools: mcpServerNames.length > 0,
-        hasSandboxTools: Object.keys(agentTools).some((toolName) =>
-          toolName.startsWith('sandbox_')
-        ),
-        hasSearchTools,
         locale,
         memoryContext,
         memorySettings,
         messages: messages as unknown as UIMessage[],
         mcpInjectedTools,
-        mcpServerNames,
         persistedConversationSummary,
         runtimeModel,
         tools: agentTools,
