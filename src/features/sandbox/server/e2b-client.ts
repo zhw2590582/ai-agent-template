@@ -1,10 +1,10 @@
 import { posix as pathPosix } from 'node:path';
 
-import { Sandbox } from 'e2b';
+import { ApiClient, ConnectionConfig, Sandbox } from 'e2b';
 
 import { SANDBOX_CONFIG } from '@/config/sandbox';
 import { logger } from '@/lib/logger';
-import type { SandboxSettings } from '@/features/sandbox/types';
+import type { SandboxSettings, SandboxTemplateOption } from '@/features/sandbox/types';
 
 const SESSION_RECOVERY_ERROR_PATTERNS = [
   'sandbox is not running',
@@ -128,6 +128,34 @@ export async function testSandboxConnection(settings: SandboxSettings) {
   } finally {
     await sandbox.kill();
   }
+}
+
+export async function listE2BTemplates(apiKey: string): Promise<SandboxTemplateOption[]> {
+  const config = new ConnectionConfig({
+    apiKey: apiKey.trim(),
+  });
+  const client = new ApiClient(config);
+  const response = await client.api.GET('/templates', {
+    signal: config.getSignal(),
+  });
+
+  if (response.error) {
+    throw new Error(response.error.message ?? 'Failed to load E2B templates.');
+  }
+
+  const templates = response.data ?? [];
+
+  return templates
+    .map((template) => {
+      const preferredName = template.names[0] ?? template.templateID;
+
+      return {
+        isPublic: template.public,
+        label: preferredName,
+        value: preferredName,
+      };
+    })
+    .sort((left, right) => left.label.localeCompare(right.label));
 }
 
 export class SandboxSession {

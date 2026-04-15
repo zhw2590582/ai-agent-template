@@ -17,8 +17,10 @@ export const enUSSandboxMessages = {
       'Configure the default timeout, working directory, and network access for sandbox sessions.',
     template_label: 'Template',
     template_description:
-      'Optional. Keep the default unless you need a custom E2B template for your project.',
+      'Optional. When your templates can be loaded, choose one from the list or keep a custom value.',
     template_placeholder: 'base',
+    template_custom: 'Custom template',
+    template_loading: 'Loading your available E2B templates.',
     timeout_label: 'Timeout (seconds)',
     timeout_description: 'How long a sandbox may stay active before it should expire or be paused.',
     working_directory_label: 'Working directory',

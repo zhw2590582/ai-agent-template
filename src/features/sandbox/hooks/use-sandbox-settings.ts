@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { CHAT_UI_CONFIG } from '@/config/chat';
-import type { SandboxSettings } from '@/features/sandbox/types';
+import type { SandboxSettings, SandboxTemplateOption } from '@/features/sandbox/types';
 
 interface UseSandboxSettingsOptions {
   onClose?: () => void;
@@ -29,13 +29,70 @@ export function useSandboxSettings({
 }: UseSandboxSettingsOptions) {
   const [localSettings, setLocalSettings] = useState(settings);
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
+  const [templateOptions, setTemplateOptions] = useState<SandboxTemplateOption[]>([]);
 
   useEffect(() => {
     setLocalSettings(settings);
   }, [settings]);
+
+  useEffect(() => {
+    const apiKey = settings.apiKey.trim();
+
+    if (!apiKey) {
+      setTemplateOptions([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadTemplates = async () => {
+      setIsLoadingTemplates(true);
+      try {
+        const response = await fetch('/api/sandbox/templates', {
+          body: JSON.stringify({
+            apiKey,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+        });
+
+        if (!response.ok) {
+          if (!cancelled) {
+            setTemplateOptions([]);
+          }
+          return;
+        }
+
+        const data = (await response.json()) as {
+          templates?: SandboxTemplateOption[];
+        };
+
+        if (!cancelled) {
+          setTemplateOptions(Array.isArray(data.templates) ? data.templates : []);
+        }
+      } catch {
+        if (!cancelled) {
+          setTemplateOptions([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingTemplates(false);
+        }
+      }
+    };
+
+    void loadTemplates();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [settings.apiKey]);
 
   useEffect(() => {
     if (!showSaved) {
@@ -103,6 +160,7 @@ export function useSandboxSettings({
   return {
     isApiKeyVisible,
     isDirty,
+    isLoadingTemplates,
     isSaving,
     isTesting,
     localSettings,
@@ -111,6 +169,7 @@ export function useSandboxSettings({
     save,
     setIsApiKeyVisible,
     showSaved,
+    templateOptions,
     updateSettings,
   };
 }

@@ -18,3 +18,9 @@ export interface SandboxSettings {
   timeoutSeconds: number;
   workingDirectory: string;
 }
+
+export interface SandboxTemplateOption {
+  isPublic: boolean;
+  label: string;
+  value: string;
+}

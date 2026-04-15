@@ -29,6 +29,7 @@ export function SandboxContent({
   const {
     isApiKeyVisible,
     isDirty,
+    isLoadingTemplates,
     isSaving,
     isTesting,
     localSettings,
@@ -37,6 +38,7 @@ export function SandboxContent({
     save,
     setIsApiKeyVisible,
     showSaved,
+    templateOptions,
     updateSettings,
   } = useSandboxSettings({
     onClose,
@@ -107,7 +109,12 @@ export function SandboxContent({
 
           <SandboxRuntimeSection settings={localSettings} onUpdateSettings={updateSettings} />
 
-          <SandboxEnvironmentSection settings={localSettings} onUpdateSettings={updateSettings} />
+          <SandboxEnvironmentSection
+            isLoadingTemplates={isLoadingTemplates}
+            settings={localSettings}
+            templateOptions={templateOptions}
+            onUpdateSettings={updateSettings}
+          />
         </section>
       </div>
     </WorkbenchDialogPanel>
