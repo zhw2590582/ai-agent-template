@@ -1,21 +1,21 @@
 import type { LucideIcon } from 'lucide-react';
 import {
-  BotIcon,
+  BlocksIcon,
   BrainIcon,
   DatabaseIcon,
-  FlaskConicalIcon,
+  VaultIcon,
   GlobeIcon,
   PlugIcon,
   ServerIcon,
-  ShieldEllipsisIcon,
+  PencilRulerIcon,
 } from 'lucide-react';
 
 export const HEADER_NAV_ITEMS = [
   { icon: PlugIcon, id: 'models', translationKey: 'navigation.models' },
-  { icon: BotIcon, id: 'subagent', translationKey: 'navigation.subagent' },
-  { icon: FlaskConicalIcon, id: 'sandbox', translationKey: 'navigation.sandbox' },
+  { icon: BlocksIcon, id: 'subagent', translationKey: 'navigation.subagent' },
+  { icon: VaultIcon, id: 'sandbox', translationKey: 'navigation.sandbox' },
   { icon: ServerIcon, id: 'mcp', translationKey: 'navigation.mcp' },
-  { icon: ShieldEllipsisIcon, id: 'skills', translationKey: 'navigation.skills' },
+  { icon: PencilRulerIcon, id: 'skills', translationKey: 'navigation.skills' },
   { icon: DatabaseIcon, id: 'rag', translationKey: 'navigation.rag' },
   { icon: BrainIcon, id: 'memory', translationKey: 'navigation.memory' },
   { icon: GlobeIcon, id: 'search', translationKey: 'navigation.search' },
