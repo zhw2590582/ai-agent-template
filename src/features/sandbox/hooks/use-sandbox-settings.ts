@@ -72,7 +72,10 @@ export function useSandboxSettings({
       });
 
       if (!response.ok) {
-        toast.error(testFailedMessage);
+        const data = (await response.json().catch(() => null)) as {
+          error?: { message?: string };
+        } | null;
+        toast.error(data?.error?.message || testFailedMessage);
         return;
       }
 

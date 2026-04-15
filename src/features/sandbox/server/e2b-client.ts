@@ -14,6 +14,67 @@ const SESSION_RECOVERY_ERROR_PATTERNS = [
   'session closed',
 ];
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function toSandboxUserErrorMessage(
+  operation: 'connect' | 'read_file' | 'run_command' | 'write_file',
+  error: unknown,
+  options?: {
+    path?: string;
+    timeoutMs?: number;
+  }
+) {
+  const message = getErrorMessage(error);
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes('api key') || normalized.includes('unauthorized')) {
+    return 'Sandbox authentication failed. Check your E2B API key.';
+  }
+
+  if (normalized.includes('template') && normalized.includes('not found')) {
+    return 'Sandbox template not found. Check the configured template name.';
+  }
+
+  if (normalized.includes('must stay inside the workspace root')) {
+    return `Sandbox paths must stay inside the working directory: ${options?.path ?? 'requested path'}`;
+  }
+
+  if (normalized.includes('no such file') || normalized.includes('not found')) {
+    if (operation === 'read_file') {
+      return `Sandbox file not found: ${options?.path ?? 'requested file'}`;
+    }
+  }
+
+  if (normalized.includes('write limit exceeded')) {
+    return message;
+  }
+
+  if (normalized.includes('timed out') || normalized.includes('deadline_exceeded')) {
+    if (operation === 'run_command') {
+      const timeoutSeconds = Math.round((options?.timeoutMs ?? 0) / 1000);
+      return `Sandbox command timed out after ${timeoutSeconds || SANDBOX_CONFIG.TOOL_COMMAND_TIMEOUT_DEFAULT_SECONDS} seconds.`;
+    }
+
+    return 'Sandbox request timed out. Please try again.';
+  }
+
+  if (operation === 'connect') {
+    return 'Sandbox connection failed. Check your API key, template, and network settings.';
+  }
+
+  if (operation === 'run_command') {
+    return `Sandbox command failed to start or complete. ${message}`;
+  }
+
+  if (operation === 'read_file') {
+    return `Sandbox could not read the requested file. ${message}`;
+  }
+
+  return `Sandbox could not write the requested file. ${message}`;
+}
+
 function trimOutput(value: string, maxChars: number) {
   if (value.length <= maxChars) {
     return value;
@@ -37,8 +98,7 @@ function getIdleReuseWindowMs() {
 }
 
 function isRecoverableSandboxError(error: unknown) {
-  const message =
-    error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  const message = getErrorMessage(error).toLowerCase();
 
   return SESSION_RECOVERY_ERROR_PATTERNS.some((pattern) => message.includes(pattern));
 }
@@ -118,15 +178,27 @@ export async function createE2BSandbox(settings: SandboxSettings) {
 }
 
 export async function testSandboxConnection(settings: SandboxSettings) {
-  const sandbox = await createE2BSandbox(settings);
-
   try {
-    return {
-      sandboxId: sandbox.sandboxId,
-      template: settings.template.trim() || SANDBOX_CONFIG.DEFAULT_TEMPLATE,
-    };
-  } finally {
+    const sandbox = await createE2BSandbox(settings);
+
+    try {
+      return {
+        sandboxId: sandbox.sandboxId,
+        template: settings.template.trim() || SANDBOX_CONFIG.DEFAULT_TEMPLATE,
+      };
+    } finally {
+      await closeSandboxQuietly(sandbox);
+    }
+  } catch (error) {
+    throw new Error(toSandboxUserErrorMessage('connect', error));
+  }
+}
+
+async function closeSandboxQuietly(sandbox: Sandbox) {
+  try {
     await sandbox.kill();
+  } catch {
+    // Ignore teardown failures for user-facing operations.
   }
 }
 
@@ -232,42 +304,54 @@ export class SandboxSession {
     const cwd = this.resolveWorkingDirectory(input.cwd);
     const timeoutMs = clampToolTimeoutMs(input.timeoutMs);
 
-    return this.withSessionRecovery('run_command', async (sandbox) => {
-      const result = await sandbox.commands.run(input.command, {
-        cwd,
-        envs: input.envs,
-        timeoutMs,
-      });
+    try {
+      return await this.withSessionRecovery('run_command', async (sandbox) => {
+        const result = await sandbox.commands.run(input.command, {
+          cwd,
+          envs: input.envs,
+          timeoutMs,
+        });
 
-      return {
-        cwd,
-        exitCode: result.exitCode,
-        stderr: trimOutput(result.stderr ?? '', SANDBOX_CONFIG.MAX_COMMAND_OUTPUT_CHARS),
-        stdout: trimOutput(result.stdout ?? '', SANDBOX_CONFIG.MAX_COMMAND_OUTPUT_CHARS),
-        timeoutSeconds: Math.round(timeoutMs / 1000),
-      };
-    });
+        return {
+          cwd,
+          exitCode: result.exitCode,
+          stderr: trimOutput(result.stderr ?? '', SANDBOX_CONFIG.MAX_COMMAND_OUTPUT_CHARS),
+          stdout: trimOutput(result.stdout ?? '', SANDBOX_CONFIG.MAX_COMMAND_OUTPUT_CHARS),
+          timeoutSeconds: Math.round(timeoutMs / 1000),
+        };
+      });
+    } catch (error) {
+      throw new Error(toSandboxUserErrorMessage('run_command', error, { timeoutMs }));
+    }
   }
 
   async readFile(path: string) {
     const resolvedPath = this.resolveWorkspacePath(path);
 
-    return this.withSessionRecovery(
-      'read_file',
-      async (sandbox) => {
-        const content = await sandbox.files.read(resolvedPath, {
-          format: 'text',
-        });
+    try {
+      return await this.withSessionRecovery(
+        'read_file',
+        async (sandbox) => {
+          const content = await sandbox.files.read(resolvedPath, {
+            format: 'text',
+          });
 
-        return {
-          content: trimOutput(content, SANDBOX_CONFIG.MAX_FILE_CONTENT_CHARS),
+          return {
+            content: trimOutput(content, SANDBOX_CONFIG.MAX_FILE_CONTENT_CHARS),
+            path: resolvedPath,
+          };
+        },
+        {
+          retryOnRecoverableError: true,
+        }
+      );
+    } catch (error) {
+      throw new Error(
+        toSandboxUserErrorMessage('read_file', error, {
           path: resolvedPath,
-        };
-      },
-      {
-        retryOnRecoverableError: true,
-      }
-    );
+        })
+      );
+    }
   }
 
   async writeFile(input: { content: string; path: string }) {
@@ -279,20 +363,28 @@ export class SandboxSession {
 
     const resolvedPath = this.resolveWorkspacePath(input.path);
 
-    return this.withSessionRecovery(
-      'write_file',
-      async (sandbox) => {
-        const writeInfo = await sandbox.files.write(resolvedPath, input.content);
+    try {
+      return await this.withSessionRecovery(
+        'write_file',
+        async (sandbox) => {
+          const writeInfo = await sandbox.files.write(resolvedPath, input.content);
 
-        return {
+          return {
+            path: resolvedPath,
+            writtenPath: writeInfo.path,
+          };
+        },
+        {
+          retryOnRecoverableError: true,
+        }
+      );
+    } catch (error) {
+      throw new Error(
+        toSandboxUserErrorMessage('write_file', error, {
           path: resolvedPath,
-          writtenPath: writeInfo.path,
-        };
-      },
-      {
-        retryOnRecoverableError: true,
-      }
-    );
+        })
+      );
+    }
   }
 
   async close(reason: 'completed' | 'error' | 'idle_timeout' = 'completed') {

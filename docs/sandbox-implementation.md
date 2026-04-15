@@ -37,6 +37,9 @@
   - 文件路径限制在 `workingDirectory` 之内
   - 命令超时会被限制在安全上限内
   - 命令输出和文件读取结果会被统一截断
+- V1 错误反馈：
+  - connection test 会尽量显示更具体的失败原因
+  - sandbox tools 会把常见底层错误翻译成更易理解的消息
 - V1 session lifecycle：
   - 单次 chat request 内懒创建并复用同一个 sandbox
   - request 完成后关闭
@@ -180,6 +183,9 @@
   - 命令 stdout/stderr 会截断
   - 文件读取结果会截断
   - 单次写文件内容大小有限制
+- 错误翻译
+  - API key 无效、template 不存在、文件不存在、路径越界、命令超时等场景
+  - 会优先返回对用户和模型更容易理解的错误信息
 
 这些边界是为了让 V1 足够可控，而不是为了做一套完整的策略系统。
 
@@ -203,6 +209,51 @@
 - 不做复杂的 failure state machine
 
 这样做的原因很简单：前期先把行为收敛清楚，比过早做“智能 session 管理”更重要。
+
+## Skills 与 Sandbox 的关系
+
+当前判断很明确：
+
+- `sandbox` 是底层执行能力
+- `skills` 是任务模板、工作流提示、或能力编排层
+
+两者不是并列关系，也不应该倒过来做。
+
+后续 `skills` 只有在以下情况下才会真正用上 sandbox：
+
+- skill 需要读写文件
+- skill 需要执行命令或脚本
+- skill 需要在隔离环境里生成产物
+
+这类 skill 才会受益于当前的 sandbox tools：
+
+- `sandbox_run_command`
+- `sandbox_write_file`
+- `sandbox_read_file`
+
+但不是所有 skill 都依赖 sandbox。
+
+以下 skill 类型通常不需要 sandbox：
+
+- instruction-only skills
+- 主要依赖现有 search tools 的 skills
+- 主要依赖 MCP / remote API 的 skills
+
+因此后续更合理的接法不是“skills 直接依赖 sandbox”，而是：
+
+- skill 先声明自己需要哪些能力
+- runtime 再决定是否把 sandbox tools 暴露给模型
+
+前期不建议做的事情：
+
+- 不要为了 skills 去做持久 workspace
+- 不要为了 skills 去做跨请求 sandbox session
+- 不要把 sandbox 直接变成 skills runtime 平台
+
+前期最合适的关系是：
+
+- sandbox 先作为 chat runtime 的可选执行能力存在
+- skills 之后按需要复用这批能力
 
 ## 是否需要新的 npm 依赖
 
@@ -497,9 +548,11 @@ Chat request
 - [x] 新增 `src/features/sandbox/server/e2b-client.ts`
 - [x] 把 `Test connection` 按钮接成真实能力
 - [x] 接入第一批 sandbox tools
-- [ ] 细化 sandbox test 错误反馈
+- [x] 细化 sandbox test 错误反馈
+- [x] 优化 sandbox tools 的用户可理解错误信息
 - [ ] 评估 command / file output 截断和展示样式
 - [ ] 增加 tool 使用日志与运行记录
+- [ ] 继续观察真实对话中的 sandbox 错误体验
 - [ ] 评估是否需要持久 sandbox session / reconnect
 
 ## 相关文档
