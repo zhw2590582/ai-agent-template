@@ -1,11 +1,12 @@
 import { createBrowserClient } from '@supabase/ssr';
+import { env } from '@/config/env';
 
 import type { Database } from '@/lib/supabase/database.types';
 
 function getSupabaseBrowserEnv() {
   return {
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    publishableKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    url: env.NEXT_PUBLIC_SUPABASE_URL,
+    publishableKey: env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   };
 }
 
