@@ -14,11 +14,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import { Spinner } from '@/components/ui/spinner';
-import { SKILL_CAPABILITIES } from '@/features/skills/settings';
-import type { SkillCapability, SkillDefinition } from '@/features/skills/types';
-import { cn } from '@/lib/utils';
+import { deriveSkillMetadataFromUrl } from '@/features/skills/settings';
+import type { SkillDefinition } from '@/features/skills/types';
 
 interface SkillEditorDialogProps {
   initialSkill: SkillDefinition | null;
@@ -44,31 +42,17 @@ export function SkillEditorDialog({
       return true;
     }
 
-    return skill.name.trim().length === 0 || skill.sourceUrl.trim().length === 0;
+    return skill.sourceUrl.trim().length === 0;
   }, [skill]);
 
   if (!skill) {
     return null;
   }
 
-  const toggleCapability = (capability: SkillCapability) => {
-    setSkill((current) => {
-      if (!current) {
-        return current;
-      }
-
-      const capabilities = current.capabilities.includes(capability)
-        ? current.capabilities.filter((item) => item !== capability)
-        : [...current.capabilities, capability];
-
-      return {
-        ...current,
-        capabilities: capabilities.length > 0 ? capabilities : ['prompt'],
-      };
-    });
-  };
-
   const isEditing = mode === 'edit';
+  const derivedMetadata = deriveSkillMetadataFromUrl(skill.sourceUrl);
+  const resolvedName = skill.name.trim() || derivedMetadata.name;
+  const resolvedDescription = skill.description.trim() || derivedMetadata.description;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -102,21 +86,6 @@ export function SkillEditorDialog({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium" htmlFor="skill-name">
-              {t('skills_page.skill_name_label')}
-            </label>
-            <Input
-              id="skill-name"
-              placeholder={t('skills_page.skill_name_placeholder')}
-              value={skill.name}
-              onChange={(event) => {
-                const value = event.target.value;
-                setSkill((current) => (current ? { ...current, name: value } : current));
-              }}
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium" htmlFor="skill-source-url">
               {t('skills_page.skill_source_url_label')}
             </label>
@@ -134,43 +103,21 @@ export function SkillEditorDialog({
             </p>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium" htmlFor="skill-description">
-              {t('skills_page.skill_description_label')}
-            </label>
-            <Textarea
-              id="skill-description"
-              placeholder={t('skills_page.skill_description_placeholder')}
-              value={skill.description}
-              onChange={(event) => {
-                const value = event.target.value;
-                setSkill((current) => (current ? { ...current, description: value } : current));
-              }}
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">{t('skills_page.capabilities_label')}</label>
-            <div className="flex flex-wrap gap-2">
-              {SKILL_CAPABILITIES.map((capability) => {
-                const active = skill.capabilities.includes(capability);
-
-                return (
-                  <Button
-                    key={capability}
-                    className={cn('h-8 px-3', !active && 'text-muted-foreground')}
-                    size="sm"
-                    type="button"
-                    variant={active ? 'secondary' : 'outline'}
-                    onClick={() => toggleCapability(capability)}
-                  >
-                    {t(`skills_page.capabilities.${capability}`)}
-                  </Button>
-                );
-              })}
+          <div className="border-border bg-muted/20 flex flex-col gap-3 rounded-md border px-4 py-3">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium">{t('skills_page.parsed_name_label')}</span>
+              <p className="text-sm">{resolvedName || t('skills_page.parsed_empty')}</p>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium">
+                {t('skills_page.parsed_description_label')}
+              </span>
+              <p className="text-muted-foreground text-sm">
+                {resolvedDescription || t('skills_page.parsed_empty')}
+              </p>
             </div>
             <p className="text-muted-foreground text-xs">
-              {t('skills_page.capabilities_description')}
+              {t('skills_page.parsed_description_hint')}
             </p>
           </div>
         </div>
@@ -185,7 +132,11 @@ export function SkillEditorDialog({
             onClick={async () => {
               setIsSubmitting(true);
               try {
-                const success = await onSave(skill);
+                const success = await onSave({
+                  ...skill,
+                  description: resolvedDescription,
+                  name: resolvedName,
+                });
                 if (success !== false) {
                   onOpenChange(false);
                 }

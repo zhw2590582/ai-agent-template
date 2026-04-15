@@ -16,7 +16,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { SkillCapabilityBadges } from '@/features/skills/components/skill-capability-badges';
 import type { SkillDefinition } from '@/features/skills/types';
 
 interface SkillListProps {
@@ -80,7 +79,6 @@ export function SkillList({
                       <p className="text-sm leading-6">{skill.description}</p>
                     ) : null}
                     <p className="text-muted-foreground truncate text-sm">{skill.sourceUrl}</p>
-                    <SkillCapabilityBadges capabilities={skill.capabilities} />
                   </div>
 
                   <div className="flex items-center gap-2">
