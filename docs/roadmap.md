@@ -26,6 +26,10 @@
 
 目标：把当前已可用的 Tavily 搜索能力，从一期功能提升到更稳定、更可观测的产品能力。
 
+参考：
+
+- [docs/search-implementation.md](./search-implementation.md)
+
 优先做：
 
 1. 细化 Tavily 错误反馈，区分 `401 / 429 / quota / network`
@@ -70,6 +74,10 @@
 2. `Settings`
 3. `Skills`
 4. 继续补齐已落地 workbench 的细节体验
+
+其中 `Skills` 当前的真实边界，先看：
+
+- [docs/skills-implementation.md](./skills-implementation.md)
 
 ### 4.5 MCP 全能力研究
 

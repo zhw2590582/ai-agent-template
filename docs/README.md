@@ -17,6 +17,8 @@
 - [testing.md](./testing.md): 测试命令、测试分层、当前覆盖范围
 - [i18n-guide.md](./i18n-guide.md): 国际化实现方式和扩展规则
 - [capability-mapping.md](./capability-mapping.md): 当前能力边界和落点简表
+- [search-implementation.md](./search-implementation.md): Search 当前范围、Tavily 设置与聊天工具接入链路
+- [skills-implementation.md](./skills-implementation.md): Skills 当前配置层边界、持久化与未接入 runtime 的原因
 - [sandbox-implementation.md](./sandbox-implementation.md): Sandbox 当前范围、E2B 选择与后续接入顺序
 - [rag-implementation.md](./rag-implementation.md): RAG V1 的数据库、检索与聊天注入设计
 

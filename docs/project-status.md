@@ -80,6 +80,11 @@
 - 本项目自己的 MCP server 还没实现
 - RAG 也不再是纯占位，当前已具备可测试的 V1 主链路与基础管理 UI
 
+专题实现说明：
+
+- Search 细节见 [search-implementation.md](./search-implementation.md)
+- Skills 细节见 [skills-implementation.md](./skills-implementation.md)
+
 ## 当前产品范围
 
 现在真正可用的是“带登录和会话持久化的聊天演示骨架”，不是“完整 agent 平台”。

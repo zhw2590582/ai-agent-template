@@ -22,4 +22,8 @@
 
 更具体的项目现状，看 [project-status.md](./project-status.md)。
 
+Search 的实现细节，看 [search-implementation.md](./search-implementation.md)。
+
+Skills 的当前边界，看 [skills-implementation.md](./skills-implementation.md)。
+
 更具体的开发顺序，看 [roadmap.md](./roadmap.md)。
