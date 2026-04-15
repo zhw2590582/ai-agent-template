@@ -37,17 +37,6 @@ export interface RagDocument {
   updated_at: string;
 }
 
-export interface RagChunkRecord {
-  chunk_index: number;
-  content: string;
-  created_at: string;
-  document_id: string;
-  embedding: number[] | null;
-  id: string;
-  metadata: Record<string, unknown>;
-  updated_at: string;
-}
-
 export interface RetrievedRagChunk {
   content: string;
   documentId: string;

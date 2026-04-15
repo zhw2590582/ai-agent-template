@@ -110,7 +110,6 @@ async function parseCreateRagDocumentInput(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const input = await parseCreateRagDocumentInput(request);
     const { supabase, user } = await requireAuth();
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.RAG_WRITE,
@@ -118,6 +117,7 @@ export async function POST(request: Request) {
       namespace: API_NAMESPACES.RAG_WRITE,
     });
     await upsertProfileFromAuthUser(user, {}, supabase);
+    const input = await parseCreateRagDocumentInput(request);
 
     return Response.json(
       await ingestRagTextDocument({

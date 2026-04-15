@@ -10,8 +10,7 @@ export const enUSRagMessages = {
     api_key_placeholder: 'Enter your Voyage API Key',
     api_key_hint: 'Your own Voyage API Key is required to index documents and run retrieval.',
     enabled_label: 'Enable RAG',
-    enabled_description:
-      'Let chat retrieve relevant document excerpts before answering.',
+    enabled_description: 'Let chat retrieve relevant document excerpts before answering.',
     import_title: 'Import Documents',
     import_description:
       'Upload a .txt, .md, or .pdf file. We will extract the text, split it into searchable segments, generate vectors, and add it to your private index.',
@@ -25,8 +24,7 @@ export const enUSRagMessages = {
     document_file_hint: 'Accepted formats: .txt, .md, .pdf.',
     import_action: 'Import document',
     documents_title: 'Indexed Documents',
-    documents_description:
-      'Review and remove documents currently included in retrieval.',
+    documents_description: 'Review and remove documents currently included in retrieval.',
     documents_loading: 'Loading indexed documents...',
     documents_empty: 'No indexed documents yet. Upload one above to start grounding answers.',
     documents_chunks: '{count} segments',
