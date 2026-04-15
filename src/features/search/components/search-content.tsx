@@ -67,13 +67,7 @@ export function SearchContent({ onClose, onSearchSettingsChange, settings }: Sea
     >
       <div className="text-foreground mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-8">
         <section className="flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-xl font-semibold">{t('search_page.title')}</h2>
-              <p className="text-muted-foreground max-w-2xl text-sm">
-                {t('search_page.description')}
-              </p>
-            </div>
+          <div className="flex items-center justify-end gap-2">
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 disabled={!localSettings.tavilyApiKey.trim() || isTesting}

@@ -90,11 +90,7 @@ export function MemoryControls({
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-semibold">{t('memory_page.controls.title')}</h2>
-          <p className="text-muted-foreground text-sm">{t('memory_page.controls.description')}</p>
-        </div>
+      <div className="flex items-center justify-end gap-2">
         <div className="flex flex-wrap items-center gap-2">
           {onExport ? (
             <Button onClick={onExport} size="sm" type="button" variant="outline">
