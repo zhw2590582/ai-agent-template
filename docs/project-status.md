@@ -109,7 +109,7 @@ src/
 │   └── search/             # Tavily 搜索设置、连接测试、服务端 client
 ├── i18n/                   # next-intl 请求配置
 ├── lib/                    # 通用工具、错误处理、日志、Supabase client
-└── proxy.ts                # i18n + session 代理
+└── middleware.ts           # i18n + session 代理
 ```
 
 ## 核心请求链路

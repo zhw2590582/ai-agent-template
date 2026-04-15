@@ -108,7 +108,7 @@ src/
 │   └── search/           # Tavily 搜索设置、连接测试、服务端 client
 ├── i18n/                 # next-intl 请求配置
 ├── lib/                  # 通用工具、错误处理、日志、Supabase client
-└── proxy.ts              # locale 检测与 session 更新
+└── middleware.ts         # locale 检测与 session 更新
 ```
 
 ## 文档入口
