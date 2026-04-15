@@ -1,5 +1,6 @@
 'use client';
 
+import { ExternalLink } from '@/components/ai-elements/external-link';
 import { useControllableState } from '@radix-ui/react-use-controllable-state';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
@@ -189,6 +190,8 @@ export type ReasoningContentProps = ComponentProps<typeof CollapsibleContent> & 
 };
 
 const streamdownPlugins = { cjk, code, math, mermaid };
+const streamdownComponents = { a: ExternalLink };
+const streamdownLinkSafety = { enabled: false };
 
 export const ReasoningContent = memo(({ className, children, ...props }: ReasoningContentProps) => (
   <CollapsibleContent
@@ -199,7 +202,13 @@ export const ReasoningContent = memo(({ className, children, ...props }: Reasoni
     )}
     {...props}
   >
-    <Streamdown plugins={streamdownPlugins}>{children}</Streamdown>
+    <Streamdown
+      components={streamdownComponents}
+      linkSafety={streamdownLinkSafety}
+      plugins={streamdownPlugins}
+    >
+      {children}
+    </Streamdown>
   </CollapsibleContent>
 ));
 

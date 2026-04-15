@@ -1,21 +1,11 @@
 'use client';
 
-import { useState, type ComponentProps } from 'react';
+import type { ComponentProps } from 'react';
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogMedia,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ExternalLink } from '@/components/ai-elements/external-link';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
-import { BookIcon, ChevronDownIcon, ExternalLinkIcon } from 'lucide-react';
+import { BookIcon, ChevronDownIcon } from 'lucide-react';
 
 export type SourcesProps = ComponentProps<typeof Collapsible>;
 
@@ -53,8 +43,6 @@ export const SourcesContent = ({ className, ...props }: SourcesContentProps) => 
 export type SourceProps = ComponentProps<'a'>;
 
 export const Source = ({ href, title, children, onClick, ...props }: SourceProps) => {
-  const [open, setOpen] = useState(false);
-
   if (!href) {
     return (
       <span className="flex items-center gap-2">
@@ -69,57 +57,21 @@ export const Source = ({ href, title, children, onClick, ...props }: SourceProps
   }
 
   return (
-    <>
-      <a
-        className="flex items-center gap-2"
-        href={href}
-        rel="noreferrer"
-        onClick={(event) => {
-          onClick?.(event);
-
-          if (event.defaultPrevented) {
-            return;
-          }
-
-          event.preventDefault();
-          setOpen(true);
-        }}
-        {...props}
-      >
-        {children ?? (
-          <>
-            <BookIcon className="h-4 w-4" />
-            <span className="block font-medium">{title}</span>
-          </>
-        )}
-      </a>
-
-      <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogContent size="sm">
-          <AlertDialogHeader>
-            <AlertDialogMedia>
-              <ExternalLinkIcon className="size-5" />
-            </AlertDialogMedia>
-            <AlertDialogTitle>Open external link?</AlertDialogTitle>
-            <AlertDialogDescription>
-              You are about to open an external website:
-              <span className="text-foreground mt-2 block font-medium break-all">
-                {title || href}
-              </span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                window.open(href, '_blank', 'noopener,noreferrer');
-              }}
-            >
-              Open link
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <ExternalLink
+      className="flex items-center gap-2"
+      href={href}
+      onClick={onClick}
+      rel="noreferrer"
+      target="_blank"
+      title={title}
+      {...props}
+    >
+      {children ?? (
+        <>
+          <BookIcon className="h-4 w-4" />
+          <span className="block font-medium">{title}</span>
+        </>
+      )}
+    </ExternalLink>
   );
 };

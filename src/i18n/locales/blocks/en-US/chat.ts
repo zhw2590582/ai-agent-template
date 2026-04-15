@@ -58,6 +58,11 @@ export const enUSChatMessages = {
       title: 'Sources',
       used_count: 'Used {count} sources',
     },
+    external_link: {
+      title: 'Open external link?',
+      description: 'You are about to open an external website:',
+      confirm: 'Open link',
+    },
     status: {
       ready: 'Ready',
       thinking: 'Thinking...',

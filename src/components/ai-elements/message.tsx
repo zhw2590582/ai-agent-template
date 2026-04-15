@@ -1,5 +1,6 @@
 'use client';
 
+import { ExternalLink } from '@/components/ai-elements/external-link';
 import { Button } from '@/components/ui/button';
 import { ButtonGroup, ButtonGroupText } from '@/components/ui/button-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -271,11 +272,15 @@ export const MessageBranchPage = ({ className, ...props }: MessageBranchPageProp
 export type MessageResponseProps = ComponentProps<typeof Streamdown>;
 
 const streamdownPlugins = { cjk, code, math, mermaid };
+const streamdownComponents = { a: ExternalLink };
+const streamdownLinkSafety = { enabled: false };
 
 export const MessageResponse = memo(
   ({ className, ...props }: MessageResponseProps) => (
     <Streamdown
       className={cn('size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0', className)}
+      components={streamdownComponents}
+      linkSafety={streamdownLinkSafety}
       plugins={streamdownPlugins}
       {...props}
     />

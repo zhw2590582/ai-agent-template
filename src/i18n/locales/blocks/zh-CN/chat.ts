@@ -57,6 +57,11 @@ export const zhCNChatMessages = {
       title: '来源',
       used_count: '使用了 {count} 条来源',
     },
+    external_link: {
+      title: '打开外部链接？',
+      description: '你将打开一个外部网站：',
+      confirm: '打开链接',
+    },
     status: {
       ready: '就绪',
       thinking: '思考中...',
