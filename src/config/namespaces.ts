@@ -11,5 +11,4 @@ export const API_NAMESPACES = {
   PROFILE_WRITE: 'api:profile:write',
   SEARCH_TEST: 'api:search:test',
   SANDBOX_TEST: 'api:sandbox:test',
-  SANDBOX_TEMPLATES: 'api:sandbox:templates',
 } as const;

@@ -5,36 +5,19 @@ import { useTranslations } from 'next-intl';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { SandboxSettings, SandboxTemplateOption } from '@/features/sandbox/types';
+import type { SandboxSettings } from '@/features/sandbox/types';
 
 interface SandboxEnvironmentSectionProps {
-  isLoadingTemplates: boolean;
   onUpdateSettings: (updater: (settings: SandboxSettings) => SandboxSettings) => void;
   settings: SandboxSettings;
-  templateOptions: SandboxTemplateOption[];
 }
 
 export function SandboxEnvironmentSection({
-  isLoadingTemplates,
   onUpdateSettings,
   settings,
-  templateOptions,
 }: SandboxEnvironmentSectionProps) {
   const t = useTranslations();
-  const hasTemplateOptions = templateOptions.length > 0;
-  const hasSelectedTemplateOption = templateOptions.some(
-    (option) => option.value === settings.template
-  );
-  const templateSelectValue =
-    hasTemplateOptions && hasSelectedTemplateOption ? settings.template : '__custom__';
 
   return (
     <Collapsible className="border-border rounded-md border" defaultOpen={false}>
@@ -49,65 +32,23 @@ export function SandboxEnvironmentSection({
       <CollapsibleContent className="border-t px-5 py-4">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">{t('sandbox_page.template_label')}</label>
-            {hasTemplateOptions ? (
-              <Select
-                value={templateSelectValue}
-                onValueChange={(value) => {
-                  if (value === '__custom__') {
-                    return;
-                  }
-
-                  onUpdateSettings((current) => ({
-                    ...current,
-                    template: value,
-                  }));
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t('sandbox_page.template_placeholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {templateOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="__custom__">{t('sandbox_page.template_custom')}</SelectItem>
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input
-                id="sandbox-template"
-                placeholder={t('sandbox_page.template_placeholder')}
-                value={settings.template}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  onUpdateSettings((current) => ({
-                    ...current,
-                    template: value,
-                  }));
-                }}
-              />
-            )}
-            {hasTemplateOptions && templateSelectValue === '__custom__' ? (
-              <Input
-                id="sandbox-template"
-                placeholder={t('sandbox_page.template_placeholder')}
-                value={settings.template}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  onUpdateSettings((current) => ({
-                    ...current,
-                    template: value,
-                  }));
-                }}
-              />
-            ) : null}
+            <label className="text-sm font-medium" htmlFor="sandbox-template">
+              {t('sandbox_page.template_label')}
+            </label>
+            <Input
+              id="sandbox-template"
+              placeholder={t('sandbox_page.template_placeholder')}
+              value={settings.template}
+              onChange={(event) => {
+                const value = event.target.value;
+                onUpdateSettings((current) => ({
+                  ...current,
+                  template: value,
+                }));
+              }}
+            />
             <p className="text-muted-foreground text-xs">
-              {isLoadingTemplates
-                ? t('sandbox_page.template_loading')
-                : t('sandbox_page.template_description')}
+              {t('sandbox_page.template_description')}
             </p>
           </div>
 
