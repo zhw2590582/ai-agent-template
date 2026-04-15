@@ -62,7 +62,7 @@
 - `/api/mcp` 仍保留为未来“本项目自己的 MCP server”入口
 - 当前远程 MCP 管理能力已落到 `src/features/mcp/*` 和 `/api/mcp/test`
 - `Skills` 当前已完成 workbench 管理 UI 和 `profile.settings.skills` 持久化，但还没有真实导入、兼容性解析和运行时接入
-- `RAG` 当前已完成 `profile.settings.rag`、Supabase `pgvector` migration、retrieval helper 和聊天注入主链路，但还没有文档导入与来源展示 UI
+- `RAG` 当前已完成 `profile.settings.rag`、Supabase `pgvector` migration、Voyage embeddings + rerank、文档上传导入、来源展示 UI 和聊天注入主链路
 - `server/types.ts` 已为 Planning / Multi-Agent 预留类型
 
 ### 仍是占位
@@ -78,7 +78,7 @@
 - MCP 已经不再是纯占位
 - 但当前只完成“远程 MCP tools integration”
 - 本项目自己的 MCP server 还没实现
-- RAG 也不再是纯占位，但当前仍属于“服务端主链路先落地、UI 后补”的阶段
+- RAG 也不再是纯占位，当前已具备可测试的 V1 主链路与基础管理 UI
 
 ## 当前产品范围
 
@@ -233,9 +233,10 @@ API rate limiting
 - provider 配置是 `profile.settings` 的一部分，不是独立数据库表
 - 当前 Memory 仍是 Supabase-first 的基础版，不包含向量检索和外部 memory provider
 - 当前 Search 使用 Tavily，不做自建向量检索或搜索索引
-- 当前 Sandbox 只做 E2B 配置管理，不做真实 sandbox lifecycle、命令执行、文件同步和 connection test
+- 当前 Sandbox 已完成 E2B runtime 接入、连接测试和首批命令/文件工具，但仍不做跨请求持久 workspace
 - 当前 MCP 只做“远程 MCP tools integration”，不做 resources/prompts/elicitations，也不做本项目自己的 MCP server
 - 当前 MCP 测试弹窗虽然会展示 resources / prompts / capabilities，但这些能力还没有真正接入聊天运行时
+- 当前 RAG 只对已登录用户开放；文档上传、连接测试和检索都依赖用户自己的私有索引与 `Voyage API Key`
 - 当前测试覆盖的是基础链路，不是完整产品行为
 - 多数工作台页面仍是占位，不要把导航存在误认为功能完成
 
@@ -256,7 +257,7 @@ API rate limiting
 1. Memory：继续做导入/导出、相关性检索优化、记忆归并和编辑体验
 2. Models：继续补 provider 重命名、失败回滚、会话级模型偏好等细节
 3. Search：补 Tavily 错误分层、搜索结果展示、缓存与观测
-4. 页面去占位化：继续把 `Sandbox` 从 settings UI 推进到真实 runtime，再补 `MCP`、`Settings`
+4. 页面去占位化：继续补 `MCP`、`Settings`，以及 RAG / Memory 的细节体验
 5. 测试补齐：补聊天主链路边界、工具展示、Memory / Search 行为和 hydration 场景，之后再补 E2E
 6. 文档继续收敛：让 README、Setup、Roadmap 与代码现状同步
 

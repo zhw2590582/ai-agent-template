@@ -34,6 +34,7 @@ src/
 │   ├── memory/                 # 长期记忆、摘要与 Memory 弹窗内容
 │   ├── models/                 # provider 配置、模型同步、自定义 provider/model
 │   ├── mcp/                    # 远程 MCP server 配置、测试、tool client
+│   ├── rag/                    # 文档导入、向量检索、来源展示
 │   ├── sandbox/                # E2B runtime 配置、执行策略、环境变量
 │   └── search/                 # Tavily 搜索设置、连接测试、服务端 client
 ├── i18n/                       # next-intl 请求配置
@@ -132,10 +133,11 @@ src/
 
 ### `src/features/sandbox`
 
-当前已经不是纯占位，但范围还只限于“sandbox settings management”。
+当前已经是一个真实 feature。
 
-- `components/`: Sandbox 弹窗内容、运行时概览和各设置分组
-- `hooks/`: Sandbox settings draft、保存、重置
+- `components/`: Sandbox 弹窗内容、运行时设置和高级项
+- `hooks/`: Sandbox settings draft、保存、连接测试
+- `server/`: E2B client、session 生命周期、命令/文件执行边界
 - `settings.ts`: Sandbox settings normalize / access 判断
 - `types.ts`: Sandbox settings 结构
 
@@ -143,13 +145,39 @@ src/
 
 - `use-sandbox-settings.ts`: Sandbox 弹窗的 settings controller
 - `sandbox-content.tsx`: Sandbox 设置入口与分组编排
-- `profile.settings.sandbox`: 当前唯一真实落点
+- `server/e2b-client.ts`: E2B runtime 适配、session 复用、路径/输出限制
+- `profile.settings.sandbox`: 用户级 sandbox 配置
 
 注意：
 
-- 当前还没有真实 E2B client
-- 还没有 `/api/sandbox/test`
-- 还没有把 sandbox runtime 接进聊天工具链
+- 当前只做单次请求内的 sandbox session 复用
+- 不做跨请求持久 workspace
+- 当前只开放首批 sandbox tools（命令执行、读文件、写文件）
+
+### `src/features/rag`
+
+当前已经是一个真实 feature。
+
+- `components/`: RAG 弹窗、文档导入、已索引文档、来源展示
+- `hooks/`: RAG settings、文档导入/删除/列表
+- `server/`: 文档解析、切块、embedding、rerank、retrieval、连接测试
+- `storage/`: Supabase `rag_documents / rag_chunks` 读写与检索 RPC
+- `settings.ts`: RAG settings normalize / access 判断
+
+当前关键边界：
+
+- `use-rag-settings.ts`: RAG 弹窗 settings controller
+- `use-rag-documents.ts`: 文档导入、删除、懒加载列表
+- `server/document-parser.ts`: `txt / md / pdf` 解析
+- `server/providers/*`: Voyage embedding / rerank provider
+- `server/retrieval.ts`: pgvector 检索、rerank 和上下文构造
+- `chat-rag-sources.tsx`: 聊天来源展示
+
+注意：
+
+- 当前 RAG 只对登录用户开放
+- 当前只支持用户私有文档索引，不支持知识库切换器
+- 当前 provider 固定为 Voyage，尚未做多 provider 选择
 
 ### `src/features/mcp`
 

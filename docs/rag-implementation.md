@@ -15,11 +15,15 @@
 - 文档导入 API：当前只支持 `txt / md / pdf` 文件上传
 - RAG workbench 里的最小文档管理 UI
 - 聊天消息里的来源卡片展示
+- RAG 连接测试
+- 已索引文档的懒加载折叠列表与删除确认
 
 当前 **未实现**：
 
 - 自动 embeddings pipeline
 - agentic RAG / query rewrite
+- 多 provider 选择
+- 文档重建索引 / 详情页
 
 ## 技术选择
 
@@ -32,6 +36,7 @@
 - 当前 `RAG` 只使用用户在 workbench 中填写的 `Voyage API Key`
 - 不再依赖服务端环境变量提供 embedding key
 - 当前默认模型固定为 `voyage-4-lite`
+- 当前只对登录用户开放，上传、连接测试和检索都依赖用户私有索引
 
 当前默认实现使用 `Voyage` 官方 embeddings 和 rerank：
 
@@ -55,6 +60,6 @@
 
 ## 下一步
 
-1. source cards 的交互增强
+1. 文档详情 / 重新索引
 2. provider selection / 更多 embedding provider
 3. query rewrite / 更复杂的 RAG orchestration
