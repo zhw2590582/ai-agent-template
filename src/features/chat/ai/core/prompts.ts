@@ -12,6 +12,7 @@ export function getSystemPrompt(
     hasMcpTools?: boolean;
     memoryContext?: string | null;
     mcpServerNames?: string[] | null;
+    sandboxEnabled?: boolean;
     webSearchEnabled?: boolean;
   }
 ): string {
@@ -31,11 +32,15 @@ ${options.memoryContext}`
     ? `
 - Additional MCP tools are available${options.mcpServerNames?.length ? ` from ${options.mcpServerNames.join(', ')}` : ''}. Use them when they clearly match the user's request and can provide more accurate external capabilities or live data.`
     : '';
+  const sandboxSection = options?.sandboxEnabled
+    ? `
+- Sandbox tools are available for isolated command execution and file operations. Use them when the task requires running shell commands or reading and writing files in an isolated environment.`
+    : '';
 
   return `${DEFAULT_SYSTEM_PROMPT}
 
 Context:
-- User locale: ${locale}${searchSection}${mcpSection}${memorySection}`;
+- User locale: ${locale}${searchSection}${mcpSection}${sandboxSection}${memorySection}`;
 }
 
 export { DEFAULT_SYSTEM_PROMPT };

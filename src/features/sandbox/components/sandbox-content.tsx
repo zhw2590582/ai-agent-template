@@ -2,12 +2,10 @@
 
 import { ExternalLinkIcon, PlugZapIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
-import { SandboxAccessSection } from '@/features/sandbox/components/sandbox-access-section';
 import { SandboxConnectionSection } from '@/features/sandbox/components/sandbox-connection-section';
 import { SandboxEnvironmentSection } from '@/features/sandbox/components/sandbox-environment-section';
 import { SandboxRuntimeSection } from '@/features/sandbox/components/sandbox-runtime-section';
@@ -32,8 +30,10 @@ export function SandboxContent({
     isApiKeyVisible,
     isDirty,
     isSaving,
+    isTesting,
     localSettings,
     resetAndClose,
+    runConnectionTest,
     save,
     setIsApiKeyVisible,
     showSaved,
@@ -44,6 +44,8 @@ export function SandboxContent({
     saveFailedMessage: t('sandbox_page.toast.save_failed'),
     saveSuccessMessage: t('sandbox_page.toast.save_success'),
     settings,
+    testFailedMessage: t('sandbox_page.toast.test_failed'),
+    testSuccessMessage: (template) => t('sandbox_page.toast.test_success', { template }),
   });
 
   return (
@@ -77,14 +79,14 @@ export function SandboxContent({
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Button
+                disabled={!localSettings.apiKey.trim() || isTesting}
                 size="sm"
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  toast.info(t('sandbox_page.toast.test_unavailable'));
-                }}
+                onClick={() => void runConnectionTest()}
               >
-                <PlugZapIcon data-icon="inline-start" />
+                {!isTesting ? <PlugZapIcon data-icon="inline-start" /> : null}
+                {isTesting ? <Spinner data-icon="inline-start" /> : null}
                 {t('sandbox_page.test_connection')}
               </Button>
               <Button asChild size="sm" type="button" variant="outline">
@@ -104,8 +106,6 @@ export function SandboxContent({
           />
 
           <SandboxRuntimeSection settings={localSettings} onUpdateSettings={updateSettings} />
-
-          <SandboxAccessSection settings={localSettings} onUpdateSettings={updateSettings} />
 
           <SandboxEnvironmentSection settings={localSettings} onUpdateSettings={updateSettings} />
         </section>

@@ -49,4 +49,8 @@ export const API_RATE_LIMITS = {
     maxRequests: 12,
     windowMs: API_CONFIG.RATE_LIMIT_WINDOW,
   },
+  SANDBOX_TEST: {
+    maxRequests: 12,
+    windowMs: API_CONFIG.RATE_LIMIT_WINDOW,
+  },
 } as const;

@@ -22,26 +22,7 @@ export function SandboxRuntimeSection({ onUpdateSettings, settings }: SandboxRun
         <p className="text-muted-foreground text-sm">{t('sandbox_page.runtime_description')}</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium" htmlFor="sandbox-template">
-            {t('sandbox_page.template_label')}
-          </label>
-          <Input
-            id="sandbox-template"
-            placeholder={t('sandbox_page.template_placeholder')}
-            value={settings.template}
-            onChange={(event) => {
-              const value = event.target.value;
-              onUpdateSettings((current) => ({
-                ...current,
-                template: value,
-              }));
-            }}
-          />
-          <p className="text-muted-foreground text-xs">{t('sandbox_page.template_description')}</p>
-        </div>
-
+      <div className="grid gap-4 md:grid-cols-2">
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium" htmlFor="sandbox-timeout">
             {t('sandbox_page.timeout_label')}
@@ -90,38 +71,24 @@ export function SandboxRuntimeSection({ onUpdateSettings, settings }: SandboxRun
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-1">
         <div className="flex items-center justify-between gap-4 rounded-md border px-4 py-3">
           <div className="flex flex-col gap-1">
-            <h4 className="text-sm font-medium">{t('sandbox_page.secure_label')}</h4>
-            <p className="text-muted-foreground text-xs">{t('sandbox_page.secure_description')}</p>
-          </div>
-          <Switch
-            checked={settings.secure}
-            className="data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
-            onCheckedChange={(checked) => {
-              onUpdateSettings((current) => ({
-                ...current,
-                secure: checked,
-              }));
-            }}
-          />
-        </div>
-
-        <div className="flex items-center justify-between gap-4 rounded-md border px-4 py-3">
-          <div className="flex flex-col gap-1">
-            <h4 className="text-sm font-medium">{t('sandbox_page.auto_pause_label')}</h4>
+            <h4 className="text-sm font-medium">{t('sandbox_page.access_network_label')}</h4>
             <p className="text-muted-foreground text-xs">
-              {t('sandbox_page.auto_pause_description')}
+              {t('sandbox_page.access_network_description')}
             </p>
           </div>
           <Switch
-            checked={settings.autoPause}
+            checked={settings.access.allowInternetAccess}
             className="data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
             onCheckedChange={(checked) => {
               onUpdateSettings((current) => ({
                 ...current,
-                autoPause: checked,
+                access: {
+                  ...current.access,
+                  allowInternetAccess: checked,
+                },
               }));
             }}
           />

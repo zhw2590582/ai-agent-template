@@ -13,6 +13,7 @@ interface RunGenerateTextWorkflowOptions {
   conversationSummary?: string | null;
   hasAgentTools: boolean;
   hasMcpTools?: boolean;
+  hasSandboxTools?: boolean;
   hasSearchTools?: boolean;
   locale: Locale;
   memoryContext?: string | null;
@@ -34,6 +35,7 @@ export async function runGenerateTextWorkflow({
   conversationSummary,
   hasAgentTools,
   hasMcpTools,
+  hasSandboxTools,
   hasSearchTools,
   locale,
   memoryContext,
@@ -55,6 +57,7 @@ export async function runGenerateTextWorkflow({
       hasMcpTools,
       memoryContext,
       mcpServerNames,
+      sandboxEnabled: hasSandboxTools,
       webSearchEnabled: hasSearchTools,
     }),
     messages: await buildChatMessagesWithSummary(

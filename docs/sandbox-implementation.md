@@ -21,33 +21,66 @@
 - 顶部 workbench 中的 `Sandbox` 弹窗
 - `profile.settings.sandbox` 的读写与归一化
 - `E2B API Key`、`template`、`timeout`、`workingDirectory`
-- 执行策略开关：
-  - `allowFilesystem`
-  - `allowCommands`
-  - `allowPty`
-  - `allowInternetAccess`
-  - `allowFileUpload`
-  - `allowFileDownload`
+- `allowInternetAccess`
 - 默认环境变量文本配置
 - 顶部按钮：
   - `Test connection`
   - `Get API key`
+- 已安装 `e2b`
+- `/api/sandbox/test`
+- `src/features/sandbox/server/e2b-client.ts`
+- 第一批 sandbox tools：
+  - `sandbox_run_command`
+  - `sandbox_read_file`
+  - `sandbox_write_file`
+- V1 运行时边界：
+  - 文件路径限制在 `workingDirectory` 之内
+  - 命令超时会被限制在安全上限内
+  - 命令输出和文件读取结果会被统一截断
+- V1 session lifecycle：
+  - 单次 chat request 内懒创建并复用同一个 sandbox
+  - request 完成后关闭
+  - 空闲窗口后自动回收
+  - 遇到可恢复的连接错误时自动重建一次
+- 聊天请求时会把可用 sandbox tools 合并进现有 agent tools
 
 当前还没有实现的是：
 
-- 真实 `E2B` SDK client
-- `/api/sandbox/test`
-- sandbox lifecycle 管理
-- 命令执行
-- 文件上传 / 下载 / 读写
-- chat tools 注入
 - skill runtime 兼容层
 - 成本、审计、缓存、运行记录
+- 跨请求 sandbox session 复用
+- 持久化 volumes / snapshots
 
 所以当前 `Sandbox` 功能更准确地说是：
 
 - **Sandbox settings management**
 - 不是完整的 **sandbox runtime integration**
+
+当前 UI 暴露给用户的 V1 设置，已经收口为：
+
+- `enabled`
+- `apiKey`
+- `timeoutSeconds`
+- `workingDirectory`
+- `allowInternetAccess`
+- `template` 和 `envVarsText`
+  - 作为 `Advanced` 折叠区保留
+
+当前没有暴露在 UI 上，但仍保留在 settings 结构中的字段：
+
+- `allowCommands`
+- `allowFilesystem`
+- `allowPty`
+- `allowFileUpload`
+- `allowFileDownload`
+- `secure`
+- `autoPause`
+
+原因：
+
+- 这些字段要么当前没有完整能力承接
+- 要么属于产品内部策略，不适合前期直接给最终用户配置
+- 要么虽然在 runtime 中部分生效，但会给用户造成“关闭后为什么 sandbox 几乎不可用”的误解
 
 ## 为什么当前只考虑 E2B
 
@@ -127,6 +160,43 @@
 
 这些能力都可能有价值，但不是当前阶段最值当的第一批能力。
 
+## V1 安全边界
+
+当前 sandbox tools 已经加上的约束：
+
+- `sandbox_read_file` 和 `sandbox_write_file`
+  - 只能访问 `workingDirectory` 以内的路径
+  - 不允许通过绝对路径或 `..` 逃逸出 workspace root
+- `sandbox_run_command`
+  - `cwd` 同样限制在 `workingDirectory` 以内
+  - 超时时间会被限制在 V1 上限内
+- 输出控制
+  - 命令 stdout/stderr 会截断
+  - 文件读取结果会截断
+  - 单次写文件内容大小有限制
+
+这些边界是为了让 V1 足够可控，而不是为了做一套完整的策略系统。
+
+## V1 Session Lifecycle
+
+当前 session 模型刻意保持简单：
+
+- 一个 chat request 内只创建一个 `SandboxSession`
+- 只有第一次真正调用 sandbox tool 时，才懒创建 E2B sandbox
+- 后续同一请求中的多个 sandbox tool 调用复用同一实例
+- request 完成时统一关闭
+- 如果中途空闲超出短窗口，会自动回收
+- 如果遇到常见的可恢复错误，会自动重建一次后重试当前操作
+
+当前明确不做的事情：
+
+- 不做跨请求复用池
+- 不做全局 session registry
+- 不做 pause / resume orchestration
+- 不做复杂的 failure state machine
+
+这样做的原因很简单：前期先把行为收敛清楚，比过早做“智能 session 管理”更重要。
+
 ## 是否需要新的 npm 依赖
 
 需要。
@@ -147,7 +217,7 @@ bun add e2b
 
 因此当前默认方向是：
 
-- 优先研究和接入 `e2b`
+- 已接入 `e2b`
 - 暂不优先接 `@e2b/code-interpreter`
 
 如果后续目标变成“让模型直接运行结构化代码片段并返回结果对象”，再单独评估是否补 `@e2b/code-interpreter`。
@@ -196,6 +266,12 @@ interface SandboxSettings {
 }
 ```
 
+注意：
+
+- `SandboxSettings` 当前是“运行时配置 + 预留策略字段”的混合结构
+- 并不等于“所有字段都应该在前端设置面板展示”
+- 后续如果 UI 继续收口，可以考虑把用户设置和内部策略拆开
+
 语义：
 
 - `enabled`
@@ -224,11 +300,10 @@ interface SandboxSettings {
 - `src/features/sandbox/components/sandbox-connection-section.tsx`
   - API key 与启用开关
 - `src/features/sandbox/components/sandbox-runtime-section.tsx`
-  - template / timeout / workdir / secure / autoPause
-- `src/features/sandbox/components/sandbox-access-section.tsx`
-  - 执行策略开关
+  - timeout / workdir / internet access
 - `src/features/sandbox/components/sandbox-environment-section.tsx`
-  - 环境变量输入
+  - `Advanced` 折叠区
+  - template / 环境变量输入
 
 ### Settings Controller
 
@@ -246,6 +321,32 @@ interface SandboxSettings {
 - `src/config/sandbox.ts`
   - 默认 template、timeout、workdir
 
+### Server Runtime
+
+- `src/features/sandbox/server/e2b-client.ts`
+  - `Sandbox.create(...)`
+  - env vars 解析
+  - create / close
+  - workspace path 约束
+  - run command
+  - read file / write file
+  - 懒创建、空闲回收、故障重建
+- `src/features/sandbox/server/test.ts`
+  - sandbox connection test helper
+
+### Test API
+
+- `src/app/api/sandbox/test/route.ts`
+  - E2B create + kill 最小探活
+
+### Chat Tools
+
+- `src/features/chat/ai/tools/sandbox_run_command.ts`
+- `src/features/chat/ai/tools/sandbox_read_file.ts`
+- `src/features/chat/ai/tools/sandbox_write_file.ts`
+- `src/features/chat/ai/tools/index.ts`
+  - `buildSandboxAgentTools(...)`
+
 ### Profile Persistence
 
 - `src/features/auth/profile/use-app-profile.ts`
@@ -261,14 +362,27 @@ interface SandboxSettings {
 Sandbox UI
   -> workbench dialog
   -> useSandboxSettings
+  -> /api/sandbox/test (connection test)
   -> useAppProfile.updateSandboxSettings(...)
   -> /api/profile
   -> normalizeProfileSettings(...)
   -> profile.settings.sandbox
   -> localStorage or Supabase
+
+Chat request
+  -> /api/chat
+  -> resolve sandbox settings
+  -> create lazy SandboxSession
+  -> build sandbox tools from access policy
+  -> merge with search / MCP tools
+  -> close sandbox on finish
 ```
 
-也就是说，当前 `Sandbox` 还没有进入 chat runtime。
+也就是说，当前 `Sandbox` 已经进入 chat runtime，但还是最小版：
+
+- 只有三个基础 tools
+- 还没有运行记录、审批、缓存、持久 sandbox
+- 还没有与 skills 做兼容层
 
 ## V1 推荐推进顺序
 
@@ -280,12 +394,12 @@ Sandbox UI
 - 验证能否创建最小 sandbox
 - 立即关闭 sandbox
 
-当前只做：
+当前已做：
 
 - create
 - close
 
-不要在这个阶段就把命令执行和文件同步一起塞进去。
+这一步当前不会执行额外命令，只做最小探活。
 
 ### Step 2. `src/features/sandbox/server/e2b-client.ts`
 
@@ -293,7 +407,7 @@ Sandbox UI
 
 - 抽出统一的 `E2B` server-side adapter
 
-建议前期只封装：
+当前已封装：
 
 - `createSandbox`
 - `closeSandbox`
@@ -307,13 +421,19 @@ Sandbox UI
 
 - 先把最小工具接进聊天
 
-建议第一批工具只考虑：
+当前第一批工具：
 
 - `sandbox_run_command`
 - `sandbox_write_file`
 - `sandbox_read_file`
 
-这时才需要决定如何把 `access.*` 映射成真正的 tool gating。
+当前已经把 `access.*` 映射成最小 tool gating：
+
+- `allowCommands`
+  - 控制 `sandbox_run_command`
+- `allowFilesystem`
+  - 控制 `sandbox_read_file`
+  - 控制 `sandbox_write_file`
 
 ### Step 4. skills compatibility
 
@@ -364,12 +484,16 @@ Sandbox UI
 
 ## 当前待办
 
-- [ ] 安装 `e2b`
-- [ ] 研究官方 JS SDK 的最小接入方式
-- [ ] 新增 `/api/sandbox/test`
-- [ ] 新增 `src/features/sandbox/server/e2b-client.ts`
-- [ ] 把 `Test connection` 按钮接成真实能力
-- [ ] 评估第一批 sandbox tools 的输入 / 输出 schema
+- [x] 安装 `e2b`
+- [x] 研究官方 JS SDK 的最小接入方式
+- [x] 新增 `/api/sandbox/test`
+- [x] 新增 `src/features/sandbox/server/e2b-client.ts`
+- [x] 把 `Test connection` 按钮接成真实能力
+- [x] 接入第一批 sandbox tools
+- [ ] 细化 sandbox test 错误反馈
+- [ ] 评估 command / file output 截断和展示样式
+- [ ] 增加 tool 使用日志与运行记录
+- [ ] 评估是否需要持久 sandbox session / reconnect
 
 ## 相关文档
 

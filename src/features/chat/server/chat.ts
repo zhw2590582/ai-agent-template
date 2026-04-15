@@ -25,6 +25,7 @@ export async function handleChatPost(request: Request) {
       mcpSettings,
       messages,
       runtimeModel,
+      sandboxSettings,
       searchSettings,
     } = await validateRequest(request, chatPostSchema);
     const resolvedConversationId = conversationId ?? null;
@@ -54,6 +55,7 @@ export async function handleChatPost(request: Request) {
     } = await loadChatRequestContext({
       conversationId: resolvedConversationId,
       mcpSettings,
+      sandboxSettings,
       searchSettings,
       supabase,
       user,
@@ -65,6 +67,9 @@ export async function handleChatPost(request: Request) {
         conversationSummary,
         hasAgentTools,
         hasMcpTools: mcpServerNames.length > 0,
+        hasSandboxTools: Object.keys(agentTools).some((toolName) =>
+          toolName.startsWith('sandbox_')
+        ),
         hasSearchTools,
         locale,
         memoryContext,

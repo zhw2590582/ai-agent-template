@@ -14,6 +14,8 @@ interface UseSandboxSettingsOptions {
   saveFailedMessage: string;
   saveSuccessMessage: string;
   settings: SandboxSettings;
+  testFailedMessage: string;
+  testSuccessMessage: (template: string) => string;
 }
 
 export function useSandboxSettings({
@@ -22,10 +24,13 @@ export function useSandboxSettings({
   saveFailedMessage,
   saveSuccessMessage,
   settings,
+  testFailedMessage,
+  testSuccessMessage,
 }: UseSandboxSettingsOptions) {
   const [localSettings, setLocalSettings] = useState(settings);
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
 
   useEffect(() => {
@@ -55,6 +60,29 @@ export function useSandboxSettings({
     onClose?.();
   };
 
+  const runConnectionTest = async () => {
+    setIsTesting(true);
+    try {
+      const response = await fetch('/api/sandbox/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(localSettings),
+      });
+
+      if (!response.ok) {
+        toast.error(testFailedMessage);
+        return;
+      }
+
+      const data = (await response.json()) as { template?: string };
+      toast.success(testSuccessMessage(String(data.template ?? localSettings.template)));
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
   const save = async () => {
     setIsSaving(true);
     try {
@@ -76,8 +104,10 @@ export function useSandboxSettings({
     isApiKeyVisible,
     isDirty,
     isSaving,
+    isTesting,
     localSettings,
     resetAndClose,
+    runConnectionTest,
     save,
     setIsApiKeyVisible,
     showSaved,

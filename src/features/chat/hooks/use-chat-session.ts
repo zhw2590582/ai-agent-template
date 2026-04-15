@@ -57,6 +57,7 @@ export function useChatSession({
   const activeThreadIdRef = useRef(activeThreadId);
   const conversationSummaryRef = useRef(conversationSummary);
   const mcpSettingsRef = useRef(profileSettings?.mcp);
+  const sandboxSettingsRef = useRef(profileSettings?.sandbox);
   const searchSettingsRef = useRef(profileSettings?.search);
 
   useEffect(() => {
@@ -64,11 +65,13 @@ export function useChatSession({
     activeThreadIdRef.current = activeThreadId;
     conversationSummaryRef.current = conversationSummary;
     mcpSettingsRef.current = profileSettings?.mcp;
+    sandboxSettingsRef.current = profileSettings?.sandbox;
     searchSettingsRef.current = profileSettings?.search;
   }, [
     activeThreadId,
     conversationSummary,
     profileSettings?.mcp,
+    profileSettings?.sandbox,
     profileSettings?.search,
     runtimeModel,
   ]);
@@ -106,6 +109,7 @@ export function useChatSession({
             messages,
             conversationSummary: conversationSummaryRef.current ?? undefined,
             mcpSettings: mcpSettingsRef.current ?? undefined,
+            sandboxSettings: sandboxSettingsRef.current ?? undefined,
             searchSettings: searchSettingsRef.current ?? undefined,
             runtimeModel: runtimeModelRef.current ?? undefined,
             conversationId:

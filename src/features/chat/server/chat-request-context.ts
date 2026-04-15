@@ -8,13 +8,16 @@ import {
   type Locale,
 } from '@/config/i18n';
 import { logger } from '@/lib/logger';
-import { buildSearchAgentTools } from '@/features/chat/ai/tools';
+import { buildSandboxAgentTools, buildSearchAgentTools } from '@/features/chat/ai/tools';
 import { verifyConversationOwnership } from '@/features/chat/storage';
 import { getProfileById } from '@/features/auth/storage/profiles';
 import { buildMemoryContext, listMemoriesForUser } from '@/features/memory/storage/memories';
 import { createMcpAgentToolBundles } from '@/features/mcp/server/mcp-client';
 import { normalizeMcpSettings } from '@/features/mcp/settings';
 import type { McpSettings } from '@/features/mcp/types';
+import { normalizeSandboxSettings, hasSandboxAccess } from '@/features/sandbox/settings';
+import { SandboxSession } from '@/features/sandbox/server/e2b-client';
+import type { SandboxSettings } from '@/features/sandbox/types';
 import { normalizeSearchSettings } from '@/features/search/settings';
 import type { SearchSettings } from '@/features/search/types';
 
@@ -85,9 +88,18 @@ export function resolveMcpSettings(input: unknown): McpSettings | null {
   return normalizeMcpSettings(input);
 }
 
+export function resolveSandboxSettings(input: unknown): SandboxSettings | null {
+  if (typeof input !== 'object' || input == null) {
+    return null;
+  }
+
+  return normalizeSandboxSettings(input);
+}
+
 interface LoadChatRequestContextOptions {
   conversationId: string | null;
   mcpSettings: unknown;
+  sandboxSettings: unknown;
   searchSettings: unknown;
   supabase: SupabaseClient;
   user: User | null;
@@ -96,6 +108,7 @@ interface LoadChatRequestContextOptions {
 export async function loadChatRequestContext({
   conversationId,
   mcpSettings,
+  sandboxSettings,
   searchSettings,
   supabase,
   user,
@@ -114,10 +127,25 @@ export async function loadChatRequestContext({
 
   const resolvedSearchSettings = resolveSearchSettings(searchSettings);
   const resolvedMcpSettings = resolveMcpSettings(mcpSettings);
+  const resolvedSandboxSettings = resolveSandboxSettings(sandboxSettings);
   const searchAgentTools = buildSearchAgentTools({
     searchSettings: resolvedSearchSettings,
   });
-  let agentTools: ToolSet = searchAgentTools;
+  const sandboxSession =
+    resolvedSandboxSettings && hasSandboxAccess(resolvedSandboxSettings)
+      ? new SandboxSession(resolvedSandboxSettings)
+      : null;
+  const sandboxAgentTools = buildSandboxAgentTools({
+    sandboxSession,
+    sandboxSettings: resolvedSandboxSettings,
+  });
+  let agentTools: ToolSet = {
+    ...searchAgentTools,
+    ...sandboxAgentTools,
+  };
+  closeAgentResources = async () => {
+    await sandboxSession?.close('completed');
+  };
 
   if (
     resolvedMcpSettings?.enabled &&
@@ -127,11 +155,13 @@ export async function loadChatRequestContext({
       const mcpBundle = await createMcpAgentToolBundles(resolvedMcpSettings);
       agentTools = {
         ...searchAgentTools,
+        ...sandboxAgentTools,
         ...mcpBundle.tools,
       };
       mcpInjectedTools = mcpBundle.injectedTools;
       mcpServerNames = mcpBundle.serverNames;
       closeAgentResources = async () => {
+        await sandboxSession?.close('completed');
         await Promise.all(mcpBundle.clients.map((client) => client.close()));
       };
 
@@ -186,6 +216,7 @@ export async function loadChatRequestContext({
       persistedConversationSummary,
     };
   } catch (error) {
+    await sandboxSession?.close('error');
     await closeAgentResources?.();
     throw error;
   }

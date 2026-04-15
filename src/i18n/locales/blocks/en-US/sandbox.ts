@@ -7,17 +7,17 @@ export const enUSSandboxMessages = {
     test_connection: 'Test connection',
     enabled_label: 'Enable sandbox runtime',
     enabled_description:
-      'Allow the assistant to use an isolated execution environment when sandbox-backed tools are added.',
+      'Allow the assistant to use an isolated E2B environment for command execution and file work.',
     api_key_label: 'E2B API key',
     api_key_description: 'Saved to your profile and reserved for your own sandbox sessions.',
     api_key_placeholder: 'Enter your E2B API key',
     api_key_hint: 'Keep sandbox disabled until your runtime and policies are ready.',
     runtime_title: 'Runtime',
     runtime_description:
-      'Choose the sandbox template, timeout, and working directory the agent should start from.',
+      'Configure the default timeout, working directory, and network access for sandbox sessions.',
     template_label: 'Template',
     template_description:
-      'E2B sandboxes start from a template such as base or a custom project image.',
+      'Optional. Keep the default unless you need a custom E2B template for your project.',
     template_placeholder: 'base',
     timeout_label: 'Timeout (seconds)',
     timeout_description: 'How long a sandbox may stay active before it should expire or be paused.',
@@ -25,11 +25,9 @@ export const enUSSandboxMessages = {
     working_directory_description:
       'The default directory for commands, generated files, and future skill execution.',
     working_directory_placeholder: '/workspace',
-    secure_label: 'Secure mode',
-    secure_description: 'Prefer a more locked-down runtime posture when the template supports it.',
-    auto_pause_label: 'Auto pause',
-    auto_pause_description:
-      'Pause idle sandboxes after the timeout window to reduce unnecessary runtime cost.',
+    advanced_title: 'Advanced',
+    advanced_description:
+      'Optional settings for custom templates and environment variables. Most users can leave these untouched.',
     access_title: 'Execution policy',
     access_description:
       'These switches define what the assistant may do inside the sandbox once execution tools are connected.',
@@ -58,7 +56,8 @@ export const enUSSandboxMessages = {
     toast: {
       save_failed: 'Sandbox settings could not be saved.',
       save_success: 'Sandbox settings saved.',
-      test_unavailable: 'Sandbox connection test is not wired yet.',
+      test_failed: 'Sandbox connection test failed.',
+      test_success: 'Sandbox connection works. Template "{template}" is available.',
     },
   },
 } as const;

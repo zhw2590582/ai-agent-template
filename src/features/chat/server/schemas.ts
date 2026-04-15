@@ -46,6 +46,26 @@ export const chatPostSchema = z.object({
       ),
     })
     .optional(),
+  sandboxSettings: z
+    .object({
+      access: z.object({
+        allowCommands: z.boolean(),
+        allowFileDownload: z.boolean(),
+        allowFileUpload: z.boolean(),
+        allowFilesystem: z.boolean(),
+        allowInternetAccess: z.boolean(),
+        allowPty: z.boolean(),
+      }),
+      apiKey: z.string(),
+      autoPause: z.boolean(),
+      enabled: z.boolean(),
+      envVarsText: z.string(),
+      secure: z.boolean(),
+      template: z.string(),
+      timeoutSeconds: z.number().int(),
+      workingDirectory: z.string(),
+    })
+    .optional(),
   messages: z.array(messageSchema).min(1),
   searchSettings: z
     .object({
