@@ -4,10 +4,8 @@
  * Responsibilities:
  * 1. Classify application errors consistently
  * 2. Return user-facing error responses
- * 3. Capture logs and monitoring context
+ * 3. Keep logging and user-facing responses consistent
  */
-
-import * as Sentry from '@sentry/nextjs';
 
 import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
 import { SERVER_MESSAGES } from '@/config/strings';
@@ -102,30 +100,12 @@ export const handleErrorWithLocale = (error: unknown, locale: Locale): Response 
   // Known application errors
   if (error instanceof AppError) {
     logger.error(`[${error.code}] ${error.message}`, { details: error.details });
-    Sentry.captureException(error, {
-      extra: {
-        details: error.details,
-        locale,
-        statusCode: error.statusCode,
-      },
-      tags: {
-        code: error.code,
-        handled: 'true',
-      },
-    });
     return error.toResponse(locale);
   }
 
   // AI SDK or provider errors
   if (error instanceof Error && error.message.includes('API')) {
     logger.error('[API_ERROR] Model request failed', { message: error.message });
-    Sentry.captureException(error, {
-      extra: { locale },
-      tags: {
-        code: ErrorCode.MODEL_ERROR,
-        handled: 'true',
-      },
-    });
     return new AppError(
       ErrorCode.MODEL_ERROR,
       t(locale, 'errors.model_error'),
@@ -136,13 +116,6 @@ export const handleErrorWithLocale = (error: unknown, locale: Locale): Response 
 
   // Unknown errors
   logger.error('[UNKNOWN_ERROR] Unexpected error', { error });
-  Sentry.captureException(error, {
-    extra: { locale },
-    tags: {
-      code: ErrorCode.UNKNOWN,
-      handled: 'true',
-    },
-  });
   return new AppError(ErrorCode.UNKNOWN, t(locale, 'errors.unknown'), 500).toResponse(locale);
 };
 

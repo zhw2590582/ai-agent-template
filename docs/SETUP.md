@@ -38,9 +38,6 @@ bun run dev
 
 如果要启用额外平台能力，还预留了这些变量：
 
-- `SENTRY_ORG`
-- `SENTRY_PROJECT`
-- `NEXT_PUBLIC_SENTRY_DSN`
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
 - `MEM0_API_KEY`
