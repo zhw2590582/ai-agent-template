@@ -30,6 +30,9 @@ export const enUSRagMessages = {
     documents_chunks: '{count} chunks',
     documents_characters: '{count} characters',
     document_delete: 'Delete document',
+    delete_document_title: 'Delete document',
+    delete_document_description:
+      'Delete "{title}" from your indexed documents? This will remove its chunks from retrieval.',
     retrieval_title: 'Retrieval',
     retrieval_description:
       'Tune how many chunks are returned and how much retrieved context is injected into the model.',

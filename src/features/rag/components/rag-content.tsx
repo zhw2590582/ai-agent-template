@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { ExternalLinkIcon, PlugZapIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -21,6 +22,7 @@ interface RagContentProps {
 
 export function RagContent({ onClose, onRagSettingsChange, settings }: RagContentProps) {
   const t = useTranslations();
+  const [isDocumentsOpen, setIsDocumentsOpen] = useState(false);
   const {
     isApiKeyVisible,
     isDirty,
@@ -46,6 +48,7 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
     useRagDocuments({
       deleteFailedMessage: t('rag_page.toast.delete_failed'),
       deleteSuccessMessage: t('rag_page.toast.delete_success'),
+      enabled: isDocumentsOpen,
       importFailedMessage: t('rag_page.toast.import_failed'),
       importSuccessMessage: (count) => t('rag_page.toast.import_success', { count }),
     });
@@ -113,6 +116,8 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
             documents={documents}
             isDeletingId={isDeletingId}
             isLoading={isLoading}
+            open={isDocumentsOpen}
+            onOpenChange={setIsDocumentsOpen}
             onDelete={deleteDocument}
           />
         </section>

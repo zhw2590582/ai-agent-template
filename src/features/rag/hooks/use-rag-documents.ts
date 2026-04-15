@@ -8,6 +8,7 @@ import type { RagDocument } from '@/features/rag/types';
 interface UseRagDocumentsOptions {
   deleteFailedMessage: string;
   deleteSuccessMessage: string;
+  enabled?: boolean;
   importFailedMessage: string;
   importSuccessMessage: (count: string) => string;
 }
@@ -23,13 +24,14 @@ type RagDocumentImportInput = {
 export function useRagDocuments({
   deleteFailedMessage,
   deleteSuccessMessage,
+  enabled = true,
   importFailedMessage,
   importSuccessMessage,
 }: UseRagDocumentsOptions) {
   const [documents, setDocuments] = useState<RagDocument[]>([]);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [isImporting, setIsImporting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(enabled);
 
   const loadDocuments = useCallback(async () => {
     setIsLoading(true);
@@ -48,8 +50,13 @@ export function useRagDocuments({
   }, []);
 
   useEffect(() => {
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
+
     void loadDocuments();
-  }, [loadDocuments]);
+  }, [enabled, loadDocuments]);
 
   const importDocument = async (input: RagDocumentImportInput) => {
     setIsImporting(true);

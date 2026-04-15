@@ -27,6 +27,8 @@ export const zhCNRagMessages = {
     documents_chunks: '{count} 个 chunks',
     documents_characters: '{count} 个字符',
     document_delete: '删除文档',
+    delete_document_title: '删除文档',
+    delete_document_description: '确认删除“{title}”吗？这会把它对应的 chunks 一并移出检索范围。',
     retrieval_title: '检索参数',
     retrieval_description: '控制召回多少 chunk，以及注入到模型里的检索上下文上限。',
     test_connection: '测试连接',
