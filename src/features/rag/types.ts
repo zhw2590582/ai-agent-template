@@ -10,7 +10,11 @@ export interface RagDocumentMetadata {
   characterCount?: number;
   chunkCount?: number;
   excerpt?: string;
+  fileName?: string | null;
+  fileSize?: number | null;
+  fileType?: string | null;
   importedAt?: string;
+  mimeType?: string | null;
 }
 
 export interface RagKnowledgeBase {

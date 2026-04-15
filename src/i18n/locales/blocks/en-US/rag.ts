@@ -2,28 +2,25 @@ export const enUSRagMessages = {
   rag_page: {
     title: 'RAG',
     description:
-      'Configure retrieval settings for your private knowledge base. Document import and source rendering will be added in later iterations.',
+      'Configure retrieval settings for your private knowledge base and index uploaded source documents for retrieval.',
     get_api_key: 'Get API Key',
-    api_key_label: 'Voyage API Key',
+    api_key_label: 'Vector API Key',
     api_key_description:
-      'Used to generate Voyage embeddings for retrieval. This key is stored in your profile settings.',
-    api_key_placeholder: 'Enter your Voyage API Key',
-    api_key_hint:
-      'RAG retrieval needs a Voyage API Key. A server-level fallback can still be configured for development.',
+      'Used to generate retrieval embeddings with Voyage. This key is stored in your profile settings.',
+    api_key_placeholder: 'Enter your Vector API Key',
+    api_key_hint: 'RAG retrieval needs your own Vector API Key.',
     enabled_label: 'Enable RAG',
     enabled_description:
       'Allow chat requests to retrieve relevant chunks from your indexed knowledge base before answering.',
-    import_title: 'Import Text',
+    import_title: 'Import Documents',
     import_description:
-      'Paste source text here and we will chunk it, generate embeddings, and store it in your private vector index.',
+      'Upload a .txt, .md, or .pdf file. We will extract text, chunk it, generate embeddings, and store it in your private vector index.',
     document_title_label: 'Document Title',
     document_title_placeholder: 'Enter a document title',
     document_source_label: 'Source',
     document_source_placeholder: 'Optional source URL or label',
-    document_content_label: 'Document Content',
-    document_content_placeholder: 'Paste the document text you want to index',
-    document_content_hint:
-      'V1 supports pasted text. File upload can be added later without changing the storage model.',
+    document_file_label: 'Document File',
+    document_file_hint: 'Accepted formats: .txt, .md, .pdf.',
     import_action: 'Import document',
     documents_title: 'Documents',
     documents_description:

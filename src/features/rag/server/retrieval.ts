@@ -2,10 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@/lib/supabase/database.types';
 import { logger } from '@/lib/logger';
-import {
-  embedQueryWithProvider,
-  hasResolvedEmbeddingAccess,
-} from '@/features/rag/server/embeddings';
+import { embedQueryWithProvider } from '@/features/rag/server/embeddings';
+import { hasResolvedEmbeddingAccess } from '@/features/rag/server/providers';
 import { matchRagChunks } from '@/features/rag/storage/rag-repository';
 import type { RagSettings, RetrievedRagChunk } from '@/features/rag/types';
 

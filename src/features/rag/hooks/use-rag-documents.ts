@@ -12,6 +12,14 @@ interface UseRagDocumentsOptions {
   importSuccessMessage: (count: string) => string;
 }
 
+type RagDocumentImportInput = {
+  apiKey: string;
+  file: File;
+  source: string;
+  title: string;
+  type: 'file';
+};
+
 export function useRagDocuments({
   deleteFailedMessage,
   deleteSuccessMessage,
@@ -43,20 +51,19 @@ export function useRagDocuments({
     void loadDocuments();
   }, [loadDocuments]);
 
-  const importDocument = async (input: {
-    apiKey: string;
-    content: string;
-    source: string;
-    title: string;
-  }) => {
+  const importDocument = async (input: RagDocumentImportInput) => {
     setIsImporting(true);
     try {
       const response = await fetch('/api/rag/documents', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(input),
+        body: (() => {
+          const formData = new FormData();
+          formData.set('apiKey', input.apiKey);
+          formData.set('file', input.file);
+          formData.set('source', input.source);
+          formData.set('title', input.title);
+          return formData;
+        })(),
       });
 
       if (!response.ok) {

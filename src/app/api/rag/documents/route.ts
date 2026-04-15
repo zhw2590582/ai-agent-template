@@ -9,11 +9,14 @@ import { enforceRateLimit } from '@/lib/rate-limit';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { validateRequest } from '@/lib/validation';
 import { upsertProfileFromAuthUser } from '@/features/auth/storage/profiles';
+import { parseRagDocumentFile } from '@/features/rag/server/document-parser';
 import { ingestRagTextDocument } from '@/features/rag/server/ingestion';
 import {
   deleteRagDocumentForUser,
   listRagDocumentsForUser,
 } from '@/features/rag/storage/rag-documents';
+
+export const runtime = 'nodejs';
 
 async function requireAuth() {
   const supabase = await createSupabaseServerClient();
@@ -28,11 +31,10 @@ async function requireAuth() {
   return { supabase, user };
 }
 
-const createRagDocumentSchema = z.object({
+const createRagFileDocumentSchema = z.object({
   apiKey: z.string().min(1),
-  content: z.string().trim().min(1).max(TEXT_LIMITS.RAG_DOCUMENT_CONTENT),
   source: z.string().trim().max(TEXT_LIMITS.RAG_DOCUMENT_SOURCE).optional().or(z.literal('')),
-  title: z.string().trim().min(1).max(TEXT_LIMITS.RAG_DOCUMENT_TITLE),
+  title: z.string().trim().max(TEXT_LIMITS.RAG_DOCUMENT_TITLE).optional().or(z.literal('')),
 });
 
 const deleteRagDocumentSchema = z.object({
@@ -55,9 +57,60 @@ export async function GET(request: Request) {
   }
 }
 
+async function parseCreateRagDocumentInput(request: Request) {
+  const contentType = request.headers.get('content-type') || '';
+
+  if (!contentType.includes('multipart/form-data')) {
+    throw new AppError(
+      ErrorCode.INPUT_INVALID,
+      'RAG document import only supports file upload for now.',
+      400
+    );
+  }
+
+  const formData = await request.formData();
+  const file = formData.get('file');
+
+  if (!(file instanceof File)) {
+    throw new AppError(
+      ErrorCode.INPUT_INVALID,
+      'A .txt, .md, or .pdf file is required for upload.',
+      400
+    );
+  }
+
+  const metadata = createRagFileDocumentSchema.safeParse({
+    apiKey: formData.get('apiKey'),
+    source: formData.get('source'),
+    title: formData.get('title'),
+  });
+
+  if (!metadata.success) {
+    throw new AppError(
+      ErrorCode.INPUT_INVALID,
+      'The uploaded RAG document metadata is invalid.',
+      400,
+      metadata.error.flatten().fieldErrors
+    );
+  }
+
+  const parsedFile = await parseRagDocumentFile(file);
+
+  return {
+    apiKey: metadata.data.apiKey,
+    content: parsedFile.content,
+    fileName: parsedFile.fileName,
+    fileSize: parsedFile.fileSize,
+    fileType: parsedFile.fileType,
+    mimeType: parsedFile.mimeType,
+    source: metadata.data.source || null,
+    title: metadata.data.title?.trim() || parsedFile.title,
+  };
+}
+
 export async function POST(request: Request) {
   try {
-    const input = await validateRequest(request, createRagDocumentSchema);
+    const input = await parseCreateRagDocumentInput(request);
     const { supabase, user } = await requireAuth();
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.RAG_WRITE,
@@ -70,7 +123,11 @@ export async function POST(request: Request) {
       await ingestRagTextDocument({
         apiKey: input.apiKey,
         content: input.content,
-        source: input.source || null,
+        fileName: input.fileName,
+        fileSize: input.fileSize,
+        fileType: input.fileType,
+        mimeType: input.mimeType,
+        source: input.source,
         supabase,
         title: input.title,
         userId: user.id,

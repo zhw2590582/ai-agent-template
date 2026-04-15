@@ -8,9 +8,6 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1).optional(),
-  RAG_EMBEDDING_API_KEY: z.string().min(1).optional(),
-  RAG_EMBEDDING_BASE_URL: z.string().url().optional(),
-  RAG_EMBEDDING_MODEL: z.string().min(1).optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 });
 

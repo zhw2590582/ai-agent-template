@@ -26,6 +26,10 @@ function buildExcerpt(content: string) {
 export async function ingestRagTextDocument({
   apiKey,
   content,
+  fileName,
+  fileSize,
+  fileType,
+  mimeType,
   source,
   supabase,
   title,
@@ -33,6 +37,10 @@ export async function ingestRagTextDocument({
 }: {
   apiKey: string;
   content: string;
+  fileName?: string | null;
+  fileSize?: number | null;
+  fileType?: string | null;
+  mimeType?: string | null;
   source?: string | null;
   supabase: SupabaseClient<Database>;
   title: string;
@@ -54,7 +62,11 @@ export async function ingestRagTextDocument({
       characterCount: normalizedContent.length,
       chunkCount: chunks.length,
       excerpt: buildExcerpt(normalizedContent),
+      fileName: fileName || null,
+      fileSize: fileSize ?? null,
+      fileType: fileType || null,
       importedAt: new Date().toISOString(),
+      mimeType: mimeType || null,
     },
     source: source?.trim() || null,
     title,
