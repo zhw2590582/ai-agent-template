@@ -51,6 +51,12 @@ export const enUSModelsMessages = {
       delete_title: 'Delete Custom Model',
       delete_description:
         'Delete “{model}”? This custom model entry will be removed from the provider.',
+      pagination: {
+        previous: 'Previous',
+        next: 'Next',
+        page: 'Go to page {page}',
+        summary: 'Showing {start} to {end} of {total}',
+      },
       syncing: 'Syncing models...',
     },
     actions: {

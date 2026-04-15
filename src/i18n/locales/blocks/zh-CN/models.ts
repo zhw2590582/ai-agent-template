@@ -47,6 +47,12 @@ export const zhCNModelsMessages = {
       duplicate_id: '这个模型 ID 已经存在。',
       delete_title: '删除自定义模型',
       delete_description: '确认删除 “{model}” 吗？这条自定义模型配置会被移除。',
+      pagination: {
+        previous: '上一页',
+        next: '下一页',
+        page: '跳转到第 {page} 页',
+        summary: '显示第 {start} 到 {end} 项，共 {total} 项',
+      },
       syncing: '正在同步模型列表...',
     },
     actions: {

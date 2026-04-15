@@ -198,6 +198,7 @@ export function ProviderSettingsPanel({
           <Separator />
 
           <ProviderModelList
+            key={provider.id}
             models={provider.models}
             onAddModel={onAddModel}
             onRemoveModel={onModelRemove}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type MouseEvent } from 'react';
 import { PencilIcon, PlusCircleIcon, Trash2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -25,9 +25,48 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { ModelCapabilityBadges } from '@/features/models/components/model-capability-badges';
 import { Switch } from '@/components/ui/switch';
 import type { ProviderModelItem } from '@/features/models/types';
+import { cn } from '@/lib/utils';
+
+const MODELS_PER_PAGE = 20;
+
+type PaginationEntry = number | 'ellipsis-left' | 'ellipsis-right';
+
+function buildPaginationEntries(currentPage: number, totalPages: number): PaginationEntry[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const entries: PaginationEntry[] = [1];
+  const startPage = Math.max(2, currentPage - 1);
+  const endPage = Math.min(totalPages - 1, currentPage + 1);
+
+  if (startPage > 2) {
+    entries.push('ellipsis-left');
+  }
+
+  for (let page = startPage; page <= endPage; page += 1) {
+    entries.push(page);
+  }
+
+  if (endPage < totalPages - 1) {
+    entries.push('ellipsis-right');
+  }
+
+  entries.push(totalPages);
+  return entries;
+}
 
 interface ProviderModelListProps {
   models: ProviderModelItem[];
@@ -48,7 +87,10 @@ export function ProviderModelList({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [draftModelName, setDraftModelName] = useState('');
   const [draftModelId, setDraftModelId] = useState('');
+  const [page, setPage] = useState(1);
   const normalizedDraftModelId = draftModelId.trim().toLowerCase();
+  const totalPages = Math.max(1, Math.ceil(models.length / MODELS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
   const deleteTargetModel = deleteTargetIndex == null ? null : (models[deleteTargetIndex] ?? null);
   const hasDuplicateModelId = useMemo(
     () =>
@@ -59,6 +101,27 @@ export function ProviderModelList({
       ),
     [editingIndex, models, normalizedDraftModelId]
   );
+  const paginatedModels = useMemo(() => {
+    const startIndex = (currentPage - 1) * MODELS_PER_PAGE;
+    return models
+      .slice(startIndex, startIndex + MODELS_PER_PAGE)
+      .map((model, index) => ({ index: startIndex + index, model }));
+  }, [currentPage, models]);
+  const paginationEntries = useMemo(
+    () => buildPaginationEntries(currentPage, totalPages),
+    [currentPage, totalPages]
+  );
+  const currentRangeStart = models.length === 0 ? 0 : (currentPage - 1) * MODELS_PER_PAGE + 1;
+  const currentRangeEnd = Math.min(currentPage * MODELS_PER_PAGE, models.length);
+
+  const updatePage = (page: number) => {
+    setPage(Math.min(Math.max(page, 1), totalPages));
+  };
+
+  const handlePaginationClick = (page: number) => (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    updatePage(page);
+  };
 
   const openCreateDialog = () => {
     setEditingIndex(null);
@@ -88,6 +151,7 @@ export function ProviderModelList({
         id: modelId,
         name: modelName,
       });
+      updatePage(Math.ceil((models.length + 1) / MODELS_PER_PAGE));
     } else {
       onUpdateModel(editingIndex, {
         ...models[editingIndex],
@@ -179,7 +243,7 @@ export function ProviderModelList({
         </div>
 
         <div className="divide-y overflow-hidden rounded-lg border">
-          {models.map((model, index) => (
+          {paginatedModels.map(({ model, index }) => (
             <div
               key={`${model.id || 'custom'}-${index}`}
               className="hover:bg-accent/10 flex items-start gap-4 px-4 py-4 transition-colors"
@@ -225,6 +289,58 @@ export function ProviderModelList({
             </div>
           ))}
         </div>
+
+        {models.length > MODELS_PER_PAGE ? (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-muted-foreground text-sm">
+              {t('models_page.models.pagination.summary', {
+                end: String(currentRangeEnd),
+                start: String(currentRangeStart),
+                total: String(models.length),
+              })}
+            </p>
+            <Pagination className="mx-0 w-auto justify-start sm:justify-end">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    aria-disabled={currentPage === 1}
+                    className={cn(currentPage === 1 && 'pointer-events-none opacity-50')}
+                    href="#"
+                    text={t('models_page.models.pagination.previous')}
+                    onClick={handlePaginationClick(currentPage - 1)}
+                  />
+                </PaginationItem>
+                {paginationEntries.map((entry) => (
+                  <PaginationItem key={entry}>
+                    {typeof entry === 'number' ? (
+                      <PaginationLink
+                        aria-label={t('models_page.models.pagination.page', {
+                          page: String(entry),
+                        })}
+                        href="#"
+                        isActive={entry === currentPage}
+                        onClick={handlePaginationClick(entry)}
+                      >
+                        {entry}
+                      </PaginationLink>
+                    ) : (
+                      <PaginationEllipsis />
+                    )}
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    aria-disabled={currentPage === totalPages}
+                    className={cn(currentPage === totalPages && 'pointer-events-none opacity-50')}
+                    href="#"
+                    text={t('models_page.models.pagination.next')}
+                    onClick={handlePaginationClick(currentPage + 1)}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        ) : null}
       </div>
 
       <AlertDialog
