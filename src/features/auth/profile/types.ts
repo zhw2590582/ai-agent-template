@@ -3,6 +3,7 @@ import type { McpSettings } from '@/features/mcp/types';
 import type { ModelsSettings } from '@/features/models/types';
 import type { SandboxSettings } from '@/features/sandbox/types';
 import type { SearchSettings } from '@/features/search/types';
+import type { SkillsSettings } from '@/features/skills/types';
 
 export interface MemorySettings {
   autoWrite: boolean;
@@ -19,6 +20,7 @@ export interface AppProfileSettings {
   models: ModelsSettings;
   sandbox: SandboxSettings;
   search: SearchSettings;
+  skills: SkillsSettings;
 }
 
 export interface AppProfile extends Omit<ProfileRecord, 'settings'> {

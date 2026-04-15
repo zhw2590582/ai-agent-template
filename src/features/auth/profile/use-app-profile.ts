@@ -160,6 +160,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
         models: nextModels,
         sandbox: current.settings.sandbox,
         search: current.settings.search,
+        skills: current.settings.skills,
       }),
       theme,
       updated_at: new Date().toISOString(),
@@ -234,6 +235,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
             models: current.settings.models,
             sandbox: current.settings.sandbox,
             search: updater(current.settings.search),
+            skills: current.settings.skills,
           }),
           theme,
           updated_at: new Date().toISOString(),
@@ -263,6 +265,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
             models: current.settings.models,
             sandbox: current.settings.sandbox,
             search: current.settings.search,
+            skills: current.settings.skills,
           }),
           theme,
           updated_at: new Date().toISOString(),
@@ -292,6 +295,37 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
             models: current.settings.models,
             sandbox: updater(current.settings.sandbox),
             search: current.settings.search,
+            skills: current.settings.skills,
+          }),
+          theme,
+          updated_at: new Date().toISOString(),
+        };
+
+        profileRef.current = nextProfile;
+        setProfile(nextProfile);
+
+        return persistProfile(nextProfile, { silent: options?.silent });
+      },
+    [locale, persistProfile, theme]
+  );
+
+  const updateSkillsSettings = useMemo(
+    () =>
+      async (
+        updater: (skills: AppProfile['settings']['skills']) => AppProfile['settings']['skills'],
+        options?: { silent?: boolean }
+      ) => {
+        const current = profileRef.current;
+        const nextProfile = {
+          ...current,
+          locale,
+          settings: normalizeProfileSettings({
+            memory: current.settings.memory,
+            mcp: current.settings.mcp,
+            models: current.settings.models,
+            sandbox: current.settings.sandbox,
+            search: current.settings.search,
+            skills: updater(current.settings.skills),
           }),
           theme,
           updated_at: new Date().toISOString(),
@@ -318,6 +352,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
     updateMemorySettings,
     updateSearchSettings,
     updateSandboxSettings,
+    updateSkillsSettings,
     updateProvider: actions.updateProvider,
     updateSelectedChatModelId: actions.updateSelectedChatModelId,
     updateSelectedProviderId: actions.updateSelectedProviderId,

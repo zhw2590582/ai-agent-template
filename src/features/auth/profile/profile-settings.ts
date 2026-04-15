@@ -8,6 +8,8 @@ import type { SandboxSettings } from '@/features/sandbox/types';
 import { normalizeSandboxSettings } from '@/features/sandbox/settings';
 import type { SearchSettings } from '@/features/search/types';
 import { normalizeSearchSettings } from '@/features/search/settings';
+import type { SkillsSettings } from '@/features/skills/types';
+import { normalizeSkillsSettings } from '@/features/skills/settings';
 import {
   buildCustomProviderSettings,
   buildProviderSettings,
@@ -138,6 +140,20 @@ function readMcpSettings(input: unknown): Partial<McpSettings> | undefined {
   return undefined;
 }
 
+function readSkillsSettings(input: unknown): Partial<SkillsSettings> | undefined {
+  if (
+    typeof input === 'object' &&
+    input != null &&
+    'skills' in input &&
+    typeof input.skills === 'object' &&
+    input.skills != null
+  ) {
+    return input.skills as Partial<SkillsSettings>;
+  }
+
+  return undefined;
+}
+
 function clampMemoryNumber(value: unknown, fallback: number, min: number, max: number) {
   if (typeof value !== 'number' || Number.isNaN(value)) {
     return fallback;
@@ -216,8 +232,9 @@ export function normalizeProfileSettings(input?: unknown) {
   const search = normalizeSearchSettings(readSearchSettings(input));
   const sandbox = normalizeSandboxSettings(readSandboxSettings(input));
   const mcp = normalizeMcpSettings(readMcpSettings(input));
+  const skills = normalizeSkillsSettings(readSkillsSettings(input));
 
-  return { memory, mcp, models, sandbox, search } satisfies AppProfileSettings;
+  return { memory, mcp, models, sandbox, search, skills } satisfies AppProfileSettings;
 }
 
 export function getOrderedProviders(settings: AppProfileSettings) {

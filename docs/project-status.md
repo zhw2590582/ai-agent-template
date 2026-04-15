@@ -58,9 +58,10 @@
 - 顶部工作台导航已统一成弹窗，但除聊天、Models、Memory、Search、Sandbox 外大多仍是占位内容
 - 聊天模型选择已接入，但会话级模型偏好仍保存在 `profile.settings`
 - 默认系统提示词目前仍是内置配置，后续计划交给用户自定义
-- `Sandbox` 当前已完成 workbench settings UI 和 `profile.settings.sandbox` 持久化，尚未接真实 runtime / test API / chat tools
+- `Sandbox` 当前已完成 workbench settings UI、`profile.settings.sandbox` 持久化、E2B runtime 接入和首批 tools
 - `/api/mcp` 仍保留为未来“本项目自己的 MCP server”入口
 - 当前远程 MCP 管理能力已落到 `src/features/mcp/*` 和 `/api/mcp/test`
+- `Skills` 当前已完成 workbench 管理 UI 和 `profile.settings.skills` 持久化，但还没有真实导入、兼容性解析和运行时接入
 - `server/types.ts` 已为 RAG / Planning / Multi-Agent 预留类型
 
 ### 仍是占位
@@ -68,7 +69,6 @@
 - RAG
 - Planning
 - Multi-Agent / Subagent
-- Skills 管理页
 - Settings 页面
 - E2E 自动化测试
 - 长期记忆、用户偏好、工具市场等完整产品能力

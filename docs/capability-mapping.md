@@ -15,7 +15,7 @@
 | Multi-Agent / Subagent   | 已预留边界 | 导航和页面存在，但没有真实 orchestration              | `src/features/subagent/`            |
 | Sandbox                  | 已实现 V1  | 已有设置 UI、连接测试、E2B runtime 接入与首批 tools   | `src/features/sandbox/`             |
 | MCP                      | 部分具备   | 远程 MCP tools integration 已接通，但能力仍不完整     | `src/features/mcp/`                 |
-| Skills                   | 占位       | 只有导航和占位页                                      | `src/features/skills/`              |
+| Skills                   | 部分具备   | 已有 workbench 管理 UI 和 profile 持久化，尚未接真实导入与运行时 | `src/features/skills/`              |
 | Observability            | 基础具备   | 有日志和错误处理，没有 tracing/metrics                | `src/lib/logger.ts`                 |
 | Evaluation               | 未开始     | 没有评估链路                                          | 待定                                |
 | Trustworthy AI           | 未开始     | 没有审批流、策略校验层                                | 待定                                |

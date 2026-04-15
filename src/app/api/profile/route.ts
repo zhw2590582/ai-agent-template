@@ -100,6 +100,23 @@ const profilePatchSchema = z.object({
         .optional(),
       tavilyApiKey: z.string().optional(),
     }),
+    skills: z.object({
+      enabled: z.boolean().optional(),
+      skills: z
+        .array(
+          z.object({
+            capabilities: z
+              .array(z.enum(['browser', 'fs', 'git', 'http', 'mcp', 'prompt', 'shell']))
+              .optional(),
+            description: z.string().optional(),
+            enabled: z.boolean().optional(),
+            id: z.string().optional(),
+            name: z.string().optional(),
+            sourceUrl: z.string().optional(),
+          })
+        )
+        .optional(),
+    }),
   }),
 });
 

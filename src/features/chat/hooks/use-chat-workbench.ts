@@ -52,6 +52,7 @@ export function useChatWorkbench({
     updateMcpSettings,
     updateMemorySettings,
     updateSandboxSettings,
+    updateSkillsSettings,
     updateSelectedChatModelId,
   } = models;
 
@@ -282,10 +283,12 @@ export function useChatWorkbench({
     mcpSettings: models.profile.settings.mcp,
     sandboxSettings: models.profile.settings.sandbox,
     searchSettings: models.profile.settings.search,
+    skillsSettings: models.profile.settings.skills,
     setMcpSettings: updateMcpSettings,
     setSearchSettings: models.updateSearchSettings,
     setSandboxSettings: updateSandboxSettings,
     setMemorySettings: updateMemorySettings,
+    setSkillsSettings: updateSkillsSettings,
     messages,
     regenerate: guardedRegenerate,
     renameConversation: conversationRecordActions.renameConversation,

@@ -64,6 +64,11 @@ const SandboxContent = dynamic(
   { loading: DialogContentLoading }
 );
 
+const SkillsContent = dynamic(
+  () => import('@/features/skills/components/skills-content').then((mod) => mod.SkillsContent),
+  { loading: DialogContentLoading }
+);
+
 interface ChatWorkbenchProps {
   activeView: WorkbenchView;
   initialConversationId: string | null;
@@ -202,6 +207,12 @@ export function ChatWorkbench({
               onClose={closeDialog}
               onSandboxSettingsChange={workbench.setSandboxSettings}
               settings={workbench.sandboxSettings}
+            />
+          ) : activeDialogView === 'skills' ? (
+            <SkillsContent
+              onClose={closeDialog}
+              onSkillsSettingsChange={workbench.setSkillsSettings}
+              settings={workbench.skillsSettings}
             />
           ) : (
             <WorkbenchDialogPanel
