@@ -1,6 +1,6 @@
 # Project Status
 
-最后核对时间：2026-04-14
+最后核对时间：2026-04-15
 
 ## 项目定位
 
@@ -38,6 +38,7 @@
 - Memory V1：已接入最小版单维度 memory consolidation
 - `Memory` 顶部弹窗：控制项、记忆编辑/删除/导出、会话摘要编辑/删除
 - `Search` 顶部弹窗：Tavily key 配置、Search / Extract / Crawl 三类能力设置、连接测试
+- `Sandbox` 顶部弹窗：E2B runtime 连接信息、执行策略、环境变量设置
 - `MCP` 顶部弹窗：多远程 MCP server 配置、单 server 测试、聊天时挂载 MCP tools
 - `MCP` 测试结果弹窗：可查看远程 server 的 tools / resources / prompts，以及 capabilities 支持状态
 - Tavily tools：`web_search`、`web_extract`、`web_crawl`
@@ -54,9 +55,10 @@
 
 ### 半完成
 
-- 顶部工作台导航已统一成弹窗，但除聊天、Models、Memory、Search 外大多仍是占位内容
+- 顶部工作台导航已统一成弹窗，但除聊天、Models、Memory、Search、Sandbox 外大多仍是占位内容
 - 聊天模型选择已接入，但会话级模型偏好仍保存在 `profile.settings`
 - 默认系统提示词目前仍是内置配置，后续计划交给用户自定义
+- `Sandbox` 当前已完成 workbench settings UI 和 `profile.settings.sandbox` 持久化，尚未接真实 runtime / test API / chat tools
 - `/api/mcp` 仍保留为未来“本项目自己的 MCP server”入口
 - 当前远程 MCP 管理能力已落到 `src/features/mcp/*` 和 `/api/mcp/test`
 - `server/types.ts` 已为 RAG / Planning / Multi-Agent 预留类型
@@ -66,7 +68,6 @@
 - RAG
 - Planning
 - Multi-Agent / Subagent
-- Sandbox 页面
 - Skills 管理页
 - Settings 页面
 - E2E 自动化测试
@@ -103,6 +104,8 @@ src/
 │   ├── chat/               # 聊天工作台、消息链路、会话存储
 │   ├── memory/             # 长期记忆、摘要、Memory 弹窗内容
 │   ├── models/             # provider 配置、模型同步、自定义 provider/model
+│   ├── sandbox/            # E2B runtime 配置、执行策略、环境变量
+│   ├── mcp/                # 远程 MCP server 配置、测试、tool client
 │   └── search/             # Tavily 搜索设置、连接测试、服务端 client
 ├── i18n/                   # next-intl 请求配置
 ├── lib/                    # 通用工具、错误处理、日志、Supabase client
@@ -146,6 +149,12 @@ Search tool settings
   -> src/features/search/hooks/use-search-settings.ts
   -> /api/profile
   -> profile.settings.search
+
+Sandbox settings
+  -> Sandbox dialog
+  -> src/features/sandbox/hooks/use-sandbox-settings.ts
+  -> /api/profile
+  -> profile.settings.sandbox
 
 Tavily tool execution
   -> src/features/chat/ai/tools/*
@@ -199,6 +208,9 @@ API rate limiting
 - Search 内容：[src/features/search/components/search-content.tsx](../src/features/search/components/search-content.tsx)
 - Search settings 状态：[src/features/search/hooks/use-search-settings.ts](../src/features/search/hooks/use-search-settings.ts)
 - Tavily client：[src/features/search/server/tavily-client.ts](../src/features/search/server/tavily-client.ts)
+- Sandbox 内容：[src/features/sandbox/components/sandbox-content.tsx](../src/features/sandbox/components/sandbox-content.tsx)
+- Sandbox settings 状态：[src/features/sandbox/hooks/use-sandbox-settings.ts](../src/features/sandbox/hooks/use-sandbox-settings.ts)
+- Sandbox settings normalize：[src/features/sandbox/settings.ts](../src/features/sandbox/settings.ts)
 - MCP 内容：[src/features/mcp/components/mcp-content.tsx](../src/features/mcp/components/mcp-content.tsx)
 - MCP settings 状态：[src/features/mcp/hooks/use-mcp-settings.ts](../src/features/mcp/hooks/use-mcp-settings.ts)
 - MCP client：[src/features/mcp/server/mcp-client.ts](../src/features/mcp/server/mcp-client.ts)
@@ -219,6 +231,7 @@ API rate limiting
 - provider 配置是 `profile.settings` 的一部分，不是独立数据库表
 - 当前 Memory 仍是 Supabase-first 的基础版，不包含向量检索和外部 memory provider
 - 当前 Search 使用 Tavily，不做自建向量检索或搜索索引
+- 当前 Sandbox 只做 E2B 配置管理，不做真实 sandbox lifecycle、命令执行、文件同步和 connection test
 - 当前 MCP 只做“远程 MCP tools integration”，不做 resources/prompts/elicitations，也不做本项目自己的 MCP server
 - 当前 MCP 测试弹窗虽然会展示 resources / prompts / capabilities，但这些能力还没有真正接入聊天运行时
 - 当前测试覆盖的是基础链路，不是完整产品行为
@@ -241,7 +254,7 @@ API rate limiting
 1. Memory：继续做导入/导出、相关性检索优化、记忆归并和编辑体验
 2. Models：继续补 provider 重命名、失败回滚、会话级模型偏好等细节
 3. Search：补 Tavily 错误分层、搜索结果展示、缓存与观测
-4. 页面去占位化：至少让 `Sandbox`、`MCP`、`Settings` 成为真实页面
+4. 页面去占位化：继续把 `Sandbox` 从 settings UI 推进到真实 runtime，再补 `MCP`、`Settings`
 5. 测试补齐：补聊天主链路边界、工具展示、Memory / Search 行为和 hydration 场景，之后再补 E2E
 6. 文档继续收敛：让 README、Setup、Roadmap 与代码现状同步
 

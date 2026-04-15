@@ -52,6 +52,24 @@ const profilePatchSchema = z.object({
         )
         .optional(),
     }),
+    sandbox: z.object({
+      access: z.object({
+        allowCommands: z.boolean().optional(),
+        allowFileDownload: z.boolean().optional(),
+        allowFileUpload: z.boolean().optional(),
+        allowFilesystem: z.boolean().optional(),
+        allowInternetAccess: z.boolean().optional(),
+        allowPty: z.boolean().optional(),
+      }),
+      apiKey: z.string().optional(),
+      autoPause: z.boolean().optional(),
+      enabled: z.boolean().optional(),
+      envVarsText: z.string().optional(),
+      secure: z.boolean().optional(),
+      template: z.string().optional(),
+      timeoutSeconds: z.number().int().optional(),
+      workingDirectory: z.string().optional(),
+    }),
     models: z.object({
       providers: z.record(z.string(), z.unknown()),
       selectedChatModelId: z.string().nullable().optional(),

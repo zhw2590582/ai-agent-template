@@ -4,6 +4,7 @@ import { enUSChatMessages } from '@/i18n/locales/blocks/en-US/chat';
 import { enUSMemoryMessages } from '@/i18n/locales/blocks/en-US/memory';
 import { enUSMcpMessages } from '@/i18n/locales/blocks/en-US/mcp';
 import { enUSModelsMessages } from '@/i18n/locales/blocks/en-US/models';
+import { enUSSandboxMessages } from '@/i18n/locales/blocks/en-US/sandbox';
 import { enUSSearchMessages } from '@/i18n/locales/blocks/en-US/search';
 import { enUSSharedMessages } from '@/i18n/locales/blocks/en-US/shared';
 
@@ -13,6 +14,7 @@ export const enUS: Translations = {
   ...enUSMemoryMessages,
   ...enUSMcpMessages,
   ...enUSModelsMessages,
+  ...enUSSandboxMessages,
   ...enUSSearchMessages,
   ...enUSAuthMessages,
 };

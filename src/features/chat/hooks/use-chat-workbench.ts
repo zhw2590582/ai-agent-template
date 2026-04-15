@@ -47,7 +47,12 @@ export function useChatWorkbench({
   const { user } = useAuthUser();
   const models = useAppProfile(user);
   const persistedSelectedModelId = models.profile.settings.models.selectedChatModelId;
-  const { updateMcpSettings, updateMemorySettings, updateSelectedChatModelId } = models;
+  const {
+    updateMcpSettings,
+    updateMemorySettings,
+    updateSandboxSettings,
+    updateSelectedChatModelId,
+  } = models;
 
   const starterMessages = useMemo(() => getInitialMessages(), []);
   const availableModels = useMemo(
@@ -260,9 +265,11 @@ export function useChatWorkbench({
     locale,
     memorySettings: models.profile.settings.memory,
     mcpSettings: models.profile.settings.mcp,
+    sandboxSettings: models.profile.settings.sandbox,
     searchSettings: models.profile.settings.search,
     setMcpSettings: updateMcpSettings,
     setSearchSettings: models.updateSearchSettings,
+    setSandboxSettings: updateSandboxSettings,
     setMemorySettings: updateMemorySettings,
     messages,
     regenerate: guardedRegenerate,

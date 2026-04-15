@@ -158,6 +158,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
         memory: current.settings.memory,
         mcp: current.settings.mcp,
         models: nextModels,
+        sandbox: current.settings.sandbox,
         search: current.settings.search,
       }),
       theme,
@@ -231,6 +232,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
             memory: current.settings.memory,
             mcp: current.settings.mcp,
             models: current.settings.models,
+            sandbox: current.settings.sandbox,
             search: updater(current.settings.search),
           }),
           theme,
@@ -259,6 +261,36 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
             memory: current.settings.memory,
             mcp: updater(current.settings.mcp),
             models: current.settings.models,
+            sandbox: current.settings.sandbox,
+            search: current.settings.search,
+          }),
+          theme,
+          updated_at: new Date().toISOString(),
+        };
+
+        profileRef.current = nextProfile;
+        setProfile(nextProfile);
+
+        return persistProfile(nextProfile, { silent: options?.silent });
+      },
+    [locale, persistProfile, theme]
+  );
+
+  const updateSandboxSettings = useMemo(
+    () =>
+      async (
+        updater: (sandbox: AppProfile['settings']['sandbox']) => AppProfile['settings']['sandbox'],
+        options?: { silent?: boolean }
+      ) => {
+        const current = profileRef.current;
+        const nextProfile = {
+          ...current,
+          locale,
+          settings: normalizeProfileSettings({
+            memory: current.settings.memory,
+            mcp: current.settings.mcp,
+            models: current.settings.models,
+            sandbox: updater(current.settings.sandbox),
             search: current.settings.search,
           }),
           theme,
@@ -285,6 +317,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
     updateMcpSettings,
     updateMemorySettings,
     updateSearchSettings,
+    updateSandboxSettings,
     updateProvider: actions.updateProvider,
     updateSelectedChatModelId: actions.updateSelectedChatModelId,
     updateSelectedProviderId: actions.updateSelectedProviderId,

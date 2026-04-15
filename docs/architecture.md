@@ -34,6 +34,7 @@ src/
 │   ├── memory/                 # 长期记忆、摘要与 Memory 弹窗内容
 │   ├── models/                 # provider 配置、模型同步、自定义 provider/model
 │   ├── mcp/                    # 远程 MCP server 配置、测试、tool client
+│   ├── sandbox/                # E2B runtime 配置、执行策略、环境变量
 │   └── search/                 # Tavily 搜索设置、连接测试、服务端 client
 ├── i18n/                       # next-intl 请求配置
 ├── lib/                        # 共享工具、错误处理、日志、Supabase client
@@ -128,6 +129,27 @@ src/
 - `use-search-settings.ts`: Search 弹窗的 settings controller
 - `tavily-client.ts`: Tavily 请求与错误处理统一入口
 - `chat/ai/tools/*`: 只负责 AI tool 封装，不再各自手写 Tavily fetch
+
+### `src/features/sandbox`
+
+当前已经不是纯占位，但范围还只限于“sandbox settings management”。
+
+- `components/`: Sandbox 弹窗内容、运行时概览和各设置分组
+- `hooks/`: Sandbox settings draft、保存、重置
+- `settings.ts`: Sandbox settings normalize / access 判断
+- `types.ts`: Sandbox settings 结构
+
+当前关键边界：
+
+- `use-sandbox-settings.ts`: Sandbox 弹窗的 settings controller
+- `sandbox-content.tsx`: Sandbox 设置入口与分组编排
+- `profile.settings.sandbox`: 当前唯一真实落点
+
+注意：
+
+- 当前还没有真实 E2B client
+- 还没有 `/api/sandbox/test`
+- 还没有把 sandbox runtime 接进聊天工具链
 
 ### `src/features/mcp`
 
@@ -237,6 +259,12 @@ Search UI
   -> /api/profile + /api/search/test
   -> Tavily-backed tools
 
+Sandbox UI
+  -> workbench dialog
+  -> useSandboxSettings
+  -> /api/profile
+  -> profile.settings.sandbox
+
 MCP UI
   -> workbench dialog
   -> useMcpSettings
@@ -269,13 +297,13 @@ OAuth sign-in
 - Supabase 登录和会话持久化
 - route-level API rate limiting
 - 基础配置、错误处理、日志
+- Sandbox settings UI 与持久化
 
 还没形成真实模块的部分：
 
 - rag
 - agents / subagents
-- sandbox
-- mcp 管理
+- sandbox runtime
 - skills 管理
 - settings
 

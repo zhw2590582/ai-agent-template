@@ -59,6 +59,11 @@ const SearchContent = dynamic(
   { loading: DialogContentLoading }
 );
 
+const SandboxContent = dynamic(
+  () => import('@/features/sandbox/components/sandbox-content').then((mod) => mod.SandboxContent),
+  { loading: DialogContentLoading }
+);
+
 interface ChatWorkbenchProps {
   activeView: WorkbenchView;
   initialConversationId: string | null;
@@ -191,6 +196,12 @@ export function ChatWorkbench({
               onClose={closeDialog}
               onSearchSettingsChange={workbench.setSearchSettings}
               settings={workbench.searchSettings}
+            />
+          ) : activeDialogView === 'sandbox' ? (
+            <SandboxContent
+              onClose={closeDialog}
+              onSandboxSettingsChange={workbench.setSandboxSettings}
+              settings={workbench.sandboxSettings}
             />
           ) : (
             <WorkbenchDialogPanel

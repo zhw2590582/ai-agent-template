@@ -36,6 +36,10 @@ function getDialogDescriptionKey(view: Exclude<WorkbenchView, 'chat'>) {
     return 'search_page.description';
   }
 
+  if (view === 'sandbox') {
+    return 'sandbox_page.description';
+  }
+
   return `placeholders.${view}.description`;
 }
 

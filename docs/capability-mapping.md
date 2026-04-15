@@ -13,7 +13,8 @@
 | RAG                      | 已预留边界 | 还没有检索和来源展示                                  | `src/features/rag/`                 |
 | Planning                 | 已预留边界 | 类型和导航边界存在，功能未落地                        | `src/features/chat/server/types.ts` |
 | Multi-Agent / Subagent   | 已预留边界 | 导航和页面存在，但没有真实 orchestration              | `src/features/subagent/`            |
-| MCP                      | 占位       | 只有占位页面和占位 API                                | `src/app/api/mcp/route.ts`          |
+| Sandbox                  | 部分具备   | 已有设置 UI 和 profile 持久化，还未接真实 runtime     | `src/features/sandbox/`             |
+| MCP                      | 部分具备   | 远程 MCP tools integration 已接通，但能力仍不完整     | `src/features/mcp/`                 |
 | Skills                   | 占位       | 只有导航和占位页                                      | `src/features/skills/`              |
 | Observability            | 基础具备   | 有日志和错误处理，没有 tracing/metrics                | `src/lib/logger.ts`                 |
 | Evaluation               | 未开始     | 没有评估链路                                          | 待定                                |

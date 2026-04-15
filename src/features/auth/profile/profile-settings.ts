@@ -4,6 +4,8 @@ import type { AppProfileSettings, MemorySettings } from '@/features/auth/profile
 import type { McpSettings } from '@/features/mcp/types';
 import { normalizeMcpSettings } from '@/features/mcp/settings';
 import type { ModelsSettings, ProviderSettings } from '@/features/models/types';
+import type { SandboxSettings } from '@/features/sandbox/types';
+import { normalizeSandboxSettings } from '@/features/sandbox/settings';
 import type { SearchSettings } from '@/features/search/types';
 import { normalizeSearchSettings } from '@/features/search/settings';
 import {
@@ -108,6 +110,20 @@ function readSearchSettings(input: unknown): Partial<SearchSettings> | undefined
   return undefined;
 }
 
+function readSandboxSettings(input: unknown): Partial<SandboxSettings> | undefined {
+  if (
+    typeof input === 'object' &&
+    input != null &&
+    'sandbox' in input &&
+    typeof input.sandbox === 'object' &&
+    input.sandbox != null
+  ) {
+    return input.sandbox as Partial<SandboxSettings>;
+  }
+
+  return undefined;
+}
+
 function readMcpSettings(input: unknown): Partial<McpSettings> | undefined {
   if (
     typeof input === 'object' &&
@@ -198,9 +214,10 @@ export function normalizeProfileSettings(input?: unknown) {
   };
 
   const search = normalizeSearchSettings(readSearchSettings(input));
+  const sandbox = normalizeSandboxSettings(readSandboxSettings(input));
   const mcp = normalizeMcpSettings(readMcpSettings(input));
 
-  return { memory, mcp, models, search } satisfies AppProfileSettings;
+  return { memory, mcp, models, sandbox, search } satisfies AppProfileSettings;
 }
 
 export function getOrderedProviders(settings: AppProfileSettings) {
