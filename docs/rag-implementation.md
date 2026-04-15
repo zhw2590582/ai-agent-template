@@ -11,19 +11,20 @@
 - 基于 embeddings 的 similarity retrieval
 - 聊天请求里的 retrieval context 注入
 - 当前检索范围固定为当前用户自己的 RAG 数据，不提供知识库级筛选输入
+- 文本导入 API：`title + source + content -> chunk -> embed -> store`
+- RAG workbench 里的最小文档管理 UI
+- 聊天消息里的来源卡片展示
 
 当前 **未实现**：
 
-- 文档上传 UI
-- 文档切块和导入 UI
-- source 引用展示 UI
+- 文件上传 UI
 - 自动 embeddings pipeline
 - agentic RAG / query rewrite / rerank
 
 ## 技术选择
 
 - 向量存储：`Supabase Postgres + pgvector`
-- query embedding：`AI SDK embed() + @ai-sdk/openai`
+- embedding provider：当前仍通过 `AI SDK + @ai-sdk/openai` 的兼容层调用，后续会抽成可替换 provider
 - 聊天注入：`chat-request-context -> generateText workflow`
 
 ## 环境变量
@@ -52,7 +53,7 @@
 
 ## 下一步
 
-1. 文档导入 API
-2. chunking + embeddings 写入
-3. RAG workbench settings UI
-4. source cards / citations UI
+1. 文件上传导入（pdf / md / txt）
+2. provider abstraction（Voyage / OpenAI-compatible / others）
+3. rerank
+4. source cards 的交互增强

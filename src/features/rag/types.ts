@@ -6,6 +6,13 @@ export interface RagSettings {
   maxContextCharacters: number;
 }
 
+export interface RagDocumentMetadata {
+  characterCount?: number;
+  chunkCount?: number;
+  excerpt?: string;
+  importedAt?: string;
+}
+
 export interface RagKnowledgeBase {
   created_at: string;
   description: string | null;
@@ -20,7 +27,7 @@ export interface RagDocument {
   created_at: string;
   id: string;
   knowledge_base_id: string;
-  metadata: Record<string, unknown>;
+  metadata: RagDocumentMetadata;
   source: string | null;
   title: string;
   updated_at: string;
@@ -44,6 +51,15 @@ export interface RetrievedRagChunk {
   id: string;
   knowledgeBaseId: string;
   metadata: Record<string, unknown>;
+  score: number;
+  source: string | null;
+}
+
+export interface RagSourceItem {
+  content: string;
+  documentId: string;
+  documentTitle: string;
+  id: string;
   score: number;
   source: string | null;
 }

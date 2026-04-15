@@ -53,6 +53,10 @@ export const enUSChatMessages = {
       title: 'What do you want the agent to help with today?',
       description: '',
     },
+    rag_sources: {
+      reference: 'KB{index}',
+      title: 'Sources',
+    },
     status: {
       ready: 'Ready',
       thinking: 'Thinking...',

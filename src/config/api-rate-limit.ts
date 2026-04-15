@@ -45,8 +45,16 @@ export const API_RATE_LIMITS = {
     maxRequests: 30,
     windowMs: API_CONFIG.RATE_LIMIT_WINDOW,
   },
+  RAG_READ: {
+    maxRequests: 30,
+    windowMs: API_CONFIG.RATE_LIMIT_WINDOW,
+  },
   RAG_TEST: {
     maxRequests: 12,
+    windowMs: API_CONFIG.RATE_LIMIT_WINDOW,
+  },
+  RAG_WRITE: {
+    maxRequests: 20,
     windowMs: API_CONFIG.RATE_LIMIT_WINDOW,
   },
   SEARCH_TEST: {

@@ -1,47 +1,24 @@
-import { embed } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { env } from '@/config/env';
-import { RAG_CONFIG } from '@/config/rag';
 import type { Database } from '@/lib/supabase/database.types';
 import { logger } from '@/lib/logger';
+import {
+  embedQueryWithProvider,
+  hasResolvedEmbeddingAccess,
+} from '@/features/rag/server/embeddings';
 import { matchRagChunks } from '@/features/rag/storage/rag-repository';
 import type { RagSettings, RetrievedRagChunk } from '@/features/rag/types';
-
-function getResolvedEmbeddingApiKey(apiKey: string) {
-  return apiKey.trim() || env.RAG_EMBEDDING_API_KEY || '';
-}
 
 function toVectorLiteral(embedding: number[]) {
   return `[${embedding.join(',')}]`;
 }
 
 export async function generateQueryEmbedding(query: string, apiKey: string) {
-  const resolvedApiKey = getResolvedEmbeddingApiKey(apiKey);
-
-  if (!resolvedApiKey || !env.RAG_EMBEDDING_MODEL) {
+  if (!hasResolvedEmbeddingAccess(apiKey)) {
     throw new Error('RAG embedding configuration is missing.');
   }
 
-  const provider = createOpenAI({
-    apiKey: resolvedApiKey,
-    baseURL: env.RAG_EMBEDDING_BASE_URL || undefined,
-    name: 'rag-embedding',
-  });
-
-  const { embedding } = await embed({
-    model: provider.embedding(env.RAG_EMBEDDING_MODEL),
-    value: query,
-  });
-
-  if (embedding.length !== RAG_CONFIG.EMBEDDING_DIMENSIONS) {
-    throw new Error(
-      `RAG embedding dimension mismatch. Expected ${RAG_CONFIG.EMBEDDING_DIMENSIONS}, received ${embedding.length}.`
-    );
-  }
-
-  return embedding;
+  return embedQueryWithProvider(query, apiKey);
 }
 
 export async function retrieveRelevantChunks({
@@ -59,7 +36,7 @@ export async function retrieveRelevantChunks({
     return [];
   }
 
-  if (!getResolvedEmbeddingApiKey(ragSettings.apiKey) || !env.RAG_EMBEDDING_MODEL) {
+  if (!hasResolvedEmbeddingAccess(ragSettings.apiKey)) {
     logger.warn('RAG retrieval skipped: embedding configuration missing');
     return [];
   }

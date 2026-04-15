@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import { RagConnectionSection } from '@/features/rag/components/rag-connection-section';
+import { RagDocumentList } from '@/features/rag/components/rag-document-list';
+import { RagImportSection } from '@/features/rag/components/rag-import-section';
 import { RagRetrievalSection } from '@/features/rag/components/rag-retrieval-section';
+import { useRagDocuments } from '@/features/rag/hooks/use-rag-documents';
 import { useRagSettings } from '@/features/rag/hooks/use-rag-settings';
 import type { RagSettings } from '@/features/rag/types';
 
@@ -40,6 +43,13 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
     testFailedMessage: t('rag_page.toast.test_failed'),
     testSuccessMessage: (dimensions) => t('rag_page.toast.test_success', { dimensions }),
   });
+  const { deleteDocument, documents, importDocument, isDeletingId, isImporting, isLoading } =
+    useRagDocuments({
+      deleteFailedMessage: t('rag_page.toast.delete_failed'),
+      deleteSuccessMessage: t('rag_page.toast.delete_success'),
+      importFailedMessage: t('rag_page.toast.import_failed'),
+      importSuccessMessage: (count) => t('rag_page.toast.import_success', { count }),
+    });
 
   return (
     <WorkbenchDialogPanel
@@ -94,6 +104,17 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
             settings={localSettings}
             onToggleApiKeyVisibility={() => setIsApiKeyVisible((current) => !current)}
             onUpdateSettings={updateSettings}
+          />
+          <RagImportSection
+            apiKey={localSettings.apiKey}
+            isImporting={isImporting}
+            onImport={importDocument}
+          />
+          <RagDocumentList
+            documents={documents}
+            isDeletingId={isDeletingId}
+            isLoading={isLoading}
+            onDelete={deleteDocument}
           />
           <RagRetrievalSection settings={localSettings} onUpdateSettings={updateSettings} />
         </section>

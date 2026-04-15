@@ -17,6 +17,7 @@ import { getMessageText } from '@/features/chat/storage/conversation-analysis';
 import { assertChatCapableRuntimeModel } from '@/features/models/utils/model-capabilities';
 import { buildRagContext, retrieveRelevantChunks } from '@/features/rag/server/retrieval';
 import { hasRagAccess } from '@/features/rag/settings';
+import type { RagSourceItem } from '@/features/rag/types';
 
 export const maxDuration = AI_CONFIG.CHAT_MAX_DURATION;
 
@@ -70,6 +71,7 @@ export async function handleChatPost(request: Request) {
     });
 
     let ragContext: string | null = null;
+    let ragSources: RagSourceItem[] = [];
     if (user && resolvedRagSettings && hasRagAccess(resolvedRagSettings)) {
       const latestUserMessage = [...(messages as unknown as UIMessage[])]
         .reverse()
@@ -85,6 +87,14 @@ export async function handleChatPost(request: Request) {
             userId: user.id,
           });
           ragContext = buildRagContext(retrievedChunks, resolvedRagSettings);
+          ragSources = retrievedChunks.map((chunk) => ({
+            content: chunk.content,
+            documentId: chunk.documentId,
+            documentTitle: chunk.documentTitle,
+            id: chunk.id,
+            score: chunk.score,
+            source: chunk.source,
+          }));
         } catch (ragError) {
           logger.warn('Chat request: failed to retrieve RAG context', {
             error: ragError instanceof Error ? ragError.message : String(ragError),
@@ -116,6 +126,15 @@ export async function handleChatPost(request: Request) {
     result.consumeStream();
 
     return result.toUIMessageStreamResponse({
+      messageMetadata: ({ part }) => {
+        if (part.type !== 'finish' || ragSources.length === 0) {
+          return undefined;
+        }
+
+        return {
+          ragSources,
+        };
+      },
       originalMessages: messages as unknown as UIMessage[],
       onFinish: createChatFinishHandler({
         closeAgentResources,

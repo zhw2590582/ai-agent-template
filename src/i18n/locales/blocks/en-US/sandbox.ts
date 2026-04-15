@@ -3,14 +3,14 @@ export const enUSSandboxMessages = {
     title: 'Sandbox',
     description:
       'Configure an isolated E2B runtime for file work, command execution, and future skill compatibility.',
-    get_api_key: 'Get API key',
+    get_api_key: 'Get API Key',
     test_connection: 'Test connection',
     enabled_label: 'Enable sandbox runtime',
     enabled_description:
       'Allow the assistant to use an isolated E2B environment for command execution and file work.',
-    api_key_label: 'E2B API key',
+    api_key_label: 'E2B API Key',
     api_key_description: 'Saved to your profile and reserved for your own sandbox sessions.',
-    api_key_placeholder: 'Enter your E2B API key',
+    api_key_placeholder: 'Enter your E2B API Key',
     api_key_hint: 'Keep sandbox disabled until your runtime and policies are ready.',
     runtime_title: 'Runtime',
     runtime_description:

@@ -23,7 +23,7 @@ export const enUSModelsMessages = {
     fields: {
       api_key: 'API Key',
       get_api_key: 'Get API Key',
-      api_key_placeholder: 'Enter your API key',
+      api_key_placeholder: 'Enter your API Key',
       base_url: 'API Base URL',
       api_format: 'API Format',
       api_format_hint:
@@ -65,12 +65,12 @@ export const enUSModelsMessages = {
     },
     toast: {
       load_failed: 'Failed to load model settings.',
-      provider_config_required: 'Enter the API key and base URL first.',
+      provider_config_required: 'Enter the API Key and base URL first.',
       save_failed: 'Failed to save model settings.',
       save_success: 'Model settings saved.',
       test_connection_success: 'Connection succeeded and synced {count} models.',
       test_connection_failed:
-        'Connection failed. Check the API key, base URL, and protocol format.',
+        'Connection failed. Check the API Key, base URL, and protocol format.',
     },
   },
 } as const;

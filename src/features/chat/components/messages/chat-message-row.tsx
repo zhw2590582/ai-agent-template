@@ -5,6 +5,7 @@ import type { UIMessage } from 'ai';
 
 import { ChatMessageActions } from '@/features/chat/components/messages/chat-message-actions';
 import { ChatMessageParts } from '@/features/chat/components/messages/chat-message-parts';
+import { ChatRagSources } from '@/features/chat/components/messages/chat-rag-sources';
 import { getTextContent } from '@/features/chat/utils/message-utils';
 import { cn } from '@/lib/utils';
 
@@ -41,6 +42,7 @@ export const ChatMessageRow = memo(function ChatMessageRow({
         message={message}
         messageKey={messageKey}
       />
+      {message.role === 'assistant' ? <ChatRagSources message={message} /> : null}
       <ChatMessageActions
         isLastAssistant={isLastAssistant}
         onCopy={onCopy}

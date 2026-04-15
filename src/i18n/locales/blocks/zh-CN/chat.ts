@@ -52,6 +52,10 @@ export const zhCNChatMessages = {
       title: '今天想让 agent 帮你做什么？',
       description: '',
     },
+    rag_sources: {
+      reference: 'KB{index}',
+      title: '来源',
+    },
     status: {
       ready: '就绪',
       thinking: '思考中...',
