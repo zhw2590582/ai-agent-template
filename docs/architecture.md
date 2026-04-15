@@ -38,7 +38,7 @@ src/
 │   └── search/                 # Tavily 搜索设置、连接测试、服务端 client
 ├── i18n/                       # next-intl 请求配置
 ├── lib/                        # 共享工具、错误处理、日志、Supabase client
-└── middleware.ts               # locale 检测和 session 更新
+└── proxy.ts                    # locale 检测和 session 更新
 ```
 
 ## 模块职责
