@@ -25,6 +25,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { ModelCapabilityBadges } from '@/features/models/components/model-capability-badges';
 import { Switch } from '@/components/ui/switch';
 import type { ProviderModelItem } from '@/features/models/types';
 
@@ -186,6 +187,7 @@ export function ProviderModelList({
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium">{model.name || model.id}</div>
                 <div className="text-muted-foreground mt-1 truncate text-sm">{model.id}</div>
+                <ModelCapabilityBadges className="mt-2" capabilities={model.capabilities} />
               </div>
               <div className="flex shrink-0 items-center gap-2 self-center">
                 <Switch

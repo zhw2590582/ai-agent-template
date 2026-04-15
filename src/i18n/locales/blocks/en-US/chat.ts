@@ -66,6 +66,8 @@ export const enUSChatMessages = {
       send_message_failed: 'Failed to send message',
       load_more_failed: 'Failed to load more conversations',
       model_not_configured: 'No model is available yet. Configure one on the Models page first.',
+      model_not_chat_capable:
+        'The selected model does not support text chat. Switch to a chat model and try again.',
       rename_conversation_failed: 'Failed to rename conversation',
     },
     toast: {

@@ -226,6 +226,7 @@ API rate limiting
 ## 已知现实约束
 
 - 聊天能力依赖用户先在顶部 `Models` 弹窗里完成 provider 和模型配置
+- 当前聊天主链路仍只支持 `text chat` 模型；`image generation`、`TTS / audio` 等能力只做了轻量 capability 标记与 UI 展示，还没有接入独立运行时
 - 未配置 Supabase 时，登录和会话持久化不可用
 - 当前 `profiles`、`conversations`、`memories` 表都已接上真实业务
 - provider 配置是 `profile.settings` 的一部分，不是独立数据库表

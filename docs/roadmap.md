@@ -49,10 +49,12 @@
 2. provider 配置和默认策略
 3. 模型可用性检查
 4. 失败回退策略
+5. 为后续 `image generation`、`TTS / audio` 留出独立能力接入点，但不在当前 chat runtime 内混接
 
 推荐落点：
 
 - `src/features/chat/ai/core/models.ts`
+- `src/features/models/`
 - `src/config/app.ts`
 - 需要时再拆新的模型配置文件
 

@@ -34,6 +34,14 @@ export const zhCNModelsMessages = {
     models: {
       title: '可用模型列表',
       description: '同步到的模型可以直接启用，也可以补充自己的自定义模型。',
+      capabilities: {
+        audio: '音频',
+        chat: '文本聊天',
+        embedding: '向量嵌入',
+        image: '图像生成',
+        moderation: '内容审核',
+        unknown: '专用或未知能力',
+      },
       name_placeholder: '模型显示名称',
       id_placeholder: '模型 ID，例如 gpt-4.1-mini',
       duplicate_id: '这个模型 ID 已经存在。',

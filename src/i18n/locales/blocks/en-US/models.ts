@@ -37,6 +37,14 @@ export const enUSModelsMessages = {
       title: 'Available Models',
       description:
         'Synced models can be enabled directly, and you can add your own custom models too.',
+      capabilities: {
+        audio: 'Audio',
+        chat: 'Text chat',
+        embedding: 'Embedding',
+        image: 'Image generation',
+        moderation: 'Moderation',
+        unknown: 'Specialized or unknown',
+      },
       name_placeholder: 'Display name',
       id_placeholder: 'Model ID, for example gpt-4.1-mini',
       duplicate_id: 'This model ID already exists.',

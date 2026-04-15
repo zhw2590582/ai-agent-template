@@ -22,6 +22,7 @@ import { useChatSync } from '@/features/chat/hooks/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/hooks/use-sidebar-conversations';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { getInitialMessages } from '@/features/chat/utils/chat-config';
+import { isChatCapableModel } from '@/features/models/utils/model-capabilities';
 import { getChatModelOptions } from '@/features/models/utils/runtime-model';
 
 interface UseChatWorkbenchOptions {
@@ -127,6 +128,10 @@ export function useChatWorkbench({
     },
     profileSettings: models.profile.settings,
   });
+  const selectedModelOption = useMemo(
+    () => availableModels.find((model) => model.id === selectedModel) ?? null,
+    [availableModels, selectedModel]
+  );
 
   const isBusy = status === 'submitted' || status === 'streaming';
 
@@ -219,9 +224,14 @@ export function useChatWorkbench({
         return;
       }
 
+      if (selectedModelOption && !isChatCapableModel(selectedModelOption)) {
+        toast.error(t('chat.errors.model_not_chat_capable'));
+        return;
+      }
+
       handleSubmit(event);
     },
-    [handleSubmit, models.isLoading, runtimeModel, t]
+    [handleSubmit, models.isLoading, runtimeModel, selectedModelOption, t]
   );
 
   const guardedRegenerate = useCallback(() => {
@@ -234,8 +244,13 @@ export function useChatWorkbench({
       return;
     }
 
+    if (selectedModelOption && !isChatCapableModel(selectedModelOption)) {
+      toast.error(t('chat.errors.model_not_chat_capable'));
+      return;
+    }
+
     void regenerate();
-  }, [models.isLoading, regenerate, runtimeModel, t]);
+  }, [models.isLoading, regenerate, runtimeModel, selectedModelOption, t]);
 
   useChatBrowserTitle(t('common.app_name'), activeConversationTitle);
 

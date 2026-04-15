@@ -49,6 +49,7 @@ export interface ChatRuntimeModel {
 }
 
 export interface ChatModelOption {
+  capabilities?: ModelCapability[];
   id: string;
   modelId: string;
   providerId: string;

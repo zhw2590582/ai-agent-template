@@ -65,6 +65,7 @@ export const zhCNChatMessages = {
       send_message_failed: '发送消息失败，请重试',
       load_more_failed: '加载更多对话失败',
       model_not_configured: '还没有可用模型，请先去模型页面完成配置。',
+      model_not_chat_capable: '当前选中的模型不支持文本聊天，请切换到聊天模型后重试。',
       rename_conversation_failed: '重命名对话失败，请重试',
     },
     toast: {
