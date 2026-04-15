@@ -5,6 +5,7 @@ import { DEFAULT_LOCALE } from '@/config/i18n';
 import { API_NAMESPACES } from '@/config/namespaces';
 import { generateConversationSummary } from '@/features/chat/ai/memory/summary';
 import { chatSummaryPostSchema } from '@/features/chat/server/schemas';
+import { assertChatCapableRuntimeModel } from '@/features/models/utils/model-capabilities';
 import { handleErrorWithLocale } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { validateRequest } from '@/lib/validation';
@@ -20,6 +21,7 @@ export async function POST(request: Request) {
       request,
       chatSummaryPostSchema
     );
+    assertChatCapableRuntimeModel(runtimeModel);
 
     const summary = await generateConversationSummary(messages as unknown as UIMessage[], {
       existingSummary,

@@ -5,6 +5,7 @@ import type {
   ProviderSettings,
 } from '@/features/models/types';
 import type { AppProfileSettings } from '@/features/auth/profile/types';
+import { isChatCapableModel } from '@/features/models/utils/model-capabilities';
 
 export function normalizeProviderBaseUrl(
   apiFormat: ProviderSettings['apiFormat'],
@@ -30,7 +31,7 @@ function isProviderConfigured(provider: ProviderSettings) {
 }
 
 function isModelConfigured(model: ProviderModelItem) {
-  return model.enabled && model.id.trim().length > 0;
+  return model.enabled && model.id.trim().length > 0 && isChatCapableModel(model);
 }
 
 export function getChatModelOptions(settings: AppProfileSettings): ChatModelOption[] {

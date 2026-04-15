@@ -44,11 +44,12 @@ export function ChatMessageList({
   status,
 }: ChatMessageListProps) {
   const t = useTranslations();
-  const errorMessage = error
-    ? isChatRateLimitError(error)
-      ? t('chat.errors.rate_limit')
-      : t('chat.errors.request_failed')
-    : null;
+  const errorMessage =
+    messages.length > 0 && error
+      ? isChatRateLimitError(error)
+        ? t('chat.errors.rate_limit')
+        : t('chat.errors.request_failed')
+      : null;
   const lastAssistantMessageId = [...messages]
     .reverse()
     .find((message) => message.role === 'assistant')?.id;

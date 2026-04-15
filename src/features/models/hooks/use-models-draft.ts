@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { AppProfileSettings } from '@/features/auth/profile/types';
 import { getOrderedProviders } from '@/features/auth/profile/profile-settings';
 import type { ModelsSettings, ProviderModelItem } from '@/features/models/types';
+import { inferModelCapabilities } from '@/features/models/utils/model-capabilities';
 import { buildCustomProviderSettings } from '@/features/models/utils/provider-factories';
 
 function cloneModelsSettings(models: ModelsSettings): ModelsSettings {
@@ -78,7 +79,7 @@ export function useModelsDraft({
   );
 
   const handleAddModel = useCallback(
-    (model: Pick<ProviderModelItem, 'id' | 'name'>) => {
+    (model: Pick<ProviderModelItem, 'capabilities' | 'id' | 'name'>) => {
       if (!selectedProvider) {
         return;
       }
@@ -88,6 +89,7 @@ export function useModelsDraft({
         models: [
           ...provider.models,
           {
+            capabilities: model.capabilities ?? [...inferModelCapabilities(model.id)],
             enabled: true,
             id: model.id,
             isCustom: true,

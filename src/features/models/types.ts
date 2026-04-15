@@ -1,6 +1,8 @@
 export type ModelApiFormat = 'anthropic' | 'openai';
+export type ModelCapability = 'audio' | 'chat' | 'embedding' | 'image' | 'moderation' | 'unknown';
 
 export interface ProviderModelItem {
+  capabilities?: ModelCapability[];
   enabled: boolean;
   id: string;
   isCustom?: boolean;
@@ -56,5 +58,5 @@ export interface ChatModelOption {
 
 export interface ProviderProbeResult {
   latencyMs: number;
-  models: Array<Pick<ProviderModelItem, 'id' | 'name'>>;
+  models: Array<Pick<ProviderModelItem, 'capabilities' | 'id' | 'name'>>;
 }

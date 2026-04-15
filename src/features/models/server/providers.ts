@@ -1,7 +1,11 @@
-import { MODEL_SYNC_CONFIG } from '@/config/models';
 import { AppError, ErrorCode } from '@/lib/errors';
 import { logger } from '@/lib/logger';
-import type { ModelApiFormat, ProviderProbeResult } from '@/features/models/types';
+import type {
+  ModelApiFormat,
+  ProviderModelItem,
+  ProviderProbeResult,
+} from '@/features/models/types';
+import { inferModelCapabilities } from '@/features/models/utils/model-capabilities';
 import { normalizeProviderBaseUrl } from '@/features/models/utils/runtime-model';
 
 interface ProbeProviderOptions {
@@ -56,11 +60,7 @@ function normalizeModelName(id: string) {
 }
 
 function isChatCapableModelId(id: string) {
-  const normalizedId = id.trim().toLowerCase();
-
-  return !MODEL_SYNC_CONFIG.EXCLUDED_MODEL_ID_SEGMENTS.some((segment) =>
-    normalizedId.includes(segment)
-  );
+  return inferModelCapabilities(id).includes('chat');
 }
 
 function parseModelsPayload(payload: unknown) {
@@ -73,25 +73,28 @@ function parseModelsPayload(payload: unknown) {
     return [];
   }
 
-  return payload.data
-    .map((item) => {
-      if (typeof item !== 'object' || item == null || typeof item.id !== 'string') {
-        return null;
-      }
+  const models: Array<Pick<ProviderModelItem, 'capabilities' | 'id' | 'name'>> = [];
 
-      const displayName =
-        typeof item.display_name === 'string'
-          ? item.display_name
-          : typeof item.name === 'string'
-            ? item.name
-            : normalizeModelName(item.id);
+  for (const item of payload.data) {
+    if (typeof item !== 'object' || item == null || typeof item.id !== 'string') {
+      continue;
+    }
 
-      return {
-        id: item.id,
-        name: displayName,
-      };
-    })
-    .filter((item): item is { id: string; name: string } => item != null);
+    const displayName =
+      typeof item.display_name === 'string'
+        ? item.display_name
+        : typeof item.name === 'string'
+          ? item.name
+          : normalizeModelName(item.id);
+
+    models.push({
+      capabilities: [...inferModelCapabilities(item.id)],
+      id: item.id,
+      name: displayName,
+    });
+  }
+
+  return models;
 }
 
 export async function probeProviderModels({

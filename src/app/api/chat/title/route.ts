@@ -3,6 +3,7 @@ import { DEFAULT_LOCALE } from '@/config/i18n';
 import { API_NAMESPACES } from '@/config/namespaces';
 import { generateConversationTitle } from '@/features/chat/ai/memory/title';
 import { chatTitlePostSchema } from '@/features/chat/server/schemas';
+import { assertChatCapableRuntimeModel } from '@/features/models/utils/model-capabilities';
 import { handleErrorWithLocale } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { validateRequest } from '@/lib/validation';
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
     });
 
     const { input, locale, runtimeModel } = await validateRequest(request, chatTitlePostSchema);
+    assertChatCapableRuntimeModel(runtimeModel);
     const title = await generateConversationTitle(input, {
       locale: locale ?? DEFAULT_LOCALE,
       runtimeModel,

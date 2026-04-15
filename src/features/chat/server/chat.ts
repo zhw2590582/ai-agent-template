@@ -12,6 +12,7 @@ import {
   resolveChatRequestLocale,
 } from '@/features/chat/server/chat-request-context';
 import { chatPostSchema } from '@/features/chat/server/schemas';
+import { assertChatCapableRuntimeModel } from '@/features/models/utils/model-capabilities';
 
 export const maxDuration = AI_CONFIG.CHAT_MAX_DURATION;
 
@@ -37,6 +38,8 @@ export async function handleChatPost(request: Request) {
         400
       );
     }
+
+    assertChatCapableRuntimeModel(runtimeModel);
 
     const supabase = await createSupabaseServerClient();
     const {

@@ -23,7 +23,9 @@ export function useProviderProbe({
   const mergeProviderModels = useCallback(
     (
       existingModels: ProviderSettings['models'],
-      incomingModels: Array<Pick<ProviderSettings['models'][number], 'id' | 'name'>>
+      incomingModels: Array<
+        Pick<ProviderSettings['models'][number], 'capabilities' | 'id' | 'name'>
+      >
     ) => {
       if (incomingModels.length === 0) {
         return existingModels;
@@ -33,6 +35,7 @@ export function useProviderProbe({
       const syncedModels: ProviderSettings['models'] = incomingModels.map((model) => {
         const existing = existingModelMap.get(model.id);
         return {
+          capabilities: model.capabilities,
           enabled: existing?.enabled ?? true,
           id: model.id,
           name: model.name,

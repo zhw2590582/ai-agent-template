@@ -1,5 +1,6 @@
 import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
 import type { ProviderModelItem, ProviderSettings } from '@/features/models/types';
+import { inferProviderModelItemCapabilities } from '@/features/models/utils/model-capabilities';
 
 function slugifyProviderId(value: string) {
   return value
@@ -27,6 +28,7 @@ function buildProviderModels(existing?: ProviderModelItem[]) {
   }
 
   return existing.map((model) => ({
+    capabilities: [...inferProviderModelItemCapabilities(model)],
     enabled: model.enabled ?? true,
     id: model.id,
     isCustom: model.isCustom ?? false,
