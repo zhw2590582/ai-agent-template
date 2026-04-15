@@ -1,14 +1,4 @@
-import {
-  BotIcon,
-  BrainIcon,
-  DatabaseIcon,
-  FlaskConicalIcon,
-  GlobeIcon,
-  PlugIcon,
-  ServerIcon,
-  SettingsIcon,
-  ShieldEllipsisIcon,
-} from 'lucide-react';
+import { SettingsIcon } from 'lucide-react';
 
 import { LanguageSwitcher } from '@/features/chat/components/preferences/language-switcher';
 import { ThemeToggle } from '@/features/chat/components/preferences/theme-toggle';
@@ -16,17 +6,6 @@ import { Button } from '@/components/ui/button';
 import { HEADER_NAV_ITEMS } from '@/config/navigation';
 import { AuthDialog } from '@/features/auth/components/auth-dialog';
 import type { WorkbenchView } from '@/features/chat/types';
-
-const NAV_ICONS = {
-  models: PlugIcon,
-  subagent: BotIcon,
-  sandbox: FlaskConicalIcon,
-  mcp: ServerIcon,
-  skills: ShieldEllipsisIcon,
-  rag: DatabaseIcon,
-  memory: BrainIcon,
-  search: GlobeIcon,
-} as const;
 
 type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
 
@@ -43,7 +22,7 @@ export function ChatTopBar({ activeView, onOpenView, t }: ChatTopBarProps) {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             {HEADER_NAV_ITEMS.map((item) => {
-              const Icon = NAV_ICONS[item.id];
+              const Icon = item.icon;
 
               return (
                 <Button

@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { getHeaderNavItem } from '@/config/navigation';
 import type { WorkbenchView } from '@/features/chat/types';
 
 type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
@@ -44,6 +45,8 @@ function getDialogDescriptionKey(view: Exclude<WorkbenchView, 'chat'>) {
 }
 
 export function WorkbenchDialog({ children, onOpenChange, open, t, view }: WorkbenchDialogProps) {
+  const Icon = view === 'settings' ? null : getHeaderNavItem(view).icon;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -51,8 +54,9 @@ export function WorkbenchDialog({ children, onOpenChange, open, t, view }: Workb
         showCloseButton
       >
         <DialogHeader className="shrink-0 border-b px-6 py-4 pr-12">
-          <DialogTitle className="text-2xl font-semibold tracking-tight">
-            {t(`navigation.${view}`)}
+          <DialogTitle className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+            {Icon ? <Icon className="size-6 shrink-0" /> : null}
+            <span>{t(`navigation.${view}`)}</span>
           </DialogTitle>
           <DialogDescription>{t(getDialogDescriptionKey(view))}</DialogDescription>
         </DialogHeader>
