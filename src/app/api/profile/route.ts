@@ -76,6 +76,7 @@ const profilePatchSchema = z.object({
       selectedProviderId: z.string().min(1),
     }),
     rag: z.object({
+      apiKey: z.string().optional(),
       enabled: z.boolean().optional(),
       knowledgeBaseId: z.string().nullable().optional(),
       matchCount: z.number().int().optional(),

@@ -22,6 +22,7 @@ export function useRagSettings({
   settings,
 }: UseRagSettingsOptions) {
   const [localSettings, setLocalSettings] = useState(settings);
+  const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
 
@@ -70,11 +71,13 @@ export function useRagSettings({
   };
 
   return {
+    isApiKeyVisible,
     isDirty,
     isSaving,
     localSettings,
     resetAndClose,
     save,
+    setIsApiKeyVisible,
     showSaved,
     updateSettings,
   };

@@ -9,27 +9,29 @@ import { logger } from '@/lib/logger';
 import { matchRagChunks } from '@/features/rag/storage/rag-repository';
 import type { RagSettings, RetrievedRagChunk } from '@/features/rag/types';
 
-function areRagEmbeddingsConfigured() {
-  return Boolean(env.RAG_EMBEDDING_API_KEY && env.RAG_EMBEDDING_MODEL);
+function getResolvedEmbeddingApiKey(apiKey: string) {
+  return apiKey.trim() || env.RAG_EMBEDDING_API_KEY || '';
 }
 
 function toVectorLiteral(embedding: number[]) {
   return `[${embedding.join(',')}]`;
 }
 
-export async function generateQueryEmbedding(query: string) {
-  if (!areRagEmbeddingsConfigured()) {
+export async function generateQueryEmbedding(query: string, apiKey: string) {
+  const resolvedApiKey = getResolvedEmbeddingApiKey(apiKey);
+
+  if (!resolvedApiKey || !env.RAG_EMBEDDING_MODEL) {
     throw new Error('RAG embedding configuration is missing.');
   }
 
   const provider = createOpenAI({
-    apiKey: env.RAG_EMBEDDING_API_KEY!,
+    apiKey: resolvedApiKey,
     baseURL: env.RAG_EMBEDDING_BASE_URL || undefined,
     name: 'rag-embedding',
   });
 
   const { embedding } = await embed({
-    model: provider.embedding(env.RAG_EMBEDDING_MODEL!),
+    model: provider.embedding(env.RAG_EMBEDDING_MODEL),
     value: query,
   });
 
@@ -57,12 +59,12 @@ export async function retrieveRelevantChunks({
     return [];
   }
 
-  if (!areRagEmbeddingsConfigured()) {
+  if (!getResolvedEmbeddingApiKey(ragSettings.apiKey) || !env.RAG_EMBEDDING_MODEL) {
     logger.warn('RAG retrieval skipped: embedding configuration missing');
     return [];
   }
 
-  const embedding = await generateQueryEmbedding(query);
+  const embedding = await generateQueryEmbedding(query, ragSettings.apiKey);
 
   return matchRagChunks(supabase, {
     filter_knowledge_base_id: ragSettings.knowledgeBaseId,

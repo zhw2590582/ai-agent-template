@@ -2,6 +2,7 @@ import { RAG_CONFIG } from '@/config/rag';
 import type { RagSettings } from '@/features/rag/types';
 
 export const DEFAULT_RAG_SETTINGS: RagSettings = {
+  apiKey: '',
   enabled: false,
   knowledgeBaseId: null,
   matchCount: RAG_CONFIG.DEFAULT_MATCH_COUNT,
@@ -27,6 +28,7 @@ function clampFloat(value: unknown, fallback: number, min: number, max: number) 
 
 export function normalizeRagSettings(input?: Partial<RagSettings> | null): RagSettings {
   return {
+    apiKey: typeof input?.apiKey === 'string' ? input.apiKey : DEFAULT_RAG_SETTINGS.apiKey,
     enabled: input?.enabled ?? DEFAULT_RAG_SETTINGS.enabled,
     knowledgeBaseId:
       typeof input?.knowledgeBaseId === 'string' && input.knowledgeBaseId.trim().length > 0
@@ -49,5 +51,5 @@ export function normalizeRagSettings(input?: Partial<RagSettings> | null): RagSe
 }
 
 export function hasRagAccess(settings: RagSettings | null | undefined) {
-  return Boolean(settings?.enabled);
+  return Boolean(settings?.enabled && settings.apiKey.trim().length > 0);
 }

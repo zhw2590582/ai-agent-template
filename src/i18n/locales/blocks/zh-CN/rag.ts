@@ -2,6 +2,10 @@ export const zhCNRagMessages = {
   rag_page: {
     title: 'RAG',
     description: '配置私有知识库的检索参数。文档导入和来源展示 UI 会在后续迭代中补上。',
+    api_key_label: 'Embedding API Key',
+    api_key_description: '用于生成检索 embedding。这个 key 会保存在当前用户的 profile 设置里。',
+    api_key_placeholder: '输入你的 embedding API Key',
+    api_key_hint: 'RAG 检索需要 embedding API key。开发阶段也可以继续保留服务端 fallback。',
     enabled_label: '启用 RAG',
     enabled_description: '允许聊天请求在回答前先从已索引的知识库中检索相关片段。',
     knowledge_title: '知识库',

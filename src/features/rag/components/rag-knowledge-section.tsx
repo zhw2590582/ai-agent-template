@@ -36,9 +36,7 @@ export function RagKnowledgeSection({ settings, onUpdateSettings }: RagKnowledge
             }));
           }}
         />
-        <p className="text-muted-foreground text-xs">
-          {t('rag_page.knowledge_base_id_hint')}
-        </p>
+        <p className="text-muted-foreground text-xs">{t('rag_page.knowledge_base_id_hint')}</p>
       </div>
     </section>
   );

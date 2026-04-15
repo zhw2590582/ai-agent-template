@@ -1,4 +1,5 @@
 export interface RagSettings {
+  apiKey: string;
   enabled: boolean;
   knowledgeBaseId: string | null;
   matchCount: number;

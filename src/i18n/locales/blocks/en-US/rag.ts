@@ -3,6 +3,12 @@ export const enUSRagMessages = {
     title: 'RAG',
     description:
       'Configure retrieval settings for your private knowledge base. Document import and source rendering will be added in later iterations.',
+    api_key_label: 'Embedding API key',
+    api_key_description:
+      'Used to generate embeddings for retrieval. This key is stored in your profile settings.',
+    api_key_placeholder: 'Enter your embedding API key',
+    api_key_hint:
+      'RAG retrieval needs an embedding API key. A server-level fallback can still be configured for development.',
     enabled_label: 'Enable RAG',
     enabled_description:
       'Allow chat requests to retrieve relevant chunks from your indexed knowledge base before answering.',

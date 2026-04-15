@@ -48,6 +48,7 @@ export const chatPostSchema = z.object({
     .optional(),
   ragSettings: z
     .object({
+      apiKey: z.string(),
       enabled: z.boolean(),
       knowledgeBaseId: z.string().nullable(),
       matchCount: z.number().int(),

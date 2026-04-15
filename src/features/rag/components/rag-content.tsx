@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
-import { RagGeneralSection } from '@/features/rag/components/rag-general-section';
+import { RagConnectionSection } from '@/features/rag/components/rag-connection-section';
 import { RagKnowledgeSection } from '@/features/rag/components/rag-knowledge-section';
 import { RagRetrievalSection } from '@/features/rag/components/rag-retrieval-section';
 import { useRagSettings } from '@/features/rag/hooks/use-rag-settings';
@@ -19,14 +19,23 @@ interface RagContentProps {
 
 export function RagContent({ onClose, onRagSettingsChange, settings }: RagContentProps) {
   const t = useTranslations();
-  const { isDirty, isSaving, localSettings, resetAndClose, save, showSaved, updateSettings } =
-    useRagSettings({
-      onClose,
-      onRagSettingsChange,
-      saveFailedMessage: t('rag_page.toast.save_failed'),
-      saveSuccessMessage: t('rag_page.toast.save_success'),
-      settings,
-    });
+  const {
+    isApiKeyVisible,
+    isDirty,
+    isSaving,
+    localSettings,
+    resetAndClose,
+    save,
+    setIsApiKeyVisible,
+    showSaved,
+    updateSettings,
+  } = useRagSettings({
+    onClose,
+    onRagSettingsChange,
+    saveFailedMessage: t('rag_page.toast.save_failed'),
+    saveSuccessMessage: t('rag_page.toast.save_success'),
+    settings,
+  });
 
   return (
     <WorkbenchDialogPanel
@@ -53,13 +62,16 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
               <h2 className="text-xl font-semibold">{t('rag_page.title')}</h2>
-              <p className="text-muted-foreground max-w-2xl text-sm">
-                {t('rag_page.description')}
-              </p>
+              <p className="text-muted-foreground max-w-2xl text-sm">{t('rag_page.description')}</p>
             </div>
           </div>
 
-          <RagGeneralSection settings={localSettings} onUpdateSettings={updateSettings} />
+          <RagConnectionSection
+            isApiKeyVisible={isApiKeyVisible}
+            settings={localSettings}
+            onToggleApiKeyVisibility={() => setIsApiKeyVisible((current) => !current)}
+            onUpdateSettings={updateSettings}
+          />
           <RagKnowledgeSection settings={localSettings} onUpdateSettings={updateSettings} />
           <RagRetrievalSection settings={localSettings} onUpdateSettings={updateSettings} />
         </section>

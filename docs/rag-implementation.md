@@ -31,6 +31,8 @@
 - `RAG_EMBEDDING_BASE_URL`（可选）
 - `RAG_EMBEDDING_MODEL`
 
+另外，当前 `RAG` workbench 也支持用户级 `apiKey` 输入。运行时会优先使用用户填写的 key，再回退到服务端环境变量。
+
 当前默认实现按 `text-embedding-3-small` 兼容的 1536 维 embedding 处理。
 
 ## V1 设计原则
