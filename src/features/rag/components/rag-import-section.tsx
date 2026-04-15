@@ -1,12 +1,13 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { FileTextIcon } from 'lucide-react';
+import { FileTextIcon, UploadIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
+import { cn } from '@/lib/utils';
 
 interface RagImportSectionProps {
   apiKey: string;
@@ -23,9 +24,15 @@ interface RagImportSectionProps {
 export function RagImportSection({ apiKey, isImporting, onImport }: RagImportSectionProps) {
   const t = useTranslations();
   const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [source, setSource] = useState('');
   const [title, setTitle] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const setSelectedFile = (nextFile: File | null) => {
+    setFile(nextFile);
+    setIsDragging(false);
+  };
 
   const handleImport = async () => {
     if (!file) {
@@ -46,6 +53,7 @@ export function RagImportSection({ apiKey, isImporting, onImport }: RagImportSec
       setFile(null);
       setSource('');
       setTitle('');
+      setIsDragging(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -90,12 +98,65 @@ export function RagImportSection({ apiKey, isImporting, onImport }: RagImportSec
         </label>
         <Input
           accept=".txt,.md,.pdf,text/plain,text/markdown,application/pdf"
+          className="sr-only"
           id="rag-document-file"
           ref={fileInputRef}
           type="file"
-          onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+          onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
         />
-        <p className="text-muted-foreground text-xs">{t('rag_page.document_file_hint')}</p>
+        <button
+          className={cn(
+            'border-border bg-muted/20 hover:bg-muted/40 flex min-h-32 w-full flex-col items-center justify-center gap-3 rounded-lg border border-dashed px-4 py-6 text-center transition-colors',
+            isDragging && 'border-primary bg-primary/5'
+          )}
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          onDragEnter={(event) => {
+            event.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={(event) => {
+            event.preventDefault();
+            const nextTarget = event.relatedTarget;
+            if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) {
+              return;
+            }
+            setIsDragging(false);
+          }}
+          onDragOver={(event) => {
+            event.preventDefault();
+            if (!isDragging) {
+              setIsDragging(true);
+            }
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            const droppedFile = event.dataTransfer.files?.[0] ?? null;
+            setSelectedFile(droppedFile);
+            if (fileInputRef.current) {
+              const files = event.dataTransfer.files;
+              if (files?.length) {
+                fileInputRef.current.files = files;
+              }
+            }
+          }}
+        >
+          <div
+            className={cn(
+              'bg-background text-muted-foreground flex size-10 items-center justify-center rounded-full border',
+              isDragging && 'text-primary border-primary'
+            )}
+          >
+            <UploadIcon className="size-5" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <p className="text-sm font-medium">{t('rag_page.document_file_dropzone_title')}</p>
+            <p className="text-muted-foreground text-sm">
+              {t('rag_page.document_file_dropzone_description')}
+            </p>
+          </div>
+          <p className="text-muted-foreground text-xs">{t('rag_page.document_file_hint')}</p>
+        </button>
         {file ? (
           <div className="bg-muted/40 text-muted-foreground flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
             <FileTextIcon className="size-4" />

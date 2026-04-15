@@ -18,6 +18,8 @@ export const zhCNRagMessages = {
     document_source_label: '来源',
     document_source_placeholder: '可选的来源 URL 或标识',
     document_file_label: '文档文件',
+    document_file_dropzone_title: '将文档拖到这里上传',
+    document_file_dropzone_description: '或点击这里，从设备中选择文件。',
     document_file_hint: '支持 .txt、.md、.pdf。',
     import_action: '导入文档',
     documents_title: '已索引文档',

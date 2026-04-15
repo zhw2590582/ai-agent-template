@@ -20,6 +20,8 @@ export const enUSRagMessages = {
     document_source_label: 'Source',
     document_source_placeholder: 'Optional source URL or label',
     document_file_label: 'Document File',
+    document_file_dropzone_title: 'Drag and drop a document here',
+    document_file_dropzone_description: 'Or click to choose a file from your device.',
     document_file_hint: 'Accepted formats: .txt, .md, .pdf.',
     import_action: 'Import document',
     documents_title: 'Documents',
