@@ -6,6 +6,7 @@ import { createSandboxWriteFileTool } from '@/features/chat/ai/tools/sandbox_wri
 import { createWebCrawlTool } from '@/features/chat/ai/tools/web_crawl';
 import { createWebExtractTool } from '@/features/chat/ai/tools/web_extract';
 import { createWebSearchTool } from '@/features/chat/ai/tools/web_search';
+import { getSandboxToolPolicy } from '@/features/sandbox/settings';
 import type { SandboxSession } from '@/features/sandbox/server/e2b-client';
 import type { SandboxSettings } from '@/features/sandbox/types';
 import type { SearchSettings } from '@/features/search/types';
@@ -34,13 +35,14 @@ export function buildSandboxAgentTools(options: {
     return {};
   }
 
-  const sandboxReadFileTool = sandboxSettings.access.allowFilesystem
+  const toolPolicy = getSandboxToolPolicy(sandboxSettings);
+  const sandboxReadFileTool = toolPolicy.allowFilesystem
     ? createSandboxReadFileTool(sandboxSession)
     : null;
-  const sandboxRunCommandTool = sandboxSettings.access.allowCommands
+  const sandboxRunCommandTool = toolPolicy.allowCommands
     ? createSandboxRunCommandTool(sandboxSession)
     : null;
-  const sandboxWriteFileTool = sandboxSettings.access.allowFilesystem
+  const sandboxWriteFileTool = toolPolicy.allowFilesystem
     ? createSandboxWriteFileTool(sandboxSession)
     : null;
 

@@ -11,7 +11,6 @@ const SESSION_RECOVERY_ERROR_PATTERNS = [
   'sandbox not found',
   'connection closed',
   'socket hang up',
-  'timed out',
   'session closed',
 ];
 
@@ -158,7 +157,10 @@ export class SandboxSession {
 
   private async withSessionRecovery<T>(
     operationName: string,
-    callback: (sandbox: Sandbox) => Promise<T>
+    callback: (sandbox: Sandbox) => Promise<T>,
+    options?: {
+      retryOnRecoverableError?: boolean;
+    }
   ) {
     const sandbox = await this.getSandbox();
     this.clearIdleCloseTimer();
@@ -168,7 +170,7 @@ export class SandboxSession {
       this.scheduleIdleClose();
       return result;
     } catch (error) {
-      if (!isRecoverableSandboxError(error)) {
+      if (!options?.retryOnRecoverableError || !isRecoverableSandboxError(error)) {
         this.scheduleIdleClose();
         throw error;
       }
@@ -250,16 +252,22 @@ export class SandboxSession {
   async readFile(path: string) {
     const resolvedPath = this.resolveWorkspacePath(path);
 
-    return this.withSessionRecovery('read_file', async (sandbox) => {
-      const content = await sandbox.files.read(resolvedPath, {
-        format: 'text',
-      });
+    return this.withSessionRecovery(
+      'read_file',
+      async (sandbox) => {
+        const content = await sandbox.files.read(resolvedPath, {
+          format: 'text',
+        });
 
-      return {
-        content: trimOutput(content, SANDBOX_CONFIG.MAX_FILE_CONTENT_CHARS),
-        path: resolvedPath,
-      };
-    });
+        return {
+          content: trimOutput(content, SANDBOX_CONFIG.MAX_FILE_CONTENT_CHARS),
+          path: resolvedPath,
+        };
+      },
+      {
+        retryOnRecoverableError: true,
+      }
+    );
   }
 
   async writeFile(input: { content: string; path: string }) {
@@ -271,14 +279,20 @@ export class SandboxSession {
 
     const resolvedPath = this.resolveWorkspacePath(input.path);
 
-    return this.withSessionRecovery('write_file', async (sandbox) => {
-      const writeInfo = await sandbox.files.write(resolvedPath, input.content);
+    return this.withSessionRecovery(
+      'write_file',
+      async (sandbox) => {
+        const writeInfo = await sandbox.files.write(resolvedPath, input.content);
 
-      return {
-        path: resolvedPath,
-        writtenPath: writeInfo.path,
-      };
-    });
+        return {
+          path: resolvedPath,
+          writtenPath: writeInfo.path,
+        };
+      },
+      {
+        retryOnRecoverableError: true,
+      }
+    );
   }
 
   async close(reason: 'completed' | 'error' | 'idle_timeout' = 'completed') {

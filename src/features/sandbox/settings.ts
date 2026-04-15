@@ -13,6 +13,13 @@ export function hasSandboxAccess(settings: SandboxSettings | null | undefined) {
   return Boolean(settings?.enabled && settings.apiKey.trim().length > 0);
 }
 
+export function getSandboxToolPolicy(settings: SandboxSettings | null | undefined) {
+  return {
+    allowCommands: Boolean(settings?.enabled),
+    allowFilesystem: Boolean(settings?.enabled),
+  };
+}
+
 export function normalizeSandboxSettings(input: unknown): SandboxSettings {
   const existing =
     typeof input === 'object' && input != null ? (input as Partial<SandboxSettings>) : undefined;

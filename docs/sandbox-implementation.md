@@ -82,6 +82,12 @@
 - 要么属于产品内部策略，不适合前期直接给最终用户配置
 - 要么虽然在 runtime 中部分生效，但会给用户造成“关闭后为什么 sandbox 几乎不可用”的误解
 
+当前额外约束：
+
+- 隐藏的 `allowCommands` / `allowFilesystem` 不再决定 V1 tool 是否暴露
+- 只要 sandbox 已启用且有有效 API key，V1 默认提供 `run_command / read_file / write_file`
+- 这样可以避免旧 profile 遗留值导致“UI 看不到开关，但能力被关闭”
+
 ## 为什么当前只考虑 E2B
 
 当前项目在 `Sandbox` 上不做多 provider abstraction，原因很简单：
@@ -186,7 +192,8 @@
 - 后续同一请求中的多个 sandbox tool 调用复用同一实例
 - request 完成时统一关闭
 - 如果中途空闲超出短窗口，会自动回收
-- 如果遇到常见的可恢复错误，会自动重建一次后重试当前操作
+- 如果读写文件时遇到常见的可恢复错误，会自动重建一次后重试当前操作
+- `run_command` 不会自动重试，避免有副作用的命令被重复执行
 
 当前明确不做的事情：
 
