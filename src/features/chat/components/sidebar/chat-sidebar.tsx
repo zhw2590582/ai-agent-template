@@ -168,7 +168,7 @@ export function ChatSidebar({
 
   if (!isOpen) {
     return (
-      <aside className="border-border bg-muted/30 flex h-full flex-col border-r">
+      <aside className="border-border bg-muted/50 flex h-full flex-col border-r">
         <div className="border-border mb-3 flex h-12 items-center justify-between border-b px-4">
           <Button
             aria-label={t('chat.header.show_sidebar')}
@@ -196,7 +196,7 @@ export function ChatSidebar({
   }
 
   return (
-    <aside className="border-border bg-muted/30 flex h-full flex-col border-r">
+    <aside className="border-border bg-muted/50 flex h-full flex-col border-r">
       <div className="border-border mb-3 flex h-12 items-center justify-between border-b px-4">
         <Link
           className="text-foreground flex shrink-0 items-center gap-2 truncate text-sm font-medium"

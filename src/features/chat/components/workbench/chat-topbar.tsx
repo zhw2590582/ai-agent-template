@@ -17,7 +17,7 @@ interface ChatTopBarProps {
 
 export function ChatTopBar({ activeView, onOpenView, t }: ChatTopBarProps) {
   return (
-    <div className="border-border h-12 border-b px-4 py-2">
+    <div className="border-border bg-muted/50 h-12 border-b px-4 py-2">
       <div className="flex w-full flex-col gap-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
