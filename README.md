@@ -13,6 +13,7 @@
 - 登录、会话持久化、分页和搜索
 - 已落地的 Memory V1
 - 已落地的 Search / Tavily 工具接入
+- 已落地的 RAG V1：文档上传、向量检索、Voyage rerank 与来源展示
 - 为 RAG、Planning、多代理预留结构边界
 
 ## 当前真实状态
@@ -45,10 +46,9 @@
 
 仍未完成或仍是占位：
 
-- RAG
 - Planning
 - Multi-Agent
-- 除聊天、Models、Memory、Search 外的大多数工作台弹窗的真实业务实现
+- 除聊天、Models、Memory、Search、Sandbox、RAG 外的大多数工作台弹窗的真实业务实现
 - E2E 自动化测试
 
 更准确的状态说明见 [docs/project-status.md](./docs/project-status.md)。
@@ -103,9 +103,13 @@ src/
 ├── features/
 │   ├── auth/             # 登录和 profile 同步
 │   ├── chat/             # 聊天工作台、消息链路、会话存储
+│   ├── mcp/              # 远程 MCP server 配置、测试、tool client
 │   ├── memory/           # 长期记忆、摘要列表、Memory 页面
 │   ├── models/           # provider 配置、模型同步、自定义 provider/model
-│   └── search/           # Tavily 搜索设置、连接测试、服务端 client
+│   ├── rag/              # 文档上传、向量检索、来源展示
+│   ├── sandbox/          # E2B runtime 配置与 tools
+│   ├── search/           # Tavily 搜索设置、连接测试、服务端 client
+│   └── skills/           # Skills workbench UI 与设置持久化
 ├── i18n/                 # next-intl 请求配置
 ├── lib/                  # 通用工具、错误处理、日志、Supabase client
 └── proxy.ts              # locale 检测与 session 更新

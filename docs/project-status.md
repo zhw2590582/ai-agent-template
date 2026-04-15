@@ -257,7 +257,7 @@ API rate limiting
 1. Memory：继续做导入/导出、相关性检索优化、记忆归并和编辑体验
 2. Models：继续补 provider 重命名、失败回滚、会话级模型偏好等细节
 3. Search：补 Tavily 错误分层、搜索结果展示、缓存与观测
-4. 页面去占位化：继续补 `MCP`、`Settings`，以及 RAG / Memory 的细节体验
+4. 页面去占位化：继续补 `MCP`、`Settings`，并继续打磨 RAG / Memory 的细节体验
 5. 测试补齐：补聊天主链路边界、工具展示、Memory / Search 行为和 hydration 场景，之后再补 E2E
 6. 文档继续收敛：让 README、Setup、Roadmap 与代码现状同步
 

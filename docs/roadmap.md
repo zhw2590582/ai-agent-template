@@ -66,10 +66,10 @@
 
 优先做：
 
-1. `Models`
-2. `Sandbox`
-3. `MCP`
-4. `Settings`
+1. `MCP`
+2. `Settings`
+3. `Skills`
+4. 继续补齐已落地 workbench 的细节体验
 
 ### 4.5 MCP 全能力研究
 
@@ -88,16 +88,16 @@
 - [docs/mcp-server-demo.md](./mcp-server-demo.md)
 - [docs/mcp-implementation.md](./mcp-implementation.md)
 
-### 5. RAG
+### 5. RAG 收尾
 
-目标：让回答可以基于外部知识源。
+目标：把当前已落地的 RAG V1 打磨成更稳定、更可维护的能力。
 
 优先做：
 
-1. 文档切片
-2. 向量存储
-3. retrieval 注入
-4. 来源展示 UI
+1. 文档详情 / 重建索引的细节体验
+2. 更细的错误反馈与观测
+3. 来源交互增强
+4. 评估更多 provider / query rewrite 的必要性
 
 ## Later
 

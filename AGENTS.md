@@ -25,11 +25,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ```text
 src/
-├── app/                # Next.js route entry only
-├── components/         # Third-party sourced UI building blocks
-├── features/chat/      # Current business domain
-├── lib/                # Minimal shared utilities
-└── server/             # Server-side AI orchestration
+├── app/                # Next.js route 和 API 入口
+├── components/         # 基础 UI、AI Elements 和 wrapper 组件
+├── config/             # env / app / i18n / navigation 等配置
+├── features/           # 按能力拆分的真实业务域
+├── i18n/               # 国际化配置与消息聚合
+├── lib/                # 通用工具、错误处理、日志、Supabase client
+└── proxy.ts            # locale 检测与 session 更新
 ```
 
 ## Important Rules
@@ -66,11 +68,11 @@ src/
 - `src/features/*/components/*`
 - 或新的 wrapper 层，例如 `src/components/app-ui/*`
 
-### 3. Keep the theme dark-only
+### 3. Keep themes aligned
 
-- 当前只支持暗黑主题
-- 不要引入双主题业务样式复杂度
-- 优先使用语义 token，而不是亮色/暗色分叉样式
+- 当前已支持亮色和暗色主题
+- 不要写死单一主题样式
+- 优先使用语义 token，而不是为亮色/暗色分别堆业务样式
 
 ### 4. Keep dependencies minimal
 
@@ -86,17 +88,18 @@ src/
 
 当前：
 
-- `server/chat.ts`
-- `server/ai/models.ts`
-- `server/ai/tools.ts`
+- `src/features/chat/server/*`
+- `src/features/chat/ai/*`
+- `src/features/*/server/*`
 
 未来允许逐步扩成：
 
-- `server/ai/prompts.ts`
-- `server/ai/tools/*`
-- `server/ai/memory/*`
-- `server/ai/rag/*`
-- `server/ai/planners/*`
+- `src/features/chat/ai/core/*`
+- `src/features/chat/ai/tools/*`
+- `src/features/chat/ai/workflows/*`
+- `src/features/memory/storage/*`
+- `src/features/rag/server/*`
+- `src/features/sandbox/server/*`
 
 不要提前把目录拆得很深。
 
