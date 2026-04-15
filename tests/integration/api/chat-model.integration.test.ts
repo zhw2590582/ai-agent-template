@@ -1,12 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockStreamText = vi.fn();
+const mockGenerateText = vi.fn(async () => ({ text: 'mock-generated-text' }));
 const mockConvertToModelMessages = vi.fn(async (messages) => messages);
 
 vi.mock('ai', () => ({
+  Output: {
+    array: vi.fn((schema) => schema),
+  },
   convertToModelMessages: mockConvertToModelMessages,
+  generateText: mockGenerateText,
   stepCountIs: vi.fn(() => () => false),
   streamText: mockStreamText,
+  tool: vi.fn((definition) => definition),
 }));
 
 vi.mock('@/features/chat/ai/core/models', () => ({
@@ -20,25 +26,24 @@ vi.mock('@/features/chat/ai/core/prompts', () => ({
 }));
 
 vi.mock('@/features/chat/ai/tools', () => ({
+  buildSandboxAgentTools: vi.fn(() => ({})),
   buildSearchAgentTools: vi.fn(() => ({})),
 }));
 
-vi.mock('@/config/chat', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/config/chat')>();
-
-  return {
-    ...actual,
-    AI_CONFIG: { ...actual.AI_CONFIG, DEFAULT_MAX_TOKENS: 1024 },
-  };
-});
-vi.mock('@/config/dev', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/config/dev')>();
-
-  return {
-    ...actual,
-    DEV_CONFIG: { ...actual.DEV_CONFIG, ENABLE_DEBUG_LOGS: false },
-  };
-});
+vi.mock('@/config/chat', () => ({
+  AI_CONFIG: {
+    AGENT_MAX_STEPS: 10,
+    CHAT_MAX_DURATION: 60,
+    DEFAULT_MAX_TOKENS: 1024,
+    MEMORY_CONSOLIDATION_MAX_OUTPUT_TOKENS: 260,
+    MEMORY_EXTRACTION_MAX_OUTPUT_TOKENS: 220,
+    SUMMARY_MAX_OUTPUT_TOKENS: 220,
+    TITLE_MAX_OUTPUT_TOKENS: 32,
+  },
+}));
+vi.mock('@/config/dev', () => ({
+  DEV_CONFIG: { ENABLE_DEBUG_LOGS: false },
+}));
 
 vi.mock('@/config/env', () => ({
   env: { NODE_ENV: 'test' },
@@ -61,6 +66,7 @@ vi.mock('@/lib/supabase/server', () => ({
 
 describe('chat model integration', () => {
   beforeEach(() => {
+    mockGenerateText.mockClear();
     mockStreamText.mockReset();
     mockConvertToModelMessages.mockClear();
     mockStreamText.mockReturnValue({
