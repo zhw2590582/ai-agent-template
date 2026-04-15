@@ -7,9 +7,12 @@ import type { Database } from '@/lib/supabase/database.types';
 import { chunkDocumentText } from '@/features/rag/server/chunking';
 import { embedDocumentsWithProvider } from '@/features/rag/server/embeddings';
 import {
+  deleteRagChunksForDocument,
   ensureDefaultKnowledgeBase,
+  getRagDocumentForUser,
   insertRagChunks,
   insertRagDocument,
+  updateRagDocument,
 } from '@/features/rag/storage/rag-documents';
 import type { RagDocument } from '@/features/rag/types';
 
@@ -48,6 +51,7 @@ export async function ingestRagTextDocument({
 }): Promise<{ chunkCount: number; document: RagDocument }> {
   const normalizedContent = content.trim();
   const chunks = chunkDocumentText(normalizedContent);
+  const indexedAt = new Date().toISOString();
 
   if (chunks.length === 0) {
     throw new Error('RAG document content is empty after normalization.');
@@ -65,8 +69,10 @@ export async function ingestRagTextDocument({
       fileName: fileName || null,
       fileSize: fileSize ?? null,
       fileType: fileType || null,
-      importedAt: new Date().toISOString(),
+      importedAt: indexedAt,
+      indexedAt,
       mimeType: mimeType || null,
+      originalText: normalizedContent,
     },
     source: source?.trim() || null,
     title,
@@ -84,6 +90,65 @@ export async function ingestRagTextDocument({
       },
     }))
   );
+
+  return {
+    chunkCount: chunks.length,
+    document,
+  };
+}
+
+export async function reindexRagDocument({
+  apiKey,
+  documentId,
+  supabase,
+}: {
+  apiKey: string;
+  documentId: string;
+  supabase: SupabaseClient<Database>;
+}): Promise<{ chunkCount: number; document: RagDocument }> {
+  const documentRow = await getRagDocumentForUser(supabase, documentId);
+  const metadata = (documentRow.metadata ?? {}) as Record<string, unknown>;
+  const originalText =
+    typeof metadata.originalText === 'string' ? metadata.originalText.trim() : '';
+
+  if (!originalText) {
+    throw new Error('This document cannot be reindexed because its original text is unavailable.');
+  }
+
+  const chunks = chunkDocumentText(originalText);
+
+  if (chunks.length === 0) {
+    throw new Error('RAG document content is empty after normalization.');
+  }
+
+  const embeddings = await embedDocumentsWithProvider(chunks, apiKey);
+  const indexedAt = new Date().toISOString();
+
+  await deleteRagChunksForDocument(supabase, documentId);
+  await insertRagChunks(
+    supabase,
+    chunks.map((chunk, index) => ({
+      chunk_index: index,
+      content: chunk,
+      document_id: documentId,
+      embedding: embeddings[index],
+      metadata: {
+        characterCount: chunk.length,
+      },
+    }))
+  );
+
+  const document = await updateRagDocument(supabase, documentId, {
+    content_hash: buildContentHash(originalText),
+    metadata: {
+      ...metadata,
+      chunkCount: chunks.length,
+      characterCount: originalText.length,
+      excerpt: buildExcerpt(originalText),
+      indexedAt,
+      reindexedAt: indexedAt,
+    },
+  });
 
   return {
     chunkCount: chunks.length,

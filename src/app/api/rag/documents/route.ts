@@ -10,7 +10,7 @@ import { createClient as createSupabaseServerClient } from '@/lib/supabase/serve
 import { validateRequest } from '@/lib/validation';
 import { upsertProfileFromAuthUser } from '@/features/auth/storage/profiles';
 import { parseRagDocumentFile } from '@/features/rag/server/document-parser';
-import { ingestRagTextDocument } from '@/features/rag/server/ingestion';
+import { ingestRagTextDocument, reindexRagDocument } from '@/features/rag/server/ingestion';
 import {
   deleteRagDocumentForUser,
   listRagDocumentsForUser,
@@ -38,6 +38,11 @@ const createRagFileDocumentSchema = z.object({
 });
 
 const deleteRagDocumentSchema = z.object({
+  id: z.string().min(1),
+});
+
+const reindexRagDocumentSchema = z.object({
+  apiKey: z.string().min(1),
   id: z.string().min(1),
 });
 
@@ -151,6 +156,29 @@ export async function DELETE(request: Request) {
     await deleteRagDocumentForUser(supabase, input.id);
 
     return Response.json({ ok: true });
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const input = await validateRequest(request, reindexRagDocumentSchema);
+    const { supabase, user } = await requireAuth();
+    enforceRateLimit(request, {
+      config: API_RATE_LIMITS.RAG_WRITE,
+      identityKey: user.id,
+      namespace: API_NAMESPACES.RAG_WRITE,
+    });
+    await upsertProfileFromAuthUser(user, {}, supabase);
+
+    return Response.json(
+      await reindexRagDocument({
+        apiKey: input.apiKey,
+        documentId: input.id,
+        supabase,
+      })
+    );
   } catch (error) {
     return handleError(error);
   }

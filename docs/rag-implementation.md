@@ -17,13 +17,17 @@
 - 聊天消息里的来源卡片展示
 - RAG 连接测试
 - 已索引文档的懒加载折叠列表与删除确认
+- 文档详情展示
+- 文档重新索引（依赖导入时保留的原始提取文本）
 
 当前 **未实现**：
 
 - 自动 embeddings pipeline
 - agentic RAG / query rewrite
 - 多 provider 选择
-- 文档重建索引 / 详情页
+- OCR / docx / html 等更多格式支持
+- 知识库选择器 / 多知识库管理
+- query rewrite / 更复杂的检索编排
 
 ## 技术选择
 
@@ -60,6 +64,6 @@
 
 ## 下一步
 
-1. 文档详情 / 重新索引
-2. provider selection / 更多 embedding provider
-3. query rewrite / 更复杂的 RAG orchestration
+1. provider selection / 更多 embedding provider
+2. query rewrite / 更复杂的 RAG orchestration
+3. 文档详情进一步增强（命中片段、索引历史、重建原因）

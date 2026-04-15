@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
-import { ChevronDownIcon, Trash2Icon } from 'lucide-react';
+import { ChevronDownIcon, RotateCwIcon, Trash2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import {
@@ -21,11 +21,14 @@ import { Spinner } from '@/components/ui/spinner';
 import type { RagDocument, RagDocumentMetadata } from '@/features/rag/types';
 
 interface RagDocumentListProps {
+  apiKey: string;
   documents: RagDocument[];
   isDeletingId: string | null;
   isLoading: boolean;
+  isReindexingId: string | null;
   onOpenChange?: (open: boolean) => void;
   onDelete: (id: string) => Promise<boolean>;
+  onReindex: (input: { apiKey: string; id: string }) => Promise<boolean>;
   open?: boolean;
 }
 
@@ -41,16 +44,31 @@ function formatNumber(value: number | undefined) {
   return new Intl.NumberFormat().format(value);
 }
 
+function formatDate(value: string | undefined) {
+  if (!value) {
+    return '—';
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value));
+}
+
 export function RagDocumentList({
+  apiKey,
   documents,
   isDeletingId,
   isLoading,
+  isReindexingId,
   onOpenChange,
   onDelete,
+  onReindex,
   open = false,
 }: RagDocumentListProps) {
   const t = useTranslations();
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [expandedDocumentId, setExpandedDocumentId] = useState<string | null>(null);
   const deleteTarget = useMemo(
     () => documents.find((document) => document.id === deleteTargetId) ?? null,
     [deleteTargetId, documents]
@@ -134,22 +152,108 @@ export function RagDocumentList({
                             {metadata.excerpt}
                           </p>
                         ) : null}
+                        <div className="mt-3">
+                          <Button
+                            size="sm"
+                            type="button"
+                            variant="ghost"
+                            onClick={() =>
+                              setExpandedDocumentId((current) =>
+                                current === document.id ? null : document.id
+                              )
+                            }
+                          >
+                            {expandedDocumentId === document.id
+                              ? t('rag_page.document_hide_details')
+                              : t('rag_page.document_show_details')}
+                          </Button>
+                        </div>
+                        {expandedDocumentId === document.id ? (
+                          <div className="bg-muted/30 mt-3 grid gap-3 rounded-md border px-3 py-3 text-sm md:grid-cols-2">
+                            <div className="flex flex-col gap-1">
+                              <span className="text-muted-foreground text-xs">
+                                {t('rag_page.document_file_name_label')}
+                              </span>
+                              <span>{metadata.fileName || '—'}</span>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-muted-foreground text-xs">
+                                {t('rag_page.document_file_type_label')}
+                              </span>
+                              <span>{metadata.fileType || metadata.mimeType || '—'}</span>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-muted-foreground text-xs">
+                                {t('rag_page.document_file_size_label')}
+                              </span>
+                              <span>
+                                {metadata.fileSize
+                                  ? t('rag_page.document_file_size_value', {
+                                      count: formatNumber(metadata.fileSize),
+                                    })
+                                  : '—'}
+                              </span>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-muted-foreground text-xs">
+                                {t('rag_page.document_indexed_at_label')}
+                              </span>
+                              <span>
+                                {formatDate(
+                                  metadata.reindexedAt || metadata.indexedAt || metadata.importedAt
+                                )}
+                              </span>
+                            </div>
+                            <div className="flex flex-col gap-1 md:col-span-2">
+                              <span className="text-muted-foreground text-xs">
+                                {t('rag_page.document_reindex_hint_label')}
+                              </span>
+                              <span className="text-muted-foreground">
+                                {metadata.canReindex
+                                  ? t('rag_page.document_reindex_hint_ready')
+                                  : t('rag_page.document_reindex_hint_missing')}
+                              </span>
+                            </div>
+                          </div>
+                        ) : null}
                       </div>
-                      <Button
-                        aria-label={t('rag_page.document_delete')}
-                        disabled={isDeletingId === document.id}
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setDeleteTargetId(document.id)}
-                      >
-                        {isDeletingId === document.id ? (
-                          <Spinner data-icon="inline-start" />
-                        ) : (
-                          <Trash2Icon />
-                        )}
-                        {t('rag_page.document_delete')}
-                      </Button>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <Button
+                          aria-label={t('rag_page.document_reindex')}
+                          disabled={
+                            !apiKey.trim() ||
+                            isDeletingId === document.id ||
+                            isReindexingId === document.id ||
+                            !metadata.canReindex
+                          }
+                          size="sm"
+                          type="button"
+                          variant="ghost"
+                          onClick={() => void onReindex({ apiKey, id: document.id })}
+                        >
+                          {isReindexingId === document.id ? (
+                            <Spinner data-icon="inline-start" />
+                          ) : (
+                            <RotateCwIcon />
+                          )}
+                          {t('rag_page.document_reindex')}
+                        </Button>
+                        <Button
+                          aria-label={t('rag_page.document_delete')}
+                          disabled={isDeletingId === document.id || isReindexingId === document.id}
+                          size="sm"
+                          type="button"
+                          variant="ghost"
+                          onClick={() => setDeleteTargetId(document.id)}
+                        >
+                          {isDeletingId === document.id ? (
+                            <Spinner data-icon="inline-start" />
+                          ) : (
+                            <Trash2Icon />
+                          )}
+                          {t('rag_page.document_delete')}
+                        </Button>
+                      </div>
                     </div>
                   );
                 })}

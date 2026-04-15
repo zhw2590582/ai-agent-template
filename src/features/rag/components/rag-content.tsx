@@ -44,14 +44,24 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
     testFailedMessage: t('rag_page.toast.test_failed'),
     testSuccessMessage: (dimensions) => t('rag_page.toast.test_success', { dimensions }),
   });
-  const { deleteDocument, documents, importDocument, isDeletingId, isImporting, isLoading } =
-    useRagDocuments({
-      deleteFailedMessage: t('rag_page.toast.delete_failed'),
-      deleteSuccessMessage: t('rag_page.toast.delete_success'),
-      enabled: isDocumentsOpen,
-      importFailedMessage: t('rag_page.toast.import_failed'),
-      importSuccessMessage: (count) => t('rag_page.toast.import_success', { count }),
-    });
+  const {
+    deleteDocument,
+    documents,
+    importDocument,
+    isDeletingId,
+    isImporting,
+    isLoading,
+    isReindexingId,
+    reindexDocument,
+  } = useRagDocuments({
+    deleteFailedMessage: t('rag_page.toast.delete_failed'),
+    deleteSuccessMessage: t('rag_page.toast.delete_success'),
+    enabled: isDocumentsOpen,
+    importFailedMessage: t('rag_page.toast.import_failed'),
+    importSuccessMessage: (count) => t('rag_page.toast.import_success', { count }),
+    reindexFailedMessage: t('rag_page.toast.reindex_failed'),
+    reindexSuccessMessage: (count) => t('rag_page.toast.reindex_success', { count }),
+  });
 
   return (
     <WorkbenchDialogPanel
@@ -113,12 +123,15 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
             onImport={importDocument}
           />
           <RagDocumentList
+            apiKey={localSettings.apiKey}
             documents={documents}
             isDeletingId={isDeletingId}
             isLoading={isLoading}
+            isReindexingId={isReindexingId}
             open={isDocumentsOpen}
             onOpenChange={setIsDocumentsOpen}
             onDelete={deleteDocument}
+            onReindex={reindexDocument}
           />
         </section>
       </div>

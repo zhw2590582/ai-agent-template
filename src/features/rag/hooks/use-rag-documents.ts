@@ -11,6 +11,8 @@ interface UseRagDocumentsOptions {
   enabled?: boolean;
   importFailedMessage: string;
   importSuccessMessage: (count: string) => string;
+  reindexFailedMessage: string;
+  reindexSuccessMessage: (count: string) => string;
 }
 
 type RagDocumentImportInput = {
@@ -27,11 +29,14 @@ export function useRagDocuments({
   enabled = true,
   importFailedMessage,
   importSuccessMessage,
+  reindexFailedMessage,
+  reindexSuccessMessage,
 }: UseRagDocumentsOptions) {
   const [documents, setDocuments] = useState<RagDocument[]>([]);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [isLoading, setIsLoading] = useState(enabled);
+  const [isReindexingId, setIsReindexingId] = useState<string | null>(null);
 
   const loadDocuments = useCallback(async () => {
     setIsLoading(true);
@@ -125,6 +130,42 @@ export function useRagDocuments({
     }
   };
 
+  const reindexDocument = async (input: { apiKey: string; id: string }) => {
+    setIsReindexingId(input.id);
+    try {
+      const response = await fetch('/api/rag/documents', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(input),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as {
+          error?: { message?: string };
+        } | null;
+        toast.error(data?.error?.message || reindexFailedMessage);
+        return false;
+      }
+
+      const data = (await response.json()) as { chunkCount?: number; document?: RagDocument };
+      if (data.document) {
+        setDocuments((current) => [
+          data.document!,
+          ...current.filter((item) => item.id !== data.document!.id),
+        ]);
+      } else {
+        await loadDocuments();
+      }
+
+      toast.success(reindexSuccessMessage(String(data.chunkCount ?? 0)));
+      return true;
+    } finally {
+      setIsReindexingId(null);
+    }
+  };
+
   return {
     deleteDocument,
     documents,
@@ -132,6 +173,8 @@ export function useRagDocuments({
     isDeletingId,
     isImporting,
     isLoading,
+    isReindexingId,
     refreshDocuments: loadDocuments,
+    reindexDocument,
   };
 }

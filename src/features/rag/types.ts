@@ -7,6 +7,7 @@ export interface RagSettings {
 }
 
 export interface RagDocumentMetadata {
+  canReindex?: boolean;
   characterCount?: number;
   chunkCount?: number;
   excerpt?: string;
@@ -14,7 +15,10 @@ export interface RagDocumentMetadata {
   fileSize?: number | null;
   fileType?: string | null;
   importedAt?: string;
+  indexedAt?: string;
   mimeType?: string | null;
+  originalText?: string;
+  reindexedAt?: string;
 }
 
 export interface RagKnowledgeBase {
