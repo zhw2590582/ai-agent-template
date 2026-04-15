@@ -37,6 +37,10 @@ function getDialogDescriptionKey(view: Exclude<WorkbenchView, 'chat'>) {
     return 'search_page.description';
   }
 
+  if (view === 'rag') {
+    return 'rag_page.description';
+  }
+
   if (view === 'sandbox') {
     return 'sandbox_page.description';
   }

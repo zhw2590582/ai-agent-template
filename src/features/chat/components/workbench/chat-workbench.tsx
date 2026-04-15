@@ -59,6 +59,11 @@ const SearchContent = dynamic(
   { loading: DialogContentLoading }
 );
 
+const RagContent = dynamic(
+  () => import('@/features/rag/components/rag-content').then((mod) => mod.RagContent),
+  { loading: DialogContentLoading }
+);
+
 const SandboxContent = dynamic(
   () => import('@/features/sandbox/components/sandbox-content').then((mod) => mod.SandboxContent),
   { loading: DialogContentLoading }
@@ -201,6 +206,12 @@ export function ChatWorkbench({
               onClose={closeDialog}
               onSearchSettingsChange={workbench.setSearchSettings}
               settings={workbench.searchSettings}
+            />
+          ) : activeDialogView === 'rag' ? (
+            <RagContent
+              onClose={closeDialog}
+              onRagSettingsChange={workbench.setRagSettings}
+              settings={workbench.ragSettings}
             />
           ) : activeDialogView === 'sandbox' ? (
             <SandboxContent

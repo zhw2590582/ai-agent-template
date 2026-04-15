@@ -313,6 +313,37 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
     [locale, persistProfile, theme]
   );
 
+  const updateRagSettings = useMemo(
+    () =>
+      async (
+        updater: (rag: AppProfile['settings']['rag']) => AppProfile['settings']['rag'],
+        options?: { silent?: boolean }
+      ) => {
+        const current = profileRef.current;
+        const nextProfile = {
+          ...current,
+          locale,
+          settings: normalizeProfileSettings({
+            memory: current.settings.memory,
+            mcp: current.settings.mcp,
+            models: current.settings.models,
+            rag: updater(current.settings.rag),
+            sandbox: current.settings.sandbox,
+            search: current.settings.search,
+            skills: current.settings.skills,
+          }),
+          theme,
+          updated_at: new Date().toISOString(),
+        };
+
+        profileRef.current = nextProfile;
+        setProfile(nextProfile);
+
+        return persistProfile(nextProfile, { silent: options?.silent });
+      },
+    [locale, persistProfile, theme]
+  );
+
   const updateSkillsSettings = useMemo(
     () =>
       async (
@@ -355,6 +386,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
     selectedProvider,
     updateMcpSettings,
     updateMemorySettings,
+    updateRagSettings,
     updateSearchSettings,
     updateSandboxSettings,
     updateSkillsSettings,

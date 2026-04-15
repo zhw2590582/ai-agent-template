@@ -3,6 +3,7 @@ import { zhCNChatMessages } from '@/i18n/locales/blocks/zh-CN/chat';
 import { zhCNMemoryMessages } from '@/i18n/locales/blocks/zh-CN/memory';
 import { zhCNMcpMessages } from '@/i18n/locales/blocks/zh-CN/mcp';
 import { zhCNModelsMessages } from '@/i18n/locales/blocks/zh-CN/models';
+import { zhCNRagMessages } from '@/i18n/locales/blocks/zh-CN/rag';
 import { zhCNSandboxMessages } from '@/i18n/locales/blocks/zh-CN/sandbox';
 import { zhCNSearchMessages } from '@/i18n/locales/blocks/zh-CN/search';
 import { zhCNSkillsMessages } from '@/i18n/locales/blocks/zh-CN/skills';
@@ -14,6 +15,7 @@ const zhCN = {
   ...zhCNMemoryMessages,
   ...zhCNMcpMessages,
   ...zhCNModelsMessages,
+  ...zhCNRagMessages,
   ...zhCNSandboxMessages,
   ...zhCNSearchMessages,
   ...zhCNSkillsMessages,
