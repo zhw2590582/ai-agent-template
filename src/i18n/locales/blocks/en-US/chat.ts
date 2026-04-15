@@ -56,6 +56,7 @@ export const enUSChatMessages = {
     rag_sources: {
       reference: 'KB{index}',
       title: 'Sources',
+      used_count: 'Used {count} sources',
     },
     status: {
       ready: 'Ready',

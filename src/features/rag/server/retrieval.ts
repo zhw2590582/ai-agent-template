@@ -1,9 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { RAG_CONFIG } from '@/config/rag';
 import type { Database } from '@/lib/supabase/database.types';
 import { logger } from '@/lib/logger';
 import { embedQueryWithProvider } from '@/features/rag/server/embeddings';
-import { hasResolvedEmbeddingAccess } from '@/features/rag/server/providers';
+import { createRerankProvider, hasResolvedEmbeddingAccess } from '@/features/rag/server/providers';
 import { matchRagChunks } from '@/features/rag/storage/rag-repository';
 import type { RagSettings, RetrievedRagChunk } from '@/features/rag/types';
 
@@ -40,13 +41,56 @@ export async function retrieveRelevantChunks({
   }
 
   const embedding = await generateQueryEmbedding(query, ragSettings.apiKey);
-
-  return matchRagChunks(supabase, {
+  const candidateMatchCount = Math.min(
+    RAG_CONFIG.MAX_CANDIDATE_MATCH_COUNT,
+    Math.max(
+      ragSettings.matchCount,
+      ragSettings.matchCount * RAG_CONFIG.RERANK_CANDIDATE_MULTIPLIER
+    )
+  );
+  const retrievedChunks = await matchRagChunks(supabase, {
     filter_user_id: userId,
-    match_count: ragSettings.matchCount,
+    match_count: candidateMatchCount,
     match_threshold: ragSettings.matchThreshold,
     query_embedding: toVectorLiteral(embedding),
   });
+
+  if (retrievedChunks.length <= 1) {
+    return retrievedChunks;
+  }
+
+  try {
+    const rerankedResults = await createRerankProvider(ragSettings.apiKey).rerank({
+      documents: retrievedChunks.map((chunk) => chunk.content),
+      query,
+      topK: ragSettings.matchCount,
+    });
+
+    if (rerankedResults.length === 0) {
+      return retrievedChunks.slice(0, ragSettings.matchCount);
+    }
+
+    return rerankedResults
+      .map((result) => {
+        const chunk = retrievedChunks[result.index];
+
+        if (!chunk) {
+          return null;
+        }
+
+        return {
+          ...chunk,
+          score: result.score,
+        };
+      })
+      .filter((chunk): chunk is RetrievedRagChunk => Boolean(chunk));
+  } catch (rerankError) {
+    logger.warn('RAG retrieval: rerank failed, falling back to vector order', {
+      error: rerankError instanceof Error ? rerankError.message : String(rerankError),
+    });
+
+    return retrievedChunks.slice(0, ragSettings.matchCount);
+  }
 }
 
 export function buildRagContext(chunks: RetrievedRagChunk[], ragSettings: RagSettings) {

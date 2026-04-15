@@ -55,6 +55,7 @@ export const zhCNChatMessages = {
     rag_sources: {
       reference: 'KB{index}',
       title: '来源',
+      used_count: '使用了 {count} 条来源',
     },
     status: {
       ready: '就绪',

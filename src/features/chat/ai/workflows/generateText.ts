@@ -44,13 +44,14 @@ export async function runGenerateTextWorkflow({
   const mcpToolByInjectedName = new Map(
     mcpInjectedTools.map((tool) => [tool.injectedToolName, tool] as const)
   );
+  const systemPrompt = getSystemPrompt(locale, {
+    memoryContext,
+    ragContext,
+  });
 
   return streamText({
     model: getRuntimeChatModel(runtimeModel),
-    system: getSystemPrompt(locale, {
-      memoryContext,
-      ragContext,
-    }),
+    system: systemPrompt,
     messages: await buildChatMessagesWithSummary(
       messages,
       persistedConversationSummary ?? conversationSummary ?? null,

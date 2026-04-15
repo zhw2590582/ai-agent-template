@@ -4,11 +4,11 @@ export const enUSRagMessages = {
     description:
       'Configure retrieval settings for your private knowledge base and index uploaded source documents for retrieval.',
     get_api_key: 'Get API Key',
-    api_key_label: 'Vector API Key',
+    api_key_label: 'Voyage API Key',
     api_key_description:
       'Used to generate retrieval embeddings with Voyage. This key is stored in your profile settings.',
-    api_key_placeholder: 'Enter your Vector API Key',
-    api_key_hint: 'RAG retrieval needs your own Vector API Key.',
+    api_key_placeholder: 'Enter your Voyage API Key',
+    api_key_hint: 'RAG retrieval needs your own Voyage API Key.',
     enabled_label: 'Enable RAG',
     enabled_description:
       'Allow chat requests to retrieve relevant chunks from your indexed knowledge base before answering.',

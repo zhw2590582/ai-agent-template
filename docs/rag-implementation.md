@@ -9,6 +9,7 @@
 - `Supabase + pgvector` 表结构
 - 文档 / chunk / knowledge base 的数据库模型
 - 基于 embeddings 的 similarity retrieval
+- 向量召回后的 `Voyage rerank`
 - 聊天请求里的 retrieval context 注入
 - 当前检索范围固定为当前用户自己的 RAG 数据，不提供知识库级筛选输入
 - 文档导入 API：当前只支持 `txt / md / pdf` 文件上传
@@ -18,7 +19,7 @@
 当前 **未实现**：
 
 - 自动 embeddings pipeline
-- agentic RAG / query rewrite / rerank
+- agentic RAG / query rewrite
 
 ## 技术选择
 
@@ -28,11 +29,15 @@
 
 ## 配置方式
 
-- 当前 `RAG` 只使用用户在 workbench 中填写的 `Vector API Key`
+- 当前 `RAG` 只使用用户在 workbench 中填写的 `Voyage API Key`
 - 不再依赖服务端环境变量提供 embedding key
 - 当前默认模型固定为 `voyage-4-lite`
 
-当前默认实现使用 `Voyage` 官方 embeddings，默认模型是 `voyage-4-lite`，当前向量维度固定为 `1024`。
+当前默认实现使用 `Voyage` 官方 embeddings 和 rerank：
+
+- embedding model: `voyage-4-lite`
+- rerank model: `rerank-2.5-lite`
+- 向量维度：`1024`
 
 ## V1 设计原则
 
@@ -50,6 +55,6 @@
 
 ## 下一步
 
-1. rerank
-2. source cards 的交互增强
-3. provider selection / 更多 embedding provider
+1. source cards 的交互增强
+2. provider selection / 更多 embedding provider
+3. query rewrite / 更复杂的 RAG orchestration

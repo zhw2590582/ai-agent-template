@@ -3,6 +3,7 @@
 import type { UIMessage } from 'ai';
 import { useTranslations } from 'next-intl';
 
+import { Sources, SourcesContent, SourcesTrigger } from '@/components/ai-elements/sources';
 import type { RagSourceItem } from '@/features/rag/types';
 
 function getRagSources(message: UIMessage) {
@@ -23,11 +24,14 @@ export function ChatRagSources({ message }: ChatRagSourcesProps) {
   }
 
   return (
-    <div className="mt-4 flex flex-col gap-3">
-      <div className="text-muted-foreground text-xs font-medium tracking-[0.12em] uppercase">
-        {t('chat.rag_sources.title')}
-      </div>
-      <div className="grid gap-3">
+    <Sources className="mt-4" defaultOpen={false}>
+      <SourcesTrigger
+        count={sources.length}
+        className="text-muted-foreground hover:text-foreground"
+      >
+        {t('chat.rag_sources.used_count', { count: sources.length })}
+      </SourcesTrigger>
+      <SourcesContent className="grid gap-3">
         {sources.map((source, index) => (
           <div className="border-border rounded-md border px-4 py-3" key={source.id}>
             <div className="flex items-start justify-between gap-3">
@@ -44,7 +48,7 @@ export function ChatRagSources({ message }: ChatRagSourcesProps) {
             <p className="text-muted-foreground mt-3 line-clamp-3 text-sm">{source.content}</p>
           </div>
         ))}
-      </div>
-    </div>
+      </SourcesContent>
+    </Sources>
   );
 }
