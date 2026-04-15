@@ -17,6 +17,7 @@
 - [testing.md](./testing.md): 测试命令、测试分层、当前覆盖范围
 - [i18n-guide.md](./i18n-guide.md): 国际化实现方式和扩展规则
 - [capability-mapping.md](./capability-mapping.md): 当前能力边界和落点简表
+- [sandbox-implementation.md](./sandbox-implementation.md): Sandbox 当前范围、E2B 选择与后续接入顺序
 
 历史记录：
 
