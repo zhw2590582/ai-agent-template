@@ -6,6 +6,7 @@ export const zhCNSkillsMessages = {
     skills_description: '先按 URL 保存 skill 条目。真实导入和执行能力后续再逐步接入。',
     empty_state: '还没有添加任何 skill，可以先导入一个 skill URL。',
     add_skill: '导入 Skill',
+    add_skill_tooltip: '正在开发中',
     add_skill_title: '导入 Skill',
     add_skill_description: '先保存 skill 的来源 URL。当前会由系统自动生成展示元数据。',
     edit_skill: '编辑 Skill',

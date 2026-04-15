@@ -8,6 +8,7 @@ export const enUSSkillsMessages = {
       'Add skill entries by URL first. Runtime import and execution will be layered in later.',
     empty_state: 'No skills added yet. Start by importing one skill URL.',
     add_skill: 'Import Skill',
+    add_skill_tooltip: 'In development',
     add_skill_title: 'Import Skill',
     add_skill_description:
       'Save a skill source URL first. The system will derive the display metadata for now.',

@@ -10,8 +10,7 @@ import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workb
 import { SkillEditorDialog } from '@/features/skills/components/skill-editor-dialog';
 import { SkillList } from '@/features/skills/components/skill-list';
 import { useSkillsSettings } from '@/features/skills/hooks/use-skills-settings';
-import { createSkillDraft } from '@/features/skills/settings';
-import type { SkillDefinition, SkillsSettings } from '@/features/skills/types';
+import type { SkillsSettings } from '@/features/skills/types';
 
 interface SkillsContentProps {
   onClose?: () => void;
@@ -24,8 +23,6 @@ interface SkillsContentProps {
 export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: SkillsContentProps) {
   const t = useTranslations();
   const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
-  const [editingSkillDraft, setEditingSkillDraft] = useState<SkillDefinition | null>(null);
-  const [editorMode, setEditorMode] = useState<'add' | 'edit'>('edit');
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const {
     deleteSkill,
@@ -45,8 +42,7 @@ export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: Ski
     settings,
   });
 
-  const editingSkill =
-    editingSkillDraft ?? localSettings.skills.find((skill) => skill.id === editingSkillId) ?? null;
+  const editingSkill = localSettings.skills.find((skill) => skill.id === editingSkillId) ?? null;
 
   return (
     <WorkbenchDialogPanel
@@ -94,11 +90,6 @@ export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: Ski
           clearDeleteTarget={() => setDeleteTargetId(null)}
           deleteTargetId={deleteTargetId}
           skills={localSettings.skills}
-          onAddSkill={() => {
-            setEditorMode('add');
-            setEditingSkillDraft(createSkillDraft(localSettings.skills.length + 1));
-            setEditingSkillId(null);
-          }}
           onConfirmDelete={async () => {
             if (!deleteTargetId) {
               return;
@@ -109,11 +100,7 @@ export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: Ski
             }
           }}
           onDeleteSkill={(skillId) => setDeleteTargetId(skillId)}
-          onEditSkill={(skillId) => {
-            setEditorMode('edit');
-            setEditingSkillDraft(null);
-            setEditingSkillId(skillId);
-          }}
+          onEditSkill={(skillId) => setEditingSkillId(skillId)}
           onToggleSkillEnabled={(skillId, enabled) => {
             updateSettings((current) => ({
               ...current,
@@ -128,15 +115,14 @@ export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: Ski
       <SkillEditorDialog
         key={editingSkill?.id ?? 'skills-editor'}
         initialSkill={editingSkill}
-        mode={editorMode}
+        mode="edit"
         open={editingSkill != null}
         onOpenChange={(open) => {
           if (!open) {
             setEditingSkillId(null);
-            setEditingSkillDraft(null);
           }
         }}
-        onSave={(skill) => saveSkill(skill, editorMode)}
+        onSave={(skill) => saveSkill(skill, 'edit')}
       />
     </WorkbenchDialogPanel>
   );

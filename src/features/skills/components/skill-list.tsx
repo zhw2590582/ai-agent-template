@@ -16,12 +16,12 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SkillDefinition } from '@/features/skills/types';
 
 interface SkillListProps {
   clearDeleteTarget: () => void;
   deleteTargetId: string | null;
-  onAddSkill: () => void;
   onConfirmDelete: () => Promise<void> | void;
   onDeleteSkill: (skillId: string) => void;
   onEditSkill: (skillId: string) => void;
@@ -32,7 +32,6 @@ interface SkillListProps {
 export function SkillList({
   clearDeleteTarget,
   deleteTargetId,
-  onAddSkill,
   onConfirmDelete,
   onDeleteSkill,
   onEditSkill,
@@ -50,10 +49,17 @@ export function SkillList({
             <h2 className="text-xl font-semibold">{t('skills_page.skills_title')}</h2>
             <p className="text-muted-foreground text-sm">{t('skills_page.skills_description')}</p>
           </div>
-          <Button type="button" variant="outline" onClick={onAddSkill}>
-            <PlusIcon data-icon="inline-start" />
-            {t('skills_page.add_skill')}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex">
+                <Button disabled type="button" variant="outline">
+                  <PlusIcon data-icon="inline-start" />
+                  {t('skills_page.add_skill')}
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{t('skills_page.add_skill_tooltip')}</TooltipContent>
+          </Tooltip>
         </div>
 
         <div className="border-border overflow-hidden rounded-md border">
