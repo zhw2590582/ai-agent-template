@@ -24,7 +24,7 @@
 ## 技术选择
 
 - 向量存储：`Supabase Postgres + pgvector`
-- embedding provider：当前通过 `EmbeddingProvider` 抽象接入 `Voyage` 官方 SDK
+- embedding provider：当前通过 `EmbeddingProvider` 抽象接入 `Voyage` HTTP API
 - 聊天注入：`chat-request-context -> generateText workflow`
 
 ## 配置方式
