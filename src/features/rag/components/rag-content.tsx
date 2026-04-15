@@ -9,7 +9,6 @@ import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workb
 import { RagConnectionSection } from '@/features/rag/components/rag-connection-section';
 import { RagDocumentList } from '@/features/rag/components/rag-document-list';
 import { RagImportSection } from '@/features/rag/components/rag-import-section';
-import { RagRetrievalSection } from '@/features/rag/components/rag-retrieval-section';
 import { useRagDocuments } from '@/features/rag/hooks/use-rag-documents';
 import { useRagSettings } from '@/features/rag/hooks/use-rag-settings';
 import type { RagSettings } from '@/features/rag/types';
@@ -116,7 +115,6 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
             isLoading={isLoading}
             onDelete={deleteDocument}
           />
-          <RagRetrievalSection settings={localSettings} onUpdateSettings={updateSettings} />
         </section>
       </div>
     </WorkbenchDialogPanel>
