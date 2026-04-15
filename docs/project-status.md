@@ -62,11 +62,11 @@
 - `/api/mcp` 仍保留为未来“本项目自己的 MCP server”入口
 - 当前远程 MCP 管理能力已落到 `src/features/mcp/*` 和 `/api/mcp/test`
 - `Skills` 当前已完成 workbench 管理 UI 和 `profile.settings.skills` 持久化，但还没有真实导入、兼容性解析和运行时接入
-- `server/types.ts` 已为 RAG / Planning / Multi-Agent 预留类型
+- `RAG` 当前已完成 `profile.settings.rag`、Supabase `pgvector` migration、retrieval helper 和聊天注入主链路，但还没有文档导入与来源展示 UI
+- `server/types.ts` 已为 Planning / Multi-Agent 预留类型
 
 ### 仍是占位
 
-- RAG
 - Planning
 - Multi-Agent / Subagent
 - Settings 页面
@@ -78,6 +78,7 @@
 - MCP 已经不再是纯占位
 - 但当前只完成“远程 MCP tools integration”
 - 本项目自己的 MCP server 还没实现
+- RAG 也不再是纯占位，但当前仍属于“服务端主链路先落地、UI 后补”的阶段
 
 ## 当前产品范围
 

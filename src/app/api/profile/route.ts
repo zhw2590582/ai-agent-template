@@ -75,6 +75,13 @@ const profilePatchSchema = z.object({
       selectedChatModelId: z.string().nullable().optional(),
       selectedProviderId: z.string().min(1),
     }),
+    rag: z.object({
+      enabled: z.boolean().optional(),
+      knowledgeBaseId: z.string().nullable().optional(),
+      matchCount: z.number().int().optional(),
+      matchThreshold: z.number().optional(),
+      maxContextCharacters: z.number().int().optional(),
+    }),
     search: z.object({
       crawl: z
         .object({

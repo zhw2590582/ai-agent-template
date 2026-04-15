@@ -46,6 +46,15 @@ export const chatPostSchema = z.object({
       ),
     })
     .optional(),
+  ragSettings: z
+    .object({
+      enabled: z.boolean(),
+      knowledgeBaseId: z.string().nullable(),
+      matchCount: z.number().int(),
+      matchThreshold: z.number(),
+      maxContextCharacters: z.number().int(),
+    })
+    .optional(),
   sandboxSettings: z
     .object({
       access: z.object({

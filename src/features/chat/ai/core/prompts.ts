@@ -11,6 +11,7 @@ export function getSystemPrompt(
   locale: Locale = DEFAULT_LOCALE,
   options?: {
     memoryContext?: string | null;
+    ragContext?: string | null;
   }
 ): string {
   const memorySection = options?.memoryContext
@@ -19,11 +20,17 @@ export function getSystemPrompt(
 Long-term memory:
 ${options.memoryContext}`
     : '';
+  const ragSection = options?.ragContext
+    ? `
+
+Retrieved knowledge base:
+${options.ragContext}`
+    : '';
 
   return `${DEFAULT_SYSTEM_PROMPT}
 
 Context:
-- User locale: ${locale}${memorySection}`;
+- User locale: ${locale}${memorySection}${ragSection}`;
 }
 
 export { DEFAULT_SYSTEM_PROMPT };

@@ -2,7 +2,8 @@
  * Supabase Database type definitions.
  *
  * Derived from the SQL schema in supabase/migrations/20260412_profiles_conversations.sql
- * and supabase/migrations/20260413_memory_v1.sql.
+ * and supabase/migrations/20260413_memory_v1.sql
+ * and supabase/migrations/20260415_rag_v1.sql.
  * When the schema changes, update this file to match.
  * If supabase CLI is configured, regenerate with: npx supabase gen types typescript --local
  */
@@ -120,6 +121,96 @@ export interface Database {
           source?: string;
           status?: string;
           metadata?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      rag_knowledge_bases: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      rag_documents: {
+        Row: {
+          id: string;
+          knowledge_base_id: string;
+          title: string;
+          source: string | null;
+          content_hash: string | null;
+          metadata: Record<string, unknown>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          knowledge_base_id: string;
+          title: string;
+          source?: string | null;
+          content_hash?: string | null;
+          metadata?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          knowledge_base_id?: string;
+          title?: string;
+          source?: string | null;
+          content_hash?: string | null;
+          metadata?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      rag_chunks: {
+        Row: {
+          id: string;
+          document_id: string;
+          chunk_index: number;
+          content: string;
+          metadata: Record<string, unknown>;
+          embedding: number[] | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          document_id: string;
+          chunk_index: number;
+          content: string;
+          metadata?: Record<string, unknown>;
+          embedding?: number[] | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          document_id?: string;
+          chunk_index?: number;
+          content?: string;
+          metadata?: Record<string, unknown>;
+          embedding?: number[] | null;
           created_at?: string;
           updated_at?: string;
         };

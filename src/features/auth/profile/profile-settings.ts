@@ -4,6 +4,8 @@ import type { AppProfileSettings, MemorySettings } from '@/features/auth/profile
 import type { McpSettings } from '@/features/mcp/types';
 import { normalizeMcpSettings } from '@/features/mcp/settings';
 import type { ModelsSettings, ProviderSettings } from '@/features/models/types';
+import type { RagSettings } from '@/features/rag/types';
+import { normalizeRagSettings } from '@/features/rag/settings';
 import type { SandboxSettings } from '@/features/sandbox/types';
 import { normalizeSandboxSettings } from '@/features/sandbox/settings';
 import type { SearchSettings } from '@/features/search/types';
@@ -107,6 +109,20 @@ function readSearchSettings(input: unknown): Partial<SearchSettings> | undefined
     input.search != null
   ) {
     return input.search as Partial<SearchSettings>;
+  }
+
+  return undefined;
+}
+
+function readRagSettings(input: unknown): Partial<RagSettings> | undefined {
+  if (
+    typeof input === 'object' &&
+    input != null &&
+    'rag' in input &&
+    typeof input.rag === 'object' &&
+    input.rag != null
+  ) {
+    return input.rag as Partial<RagSettings>;
   }
 
   return undefined;
@@ -230,11 +246,12 @@ export function normalizeProfileSettings(input?: unknown) {
   };
 
   const search = normalizeSearchSettings(readSearchSettings(input));
+  const rag = normalizeRagSettings(readRagSettings(input));
   const sandbox = normalizeSandboxSettings(readSandboxSettings(input));
   const mcp = normalizeMcpSettings(readMcpSettings(input));
   const skills = normalizeSkillsSettings(readSkillsSettings(input));
 
-  return { memory, mcp, models, sandbox, search, skills } satisfies AppProfileSettings;
+  return { memory, mcp, models, rag, sandbox, search, skills } satisfies AppProfileSettings;
 }
 
 export function getOrderedProviders(settings: AppProfileSettings) {

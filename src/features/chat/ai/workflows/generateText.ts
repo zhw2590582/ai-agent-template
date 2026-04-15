@@ -23,6 +23,7 @@ interface RunGenerateTextWorkflowOptions {
     serverName: string;
   }>;
   persistedConversationSummary?: string | null;
+  ragContext?: string | null;
   runtimeModel: ChatRuntimeModel;
   tools: ToolSet;
 }
@@ -36,6 +37,7 @@ export async function runGenerateTextWorkflow({
   messages,
   mcpInjectedTools = [],
   persistedConversationSummary,
+  ragContext,
   runtimeModel,
   tools,
 }: RunGenerateTextWorkflowOptions) {
@@ -47,6 +49,7 @@ export async function runGenerateTextWorkflow({
     model: getRuntimeChatModel(runtimeModel),
     system: getSystemPrompt(locale, {
       memoryContext,
+      ragContext,
     }),
     messages: await buildChatMessagesWithSummary(
       messages,

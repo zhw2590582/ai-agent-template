@@ -1,0 +1,53 @@
+import { RAG_CONFIG } from '@/config/rag';
+import type { RagSettings } from '@/features/rag/types';
+
+export const DEFAULT_RAG_SETTINGS: RagSettings = {
+  enabled: false,
+  knowledgeBaseId: null,
+  matchCount: RAG_CONFIG.DEFAULT_MATCH_COUNT,
+  matchThreshold: RAG_CONFIG.DEFAULT_MATCH_THRESHOLD,
+  maxContextCharacters: RAG_CONFIG.DEFAULT_MAX_CONTEXT_CHARACTERS,
+};
+
+function clampInteger(value: unknown, fallback: number, min: number, max: number) {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return fallback;
+  }
+
+  return Math.min(max, Math.max(min, Math.round(value)));
+}
+
+function clampFloat(value: unknown, fallback: number, min: number, max: number) {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return fallback;
+  }
+
+  return Math.min(max, Math.max(min, value));
+}
+
+export function normalizeRagSettings(input?: Partial<RagSettings> | null): RagSettings {
+  return {
+    enabled: input?.enabled ?? DEFAULT_RAG_SETTINGS.enabled,
+    knowledgeBaseId:
+      typeof input?.knowledgeBaseId === 'string' && input.knowledgeBaseId.trim().length > 0
+        ? input.knowledgeBaseId.trim()
+        : null,
+    matchCount: clampInteger(
+      input?.matchCount,
+      DEFAULT_RAG_SETTINGS.matchCount,
+      1,
+      RAG_CONFIG.MAX_MATCH_COUNT
+    ),
+    matchThreshold: clampFloat(input?.matchThreshold, DEFAULT_RAG_SETTINGS.matchThreshold, 0, 1),
+    maxContextCharacters: clampInteger(
+      input?.maxContextCharacters,
+      DEFAULT_RAG_SETTINGS.maxContextCharacters,
+      500,
+      RAG_CONFIG.MAX_CONTEXT_CHARACTERS
+    ),
+  };
+}
+
+export function hasRagAccess(settings: RagSettings | null | undefined) {
+  return Boolean(settings?.enabled);
+}

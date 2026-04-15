@@ -3,6 +3,7 @@ import type { UIMessage } from 'ai';
 import { AI_CONFIG } from '@/config/chat';
 import { AppError, ErrorCode, handleErrorWithLocale } from '@/lib/errors';
 import { t } from '@/lib/i18n';
+import { logger } from '@/lib/logger';
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server';
 import { validateRequest } from '@/lib/validation';
 import { runGenerateTextWorkflow } from '@/features/chat/ai/workflows';
@@ -12,7 +13,10 @@ import {
   resolveChatRequestLocale,
 } from '@/features/chat/server/chat-request-context';
 import { chatPostSchema } from '@/features/chat/server/schemas';
+import { getMessageText } from '@/features/chat/storage/conversation-analysis';
 import { assertChatCapableRuntimeModel } from '@/features/models/utils/model-capabilities';
+import { buildRagContext, retrieveRelevantChunks } from '@/features/rag/server/retrieval';
+import { hasRagAccess } from '@/features/rag/settings';
 
 export const maxDuration = AI_CONFIG.CHAT_MAX_DURATION;
 
@@ -25,6 +29,7 @@ export async function handleChatPost(request: Request) {
       conversationSummary,
       mcpSettings,
       messages,
+      ragSettings,
       runtimeModel,
       sandboxSettings,
       searchSettings,
@@ -53,14 +58,40 @@ export async function handleChatPost(request: Request) {
       memorySettings,
       mcpInjectedTools,
       persistedConversationSummary,
+      ragSettings: resolvedRagSettings,
     } = await loadChatRequestContext({
       conversationId: resolvedConversationId,
       mcpSettings,
+      ragSettings,
       sandboxSettings,
       searchSettings,
       supabase,
       user,
     });
+
+    let ragContext: string | null = null;
+    if (user && resolvedRagSettings && hasRagAccess(resolvedRagSettings)) {
+      const latestUserMessage = [...(messages as unknown as UIMessage[])]
+        .reverse()
+        .find((message) => message.role === 'user');
+      const latestUserQuery = latestUserMessage ? getMessageText(latestUserMessage) : '';
+
+      if (latestUserQuery) {
+        try {
+          const retrievedChunks = await retrieveRelevantChunks({
+            query: latestUserQuery,
+            ragSettings: resolvedRagSettings,
+            supabase,
+            userId: user.id,
+          });
+          ragContext = buildRagContext(retrievedChunks, resolvedRagSettings);
+        } catch (ragError) {
+          logger.warn('Chat request: failed to retrieve RAG context', {
+            error: ragError instanceof Error ? ragError.message : String(ragError),
+          });
+        }
+      }
+    }
 
     let result;
     try {
@@ -73,6 +104,7 @@ export async function handleChatPost(request: Request) {
         messages: messages as unknown as UIMessage[],
         mcpInjectedTools,
         persistedConversationSummary,
+        ragContext,
         runtimeModel,
         tools: agentTools,
       });

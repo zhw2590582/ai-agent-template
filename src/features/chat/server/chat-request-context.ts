@@ -15,6 +15,8 @@ import { buildMemoryContext, listMemoriesForUser } from '@/features/memory/stora
 import { createMcpAgentToolBundles } from '@/features/mcp/server/mcp-client';
 import { normalizeMcpSettings } from '@/features/mcp/settings';
 import type { McpSettings } from '@/features/mcp/types';
+import { normalizeRagSettings } from '@/features/rag/settings';
+import type { RagSettings } from '@/features/rag/types';
 import { normalizeSandboxSettings, hasSandboxAccess } from '@/features/sandbox/settings';
 import { SandboxSession } from '@/features/sandbox/server/e2b-client';
 import type { SandboxSettings } from '@/features/sandbox/types';
@@ -28,6 +30,14 @@ export interface ChatProfileMemorySettings {
   enabled?: boolean;
   recentMessageWindow?: number;
   summaryMinMessages?: number;
+}
+
+export interface ChatProfileRagSettings {
+  enabled?: boolean;
+  knowledgeBaseId?: string | null;
+  matchCount?: number;
+  matchThreshold?: number;
+  maxContextCharacters?: number;
 }
 
 export function resolveChatRequestLocale(request: Request): Locale {
@@ -72,6 +82,20 @@ export function resolveProfileMemorySettings(profile: Awaited<ReturnType<typeof 
   return null;
 }
 
+export function resolveProfileRagSettings(profile: Awaited<ReturnType<typeof getProfileById>>) {
+  if (
+    typeof profile?.settings === 'object' &&
+    profile.settings != null &&
+    'rag' in profile.settings &&
+    typeof profile.settings.rag === 'object' &&
+    profile.settings.rag != null
+  ) {
+    return profile.settings.rag as ChatProfileRagSettings;
+  }
+
+  return null;
+}
+
 export function resolveSearchSettings(input: unknown): SearchSettings | null {
   if (typeof input !== 'object' || input == null) {
     return null;
@@ -96,9 +120,18 @@ export function resolveSandboxSettings(input: unknown): SandboxSettings | null {
   return normalizeSandboxSettings(input);
 }
 
+export function resolveRagSettings(input: unknown): RagSettings | null {
+  if (typeof input !== 'object' || input == null) {
+    return null;
+  }
+
+  return normalizeRagSettings(input);
+}
+
 interface LoadChatRequestContextOptions {
   conversationId: string | null;
   mcpSettings: unknown;
+  ragSettings: unknown;
   sandboxSettings: unknown;
   searchSettings: unknown;
   supabase: SupabaseClient;
@@ -108,6 +141,7 @@ interface LoadChatRequestContextOptions {
 export async function loadChatRequestContext({
   conversationId,
   mcpSettings,
+  ragSettings,
   sandboxSettings,
   searchSettings,
   supabase,
@@ -116,6 +150,7 @@ export async function loadChatRequestContext({
   let persistedConversationSummary: string | null = null;
   let memoryContext: string | null = null;
   let memorySettings: ChatProfileMemorySettings | null = null;
+  let resolvedProfileRagSettings: RagSettings | null = null;
   let mcpServerNames: string[] = [];
   let mcpInjectedTools: Array<{
     injectedToolName: string;
@@ -127,6 +162,7 @@ export async function loadChatRequestContext({
 
   const resolvedSearchSettings = resolveSearchSettings(searchSettings);
   const resolvedMcpSettings = resolveMcpSettings(mcpSettings);
+  const resolvedRequestRagSettings = resolveRagSettings(ragSettings);
   const resolvedSandboxSettings = resolveSandboxSettings(sandboxSettings);
   const searchAgentTools = buildSearchAgentTools({
     searchSettings: resolvedSearchSettings,
@@ -183,6 +219,9 @@ export async function loadChatRequestContext({
     if (user) {
       const profile = await getProfileById(user.id, supabase);
       memorySettings = resolveProfileMemorySettings(profile);
+      resolvedProfileRagSettings = normalizeRagSettings(
+        resolvedRequestRagSettings ?? resolveProfileRagSettings(profile)
+      );
 
       if (memorySettings?.enabled && memorySettings.crossConversation) {
         const memories = await listMemoriesForUser(user.id, supabase);
@@ -214,6 +253,7 @@ export async function loadChatRequestContext({
       mcpInjectedTools,
       mcpServerNames,
       persistedConversationSummary,
+      ragSettings: resolvedProfileRagSettings ?? resolvedRequestRagSettings,
     };
   } catch (error) {
     await sandboxSession?.close('error');
