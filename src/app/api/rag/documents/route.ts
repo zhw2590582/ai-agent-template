@@ -49,7 +49,7 @@ export async function GET(request: Request) {
     });
     await upsertProfileFromAuthUser(user, {}, supabase);
 
-    return Response.json(await listRagDocumentsForUser(supabase, user.id));
+    return Response.json(await listRagDocumentsForUser(supabase));
   } catch (error) {
     return handleError(error);
   }

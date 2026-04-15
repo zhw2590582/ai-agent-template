@@ -109,7 +109,7 @@ export async function ensureDefaultKnowledgeBase(client: SupabaseClient<Database
   return mapKnowledgeBase(created);
 }
 
-export async function listRagDocumentsForUser(client: SupabaseClient<Database>, userId: string) {
+export async function listRagDocumentsForUser(client: SupabaseClient<Database>) {
   const ragDocuments = client.from('rag_documents') as unknown as RagDocumentsTable;
   const { data, error } = await ragDocuments
     .select('id, knowledge_base_id, title, source, content_hash, metadata, created_at, updated_at')
@@ -119,11 +119,8 @@ export async function listRagDocumentsForUser(client: SupabaseClient<Database>, 
     throw error;
   }
 
-  const knowledgeBase = await ensureDefaultKnowledgeBase(client, userId);
-
   return {
     documents: (data ?? []).map(mapDocument),
-    knowledgeBase,
   };
 }
 
