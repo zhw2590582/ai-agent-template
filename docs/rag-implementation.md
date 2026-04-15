@@ -10,6 +10,7 @@
 - 文档 / chunk / knowledge base 的数据库模型
 - 基于 embeddings 的 similarity retrieval
 - 聊天请求里的 retrieval context 注入
+- 当前检索范围固定为当前用户自己的 RAG 数据，不提供知识库级筛选输入
 
 当前 **未实现**：
 

@@ -67,7 +67,6 @@ export async function retrieveRelevantChunks({
   const embedding = await generateQueryEmbedding(query, ragSettings.apiKey);
 
   return matchRagChunks(supabase, {
-    filter_knowledge_base_id: ragSettings.knowledgeBaseId,
     filter_user_id: userId,
     match_count: ragSettings.matchCount,
     match_threshold: ragSettings.matchThreshold,

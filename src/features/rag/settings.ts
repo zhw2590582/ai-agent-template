@@ -4,7 +4,6 @@ import type { RagSettings } from '@/features/rag/types';
 export const DEFAULT_RAG_SETTINGS: RagSettings = {
   apiKey: '',
   enabled: false,
-  knowledgeBaseId: null,
   matchCount: RAG_CONFIG.DEFAULT_MATCH_COUNT,
   matchThreshold: RAG_CONFIG.DEFAULT_MATCH_THRESHOLD,
   maxContextCharacters: RAG_CONFIG.DEFAULT_MAX_CONTEXT_CHARACTERS,
@@ -30,10 +29,6 @@ export function normalizeRagSettings(input?: Partial<RagSettings> | null): RagSe
   return {
     apiKey: typeof input?.apiKey === 'string' ? input.apiKey : DEFAULT_RAG_SETTINGS.apiKey,
     enabled: input?.enabled ?? DEFAULT_RAG_SETTINGS.enabled,
-    knowledgeBaseId:
-      typeof input?.knowledgeBaseId === 'string' && input.knowledgeBaseId.trim().length > 0
-        ? input.knowledgeBaseId.trim()
-        : null,
     matchCount: clampInteger(
       input?.matchCount,
       DEFAULT_RAG_SETTINGS.matchCount,

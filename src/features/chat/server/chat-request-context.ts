@@ -33,8 +33,8 @@ export interface ChatProfileMemorySettings {
 }
 
 export interface ChatProfileRagSettings {
+  apiKey?: string;
   enabled?: boolean;
-  knowledgeBaseId?: string | null;
   matchCount?: number;
   matchThreshold?: number;
   maxContextCharacters?: number;

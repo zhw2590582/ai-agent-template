@@ -1,12 +1,12 @@
 'use client';
 
+import { ExternalLinkIcon, PlugZapIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import { RagConnectionSection } from '@/features/rag/components/rag-connection-section';
-import { RagKnowledgeSection } from '@/features/rag/components/rag-knowledge-section';
 import { RagRetrievalSection } from '@/features/rag/components/rag-retrieval-section';
 import { useRagSettings } from '@/features/rag/hooks/use-rag-settings';
 import type { RagSettings } from '@/features/rag/types';
@@ -23,8 +23,10 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
     isApiKeyVisible,
     isDirty,
     isSaving,
+    isTesting,
     localSettings,
     resetAndClose,
+    runConnectionTest,
     save,
     setIsApiKeyVisible,
     showSaved,
@@ -35,6 +37,8 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
     saveFailedMessage: t('rag_page.toast.save_failed'),
     saveSuccessMessage: t('rag_page.toast.save_success'),
     settings,
+    testFailedMessage: t('rag_page.toast.test_failed'),
+    testSuccessMessage: (dimensions) => t('rag_page.toast.test_success', { dimensions }),
   });
 
   return (
@@ -64,6 +68,29 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
               <h2 className="text-xl font-semibold">{t('rag_page.title')}</h2>
               <p className="text-muted-foreground max-w-2xl text-sm">{t('rag_page.description')}</p>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                disabled={!localSettings.apiKey.trim() || isTesting}
+                size="sm"
+                type="button"
+                variant="outline"
+                onClick={() => void runConnectionTest()}
+              >
+                {!isTesting ? <PlugZapIcon data-icon="inline-start" /> : null}
+                {isTesting ? <Spinner data-icon="inline-start" /> : null}
+                {t('rag_page.test_connection')}
+              </Button>
+              <Button asChild size="sm" type="button" variant="outline">
+                <a
+                  href="https://docs.voyageai.com/docs/api-key-and-python-client"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <ExternalLinkIcon data-icon="inline-start" />
+                  {t('rag_page.get_api_key')}
+                </a>
+              </Button>
+            </div>
           </div>
 
           <RagConnectionSection
@@ -72,7 +99,6 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
             onToggleApiKeyVisibility={() => setIsApiKeyVisible((current) => !current)}
             onUpdateSettings={updateSettings}
           />
-          <RagKnowledgeSection settings={localSettings} onUpdateSettings={updateSettings} />
           <RagRetrievalSection settings={localSettings} onUpdateSettings={updateSettings} />
         </section>
       </div>

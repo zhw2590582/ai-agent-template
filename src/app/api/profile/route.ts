@@ -78,7 +78,6 @@ const profilePatchSchema = z.object({
     rag: z.object({
       apiKey: z.string().optional(),
       enabled: z.boolean().optional(),
-      knowledgeBaseId: z.string().nullable().optional(),
       matchCount: z.number().int().optional(),
       matchThreshold: z.number().optional(),
       maxContextCharacters: z.number().int().optional(),

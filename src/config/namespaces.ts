@@ -9,6 +9,7 @@ export const API_NAMESPACES = {
   MEMORIES_WRITE: 'api:memories:write',
   PROFILE_READ: 'api:profile:read',
   PROFILE_WRITE: 'api:profile:write',
+  RAG_TEST: 'api:rag:test',
   SEARCH_TEST: 'api:search:test',
   SANDBOX_TEST: 'api:sandbox:test',
 } as const;

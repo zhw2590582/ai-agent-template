@@ -12,6 +12,8 @@ interface UseRagSettingsOptions {
   saveFailedMessage: string;
   saveSuccessMessage: string;
   settings: RagSettings;
+  testFailedMessage: string;
+  testSuccessMessage: (dimensions: string) => string;
 }
 
 export function useRagSettings({
@@ -20,10 +22,13 @@ export function useRagSettings({
   saveFailedMessage,
   saveSuccessMessage,
   settings,
+  testFailedMessage,
+  testSuccessMessage,
 }: UseRagSettingsOptions) {
   const [localSettings, setLocalSettings] = useState(settings);
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
 
   useEffect(() => {
@@ -46,6 +51,34 @@ export function useRagSettings({
 
   const updateSettings = (updater: (settings: RagSettings) => RagSettings) => {
     setLocalSettings((current) => updater(current));
+  };
+
+  const runConnectionTest = async () => {
+    setIsTesting(true);
+    try {
+      const response = await fetch('/api/rag/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          apiKey: localSettings.apiKey,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as {
+          error?: { message?: string };
+        } | null;
+        toast.error(data?.error?.message || testFailedMessage);
+        return;
+      }
+
+      const data = (await response.json()) as { dimensions?: number };
+      toast.success(testSuccessMessage(String(data.dimensions ?? 0)));
+    } finally {
+      setIsTesting(false);
+    }
   };
 
   const resetAndClose = () => {
@@ -74,8 +107,10 @@ export function useRagSettings({
     isApiKeyVisible,
     isDirty,
     isSaving,
+    isTesting,
     localSettings,
     resetAndClose,
+    runConnectionTest,
     save,
     setIsApiKeyVisible,
     showSaved,
