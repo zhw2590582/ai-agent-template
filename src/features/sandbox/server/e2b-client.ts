@@ -194,6 +194,19 @@ export async function testSandboxConnection(settings: SandboxSettings) {
   }
 }
 
+export type SandboxSessionCloseReason = 'completed' | 'error' | 'idle_timeout';
+
+export type SandboxSessionLifecycleEvent =
+  | { type: 'connect_failed' }
+  | { type: 'connected'; sandboxId: string }
+  | { type: 'connecting' }
+  | { type: 'recovering' }
+  | { reason: SandboxSessionCloseReason; type: 'closed' };
+
+interface SandboxSessionOptions {
+  onLifecycleEvent?: (event: SandboxSessionLifecycleEvent) => void;
+}
+
 async function closeSandboxQuietly(sandbox: Sandbox) {
   try {
     await sandbox.kill();
@@ -205,11 +218,17 @@ async function closeSandboxQuietly(sandbox: Sandbox) {
 export class SandboxSession {
   private idleCloseTimer: ReturnType<typeof setTimeout> | null = null;
 
+  private readonly options?: SandboxSessionOptions;
+
   private readonly workspaceRoot: string;
 
   private sandboxPromise: Promise<Sandbox> | null = null;
 
-  constructor(private readonly settings: SandboxSettings) {
+  constructor(
+    private readonly settings: SandboxSettings,
+    options?: SandboxSessionOptions
+  ) {
+    this.options = options;
     this.workspaceRoot = getWorkspaceRoot(settings);
   }
 
@@ -252,6 +271,9 @@ export class SandboxSession {
         operationName,
       });
 
+      this.options?.onLifecycleEvent?.({
+        type: 'recovering',
+      });
       await this.resetBrokenSession();
 
       const recoveredSandbox = await this.getSandbox();
@@ -281,7 +303,25 @@ export class SandboxSession {
 
   async getSandbox() {
     if (!this.sandboxPromise) {
-      this.sandboxPromise = createE2BSandbox(this.settings);
+      this.options?.onLifecycleEvent?.({
+        type: 'connecting',
+      });
+      this.sandboxPromise = createE2BSandbox(this.settings)
+        .then((sandbox) => {
+          this.options?.onLifecycleEvent?.({
+            sandboxId: sandbox.sandboxId,
+            type: 'connected',
+          });
+
+          return sandbox;
+        })
+        .catch((error) => {
+          this.sandboxPromise = null;
+          this.options?.onLifecycleEvent?.({
+            type: 'connect_failed',
+          });
+          throw error;
+        });
     }
 
     return this.sandboxPromise;
@@ -387,10 +427,14 @@ export class SandboxSession {
     }
   }
 
-  async close(reason: 'completed' | 'error' | 'idle_timeout' = 'completed') {
+  async close(reason: SandboxSessionCloseReason = 'completed') {
     this.clearIdleCloseTimer();
 
     if (!this.sandboxPromise) {
+      this.options?.onLifecycleEvent?.({
+        reason,
+        type: 'closed',
+      });
       return;
     }
 
@@ -404,6 +448,11 @@ export class SandboxSession {
       logger.warn('Sandbox session: close failed', {
         error: error instanceof Error ? error.message : String(error),
         reason,
+      });
+    } finally {
+      this.options?.onLifecycleEvent?.({
+        reason,
+        type: 'closed',
       });
     }
   }

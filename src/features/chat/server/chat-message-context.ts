@@ -4,7 +4,7 @@ import {
   buildConversationSummaryContext,
   resolveConversationSummaryConfig,
 } from '@/features/chat/ai/memory/summary';
-import type { ChatProfileMemorySettings } from '@/features/chat/server/chat-request-context';
+import type { ChatProfileMemorySettings } from '@/features/chat/agent-runtime/types';
 
 export async function buildChatMessagesWithSummary(
   messages: UIMessage[],
