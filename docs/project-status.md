@@ -95,6 +95,7 @@
 
 - Skills runtime contract
 - durable run storage / replay
+- 图片和附件输入链路
 
 关键位置：
 
@@ -108,6 +109,10 @@
 - client 代码只从 `agent-runtime/client` 取值
 - server 代码只从 `agent-runtime/server` 取值
 - `chat.ts` 保持薄入口，不重新堆回编排细节
+
+后续待补：
+
+- 聊天输入目前仍是文本优先；发送图片和通用附件的上传、引用、持久化和消息展示链路还没有实现
 
 已知问题：
 
