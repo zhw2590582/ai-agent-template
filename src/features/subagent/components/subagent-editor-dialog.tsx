@@ -68,7 +68,7 @@ export function SubagentEditorDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto pr-1">
+        <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto px-1">
           <div className="border-border flex items-center justify-between gap-4 rounded-md border px-4 py-3">
             <div className="flex flex-col gap-1">
               <h3 className="text-sm font-medium">{t('subagent_page.agent_enabled_label')}</h3>
