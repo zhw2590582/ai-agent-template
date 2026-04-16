@@ -4,6 +4,7 @@ import { Sandbox } from 'e2b';
 
 import { SANDBOX_CONFIG } from '@/config/sandbox';
 import { logger } from '@/lib/logger';
+import { resolveSandboxWorkingDirectory } from '@/features/sandbox/settings';
 import type { SandboxSettings } from '@/features/sandbox/types';
 
 const SESSION_RECOVERY_ERROR_PATTERNS = [
@@ -104,9 +105,11 @@ function isRecoverableSandboxError(error: unknown) {
 }
 
 function getWorkspaceRoot(settings: SandboxSettings) {
-  return pathPosix.resolve(
-    settings.workingDirectory.trim() || SANDBOX_CONFIG.DEFAULT_WORKING_DIRECTORY
-  );
+  return pathPosix.resolve(resolveSandboxWorkingDirectory(settings.workingDirectory));
+}
+
+function quoteShellArgument(value: string) {
+  return `'${value.replaceAll("'", `'\"'\"'`)}'`;
 }
 
 function ensureWorkspacePath(path: string, workspaceRoot: string) {
@@ -301,13 +304,20 @@ export class SandboxSession {
     }
   }
 
+  private async ensureWorkspaceRootExists(sandbox: Sandbox) {
+    await sandbox.commands.run(`mkdir -p -- ${quoteShellArgument(this.workspaceRoot)}`, {
+      timeoutMs: 10_000,
+    });
+  }
+
   async getSandbox() {
     if (!this.sandboxPromise) {
       this.options?.onLifecycleEvent?.({
         type: 'connecting',
       });
       this.sandboxPromise = createE2BSandbox(this.settings)
-        .then((sandbox) => {
+        .then(async (sandbox) => {
+          await this.ensureWorkspaceRootExists(sandbox);
           this.options?.onLifecycleEvent?.({
             sandboxId: sandbox.sandboxId,
             type: 'connected',

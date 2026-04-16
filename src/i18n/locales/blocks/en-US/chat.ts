@@ -11,6 +11,7 @@ export const enUSChatMessages = {
     },
     composer: {
       placeholder: 'Send a message to AI Agent',
+      disclaimer: 'AI Agent can make mistakes. Verify important information.',
       suggestions: {
         latest_ai_trends: 'What are the latest trends in AI?',
         machine_learning: 'How does machine learning work?',

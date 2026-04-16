@@ -20,6 +20,16 @@ export function getSandboxToolPolicy(settings: SandboxSettings | null | undefine
   };
 }
 
+export function resolveSandboxWorkingDirectory(workingDirectory: string | null | undefined) {
+  const trimmed = workingDirectory?.trim();
+
+  if (!trimmed || trimmed === SANDBOX_CONFIG.LEGACY_DEFAULT_WORKING_DIRECTORY) {
+    return SANDBOX_CONFIG.DEFAULT_WORKING_DIRECTORY;
+  }
+
+  return trimmed;
+}
+
 export function normalizeSandboxSettings(input: unknown): SandboxSettings {
   const existing =
     typeof input === 'object' && input != null ? (input as Partial<SandboxSettings>) : undefined;
@@ -51,9 +61,6 @@ export function normalizeSandboxSettings(input: unknown): SandboxSettings {
       SANDBOX_CONFIG.TIMEOUT_MIN_SECONDS,
       SANDBOX_CONFIG.TIMEOUT_MAX_SECONDS
     ),
-    workingDirectory:
-      typeof existing?.workingDirectory === 'string' && existing.workingDirectory.trim().length > 0
-        ? existing.workingDirectory
-        : SANDBOX_CONFIG.DEFAULT_WORKING_DIRECTORY,
+    workingDirectory: resolveSandboxWorkingDirectory(existing?.workingDirectory),
   };
 }

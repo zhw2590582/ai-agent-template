@@ -11,6 +11,7 @@ export const zhCNChatMessages = {
     },
     composer: {
       placeholder: '给 AI Agent 发送消息',
+      disclaimer: 'AI Agent 也可能会犯错，请核查重要信息。',
       workspace_hint: '宽屏工作区，支持流式回复与工具调用',
       suggestions: {
         latest_ai_trends: 'AI 的最新趋势是什么？',

@@ -102,6 +102,9 @@ export function ChatComposer({
             />
           </PromptInputFooter>
         </PromptInput>
+        <p className="text-muted-foreground mt-2 px-1 text-center text-xs">
+          {t('chat.composer.disclaimer')}
+        </p>
       </div>
     </div>
   );

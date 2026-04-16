@@ -2,7 +2,11 @@ import { posix as pathPosix } from 'node:path';
 
 import { SANDBOX_CONFIG } from '@/config/sandbox';
 import { parseSandboxEnvVars } from '@/features/sandbox/server/e2b-client';
-import { getSandboxToolPolicy, hasSandboxAccess } from '@/features/sandbox/settings';
+import {
+  getSandboxToolPolicy,
+  hasSandboxAccess,
+  resolveSandboxWorkingDirectory,
+} from '@/features/sandbox/settings';
 import type { SandboxAccessSettings, SandboxSettings } from '@/features/sandbox/types';
 
 export interface AgentWorkspaceToolPolicy {
@@ -25,7 +29,7 @@ export interface AgentWorkspaceManifest {
 }
 
 function resolveWorkspaceRoot(workingDirectory: string) {
-  return pathPosix.resolve(workingDirectory.trim() || SANDBOX_CONFIG.DEFAULT_WORKING_DIRECTORY);
+  return pathPosix.resolve(resolveSandboxWorkingDirectory(workingDirectory));
 }
 
 export function buildWorkspaceManifest(options: {

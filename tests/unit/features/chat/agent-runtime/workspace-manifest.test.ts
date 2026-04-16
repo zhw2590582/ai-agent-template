@@ -72,4 +72,14 @@ describe('buildWorkspaceManifest', () => {
     expect(manifest?.template).toBe(SANDBOX_CONFIG.DEFAULT_TEMPLATE);
     expect(manifest?.workspaceRoot).toBe(SANDBOX_CONFIG.DEFAULT_WORKING_DIRECTORY);
   });
+
+  it('maps the legacy /workspace default to the current working directory default', () => {
+    const manifest = buildWorkspaceManifest({
+      sandboxSettings: createSandboxSettings({
+        workingDirectory: SANDBOX_CONFIG.LEGACY_DEFAULT_WORKING_DIRECTORY,
+      }),
+    });
+
+    expect(manifest?.workspaceRoot).toBe(SANDBOX_CONFIG.DEFAULT_WORKING_DIRECTORY);
+  });
 });
