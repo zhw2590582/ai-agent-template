@@ -25,6 +25,8 @@
 - durable run storage / resume
 - 本项目自己的正式 MCP server
 
+换句话说：当前项目已经具备 V1 `agent harness`，但还没有进入 `agent platform` 阶段；后者通常还包括长任务、恢复、审计和策略治理。
+
 ## 建议先看
 
 1. [architecture.md](./architecture.md)

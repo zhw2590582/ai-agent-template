@@ -24,6 +24,8 @@
 
 `OpenAI Agents SDK` 这次讨论带来的主要价值，是帮助我们明确“应该怎样重构自己的运行时边界”，而不是立刻替换现有聊天链路。
 
+当前目标是先把本仓库的 V1 `agent harness` 做稳，而不是提前扩成 `agent platform`；后者通常还意味着长任务、恢复、Planning、Subagent、审计和策略治理。
+
 ## 什么是 Agent Harness
 
 `agent harness` 指的是“把模型真正跑起来的那层运行时骨架”。
