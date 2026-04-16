@@ -16,7 +16,6 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import type { SubagentDefinition } from '@/features/subagent/types';
 import {
   Select,
@@ -96,15 +95,30 @@ export function SubagentEditorDialog({
             <label className="text-sm font-medium" htmlFor="subagent-name">
               {t('subagent_page.name_label')}
             </label>
-            <Input
-              id="subagent-name"
-              placeholder={t('subagent_page.name_placeholder')}
-              value={agent.name}
-              onChange={(event) => {
-                const value = event.target.value;
-                setAgent((current) => (current ? { ...current, name: value } : current));
-              }}
-            />
+            <div className="flex items-center gap-3">
+              <Input
+                aria-label={t('subagent_page.theme_color_label')}
+                className="h-9 w-10 shrink-0 cursor-pointer p-1"
+                id="subagent-theme-color"
+                title={t('subagent_page.theme_color_label')}
+                type="color"
+                value={agent.themeColor}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setAgent((current) => (current ? { ...current, themeColor: value } : current));
+                }}
+              />
+              <Input
+                className="flex-1"
+                id="subagent-name"
+                placeholder={t('subagent_page.name_placeholder')}
+                value={agent.name}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setAgent((current) => (current ? { ...current, name: value } : current));
+                }}
+              />
+            </div>
             <p className="text-muted-foreground text-xs">{t('subagent_page.name_description')}</p>
           </div>
 
@@ -225,49 +239,6 @@ export function SubagentEditorDialog({
             <p className="text-muted-foreground text-xs">
               {t('subagent_page.tool_access_description')}
             </p>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium" htmlFor="subagent-theme-color">
-                  {t('subagent_page.theme_color_label')}
-                </label>
-                <p className="text-muted-foreground text-sm">
-                  {t('subagent_page.theme_color_description')}
-                </p>
-              </div>
-              <Badge variant={agent.enabled ? 'secondary' : 'outline'}>
-                {t('subagent_page.color_preview_badge')}
-              </Badge>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Input
-                className="h-10 w-16 p-1"
-                id="subagent-theme-color"
-                type="color"
-                value={agent.themeColor}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setAgent((current) => (current ? { ...current, themeColor: value } : current));
-                }}
-              />
-              <Input
-                className="flex-1"
-                placeholder={t('subagent_page.theme_color_placeholder')}
-                value={agent.themeColor}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setAgent((current) => (current ? { ...current, themeColor: value } : current));
-                }}
-              />
-              <span
-                aria-hidden
-                className="border-border size-8 shrink-0 rounded-full border"
-                style={{ backgroundColor: agent.themeColor }}
-              />
-            </div>
           </div>
         </div>
 

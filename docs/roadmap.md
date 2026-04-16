@@ -80,10 +80,11 @@
 优先做：
 
 1. 文档详情和重建索引体验
-2. 更细的错误反馈与观测
-3. 来源交互增强
-4. 补第二个 RAG provider，实现真正可替换
-5. 再评估 query rewrite / agentic RAG 的必要性
+2. 收紧 RAG 自动触发条件，减少数学题、纯推理题和无关请求的误触发
+3. 更细的错误反馈与观测
+4. 来源交互增强
+5. 补第二个 RAG provider，实现真正可替换
+6. 再评估 query rewrite / agentic RAG 的必要性
 
 ### 6. Agent Runtime 稳定化
 
