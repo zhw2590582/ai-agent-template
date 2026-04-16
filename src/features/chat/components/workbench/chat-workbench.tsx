@@ -95,6 +95,7 @@ interface ChatWorkbenchProps {
   initialMemories: MemoryListItem[];
   initialMessages: UIMessage[];
   invalidConversationId: boolean;
+  supabaseConfigured: boolean;
 }
 
 export function ChatWorkbench({
@@ -105,6 +106,7 @@ export function ChatWorkbench({
   invalidConversationId,
   initialMemories,
   initialMessages,
+  supabaseConfigured,
 }: ChatWorkbenchProps) {
   const t = useTranslations();
   const router = useRouter();
@@ -163,6 +165,7 @@ export function ChatWorkbench({
             activeView={activeDialogView ?? 'chat'}
             onOpenSidebarDrawer={() => setIsMobileSidebarOpen(true)}
             onOpenView={openView}
+            showAuthDialog={supabaseConfigured}
             t={t}
           />
           <ChatMessageList

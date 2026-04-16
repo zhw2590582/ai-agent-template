@@ -1,3 +1,4 @@
+import { isSupabaseConfigured } from '@/config/env';
 import { loadChatPageData } from '@/features/chat/data/chat-page-data';
 import { ChatHomePage } from '@/features/chat/pages/chat-home-page';
 
@@ -20,6 +21,7 @@ export async function ChatShellPage({ searchParams }: ChatShellPageProps) {
       invalidConversationId={pageData.invalidConversationId}
       initialMemories={pageData.memories}
       initialMessages={pageData.messages}
+      supabaseConfigured={isSupabaseConfigured()}
     />
   );
 }

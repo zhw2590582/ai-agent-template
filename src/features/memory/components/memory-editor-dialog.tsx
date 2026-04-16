@@ -11,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -100,11 +99,6 @@ export function MemoryEditorDialog({
               value={content}
             />
           </div>
-
-          <Input
-            readOnly
-            value={memory?.conversationId ?? t('memory_page.saved_memories.no_source')}
-          />
         </div>
 
         <DialogFooter>

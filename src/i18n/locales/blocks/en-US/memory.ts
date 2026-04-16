@@ -58,6 +58,12 @@ export const enUSMemoryMessages = {
       content_label: 'Summary',
       empty_title: 'No summaries yet',
       empty_description: 'Summaries appear after a conversation becomes long enough to need one.',
+      pagination: {
+        summary: 'Showing {start}-{end} of {total} summaries',
+        previous: 'Previous',
+        next: 'Next',
+        page: 'Go to page {page}',
+      },
     },
     toast: {
       delete_failed: 'Failed to delete memory.',

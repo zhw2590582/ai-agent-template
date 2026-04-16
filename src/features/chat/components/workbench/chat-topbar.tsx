@@ -23,6 +23,7 @@ interface ChatTopBarProps {
   activeView: WorkbenchView;
   onOpenSidebarDrawer: () => void;
   onOpenView: (view: Exclude<WorkbenchView, 'chat'>) => void;
+  showAuthDialog: boolean;
   t: TranslateFn;
 }
 
@@ -38,7 +39,13 @@ function getMobileTitle(activeView: WorkbenchView, t: TranslateFn) {
   return t(getHeaderNavItem(activeView).translationKey);
 }
 
-export function ChatTopBar({ activeView, onOpenSidebarDrawer, onOpenView, t }: ChatTopBarProps) {
+export function ChatTopBar({
+  activeView,
+  onOpenSidebarDrawer,
+  onOpenView,
+  showAuthDialog,
+  t,
+}: ChatTopBarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -75,23 +82,25 @@ export function ChatTopBar({ activeView, onOpenSidebarDrawer, onOpenView, t }: C
           >
             <SettingsIcon />
           </Button>
-          <AuthDialog
-            configurationMissingDescription={t('auth.configuration_missing_description')}
-            configurationMissingTitle={t('auth.configuration_missing_title')}
-            description={t('auth.description')}
-            githubLabel={t('auth.sign_in_with_github')}
-            googleLabel={t('auth.sign_in_with_google')}
-            privacyPolicyLabel={t('auth.privacy_policy')}
-            signInFailedLabel={t('auth.errors.sign_in_failed')}
-            signInLabel={t('auth.sign_in')}
-            signOutFailedLabel={t('auth.errors.sign_out_failed')}
-            signOutLabel={t('auth.sign_out')}
-            signOutSuccessLabel={t('auth.toast.sign_out_success')}
-            signedInAsLabel={t('auth.signed_in_as')}
-            termsAgreementLabel={t('auth.terms_agreement')}
-            termsOfServiceLabel={t('auth.terms_of_service')}
-            title={t('auth.title')}
-          />
+          {showAuthDialog ? (
+            <AuthDialog
+              configurationMissingDescription={t('auth.configuration_missing_description')}
+              configurationMissingTitle={t('auth.configuration_missing_title')}
+              description={t('auth.description')}
+              githubLabel={t('auth.sign_in_with_github')}
+              googleLabel={t('auth.sign_in_with_google')}
+              privacyPolicyLabel={t('auth.privacy_policy')}
+              signInFailedLabel={t('auth.errors.sign_in_failed')}
+              signInLabel={t('auth.sign_in')}
+              signOutFailedLabel={t('auth.errors.sign_out_failed')}
+              signOutLabel={t('auth.sign_out')}
+              signOutSuccessLabel={t('auth.toast.sign_out_success')}
+              signedInAsLabel={t('auth.signed_in_as')}
+              termsAgreementLabel={t('auth.terms_agreement')}
+              termsOfServiceLabel={t('auth.terms_of_service')}
+              title={t('auth.title')}
+            />
+          ) : null}
         </div>
       </div>
 
@@ -177,23 +186,25 @@ export function ChatTopBar({ activeView, onOpenSidebarDrawer, onOpenView, t }: C
             <div className="flex flex-wrap items-center gap-2">
               <LanguageSwitcher triggerClassName="w-12" />
               <ThemeToggle />
-              <AuthDialog
-                configurationMissingDescription={t('auth.configuration_missing_description')}
-                configurationMissingTitle={t('auth.configuration_missing_title')}
-                description={t('auth.description')}
-                githubLabel={t('auth.sign_in_with_github')}
-                googleLabel={t('auth.sign_in_with_google')}
-                privacyPolicyLabel={t('auth.privacy_policy')}
-                signInFailedLabel={t('auth.errors.sign_in_failed')}
-                signInLabel={t('auth.sign_in')}
-                signOutFailedLabel={t('auth.errors.sign_out_failed')}
-                signOutLabel={t('auth.sign_out')}
-                signOutSuccessLabel={t('auth.toast.sign_out_success')}
-                signedInAsLabel={t('auth.signed_in_as')}
-                termsAgreementLabel={t('auth.terms_agreement')}
-                termsOfServiceLabel={t('auth.terms_of_service')}
-                title={t('auth.title')}
-              />
+              {showAuthDialog ? (
+                <AuthDialog
+                  configurationMissingDescription={t('auth.configuration_missing_description')}
+                  configurationMissingTitle={t('auth.configuration_missing_title')}
+                  description={t('auth.description')}
+                  githubLabel={t('auth.sign_in_with_github')}
+                  googleLabel={t('auth.sign_in_with_google')}
+                  privacyPolicyLabel={t('auth.privacy_policy')}
+                  signInFailedLabel={t('auth.errors.sign_in_failed')}
+                  signInLabel={t('auth.sign_in')}
+                  signOutFailedLabel={t('auth.errors.sign_out_failed')}
+                  signOutLabel={t('auth.sign_out')}
+                  signOutSuccessLabel={t('auth.toast.sign_out_success')}
+                  signedInAsLabel={t('auth.signed_in_as')}
+                  termsAgreementLabel={t('auth.terms_agreement')}
+                  termsOfServiceLabel={t('auth.terms_of_service')}
+                  title={t('auth.title')}
+                />
+              ) : null}
             </div>
           </div>
         </DrawerContent>

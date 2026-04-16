@@ -51,6 +51,12 @@ export const zhCNMemoryMessages = {
       content_label: '摘要',
       empty_title: '还没有摘要',
       empty_description: '当某个会话足够长时，这里会开始出现摘要。',
+      pagination: {
+        summary: '显示第 {start}-{end} 条，共 {total} 条摘要',
+        previous: '上一页',
+        next: '下一页',
+        page: '前往第 {page} 页',
+      },
     },
     toast: {
       delete_failed: '删除记忆失败。',

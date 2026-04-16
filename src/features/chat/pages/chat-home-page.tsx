@@ -15,6 +15,7 @@ interface ChatHomePageProps {
   invalidConversationId?: boolean;
   initialMemories?: MemoryListItem[];
   initialMessages?: UIMessage[];
+  supabaseConfigured?: boolean;
 }
 
 export function ChatHomePage({
@@ -25,6 +26,7 @@ export function ChatHomePage({
   invalidConversationId = false,
   initialMemories = [],
   initialMessages = [],
+  supabaseConfigured = false,
 }: ChatHomePageProps) {
   return (
     <ChatWorkbench
@@ -35,6 +37,7 @@ export function ChatHomePage({
       initialMemories={initialMemories}
       initialMessages={initialMessages}
       invalidConversationId={invalidConversationId}
+      supabaseConfigured={supabaseConfigured}
     />
   );
 }
