@@ -13,7 +13,7 @@
 - 登录、会话持久化、分页和搜索
 - 已落地的 Memory V1
 - 已落地的 Search V1：provider-based tools，当前默认 provider 为 Tavily
-- 已落地的 Sandbox V1：E2B 配置、连接测试和首批工具
+- 已落地的 Sandbox V1：provider-based runtime，当前默认 provider 为 E2B
 - 已落地的远程 MCP tools integration
 - 已落地的 RAG V1：文档上传、向量检索、provider-based rerank 与来源展示
 - 已收口的聊天 `agent-runtime` harness
@@ -44,6 +44,7 @@
 - `Search` provider registry / factory：当前默认 provider 为 Tavily
 - Search tools：`web_search`、`web_extract`、`web_crawl`
 - `Sandbox` 配置弹窗：E2B key、template、运行目录、连接测试
+- `Sandbox` provider registry / runtime session factory：当前默认 provider 为 E2B
 - Sandbox tools：`sandbox_run_command`、`sandbox_read_file`、`sandbox_write_file`
 - Sandbox workspace/session/telemetry 骨架
 - `RAG` provider registry / factory：当前默认 provider 为 Voyage
@@ -122,7 +123,7 @@ src/
 │   ├── memory/           # 长期记忆、摘要列表、Memory 页面
 │   ├── models/           # provider 配置、模型同步、自定义 provider/model
 │   ├── rag/              # 文档上传、向量检索、来源展示
-│   ├── sandbox/          # E2B runtime 配置与 tools
+│   ├── sandbox/          # Sandbox provider 配置、runtime session 与 tools
 │   ├── search/           # Search provider 设置、连接测试、服务端 client
 │   ├── settings/         # 用户设置聚合与页面层
 │   ├── skills/           # Skills workbench UI 与设置持久化

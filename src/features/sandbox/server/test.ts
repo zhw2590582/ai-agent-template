@@ -1,6 +1,6 @@
 import type { SandboxSettings } from '@/features/sandbox/types';
-import { testSandboxConnection } from '@/features/sandbox/server/e2b-client';
+import { runSandboxConnectionTest as runSandboxProviderConnectionTest } from '@/features/sandbox/server/providers';
 
 export async function runSandboxConnectionTest(settings: SandboxSettings) {
-  return testSandboxConnection(settings);
+  return runSandboxProviderConnectionTest(settings);
 }

@@ -1,9 +1,9 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 
-import type { SandboxSession } from '@/features/sandbox/server/e2b-client';
+import type { SandboxRuntimeSession } from '@/features/sandbox/server/providers/sandbox-provider';
 
-export function createSandboxReadFileTool(session: SandboxSession | null) {
+export function createSandboxReadFileTool(session: SandboxRuntimeSession | null) {
   if (!session) {
     return null;
   }

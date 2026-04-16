@@ -43,7 +43,7 @@
 | Conversations      | 已实现    | 登录用户走 Supabase，guest 走 localStorage                                    | `src/features/chat/storage/`                                |
 | Memory             | 已实现 V1 | 会话摘要、长期记忆、跨会话注入、Memory 管理 UI                                | `src/features/memory/`                                      |
 | Search             | 已实现 V1 | provider-based search tools、连接测试、`web_search / web_extract / web_crawl` | `src/features/search/`                                      |
-| Sandbox            | 已实现 V1 | E2B settings、首批 tools、workspace/session/telemetry 骨架                    | `src/features/sandbox/`, `src/features/chat/agent-runtime/` |
+| Sandbox            | 已实现 V1 | provider-based sandbox runtime、首批 tools、workspace/session/telemetry 骨架  | `src/features/sandbox/`, `src/features/chat/agent-runtime/` |
 | MCP                | 部分具备  | 远程 MCP server 配置、测试、tool merge；未消费 resources/prompts              | `src/features/mcp/`                                         |
 | RAG                | 已实现 V1 | 文档导入、pgvector 检索、provider-based embeddings/rerank、来源展示           | `src/features/rag/`                                         |
 | Skills             | 部分具备  | 只有 settings UI 和持久化，还没进入 runtime                                   | `src/features/skills/`                                      |
@@ -171,6 +171,7 @@
 已完成：
 
 - E2B settings 和连接测试
+- Sandbox provider registry / runtime session factory 已建立
 - `sandbox_run_command`
 - `sandbox_read_file`
 - `sandbox_write_file`
@@ -178,6 +179,7 @@
 
 未完成：
 
+- 第二个 Sandbox provider，实现真正可替换
 - 跨请求 session 复用
 - 持久化 volumes / snapshots
 - 更丰富的 sandbox capability policy

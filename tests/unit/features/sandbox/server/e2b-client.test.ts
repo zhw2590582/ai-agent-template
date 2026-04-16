@@ -27,7 +27,7 @@ vi.mock('e2b', () => ({
   },
 }));
 
-import { SandboxSession } from '@/features/sandbox/server/e2b-client';
+import { E2BSandboxSession } from '@/features/sandbox/server/e2b-client';
 import type { SandboxSettings } from '@/features/sandbox/types';
 
 function createSandboxSettings(overrides?: Partial<SandboxSettings>): SandboxSettings {
@@ -44,6 +44,7 @@ function createSandboxSettings(overrides?: Partial<SandboxSettings>): SandboxSet
     autoPause: true,
     enabled: true,
     envVarsText: '',
+    provider: 'e2b',
     secure: false,
     template: 'base',
     timeoutSeconds: 300,
@@ -52,7 +53,7 @@ function createSandboxSettings(overrides?: Partial<SandboxSettings>): SandboxSet
   };
 }
 
-describe('SandboxSession', () => {
+describe('E2BSandboxSession', () => {
   beforeEach(() => {
     createMock.mockClear();
     runMock.mockReset();
@@ -72,7 +73,7 @@ describe('SandboxSession', () => {
         stdout: 'ok',
       });
 
-    const session = new SandboxSession(createSandboxSettings());
+    const session = new E2BSandboxSession(createSandboxSettings());
     const result = await session.runCommand({
       command: 'pwd',
     });

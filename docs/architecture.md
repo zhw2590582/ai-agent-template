@@ -29,7 +29,7 @@ src/
 │   ├── models/                 # provider / model 配置
 │   ├── mcp/                    # 远程 MCP client 集成
 │   ├── rag/                    # 文档导入和检索
-│   ├── sandbox/                # E2B 配置和服务端执行边界
+│   ├── sandbox/                # Sandbox provider 配置和服务端执行边界
 │   ├── search/                 # Tavily 配置和服务端 client
 │   └── skills/                 # Skills settings UI
 ├── i18n/                       # next-intl 配置和消息聚合

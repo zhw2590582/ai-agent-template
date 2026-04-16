@@ -38,8 +38,13 @@ vi.mock('@/features/chat/agent-runtime/workspace-manifest', () => ({
   buildWorkspaceManifest: mockBuildWorkspaceManifest,
 }));
 
-vi.mock('@/features/sandbox/server/e2b-client', () => ({
-  SandboxSession: MockSandboxSession,
+vi.mock('@/features/sandbox/server/providers', () => ({
+  createSandboxRuntimeSession: (
+    settings: unknown,
+    options?: {
+      onLifecycleEvent?: (event: { reason?: string; sandboxId?: string; type: string }) => void;
+    }
+  ) => new MockSandboxSession(settings, options),
 }));
 
 import { createWorkspaceSession } from '@/features/chat/agent-runtime/workspace-session';

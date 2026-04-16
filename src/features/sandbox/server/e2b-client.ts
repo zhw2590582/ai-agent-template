@@ -4,7 +4,12 @@ import { Sandbox } from 'e2b';
 
 import { SANDBOX_CONFIG } from '@/config/sandbox';
 import { logger } from '@/lib/logger';
-import { resolveSandboxWorkingDirectory } from '@/features/sandbox/settings';
+import { parseSandboxEnvVars, resolveSandboxWorkingDirectory } from '@/features/sandbox/settings';
+import type {
+  SandboxRuntimeCloseReason,
+  SandboxRuntimeSession,
+  SandboxRuntimeSessionOptions,
+} from '@/features/sandbox/server/providers/sandbox-provider';
 import type { SandboxSettings } from '@/features/sandbox/types';
 
 const SESSION_RECOVERY_ERROR_PATTERNS = [
@@ -130,34 +135,6 @@ function ensureWorkspacePath(path: string, workspaceRoot: string) {
   return resolvedPath;
 }
 
-export function parseSandboxEnvVars(envVarsText: string) {
-  const result: Record<string, string> = {};
-
-  for (const line of envVarsText.split(/\r?\n/)) {
-    const trimmed = line.trim();
-
-    if (!trimmed || trimmed.startsWith('#')) {
-      continue;
-    }
-
-    const separatorIndex = trimmed.indexOf('=');
-    if (separatorIndex <= 0) {
-      continue;
-    }
-
-    const key = trimmed.slice(0, separatorIndex).trim();
-    const value = trimmed.slice(separatorIndex + 1);
-
-    if (!key) {
-      continue;
-    }
-
-    result[key] = value;
-  }
-
-  return result;
-}
-
 function buildSandboxCreateOptions(settings: SandboxSettings) {
   return {
     allowInternetAccess: settings.access.allowInternetAccess,
@@ -180,7 +157,7 @@ export async function createE2BSandbox(settings: SandboxSettings) {
   return Sandbox.create(template, buildSandboxCreateOptions(settings));
 }
 
-export async function testSandboxConnection(settings: SandboxSettings) {
+export async function testE2BSandboxConnection(settings: SandboxSettings) {
   try {
     const sandbox = await createE2BSandbox(settings);
 
@@ -197,19 +174,6 @@ export async function testSandboxConnection(settings: SandboxSettings) {
   }
 }
 
-export type SandboxSessionCloseReason = 'completed' | 'error' | 'idle_timeout';
-
-export type SandboxSessionLifecycleEvent =
-  | { type: 'connect_failed' }
-  | { type: 'connected'; sandboxId: string }
-  | { type: 'connecting' }
-  | { type: 'recovering' }
-  | { reason: SandboxSessionCloseReason; type: 'closed' };
-
-interface SandboxSessionOptions {
-  onLifecycleEvent?: (event: SandboxSessionLifecycleEvent) => void;
-}
-
 async function closeSandboxQuietly(sandbox: Sandbox) {
   try {
     await sandbox.kill();
@@ -218,10 +182,10 @@ async function closeSandboxQuietly(sandbox: Sandbox) {
   }
 }
 
-export class SandboxSession {
+export class E2BSandboxSession implements SandboxRuntimeSession {
   private idleCloseTimer: ReturnType<typeof setTimeout> | null = null;
 
-  private readonly options?: SandboxSessionOptions;
+  private readonly options?: SandboxRuntimeSessionOptions;
 
   private readonly workspaceRoot: string;
 
@@ -229,7 +193,7 @@ export class SandboxSession {
 
   constructor(
     private readonly settings: SandboxSettings,
-    options?: SandboxSessionOptions
+    options?: SandboxRuntimeSessionOptions
   ) {
     this.options = options;
     this.workspaceRoot = getWorkspaceRoot(settings);
@@ -437,7 +401,7 @@ export class SandboxSession {
     }
   }
 
-  async close(reason: SandboxSessionCloseReason = 'completed') {
+  async close(reason: SandboxRuntimeCloseReason = 'completed') {
     this.clearIdleCloseTimer();
 
     if (!this.sandboxPromise) {

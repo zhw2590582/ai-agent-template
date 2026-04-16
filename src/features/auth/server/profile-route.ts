@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
 import { RAG_CONFIG } from '@/config/rag';
+import { SANDBOX_CONFIG } from '@/config/sandbox';
 import { SEARCH_CONFIG } from '@/config/search';
 import { API_NAMESPACES } from '@/config/namespaces';
 import { requireAuthenticatedUser } from '@/features/auth/server/session';
@@ -53,6 +54,7 @@ const profilePatchSchema = z.object({
       autoPause: z.boolean().optional(),
       enabled: z.boolean().optional(),
       envVarsText: z.string().optional(),
+      provider: z.enum(SANDBOX_CONFIG.PROVIDER_IDS).optional(),
       secure: z.boolean().optional(),
       template: z.string().optional(),
       timeoutSeconds: z.number().int().optional(),

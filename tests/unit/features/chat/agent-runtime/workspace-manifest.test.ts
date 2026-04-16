@@ -20,6 +20,7 @@ function createSandboxSettings(overrides?: Partial<SandboxSettings>): SandboxSet
     autoPause: false,
     enabled: true,
     envVarsText: 'FOO=bar\n# comment\nBAZ=qux',
+    provider: 'e2b',
     secure: true,
     template: '  custom-template  ',
     timeoutSeconds: 300,

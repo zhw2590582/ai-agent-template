@@ -7,12 +7,15 @@ export interface SandboxAccessSettings {
   allowPty: boolean;
 }
 
+export type SandboxProviderId = 'e2b';
+
 export interface SandboxSettings {
   access: SandboxAccessSettings;
   apiKey: string;
   autoPause: boolean;
   enabled: boolean;
   envVarsText: string;
+  provider: SandboxProviderId;
   secure: boolean;
   template: string;
   timeoutSeconds: number;

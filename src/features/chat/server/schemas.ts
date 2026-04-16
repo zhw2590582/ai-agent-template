@@ -8,6 +8,7 @@
 
 import { z } from 'zod';
 import { RAG_CONFIG } from '@/config/rag';
+import { SANDBOX_CONFIG } from '@/config/sandbox';
 import { SEARCH_CONFIG } from '@/config/search';
 import { TEXT_LIMITS } from '@/config/limits';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
@@ -72,6 +73,7 @@ export const chatPostSchema = z.object({
       autoPause: z.boolean(),
       enabled: z.boolean(),
       envVarsText: z.string(),
+      provider: z.enum(SANDBOX_CONFIG.PROVIDER_IDS),
       secure: z.boolean(),
       template: z.string(),
       timeoutSeconds: z.number().int(),

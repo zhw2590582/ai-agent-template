@@ -20,6 +20,34 @@ export function getSandboxToolPolicy(settings: SandboxSettings | null | undefine
   };
 }
 
+export function parseSandboxEnvVars(envVarsText: string) {
+  const result: Record<string, string> = {};
+
+  for (const line of envVarsText.split(/\r?\n/)) {
+    const trimmed = line.trim();
+
+    if (!trimmed || trimmed.startsWith('#')) {
+      continue;
+    }
+
+    const separatorIndex = trimmed.indexOf('=');
+    if (separatorIndex <= 0) {
+      continue;
+    }
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const value = trimmed.slice(separatorIndex + 1);
+
+    if (!key) {
+      continue;
+    }
+
+    result[key] = value;
+  }
+
+  return result;
+}
+
 export function resolveSandboxWorkingDirectory(workingDirectory: string | null | undefined) {
   const trimmed = workingDirectory?.trim();
 
@@ -50,6 +78,7 @@ export function normalizeSandboxSettings(input: unknown): SandboxSettings {
       typeof existing?.envVarsText === 'string'
         ? existing.envVarsText
         : SANDBOX_CONFIG.DEFAULT_ENV_VARS_TEXT,
+    provider: existing?.provider === 'e2b' ? existing.provider : SANDBOX_CONFIG.DEFAULT_PROVIDER,
     secure: existing?.secure ?? true,
     template:
       typeof existing?.template === 'string' && existing.template.trim().length > 0

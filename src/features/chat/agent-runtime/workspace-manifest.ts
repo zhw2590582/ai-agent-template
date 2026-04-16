@@ -1,10 +1,10 @@
 import { posix as pathPosix } from 'node:path';
 
 import { SANDBOX_CONFIG } from '@/config/sandbox';
-import { parseSandboxEnvVars } from '@/features/sandbox/server/e2b-client';
 import {
   getSandboxToolPolicy,
   hasSandboxAccess,
+  parseSandboxEnvVars,
   resolveSandboxWorkingDirectory,
 } from '@/features/sandbox/settings';
 import type { SandboxAccessSettings, SandboxSettings } from '@/features/sandbox/types';
@@ -20,7 +20,7 @@ export interface AgentWorkspaceManifest {
   enabled: boolean;
   envVars: Record<string, string>;
   hasRuntimeAccess: boolean;
-  provider: 'e2b';
+  provider: SandboxSettings['provider'];
   secure: boolean;
   template: string;
   timeoutSeconds: number;
@@ -47,7 +47,7 @@ export function buildWorkspaceManifest(options: {
     enabled: sandboxSettings.enabled,
     envVars: parseSandboxEnvVars(sandboxSettings.envVarsText),
     hasRuntimeAccess: hasSandboxAccess(sandboxSettings),
-    provider: 'e2b',
+    provider: sandboxSettings.provider,
     secure: sandboxSettings.secure,
     template: sandboxSettings.template.trim() || SANDBOX_CONFIG.DEFAULT_TEMPLATE,
     timeoutSeconds: sandboxSettings.timeoutSeconds,

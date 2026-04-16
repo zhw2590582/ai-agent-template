@@ -1,15 +1,16 @@
-import {
-  SandboxSession,
-  type SandboxSessionCloseReason,
-  type SandboxSessionLifecycleEvent,
-} from '@/features/sandbox/server/e2b-client';
+import { createSandboxRuntimeSession } from '@/features/sandbox/server/providers';
+import type {
+  SandboxRuntimeCloseReason,
+  SandboxRuntimeLifecycleEvent,
+  SandboxRuntimeSession,
+} from '@/features/sandbox/server/providers/sandbox-provider';
 import type { SandboxSettings } from '@/features/sandbox/types';
 import {
   buildWorkspaceManifest,
   type AgentWorkspaceManifest,
 } from '@/features/chat/agent-runtime/workspace-manifest';
 
-export type AgentWorkspaceCloseReason = SandboxSessionCloseReason;
+export type AgentWorkspaceCloseReason = SandboxRuntimeCloseReason;
 
 export type AgentWorkspaceSessionState =
   | 'closed'
@@ -31,7 +32,7 @@ export interface AgentWorkspaceTelemetry {
 export interface AgentWorkspaceSession {
   close: (reason?: AgentWorkspaceCloseReason) => Promise<void>;
   manifest: AgentWorkspaceManifest | null;
-  sandboxSession: SandboxSession | null;
+  sandboxSession: SandboxRuntimeSession | null;
   telemetry: AgentWorkspaceTelemetry;
 }
 
@@ -50,7 +51,7 @@ function updateWorkspaceTelemetry(
 
 function applyLifecycleEvent(
   telemetry: AgentWorkspaceTelemetry,
-  event: SandboxSessionLifecycleEvent
+  event: SandboxRuntimeLifecycleEvent
 ) {
   switch (event.type) {
     case 'connecting':
@@ -105,7 +106,7 @@ export function createWorkspaceSession(options: {
   };
   const sandboxSession =
     manifest?.hasRuntimeAccess && sandboxSettings
-      ? new SandboxSession(sandboxSettings, {
+      ? createSandboxRuntimeSession(sandboxSettings, {
           onLifecycleEvent: (event) => {
             applyLifecycleEvent(telemetry, event);
           },

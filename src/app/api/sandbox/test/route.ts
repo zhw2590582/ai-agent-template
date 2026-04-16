@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
+import { SANDBOX_CONFIG } from '@/config/sandbox';
 import { API_NAMESPACES } from '@/config/namespaces';
 import { handleError } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';
@@ -21,6 +22,7 @@ const sandboxTestSchema = z.object({
   autoPause: z.boolean().optional(),
   enabled: z.boolean().optional(),
   envVarsText: z.string().optional(),
+  provider: z.enum(SANDBOX_CONFIG.PROVIDER_IDS).optional(),
   secure: z.boolean().optional(),
   template: z.string().optional(),
   timeoutSeconds: z.number().int().optional(),
