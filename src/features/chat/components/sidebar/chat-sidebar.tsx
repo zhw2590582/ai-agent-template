@@ -173,7 +173,7 @@ export function ChatSidebar({
   if (!isOpen) {
     return (
       <aside className="border-border bg-muted/50 flex h-full flex-col border-r">
-        <div className="border-border mb-3 flex h-12 items-center justify-between border-b px-4">
+        <div className="border-border mb-3 flex h-14 items-center justify-center border-b px-3">
           <Button
             aria-label={t('chat.header.show_sidebar')}
             className="group"
@@ -201,7 +201,7 @@ export function ChatSidebar({
 
   return (
     <aside className="border-border bg-muted/50 flex h-full flex-col border-r">
-      <div className="border-border mb-3 flex h-12 items-center justify-between border-b px-4">
+      <div className="border-border mb-3 flex h-14 items-center justify-between border-b px-3">
         <Link
           className="text-foreground flex shrink-0 items-center gap-2 truncate text-sm font-medium"
           href={homeHref}
@@ -303,8 +303,8 @@ export function ChatSidebar({
                     </DropdownMenu>
                   </div>
                 ))}
-                {!isFiltering && hasMoreConversations ? (
-                  <div aria-hidden className="min-h-3 w-full shrink-0" ref={sentinelRef} />
+                {!isFiltering && hasMoreConversations && !isLoadingMoreConversations ? (
+                  <div aria-hidden className="h-px w-full shrink-0" ref={sentinelRef} />
                 ) : null}
                 {isLoadingMoreConversations ? (
                   <div className="flex flex-col gap-1 py-2">

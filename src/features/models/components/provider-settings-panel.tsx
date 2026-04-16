@@ -52,7 +52,7 @@ export function ProviderSettingsPanel({
   return (
     <>
       <div className="mb-12 flex flex-col">
-        <header className="flex items-center justify-between gap-4 border-b px-6 py-5">
+        <header className="flex flex-col items-start justify-between gap-4 border-b px-2 py-5 lg:flex-row lg:items-center lg:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <ProviderIcon
               docsUrl={provider.docsUrl}
@@ -99,7 +99,7 @@ export function ProviderSettingsPanel({
           </div>
         </header>
 
-        <div className="flex flex-1 flex-col gap-6 px-6 py-5">
+        <div className="flex flex-1 flex-col gap-6 px-2 py-5 lg:px-6">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">{t('models_page.fields.api_key')}</label>

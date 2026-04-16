@@ -50,12 +50,17 @@ export function McpServerList({
   return (
     <>
       <section className="flex flex-col gap-4">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-1">
             <h2 className="text-xl font-semibold">{t('mcp_page.servers_title')}</h2>
             <p className="text-muted-foreground text-sm">{t('mcp_page.servers_description')}</p>
           </div>
-          <Button type="button" variant="outline" onClick={onAddServer}>
+          <Button
+            className="w-full sm:w-auto"
+            type="button"
+            variant="outline"
+            onClick={onAddServer}
+          >
             <PlusIcon data-icon="inline-start" />
             {t('mcp_page.add_server')}
           </Button>
@@ -68,21 +73,23 @@ export function McpServerList({
                 className="border-border flex flex-col gap-3 border-b px-5 py-4 last:border-b-0"
                 key={server.id}
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="truncate text-sm font-medium">{server.serverName}</h3>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="min-w-0 text-sm font-medium sm:truncate">
+                        {server.serverName}
+                      </h3>
                       <Badge variant="outline">{server.transport.toUpperCase()}</Badge>
                       <Badge variant={server.enabled ? 'secondary' : 'outline'}>
                         {server.enabled ? t('common.enabled') : t('common.disabled')}
                       </Badge>
                     </div>
-                    <p className="text-muted-foreground truncate text-sm">
+                    <p className="text-muted-foreground text-sm break-all sm:truncate">
                       {server.serverUrl || t('mcp_page.server_url_empty')}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-end gap-2 sm:justify-start">
                     <Switch
                       checked={server.enabled}
                       className="data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"

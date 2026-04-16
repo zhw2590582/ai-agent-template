@@ -191,9 +191,14 @@ export function ChatWorkbench({
           </>
         </section>
       </div>
-      <Drawer direction="left" open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+      <Drawer
+        direction="left"
+        open={isMobileSidebarOpen}
+        shouldScaleBackground={false}
+        onOpenChange={setIsMobileSidebarOpen}
+      >
         <DrawerContent
-          className="inset-y-0 left-0 h-dvh w-[min(24rem,calc(100vw-0.75rem))] rounded-l-none rounded-r-2xl border-r"
+          className="inset-y-0 left-0 h-dvh w-[min(24rem,calc(100vw-0.75rem))] rounded-none border-r"
           showHandle={false}
         >
           <DrawerHeader className="sr-only">

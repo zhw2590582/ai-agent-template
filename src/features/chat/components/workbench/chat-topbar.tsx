@@ -1,4 +1,4 @@
-import { MenuIcon, PanelLeftIcon, SettingsIcon } from 'lucide-react';
+import { BotIcon, MenuIcon, PanelLeftIcon, SettingsIcon } from 'lucide-react';
 
 import {
   Drawer,
@@ -42,7 +42,7 @@ export function ChatTopBar({ activeView, onOpenSidebarDrawer, onOpenView, t }: C
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="border-border bg-muted/50 shrink-0 border-b px-3 py-3 sm:px-4">
+    <div className="border-border bg-muted/50 flex h-14 shrink-0 items-center border-b px-3 sm:px-4">
       <div className="hidden w-full flex-col gap-3 lg:flex">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:pb-0">
@@ -97,7 +97,7 @@ export function ChatTopBar({ activeView, onOpenSidebarDrawer, onOpenView, t }: C
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 lg:hidden">
+      <div className="flex w-full items-center justify-between gap-3 lg:hidden">
         <Button
           aria-label={t('chat.header.show_sidebar')}
           size="icon"
@@ -107,8 +107,11 @@ export function ChatTopBar({ activeView, onOpenSidebarDrawer, onOpenView, t }: C
         >
           <PanelLeftIcon />
         </Button>
-        <div className="min-w-0 flex-1 text-center">
-          <div className="truncate text-sm font-medium">{getMobileTitle(activeView, t)}</div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-center gap-2">
+            <BotIcon className="size-4 shrink-0" />
+            <div className="truncate text-sm font-medium">{getMobileTitle(activeView, t)}</div>
+          </div>
         </div>
         <Button
           aria-label={t('common.menu')}

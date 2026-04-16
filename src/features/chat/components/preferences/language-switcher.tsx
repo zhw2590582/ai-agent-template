@@ -42,7 +42,7 @@ export function LanguageSwitcher({ triggerClassName }: LanguageSwitcherProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className={triggerClassName ?? 'min-w-10'} size="sm" variant="outline">
+        <Button className={triggerClassName ?? 'min-w-10'} size="icon" variant="outline">
           <span className="text-xs font-semibold">{currentShortLabel}</span>
         </Button>
       </DropdownMenuTrigger>
