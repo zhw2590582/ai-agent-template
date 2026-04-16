@@ -37,6 +37,13 @@ export const enUSSubagentMessages = {
     temperature_description: 'Lower values are steadier; higher values allow more variation.',
     max_tokens_label: 'Max Tokens',
     max_tokens_description: 'Sets the maximum response budget for this subagent.',
+    tool_access_label: 'Tool Access',
+    tool_access_description:
+      'Choose which tools this subagent may use when the main AI delegates work to it.',
+    tool_access_none: 'No tools',
+    tool_access_web: 'Web tools',
+    tool_access_code: 'Code tools',
+    tool_access_rag: 'Knowledge base',
     theme_color_label: 'Theme Color',
     theme_color_description: 'Used as the accent color for this subagent in the UI.',
     theme_color_placeholder: '#14b8a6',

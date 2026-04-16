@@ -42,6 +42,19 @@ export function SubagentList({
   const t = useTranslations();
   const deleteTarget = agents.find((agent) => agent.id === deleteTargetId) ?? null;
 
+  const getToolAccessLabel = (toolAccess: SubagentDefinition['toolAccess']) => {
+    switch (toolAccess) {
+      case 'web':
+        return t('subagent_page.tool_access_web');
+      case 'code':
+        return t('subagent_page.tool_access_code');
+      case 'rag':
+        return t('subagent_page.tool_access_rag');
+      default:
+        return t('subagent_page.tool_access_none');
+    }
+  };
+
   return (
     <>
       <section className="flex flex-col gap-4">
@@ -91,6 +104,7 @@ export function SubagentList({
                           value: agent.maxTokens,
                         })}
                       </Badge>
+                      <Badge variant="outline">{getToolAccessLabel(agent.toolAccess)}</Badge>
                     </div>
                     {agent.description ? (
                       <p className="text-sm leading-6">{agent.description}</p>

@@ -33,6 +33,7 @@ Return your final response in this shape:
 Do not claim the task is complete if execution or review is still required.`,
     temperature: 0.4,
     themeColor: '#0f766e',
+    toolAccess: 'none',
   },
   {
     description: 'Chooses the best specialist for the next step.',
@@ -65,6 +66,7 @@ Return your final response in this shape:
 Keep the answer short, decisive, and easy for the main agent to act on.`,
     temperature: 0.2,
     themeColor: '#2563eb',
+    toolAccess: 'none',
   },
   {
     description: 'Handles coding, debugging, and implementation work.',
@@ -96,6 +98,7 @@ Return your final response in this shape:
 If no code change is needed, say so clearly and explain why.`,
     temperature: 0.3,
     themeColor: '#7c3aed',
+    toolAccess: 'code',
   },
   {
     description: 'Answers using the indexed knowledge base.',
@@ -122,9 +125,10 @@ Return your final response in this shape:
 - Uncertainty or missing evidence
 - Recommended next step (optional)
 
-Do not present guesses as if they were retrieved facts.`,
+    Do not present guesses as if they were retrieved facts.`,
     temperature: 0.2,
     themeColor: '#0891b2',
+    toolAccess: 'rag',
   },
   {
     description: 'Handles live web research and recent facts.',
@@ -155,6 +159,7 @@ Return your final response in this shape:
 If the web does not provide a reliable answer, say that directly.`,
     temperature: 0.3,
     themeColor: '#ea580c',
+    toolAccess: 'web',
   },
   {
     description: 'Reviews answers and plans for risks and weak reasoning.',
@@ -185,6 +190,7 @@ Return your final response in this shape:
 If you do not find a major issue, say that explicitly and note any residual risks.`,
     temperature: 0.2,
     themeColor: '#dc2626',
+    toolAccess: 'none',
   },
 ] satisfies ReadonlyArray<SubagentDefinition>;
 
@@ -194,6 +200,7 @@ export const SUBAGENT_CONFIG = {
   DEFAULT_SYSTEM_PROMPT:
     'You are a focused specialist subagent. Execute the assigned task clearly, stay within scope, and return concise actionable results.',
   DEFAULT_SUBAGENTS: DEFAULT_SUBAGENT_DEFINITIONS,
+  DEFAULT_TOOL_ACCESS: 'none',
   DEFAULT_TEMPERATURE: 0.7,
   DEFAULT_THEME_COLOR: '#14b8a6',
   MAX_TEMPERATURE: 2,

@@ -24,6 +24,8 @@ import type { ChatRuntimeModel } from '@/features/models/types';
 import { logger } from '@/lib/logger';
 
 interface CreateDelegateToSubagentToolOptions {
+  mcpInjectedToolNames?: string[];
+  ragContext?: string | null;
   runtimeModel: ChatRuntimeModel;
   subagentSettings: SubagentSettings | null | undefined;
   tools: ToolSet;
@@ -47,13 +49,29 @@ function buildSubagentToolDescription(settings: SubagentSettings | null | undefi
   return `Delegate a context-heavy or specialized task to one of the configured subagents. Only use this when the task clearly benefits from a specialist role or isolated work. Available subagents: ${roster}`;
 }
 
-function buildSubagentInstructions(name: string, description: string, systemPrompt: string) {
+function buildSubagentInstructions(options: {
+  description: string;
+  name: string;
+  ragContext?: string | null;
+  systemPrompt: string;
+  toolAccess: 'code' | 'none' | 'rag' | 'web';
+}) {
+  const { description, name, ragContext, systemPrompt, toolAccess } = options;
   const descriptionLine = description ? `Role description: ${description}` : '';
+  const ragSection =
+    toolAccess === 'rag'
+      ? ragContext
+        ? ['Use the retrieved knowledge-base context below when it is relevant.', ragContext].join(
+            '\n\n'
+          )
+        : 'No retrieved knowledge-base context is available for this delegated task. If the answer depends on indexed documents, say the evidence is insufficient.'
+      : '';
 
   return [
     `You are the subagent "${name}".`,
     descriptionLine,
     systemPrompt.trim(),
+    ragSection,
     'Complete the delegated task autonomously using the tools available to you.',
     'When you finish, return a concise but complete final summary for the main agent.',
     'Do not say "Done" without including the actual findings or outcome.',
@@ -96,7 +114,40 @@ function createDelegateOutput({
   };
 }
 
+function filterToolsForSubagent(options: {
+  mcpInjectedToolNames?: string[];
+  subagentId: string;
+  toolAccess: 'code' | 'none' | 'rag' | 'web';
+  tools: ToolSet;
+}): ToolSet {
+  if (options.toolAccess === 'none' || options.toolAccess === 'rag') {
+    return {};
+  }
+
+  const mcpToolNames = new Set(options.mcpInjectedToolNames ?? []);
+  const filteredEntries = Object.entries(options.tools).filter(([toolName]) => {
+    if (options.toolAccess === 'web') {
+      return toolName.startsWith('web_');
+    }
+
+    return toolName.startsWith('sandbox_') || mcpToolNames.has(toolName);
+  });
+
+  const filteredTools = Object.fromEntries(filteredEntries);
+
+  logger.info('Subagent delegation: filtered tools', {
+    allowedToolCount: filteredEntries.length,
+    allowedToolNames: filteredEntries.map(([toolName]) => toolName),
+    subagentId: options.subagentId,
+    toolAccess: options.toolAccess,
+  });
+
+  return filteredTools;
+}
+
 export function createDelegateToSubagentTool({
+  mcpInjectedToolNames,
+  ragContext,
   runtimeModel,
   subagentSettings,
   tools,
@@ -146,17 +197,26 @@ export function createDelegateToSubagentTool({
         toolCallId,
       });
 
+      const filteredTools = filterToolsForSubagent({
+        mcpInjectedToolNames,
+        subagentId: subagent.id,
+        toolAccess: subagent.toolAccess,
+        tools,
+      });
+
       const subagentAgent = new ToolLoopAgent({
-        instructions: buildSubagentInstructions(
-          subagent.name,
-          subagent.description,
-          subagent.systemPrompt
-        ),
+        instructions: buildSubagentInstructions({
+          description: subagent.description,
+          name: subagent.name,
+          ragContext,
+          systemPrompt: subagent.systemPrompt,
+          toolAccess: subagent.toolAccess,
+        }),
         maxOutputTokens: subagent.maxTokens,
         model: getRuntimeChatModel(runtimeModel),
         stopWhen: stepCountIs(AI_CONFIG.AGENT_MAX_STEPS),
         temperature: subagent.temperature,
-        tools,
+        tools: filteredTools,
       });
 
       try {

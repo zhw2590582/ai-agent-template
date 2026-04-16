@@ -35,6 +35,8 @@ export async function executeAgentRun({
     subagentSettings,
   });
   const delegateToSubagentTool = createDelegateToSubagentTool({
+    mcpInjectedToolNames: mcpInjectedTools.map((tool) => tool.injectedToolName),
+    ragContext,
     runtimeModel,
     subagentSettings,
     tools,

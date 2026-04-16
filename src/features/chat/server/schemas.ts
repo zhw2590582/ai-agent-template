@@ -13,6 +13,7 @@ import { SEARCH_CONFIG } from '@/config/search';
 import { TEXT_LIMITS } from '@/config/limits';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
 import { SUBAGENT_CONFIG } from '@/config/subagent';
+import { SUBAGENT_TOOL_ACCESS_VALUES } from '@/features/subagent/types';
 
 /**
  * A single message part. We only enforce it is a non-empty object with a `type` field.
@@ -123,6 +124,7 @@ export const chatPostSchema = z.object({
             .min(SUBAGENT_CONFIG.MIN_TEMPERATURE)
             .max(SUBAGENT_CONFIG.MAX_TEMPERATURE),
           themeColor: z.string(),
+          toolAccess: z.enum(SUBAGENT_TOOL_ACCESS_VALUES),
         })
       ),
       enabled: z.boolean(),

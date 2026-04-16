@@ -72,6 +72,7 @@ describe('buildAgentRunRequest', () => {
             systemPrompt: 'Review the answer carefully.',
             temperature: 0.3,
             themeColor: '#14b8a6',
+            toolAccess: 'none',
           },
         ],
         enabled: true,

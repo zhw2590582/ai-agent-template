@@ -13,6 +13,7 @@ describe('subagent settings', () => {
     expect(draft.systemPrompt).toBe(SUBAGENT_CONFIG.DEFAULT_SYSTEM_PROMPT);
     expect(draft.temperature).toBe(SUBAGENT_CONFIG.DEFAULT_TEMPERATURE);
     expect(draft.themeColor).toBe(SUBAGENT_CONFIG.DEFAULT_THEME_COLOR);
+    expect(draft.toolAccess).toBe(SUBAGENT_CONFIG.DEFAULT_TOOL_ACCESS);
   });
 
   it('normalizes missing settings to a disabled empty state', () => {
@@ -57,6 +58,7 @@ describe('subagent settings', () => {
           systemPrompt: SUBAGENT_CONFIG.DEFAULT_SYSTEM_PROMPT,
           temperature: SUBAGENT_CONFIG.MAX_TEMPERATURE,
           themeColor: SUBAGENT_CONFIG.DEFAULT_THEME_COLOR,
+          toolAccess: SUBAGENT_CONFIG.DEFAULT_TOOL_ACCESS,
         },
       ],
       enabled: true,

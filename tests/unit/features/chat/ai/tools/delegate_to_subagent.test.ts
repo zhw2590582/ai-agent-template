@@ -137,13 +137,17 @@ describe('createDelegateToSubagentTool', () => {
             systemPrompt: 'Review carefully.',
             temperature: 0.3,
             themeColor: '#14b8a6',
+            toolAccess: 'web',
           },
         ],
         enabled: true,
       },
       tools: {
         web_search: { description: 'search' },
+        sandbox_run_command: { description: 'run' },
+        mcp_repo_search: { description: 'mcp' },
       } as never,
+      mcpInjectedToolNames: ['mcp_repo_search'],
     });
 
     const abortController = new AbortController();
@@ -200,6 +204,9 @@ describe('createDelegateToSubagentTool', () => {
         maxOutputTokens: 1024,
         model: 'mock-model',
         temperature: 0.3,
+        tools: {
+          web_search: { description: 'search' },
+        },
       })
     );
     expect(streamMock).toHaveBeenCalledWith({
@@ -233,6 +240,16 @@ describe('createDelegateToSubagentTool', () => {
     );
     expect(loggerInfoMock).toHaveBeenNthCalledWith(
       2,
+      'Subagent delegation: filtered tools',
+      expect.objectContaining({
+        allowedToolCount: 1,
+        allowedToolNames: ['web_search'],
+        subagentId: 'reviewer',
+        toolAccess: 'web',
+      })
+    );
+    expect(loggerInfoMock).toHaveBeenNthCalledWith(
+      3,
       'Subagent delegation: completed',
       expect.objectContaining({
         modelId: 'model',
@@ -268,6 +285,7 @@ describe('createDelegateToSubagentTool', () => {
             systemPrompt: 'Review carefully.',
             temperature: 0.3,
             themeColor: '#14b8a6',
+            toolAccess: 'none',
           },
         ],
         enabled: true,
@@ -298,6 +316,70 @@ describe('createDelegateToSubagentTool', () => {
         subagentId: 'reviewer',
         subagentName: 'Reviewer',
         toolCallId: 'tool-call-2',
+      })
+    );
+  });
+
+  it('injects retrieved knowledge-base context for rag tool access without passing tools', async () => {
+    streamMock.mockResolvedValue({
+      toUIMessageStream: () =>
+        (async function* () {
+          yield {
+            id: 'rag-message',
+            parts: [{ state: 'done', text: 'Grounded answer', type: 'text' }],
+            role: 'assistant',
+          };
+        })(),
+    });
+    readUIMessageStreamMock.mockImplementation(({ stream }) => stream);
+
+    const tool = createDelegateToSubagentTool({
+      runtimeModel: {
+        apiFormat: 'openai',
+        apiKey: 'key',
+        baseUrl: 'https://example.com/v1',
+        modelId: 'model',
+        providerId: 'provider',
+      },
+      subagentSettings: {
+        agents: [
+          {
+            description: 'Answers from the knowledge base',
+            enabled: true,
+            id: 'rag-agent',
+            maxTokens: 1024,
+            name: 'Knowledge Base Agent',
+            systemPrompt: 'Stay grounded in retrieved evidence.',
+            temperature: 0.2,
+            themeColor: '#0891b2',
+            toolAccess: 'rag',
+          },
+        ],
+        enabled: true,
+      },
+      tools: {
+        web_search: { description: 'search' },
+        sandbox_run_command: { description: 'run' },
+      } as never,
+      ragContext: '[KB1] Product docs\nThe app supports RAG grounded answers.',
+    });
+
+    await collectOutputs(
+      tool!.execute!(
+        {
+          subagentId: 'rag-agent',
+          task: 'Answer from the knowledge base only.',
+        },
+        {
+          toolCallId: 'tool-call-3',
+        } as never
+      ) as AsyncIterable<DelegateToSubagentOutput>
+    );
+
+    expect(toolLoopAgentConstructorMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        instructions: expect.stringContaining('[KB1] Product docs'),
+        tools: {},
       })
     );
   });

@@ -18,6 +18,13 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import type { SubagentDefinition } from '@/features/subagent/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface SubagentEditorDialogProps {
   initialAgent: SubagentDefinition | null;
@@ -186,6 +193,38 @@ export function SubagentEditorDialog({
                 {t('subagent_page.max_tokens_description')}
               </p>
             </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium" htmlFor="subagent-tool-access">
+              {t('subagent_page.tool_access_label')}
+            </label>
+            <Select
+              value={agent.toolAccess}
+              onValueChange={(value) => {
+                setAgent((current) =>
+                  current
+                    ? {
+                        ...current,
+                        toolAccess: value as SubagentDefinition['toolAccess'],
+                      }
+                    : current
+                );
+              }}
+            >
+              <SelectTrigger className="w-full" id="subagent-tool-access">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">{t('subagent_page.tool_access_none')}</SelectItem>
+                <SelectItem value="web">{t('subagent_page.tool_access_web')}</SelectItem>
+                <SelectItem value="code">{t('subagent_page.tool_access_code')}</SelectItem>
+                <SelectItem value="rag">{t('subagent_page.tool_access_rag')}</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-muted-foreground text-xs">
+              {t('subagent_page.tool_access_description')}
+            </p>
           </div>
 
           <div className="flex flex-col gap-3">

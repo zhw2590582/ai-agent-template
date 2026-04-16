@@ -56,12 +56,12 @@ export function ChatToolPart({
     'toolCallId' in part && part.toolCallId != null && String(part.toolCallId).trim() !== ''
       ? part.toolCallId
       : `tool-${messageKey}-${partIndex}`;
-  const toolStateKey = `${toolKey}:${part.state}`;
+  const toolStateKey = `${toolKey}:${part.state}:${isPreliminary ? 'preliminary' : 'final'}`;
 
   return (
-    <div className={cn('ml-0', isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl')} key={toolStateKey}>
+    <div className={cn('ml-0', isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl')}>
       <div className="pt-3">
-        <Tool className="border-border/80 bg-card/60" defaultOpen={defaultOpen}>
+        <Tool className="border-border/80 bg-card/60" defaultOpen={defaultOpen} key={toolStateKey}>
           {part.type === 'dynamic-tool' ? (
             <ToolHeader
               state={part.state}
@@ -191,9 +191,9 @@ export function ChatToolPart({
                       <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                         {t('summary')}
                       </div>
-                      <p className="text-sm leading-6 whitespace-pre-wrap">
-                        {delegateOutput.summary}
-                      </p>
+                      <div className="bg-background/70 rounded-xl border px-4 py-3 text-sm">
+                        <MessageResponse>{delegateOutput.summary}</MessageResponse>
+                      </div>
                     </div>
                   ) : null}
                 </div>

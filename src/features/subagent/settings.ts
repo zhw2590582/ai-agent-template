@@ -1,5 +1,10 @@
 import { SUBAGENT_CONFIG } from '@/config/subagent';
-import type { SubagentDefinition, SubagentSettings } from '@/features/subagent/types';
+import {
+  SUBAGENT_TOOL_ACCESS_VALUES,
+  type SubagentDefinition,
+  type SubagentSettings,
+  type SubagentToolAccess,
+} from '@/features/subagent/types';
 
 interface SubagentSettingsInput {
   agents?: Array<Partial<SubagentDefinition>>;
@@ -33,6 +38,16 @@ function normalizeThemeColor(value: unknown) {
   }
 
   return SUBAGENT_CONFIG.DEFAULT_THEME_COLOR;
+}
+
+function normalizeToolAccess(value: unknown): SubagentToolAccess {
+  if (typeof value !== 'string') {
+    return SUBAGENT_CONFIG.DEFAULT_TOOL_ACCESS;
+  }
+
+  return SUBAGENT_TOOL_ACCESS_VALUES.includes(value as SubagentToolAccess)
+    ? (value as SubagentToolAccess)
+    : SUBAGENT_CONFIG.DEFAULT_TOOL_ACCESS;
 }
 
 function createSubagentId() {
@@ -77,6 +92,7 @@ function normalizeSubagentDefinition(
       SUBAGENT_CONFIG.MAX_TEMPERATURE
     ),
     themeColor: normalizeThemeColor(input.themeColor),
+    toolAccess: normalizeToolAccess(input.toolAccess),
   };
 }
 
@@ -97,6 +113,7 @@ export function createSubagentDraft(): SubagentDefinition {
     systemPrompt: SUBAGENT_CONFIG.DEFAULT_SYSTEM_PROMPT,
     temperature: SUBAGENT_CONFIG.DEFAULT_TEMPERATURE,
     themeColor: SUBAGENT_CONFIG.DEFAULT_THEME_COLOR,
+    toolAccess: SUBAGENT_CONFIG.DEFAULT_TOOL_ACCESS,
   };
 }
 

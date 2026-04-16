@@ -27,6 +27,7 @@ describe('buildAgentInput', () => {
             systemPrompt: 'Review carefully.',
             temperature: 0.3,
             themeColor: '#14b8a6',
+            toolAccess: 'none',
           },
           {
             description: 'Disabled helper',
@@ -37,6 +38,7 @@ describe('buildAgentInput', () => {
             systemPrompt: 'Should not appear.',
             temperature: 0.5,
             themeColor: '#f97316',
+            toolAccess: 'none',
           },
         ],
         enabled: true,
@@ -63,6 +65,7 @@ describe('buildAgentInput', () => {
             systemPrompt: 'Review carefully.',
             temperature: 0.3,
             themeColor: '#14b8a6',
+            toolAccess: 'none',
           },
         ],
         enabled: false,

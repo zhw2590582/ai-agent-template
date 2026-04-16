@@ -5,6 +5,7 @@ import { RAG_CONFIG } from '@/config/rag';
 import { SANDBOX_CONFIG } from '@/config/sandbox';
 import { SEARCH_CONFIG } from '@/config/search';
 import { API_NAMESPACES } from '@/config/namespaces';
+import { SUBAGENT_TOOL_ACCESS_VALUES } from '@/features/subagent/types';
 import { requireAuthenticatedUser } from '@/features/auth/server/session';
 import {
   getProfileById,
@@ -128,6 +129,7 @@ const profilePatchSchema = z.object({
             systemPrompt: z.string().optional(),
             temperature: z.number().optional(),
             themeColor: z.string().optional(),
+            toolAccess: z.enum(SUBAGENT_TOOL_ACCESS_VALUES).optional(),
           })
         )
         .optional(),
