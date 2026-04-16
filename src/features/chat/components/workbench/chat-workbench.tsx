@@ -165,30 +165,28 @@ export function ChatWorkbench({
             onOpenView={openView}
             t={t}
           />
-          <>
-            <ChatMessageList
-              error={workbench.error}
-              isSidebarOpen={workbench.isSidebarOpen}
-              messages={workbench.messages}
-              onEditUserMessage={workbench.setInput}
-              onRetry={() => workbench.regenerate()}
-              status={workbench.status}
-            />
-            <ChatComposer
-              availableModels={workbench.availableModels}
-              hasActiveConversation={Boolean(workbench.activeThreadId)}
-              input={workbench.input}
-              isBusy={workbench.isBusy || workbench.isStartingThread}
-              isCreatingThread={workbench.isStartingThread}
-              isSidebarOpen={workbench.isSidebarOpen}
-              model={workbench.selectedModel}
-              onInputChange={workbench.setInput}
-              onModelChange={workbench.setSelectedModel}
-              onStop={workbench.stop}
-              onSubmit={workbench.handleSubmit}
-              status={workbench.isStartingThread ? 'submitted' : workbench.status}
-            />
-          </>
+          <ChatMessageList
+            error={workbench.error}
+            isSidebarOpen={workbench.isSidebarOpen}
+            messages={workbench.messages}
+            onEditUserMessage={workbench.setInput}
+            onRetry={() => workbench.regenerate()}
+            status={workbench.status}
+          />
+          <ChatComposer
+            availableModels={workbench.availableModels}
+            hasActiveConversation={Boolean(workbench.activeThreadId)}
+            input={workbench.input}
+            isBusy={workbench.isBusy || workbench.isStartingThread}
+            isCreatingThread={workbench.isStartingThread}
+            isSidebarOpen={workbench.isSidebarOpen}
+            model={workbench.selectedModel}
+            onInputChange={workbench.setInput}
+            onModelChange={workbench.setSelectedModel}
+            onStop={workbench.stop}
+            onSubmit={workbench.handleSubmit}
+            status={workbench.isStartingThread ? 'submitted' : workbench.status}
+          />
         </section>
       </div>
       <Drawer

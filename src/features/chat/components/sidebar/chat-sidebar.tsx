@@ -254,7 +254,7 @@ export function ChatSidebar({
                       href={`/${locale}?id=${item.id}`}
                       onClick={() => onSelectConversation?.()}
                     >
-                      <div className="max-w-52 truncate">{item.title}</div>
+                      <span className="block max-w-52 truncate">{item.title}</span>
                     </Link>
                     <DropdownMenu
                       open={openMenuId === item.id}

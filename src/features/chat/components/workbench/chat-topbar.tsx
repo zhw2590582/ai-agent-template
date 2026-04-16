@@ -43,57 +43,55 @@ export function ChatTopBar({ activeView, onOpenSidebarDrawer, onOpenView, t }: C
 
   return (
     <div className="border-border bg-muted/50 flex h-14 shrink-0 items-center border-b px-3 sm:px-4">
-      <div className="hidden w-full flex-col gap-3 lg:flex">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:pb-0">
-            {HEADER_NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
+      <div className="hidden w-full flex-col gap-3 lg:flex lg:flex-row lg:items-center lg:justify-between">
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:pb-0">
+          {HEADER_NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
 
-              return (
-                <Button
-                  className="shrink-0"
-                  key={item.id}
-                  size="sm"
-                  type="button"
-                  variant={activeView === item.id ? 'secondary' : 'ghost'}
-                  onClick={() => onOpenView(item.id)}
-                >
-                  <Icon data-icon="inline-start" />
-                  {t(item.translationKey)}
-                </Button>
-              );
-            })}
-          </div>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <LanguageSwitcher triggerClassName="w-10" />
-            <ThemeToggle />
-            <Button
-              aria-label={t('navigation.settings')}
-              size="icon"
-              type="button"
-              variant="outline"
-              onClick={() => onOpenView('settings')}
-            >
-              <SettingsIcon />
-            </Button>
-            <AuthDialog
-              configurationMissingDescription={t('auth.configuration_missing_description')}
-              configurationMissingTitle={t('auth.configuration_missing_title')}
-              description={t('auth.description')}
-              githubLabel={t('auth.sign_in_with_github')}
-              googleLabel={t('auth.sign_in_with_google')}
-              privacyPolicyLabel={t('auth.privacy_policy')}
-              signInFailedLabel={t('auth.errors.sign_in_failed')}
-              signInLabel={t('auth.sign_in')}
-              signOutFailedLabel={t('auth.errors.sign_out_failed')}
-              signOutLabel={t('auth.sign_out')}
-              signOutSuccessLabel={t('auth.toast.sign_out_success')}
-              signedInAsLabel={t('auth.signed_in_as')}
-              termsAgreementLabel={t('auth.terms_agreement')}
-              termsOfServiceLabel={t('auth.terms_of_service')}
-              title={t('auth.title')}
-            />
-          </div>
+            return (
+              <Button
+                className="shrink-0"
+                key={item.id}
+                size="sm"
+                type="button"
+                variant={activeView === item.id ? 'secondary' : 'ghost'}
+                onClick={() => onOpenView(item.id)}
+              >
+                <Icon data-icon="inline-start" />
+                {t(item.translationKey)}
+              </Button>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <LanguageSwitcher triggerClassName="w-10" />
+          <ThemeToggle />
+          <Button
+            aria-label={t('navigation.settings')}
+            size="icon"
+            type="button"
+            variant="outline"
+            onClick={() => onOpenView('settings')}
+          >
+            <SettingsIcon />
+          </Button>
+          <AuthDialog
+            configurationMissingDescription={t('auth.configuration_missing_description')}
+            configurationMissingTitle={t('auth.configuration_missing_title')}
+            description={t('auth.description')}
+            githubLabel={t('auth.sign_in_with_github')}
+            googleLabel={t('auth.sign_in_with_google')}
+            privacyPolicyLabel={t('auth.privacy_policy')}
+            signInFailedLabel={t('auth.errors.sign_in_failed')}
+            signInLabel={t('auth.sign_in')}
+            signOutFailedLabel={t('auth.errors.sign_out_failed')}
+            signOutLabel={t('auth.sign_out')}
+            signOutSuccessLabel={t('auth.toast.sign_out_success')}
+            signedInAsLabel={t('auth.signed_in_as')}
+            termsAgreementLabel={t('auth.terms_agreement')}
+            termsOfServiceLabel={t('auth.terms_of_service')}
+            title={t('auth.title')}
+          />
         </div>
       </div>
 
