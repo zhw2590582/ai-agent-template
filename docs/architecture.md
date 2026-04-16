@@ -1,360 +1,240 @@
 # Architecture
 
-本文档只描述当前代码怎么组织，不描述远期愿景。
+这份文档只回答一件事：
 
-## 目标
+当前代码按什么边界组织。
 
-当前架构的重点是三件事：
-
-- 让聊天主链路保持稳定
-- 让模型/provider 配置成为真实能力
-- 让登录与会话持久化清晰落地
-- 让 Memory 成为真实能力而不是占位
-- 让新能力能按边界逐步接入，而不是提前过度设计
+它不负责说明“哪些能力已经做完”。功能范围统一看 [project-status.md](./project-status.md)。
 
 ## 当前结构
 
 ```text
 src/
 ├── app/
-│   ├── [locale]/               # 路由和布局入口
+│   ├── [locale]/               # 页面和布局入口
 │   ├── api/chat/route.ts       # 聊天 API 入口，保持很薄
 │   ├── api/conversations/      # 会话读写、分页、搜索
-│   ├── api/mcp/route.ts        # 预留给未来本项目自己的 MCP server
-│   ├── api/mcp/test/route.ts   # 当前用于测试远程 MCP server
+│   ├── api/mcp/route.ts        # demo / 预留 MCP server 入口
+│   ├── api/mcp/test/route.ts   # 远程 MCP server 测试
 │   └── auth/callback/route.ts  # Supabase OAuth 回调
 ├── components/
-│   ├── ai-elements/            # AI Elements 组件源码
-│   ├── ui/                     # shadcn/ui 基础组件
+│   ├── ai-elements/            # AI Elements 原子组件
+│   ├── ui/                     # shadcn/ui 原子组件
 │   └── ui-settings/            # 语言和主题切换
-├── config/                     # app/env/i18n 等集中配置
+├── config/                     # env / i18n / limits / chat 等集中配置
 ├── features/
-│   ├── auth/                   # 登录 UI、用户快照、profile 同步
-│   ├── chat/                   # 聊天工作台与会话链路
-│   ├── memory/                 # 长期记忆、摘要与 Memory 弹窗内容
-│   ├── models/                 # provider 配置、模型同步、自定义 provider/model
-│   ├── mcp/                    # 远程 MCP server 配置、测试、tool client
-│   ├── rag/                    # 文档导入、向量检索、来源展示
-│   ├── sandbox/                # E2B runtime 配置、执行策略、环境变量
-│   └── search/                 # Tavily 搜索设置、连接测试、服务端 client
-├── i18n/                       # next-intl 请求配置
-├── lib/                        # 共享工具、错误处理、日志、Supabase client
+│   ├── auth/                   # 认证、profile、settings 持久化
+│   ├── chat/                   # 聊天 UI、会话链路、agent runtime
+│   ├── memory/                 # 记忆和摘要
+│   ├── models/                 # provider / model 配置
+│   ├── mcp/                    # 远程 MCP client 集成
+│   ├── rag/                    # 文档导入和检索
+│   ├── sandbox/                # E2B 配置和服务端执行边界
+│   ├── search/                 # Tavily 配置和服务端 client
+│   └── skills/                 # Skills settings UI
+├── i18n/                       # next-intl 配置和消息聚合
+├── lib/                        # 跨域共享工具、错误、日志、Supabase client
 └── proxy.ts                    # locale 检测和 session 更新
 ```
 
-## 模块职责
+## 目录边界
 
 ### `src/app`
 
 只放 Next.js 路由入口和布局。
 
-- 页面文件只负责挂载页面级组件
-- `route.ts` 只负责转发到 handler 或返回薄响应
-- 不在这里写模型、工具、业务编排逻辑
+- 页面文件只挂载页面级组件
+- `route.ts` 只转发到 handler
+- 不在这里堆业务编排
+
+### `src/features`
+
+真实业务域都放这里。
+
+每个 feature 默认按需要逐步生长：
+
+- `components/`
+- `hooks/`
+- `server/`
+- `storage/`
+- `settings.ts`
+- `types.ts`
+
+不是每个 feature 都必须同时拥有这些目录，按真实复杂度增长即可。
 
 ### `src/features/chat`
 
-当前核心业务域。
+聊天是主业务域，但现在已经分成两层：
 
-- `pages/`: 页面级组装
-- `components/`: 聊天相关 UI
-- `data/`: guest / 已登录会话操作适配层
-- `hooks/`: workbench、session、sidebar、标题、非法会话保护等编排 hook
-- `server/`: 聊天请求 handler 和 schema
-- `storage/`: 已登录会话存储、guest 本地会话 store、标题生成
-- `utils/`: 轻量纯函数和配置辅助
-- `ai/`: 模型、prompt、记忆辅助生成、工具、workflow 入口
-- `components/workbench/*`: 顶部工作台弹窗壳与共享布局
+1. 页面和交互层
+2. `agent-runtime/` 编排层
 
-当前已经形成的关键边界：
+当前 `chat/` 内最重要的边界是：
 
-- `use-chat-workbench`: 页面总编排，不再直接承载所有副作用
-- `use-conversation-records`: 会话记录读写和 guest / auth 适配
-- `use-conversation-list-store`: sidebar 乐观列表状态
-- `conversation-operations.ts`: guest / 已登录会话操作统一出口
-- `local-conversation-store.ts`: guest 本地线程存储和订阅
-- `local-conversation-title.ts`: guest 标题生成
-- `ai/core/*`: 运行时模型与默认 prompt
-- `ai/memory/*`: 标题和摘要生成
-- `ai/tools/*`: search / extract / crawl 等 tool 封装
-- `ai/workflows/*`: 最基础的 `streamText` workflow，以及后续更复杂编排的落点
+- `hooks/`: 页面编排、会话状态、transport wrapper
+- `server/`: 聊天请求入口和 schema
+- `agent-runtime/`: request、context、toolset、workspace、response、finish
+- `storage/`: 会话存储和 guest 本地线程
+- `ai/`: 模型、prompt、memory helper、底层 tool / workflow 适配
 
-### `src/features/memory`
+规则：
 
-当前已经是第三个真实业务域。
+- 新的聊天运行时逻辑优先进 `agent-runtime/`
+- `chat.ts` 保持薄入口
+- `ai/workflows/*` 是底层执行适配，不再承担新的业务编排
 
-- `components/`: controls、memory list、summary list、编辑弹窗
-- `hooks/`: 页面编排
-- `hooks/use-memory-settings-draft.ts`: settings draft、保存、重置
-- `storage/`: repository、抽取、归并、检索、导出等 memory 管理逻辑
-- `types.ts`: canonical memory kinds 与结构定义
+### 其他 feature
 
-当前已经形成的关键边界：
+`memory / models / search / sandbox / mcp / rag / skills` 都保持“自己的 UI、自己的 settings、自己的 server adapter”。
 
-- `use-memory-page.ts`: 页面级交互与 optimistic state
-- `memory-repository.ts`: Supabase 读写
-- `memory-extraction.ts`: AI SDK structured output 抽取
-- `memory-merge.ts`: dedupe / merge / canonical kind
-- `memory-retrieval.ts`: 记忆注入上下文拼接与数量上限控制
-- `memory-consolidation.ts`: 单维度 memory consolidation（达到阈值后用 LLM 做归并）
-
-### `src/features/models`
-
-当前第二个真实业务域。
-
-- `components/`: provider 列表、provider 设置、模型列表
-- `hooks/`: profile.settings 的读写、保存串行化、页面编排
-- `server/`: provider 测试连接和模型同步
-- `utils/`: provider/model 归一化、runtime option 推导
-
-它的职责不是管理平台内置模型，而是管理用户自己接入的第三方 provider 与模型。
-
-当前已经形成的关键边界：
-
-- `use-models-page.ts`: Models 内容级编排
-- `use-models-draft.ts`: provider / model draft state
-- `use-provider-probe.ts`: provider 连接测试
-
-### `src/features/search`
-
-当前已成为一个真实 feature，而不是占位页。
-
-- `components/`: Search 弹窗内容和三类设置分组
-- `hooks/`: Search settings draft、保存、连接测试
-- `server/`: Tavily client 和 test helper
-- `settings.ts`: Search settings normalize / access 判断
-- `types.ts`: Search settings 结构
-
-当前已经形成的关键边界：
-
-- `use-search-settings.ts`: Search 弹窗的 settings controller
-- `tavily-client.ts`: Tavily 请求与错误处理统一入口
-- `chat/ai/tools/*`: 只负责 AI tool 封装，不再各自手写 Tavily fetch
-
-### `src/features/sandbox`
-
-当前已经是一个真实 feature。
-
-- `components/`: Sandbox 弹窗内容、运行时设置和高级项
-- `hooks/`: Sandbox settings draft、保存、连接测试
-- `server/`: E2B client、session 生命周期、命令/文件执行边界
-- `settings.ts`: Sandbox settings normalize / access 判断
-- `types.ts`: Sandbox settings 结构
-
-当前关键边界：
-
-- `use-sandbox-settings.ts`: Sandbox 弹窗的 settings controller
-- `sandbox-content.tsx`: Sandbox 设置入口与分组编排
-- `server/e2b-client.ts`: E2B runtime 适配、session 复用、路径/输出限制
-- `profile.settings.sandbox`: 用户级 sandbox 配置
-
-注意：
-
-- 当前只做单次请求内的 sandbox session 复用
-- 不做跨请求持久 workspace
-- 当前只开放首批 sandbox tools（命令执行、读文件、写文件）
-
-### `src/features/rag`
-
-当前已经是一个真实 feature。
-
-- `components/`: RAG 弹窗、文档导入、已索引文档、来源展示
-- `hooks/`: RAG settings、文档导入/删除/列表
-- `server/`: 文档解析、切块、embedding、rerank、retrieval、连接测试
-- `storage/`: Supabase `rag_documents / rag_chunks` 读写与检索 RPC
-- `settings.ts`: RAG settings normalize / access 判断
-
-当前关键边界：
-
-- `use-rag-settings.ts`: RAG 弹窗 settings controller
-- `use-rag-documents.ts`: 文档导入、删除、懒加载列表
-- `server/document-parser.ts`: `txt / md / pdf` 解析
-- `server/providers/*`: Voyage embedding / rerank provider
-- `server/retrieval.ts`: pgvector 检索、rerank 和上下文构造
-- `chat-rag-sources.tsx`: 聊天来源展示
-
-注意：
-
-- 当前 RAG 只对登录用户开放
-- 当前只支持用户私有文档索引，不支持知识库切换器
-- 当前 provider 固定为 Voyage，尚未做多 provider 选择
-
-### `src/features/mcp`
-
-当前已经是一个真实 feature，但范围还只限于“远程 MCP tools integration”。
-
-- `components/`: MCP 弹窗、server 列表、编辑弹窗、测试结果弹窗
-- `hooks/`: MCP settings draft、保存、测试
-- `server/`: 远程 MCP client 初始化、tools 列表、tool set 构建
-- `settings.ts`: MCP settings normalize / access 判断
-- `types.ts`: MCP 多 server 结构定义
-
-当前关键边界：
-
-- `use-mcp-settings.ts`: MCP 弹窗的 settings controller
-- `mcp-client.ts`: 远程 MCP client 生命周期和多 server tool merge
-- `app/api/mcp/test/route.ts`: 测试远程 MCP server，并返回 tools / resources / prompts / capabilities
-
-注意：
-
-- `src/features/mcp` 现在描述的是“本项目作为 MCP client”
-- 不是“本项目自己的 MCP server”
-- 测试弹窗里展示 resources / prompts / capabilities，不代表这些能力已经接入聊天运行时
-
-### `src/features/auth`
-
-负责认证相关的最小闭环：
-
-- 登录弹窗和 OAuth 按钮
-- 用户快照上下文
-- 从认证用户同步 `profiles` 表
-
-它是一个真实 feature，但范围明显小于 `features/chat`。另外，`profile.settings` 的聚合、归一化、持久化已经收敛在 `src/features/auth/profile/*`。
+它们提供 capability 或数据，不反向接管聊天主链路。
 
 ### `src/components`
 
-放基础 UI 和第三方组件源码。
+这里只放原子组件和很薄的通用包装。
 
-- 优先复用，不要在业务层平行造轮子
-- 如果要改第三方组件行为，做最小修改
+规则：
+
+- 优先复用
+- 不在业务层平行造一套基础组件
+- `src/components/ui/*` 和 `src/components/ai-elements/*` 视为原子层
 
 ### `src/config`
 
-放所有集中配置，已经按主题拆分。
+所有集中配置都放这里，例如：
 
-- `env.ts`: 环境变量校验
-- `chat.ts`: AI / chat / UI 时序相关配置
-- `memory.ts`: memory 与 consolidation 相关配置
-- `models.ts`: model sync 配置
-- `search.ts`: Tavily endpoint 和默认搜索配置
-- `api.ts` / `api-rate-limit.ts`: API 相关配置
-- `i18n.ts`: locale 配置
-- `limits.ts` / `navigation.ts` / `theme.ts` / `dev.ts`: 其余主题配置
+- `env.ts`
+- `chat.ts`
+- `memory.ts`
+- `models.ts`
+- `search.ts`
+- `api-rate-limit.ts`
+- `i18n.ts`
 
 ### `src/lib`
 
-放跨域共享工具。
+这里只放跨 feature 共享的基础设施：
 
-- `errors.ts`: 错误分类与统一响应
-- `logger.ts`: 日志封装
-- `i18n.ts`: 翻译辅助
-- `rate-limit.ts`: route-level 频率限制
-- `supabase/*`: server/client/proxy 侧 Supabase 封装
-- `utils.ts`: 通用纯函数
+- 错误处理
+- 日志
+- rate limit
+- Supabase client
+- 通用纯函数
 
-## 当前请求链路
+判断标准：
+
+- 如果逻辑明显属于某个业务域，就放回 `features/<domain>`
+- 只有真正跨域复用的能力才进 `lib`
+
+## 核心链路
+
+### 聊天主链路
 
 ```text
-UI input
-  -> useChat + runtimeModel
+Chat UI
+  -> useChatSession (wrapper)
+  -> useAgentSession
   -> /api/chat
   -> src/features/chat/server/chat.ts
-  -> model + tools
+  -> src/features/chat/agent-runtime/*
+  -> model + context + tools
   -> stream response
   -> chat UI
+```
 
-Models UI
-  -> workbench dialog
-  -> useModelsPage
-  -> useAppProfile
+### 用户设置链路
+
+```text
+Workbench Dialog
+  -> feature hook
   -> /api/profile
-  -> localStorage or Supabase profile.settings
+  -> profiles.settings
+  -> localStorage fallback for guest when applicable
+```
 
-Test connection
-  -> /api/models/providers
-  -> src/features/models/server/providers.ts
-  -> sync models back into profile.settings
+这个模式适用于：
 
-Sidebar list/search/create
+- Models
+- Memory settings
+- Search
+- Sandbox
+- MCP
+- Skills
+- RAG settings
+
+### 会话存储链路
+
+```text
+Sidebar / Chat actions
   -> conversation-operations
-  -> src/features/chat/storage/conversations.ts or local-conversation-store.ts
-  -> Supabase or localStorage
+  -> authenticated: src/features/chat/storage/conversations.ts
+  -> guest: src/features/chat/storage/local-conversation-store.ts
+```
 
-Memory extraction / retrieval
-  -> src/features/chat/server/chat.ts
-  -> src/features/memory/storage/*
-  -> conversations.summary / public.memories
+### 认证链路
 
-Memory UI
-  -> workbench dialog
-  -> useMemoryPage
-  -> /api/profile + /api/memories + /api/conversations
-  -> settings / memories / summaries
-
-Search UI
-  -> workbench dialog
-  -> useSearchSettings
-  -> /api/profile + /api/search/test
-  -> Tavily-backed tools
-
-Sandbox UI
-  -> workbench dialog
-  -> useSandboxSettings
-  -> /api/profile
-  -> profile.settings.sandbox
-
-MCP UI
-  -> workbench dialog
-  -> useMcpSettings
-  -> /api/profile + /api/mcp/test
-  -> remote MCP tools
-
-API routes
-  -> src/lib/rate-limit.ts
-  -> src/config/api-rate-limit.ts
-  -> 429 + Retry-After
-
+```text
 OAuth sign-in
   -> Supabase auth
   -> /auth/callback
-  -> profiles upsert
+  -> profiles upsert / sync
   -> redirect back to locale route
 ```
 
-## 当前架构判断
+## 运行时边界
 
-已经稳定的部分：
+### Agent Runtime
 
-- 聊天主链路
-- 用户侧 provider / model 配置
-- prompt 抽离
-- Memory V1（summary + long-term memories + cross-conversation injection）
-- i18n 路由
-- locale 文件按领域分块聚合
-- 主题与 hydration 处理
-- Supabase 登录和会话持久化
-- route-level API rate limiting
-- 基础配置、错误处理、日志
-- Sandbox settings UI 与持久化
+`agent-runtime/` 是当前聊天能力的统一编排层。
 
-还没形成真实模块的部分：
+它负责：
 
-- rag
-- agents / subagents
-- sandbox runtime
-- skills 管理
-- settings
+- 组织请求
+- 解析运行时上下文
+- 合并 tools
+- 构建 workspace/session
+- 执行 stream response
+- finish persistence 和 telemetry
 
-## 扩展规则
+它不负责：
 
-后续新能力按这个方向接：
+- 页面交互
+- feature 自己的 settings UI
+- 某个单独 provider 的具体实现细节
 
-1. 新的服务端编排逻辑优先放 `src/features/<domain>/server`，跨 feature 的纯服务端基础设施再考虑进 `src/lib`
-2. 新的业务界面放 `src/features/<domain>`
-3. 可跨域复用的纯工具函数才放 `src/lib`
-4. 路由层继续保持薄，不把业务逻辑塞进 `app`
-5. 只有在某个能力真正成形后，才把它从占位页升级成独立 feature
+### Client / Server 边界
 
-## i18n 组织方式
+`agent-runtime` 需要严格区分 client 和 server：
 
-当前语言文件不再继续维护成单一超大对象，而是：
+- client 只从 `src/features/chat/agent-runtime/client.ts` 导入
+- server 只从 `src/features/chat/agent-runtime/server.ts` 导入
 
-- `src/i18n/locales/en-US.ts`
-- `src/i18n/locales/zh-CN.ts`
+不要在 client 代码里直接走 server-heavy 的 barrel。
 
-作为聚合入口；
+## i18n 组织
+
+语言消息按领域拆分，再统一聚合：
 
 - `src/i18n/locales/blocks/en-US/*`
 - `src/i18n/locales/blocks/zh-CN/*`
+- `src/i18n/locales/en-US.ts`
+- `src/i18n/locales/zh-CN.ts`
 
-按领域拆分消息块。新增 feature 文案时，优先补对应领域文件，再由聚合入口统一导出。
+新增 feature 文案时，优先补对应 block。
+
+## 扩展规则
+
+后续改动优先遵守这几条：
+
+1. `app` 保持薄
+2. 新能力先放进自己的 feature
+3. 聊天 runtime 相关编排走 `agent-runtime`
+4. 不把 feature 细节重新堆回 `chat.ts`
+5. 不因为预期中的远期需求，提前拆太深目录
+
+## 相关文档
+
+- 功能范围和当前状态：看 [project-status.md](./project-status.md)
+- 聊天 runtime 方向：看 [agent-harness.md](./agent-harness.md)
+- 开发约束：看 [conventions.md](./conventions.md)
+- 推进顺序：看 [roadmap.md](./roadmap.md)

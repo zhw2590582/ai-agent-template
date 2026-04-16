@@ -81,14 +81,16 @@ UI / Workbench
 - Skills
 - Planning
 - Subagent
-- Durable run / telemetry
+- Durable run storage / resume
 
 ## 当前已落地的收口结果
 
-目前 `agent-runtime` 目录已经存在，并承接了第一轮和第二轮重构结果：
+目前 `agent-runtime` 目录已经存在，并承接了前几轮重构结果：
 
 ```text
 src/features/chat/agent-runtime/
+├── client.ts
+├── server.ts
 ├── types.ts
 ├── build-agent-run-request.ts
 ├── use-agent-session.ts
@@ -99,11 +101,19 @@ src/features/chat/agent-runtime/
 ├── execute-agent-run.ts
 ├── create-agent-run-response.ts
 ├── finish-agent-run.ts
+├── workspace-manifest.ts
+├── workspace-session.ts
+├── run-metadata.ts
+├── run-telemetry.ts
 └── index.ts
 ```
 
 这些文件当前职责如下：
 
+- `client.ts`
+  client-safe 出口，只暴露 `useAgentSession` 和 request build
+- `server.ts`
+  server-safe 出口，统一暴露 runtime orchestration 能力
 - `build-agent-run-request.ts`
   统一构造 `/api/chat` 的请求体
 - `use-agent-session.ts`
@@ -122,6 +132,14 @@ src/features/chat/agent-runtime/
   统一 UI stream response、metadata、error、finish handler 接线
 - `finish-agent-run.ts`
   统一消息持久化、memory auto-write、资源释放
+- `workspace-manifest.ts`
+  统一从 `sandboxSettings` 派生 workspace manifest
+- `workspace-session.ts`
+  统一 sandbox session lifecycle 和最小 workspace telemetry
+- `run-metadata.ts`
+  统一聚合 run-level metadata，避免 response / finish / telemetry 各自拼字段
+- `run-telemetry.ts`
+  统一记录 `prepared / failed / finished` 这三类运行日志
 
 为了避免一次性大搬家，当前还保留了兼容 wrapper：
 
@@ -131,6 +149,12 @@ src/features/chat/agent-runtime/
 - `src/features/chat/ai/workflows/generateText.ts`
 
 这些 wrapper 现在的职责只是兼容旧引用，不应该再继续增长业务逻辑。
+
+当前已经确认的一条规则：
+
+- client 代码不要直接 import `@/features/chat/agent-runtime`
+- client 只走 `@/features/chat/agent-runtime/client`
+- server 只走 `@/features/chat/agent-runtime/server`
 
 ## 当前推荐的分层
 
@@ -199,11 +223,15 @@ src/features/chat/
 └── ai/
 ```
 
-下一阶段如果继续演进，优先往 `agent-runtime/` 增加这几类文件，而不是把逻辑再散回 `server/`：
+当前已经补出来的最小基础层：
 
 - `workspace-manifest.ts`
 - `workspace-session.ts`
+- `run-metadata.ts`
 - `run-telemetry.ts`
+
+后续如果继续演进，优先考虑的仍然是：
+
 - `resolve-skill-manifests.ts`
 - `compile-skill-overlays.ts`
 - `build-skill-tool-policy.ts`
@@ -242,21 +270,37 @@ src/features/chat/
 
 `Subagent` 也同理，必须等 harness 的 run context、workspace、finish、telemetry 这些基础层稳定后再接。
 
-## 下一步执行顺序
+## 当前状态判断
 
-### Phase 1
+当前 `agent harness` 的状态可以定义为：
 
-继续把现有运行时边界压实。
+- 主骨架已成型
+- client / server 边界已明确
+- workspace lifecycle 已有最小模型
+- run-level metadata 和 telemetry 已经接通
+- 但还没有进入 durable run / skills / subagent 阶段
 
-当前状态：
+更准确地说：
 
-- 已完成
+- 现在已经不是“散落的聊天逻辑”
+- 也还不是“完整 agent runtime 平台”
+- 当前最合理的判断是：**V1 harness 已经可用，接下来应优先做稳定化**
 
-剩余收尾：
+## 当前真正必要的后续工作
 
-1. 检查旧文件是否仍有不必要 wrapper
-2. 逐步把新的引用切到 `agent-runtime`
-3. 避免新增代码继续直接依赖旧入口
+现在真正必须做的，不是继续扩抽象，而是：
+
+1. 补最小测试
+2. 让文档持续与代码同步
+3. 继续守住 wrapper 只做兼容层
+
+当前不需要马上做的事情：
+
+- durable run storage
+- subagent orchestration
+- 更重的 sandbox/provider abstraction
+- 新一轮目录拆分
+- 迁移到外部 agent framework
 
 ### Phase 2
 
@@ -347,9 +391,7 @@ src/features/chat/
 - 当前真实代码结构：看 [architecture.md](./architecture.md)
 - 当前落地范围和完成度：看 [project-status.md](./project-status.md)
 - 全局推进顺序：看 [roadmap.md](./roadmap.md)
-- Search 现状：看 [search-implementation.md](./search-implementation.md)
-- Skills 现状：看 [skills-implementation.md](./skills-implementation.md)
-- Sandbox 现状：看 [sandbox-implementation.md](./sandbox-implementation.md)
+- Search / Sandbox / MCP / RAG / Skills 的当前边界：统一看 [project-status.md](./project-status.md)
 
 本文件只负责回答一件事：
 

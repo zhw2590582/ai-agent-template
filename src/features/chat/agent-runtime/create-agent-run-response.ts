@@ -46,7 +46,9 @@ export async function createAgentRunResponse({
     throw error;
   }
 
-  result.consumeStream();
+  if (typeof result.consumeStream === 'function') {
+    result.consumeStream();
+  }
 
   return result.toUIMessageStreamResponse({
     messageMetadata: ({ part }) => {

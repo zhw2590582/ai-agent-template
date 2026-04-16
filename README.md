@@ -121,8 +121,9 @@ AI 或新协作者建议按这个顺序看：
 
 1. [docs/project-status.md](./docs/project-status.md)
 2. [docs/architecture.md](./docs/architecture.md)
-3. [docs/conventions.md](./docs/conventions.md)
-4. [docs/roadmap.md](./docs/roadmap.md)
+3. [docs/agent-harness.md](./docs/agent-harness.md)（只在改聊天 runtime 时看）
+4. [docs/conventions.md](./docs/conventions.md)
+5. [docs/roadmap.md](./docs/roadmap.md)
 
 其他文档：
 

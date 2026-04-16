@@ -1,34 +1,31 @@
 # Docs
 
-给 AI 和新协作者的推荐阅读顺序：
+给 AI 和协作者的最小阅读顺序：
 
 1. [project-status.md](./project-status.md)
-   当前真实状态、已完成范围、占位模块、下一优先级
+   当前真实能力、边界和缺口
 2. [architecture.md](./architecture.md)
-   当前代码结构、职责边界、核心请求链路
-3. [conventions.md](./conventions.md)
+   当前代码结构和主链路
+3. [agent-harness.md](./agent-harness.md)
+   只在修改聊天 runtime 时看
+4. [conventions.md](./conventions.md)
    开发约束和改动原则
-4. [roadmap.md](./roadmap.md)
-   下一阶段的推荐推进顺序
+5. [roadmap.md](./roadmap.md)
+   下一阶段推荐顺序
 
-专题文档：
+运行和维护相关：
 
 - [SETUP.md](./SETUP.md): 本地启动、环境变量、常用命令
 - [testing.md](./testing.md): 测试命令、测试分层、当前覆盖范围
 - [i18n-guide.md](./i18n-guide.md): 国际化实现方式和扩展规则
-- [capability-mapping.md](./capability-mapping.md): 当前能力边界和落点简表
-- [search-implementation.md](./search-implementation.md): Search 当前范围、Tavily 设置与聊天工具接入链路
-- [skills-implementation.md](./skills-implementation.md): Skills 当前配置层边界、持久化与未接入 runtime 的原因
-- [sandbox-implementation.md](./sandbox-implementation.md): Sandbox 当前范围、E2B 选择与后续接入顺序
-- [rag-implementation.md](./rag-implementation.md): RAG V1 的数据库、检索与聊天注入设计
 
-历史记录：
-
-- [architecture-optimization.md](./architecture-optimization.md): 2026-04-11 的基础设施整理记录
-
-低优先级参考资料：
+参考资料目录：
 
 - `ai-agents-for-beginners/`: AI Agent 理论与设计模式参考
 - `mcp-for-beginners/`: MCP 协议与工具化参考
 
-如果只看一个文件，先看 [project-status.md](./project-status.md)。
+文档约定：
+
+- 能力边界统一收口到 [project-status.md](./project-status.md)
+- 不再为每个 feature 单独维护一份长实现文档
+- 只有当某个主题需要独立设计约束时，才保留单独文档，例如 [agent-harness.md](./agent-harness.md)
