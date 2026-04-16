@@ -34,7 +34,7 @@ src/
 │   └── skills/                 # Skills settings UI
 ├── i18n/                       # next-intl 配置和消息聚合
 ├── lib/                        # 跨域共享工具、错误、日志、Supabase client
-└── middleware.ts               # locale 检测和 session 更新
+└── proxy.ts                    # locale 检测和 session 更新
 ```
 
 ## 目录边界

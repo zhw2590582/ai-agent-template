@@ -1,18 +1,17 @@
 /**
- * Next.js Middleware - 处理 i18n 路由
+ * Next.js Proxy - 处理 i18n 路由
  *
  * 用途：
  * 1. 自动检测用户语言偏好
  * 2. 重定向到对应语言的路由
  * 3. 设置语言 cookie
  *
- * Note: 保持 Edge Middleware 形态，兼容 Cloudflare/OpenNext。
+ * Note: Next.js 16+ 使用 proxy.ts 替代 middleware.ts
  */
 
 import createMiddleware from 'next-intl/middleware';
 import { type NextRequest } from 'next/server';
-
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '@/config/i18n';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/config/i18n';
 import { updateSession } from '@/lib/supabase/proxy';
 
 const handleI18nRouting = createMiddleware({
@@ -29,7 +28,7 @@ const handleI18nRouting = createMiddleware({
   // localePrefix: 'as-needed',
 });
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const response = handleI18nRouting(request);
 
   return updateSession(request, response);

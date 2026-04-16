@@ -127,7 +127,7 @@ src/
 │   └── subagent/         # 预留的多代理边界
 ├── i18n/                 # next-intl 请求配置
 ├── lib/                  # 通用工具、错误处理、日志、Supabase client
-└── middleware.ts         # locale 检测与 session 更新
+└── proxy.ts              # locale 检测与 session 更新
 ```
 
 ## 文档入口
