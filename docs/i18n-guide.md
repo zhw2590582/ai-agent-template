@@ -21,7 +21,7 @@
 - [src/i18n/locales/en-US.ts](../src/i18n/locales/en-US.ts)
 - [src/i18n/locales/blocks](../src/i18n/locales/blocks)
 - [src/components/ui-settings/language-switcher.tsx](../src/components/ui-settings/language-switcher.tsx)
-- [src/proxy.ts](../src/proxy.ts)
+- [src/middleware.ts](../src/middleware.ts)
 
 ## 检测顺序
 

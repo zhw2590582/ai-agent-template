@@ -31,7 +31,7 @@ src/
 ├── features/           # 按能力拆分的真实业务域
 ├── i18n/               # 国际化配置与消息聚合
 ├── lib/                # 通用工具、错误处理、日志、Supabase client
-└── proxy.ts            # locale 检测与 session 更新
+└── middleware.ts       # locale 检测与 session 更新
 ```
 
 ## Important Rules
