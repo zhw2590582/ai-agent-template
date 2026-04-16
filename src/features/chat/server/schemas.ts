@@ -7,6 +7,7 @@
  */
 
 import { z } from 'zod';
+import { RAG_CONFIG } from '@/config/rag';
 import { TEXT_LIMITS } from '@/config/limits';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
 
@@ -53,6 +54,7 @@ export const chatPostSchema = z.object({
       matchCount: z.number().int(),
       matchThreshold: z.number(),
       maxContextCharacters: z.number().int(),
+      provider: z.enum(RAG_CONFIG.PROVIDER_IDS),
     })
     .optional(),
   sandboxSettings: z

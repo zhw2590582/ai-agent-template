@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
+import { RAG_CONFIG } from '@/config/rag';
 import { API_NAMESPACES } from '@/config/namespaces';
 import { SERVER_MESSAGES } from '@/config/strings';
 import { AppError, ErrorCode, handleError } from '@/lib/errors';
@@ -12,6 +13,7 @@ import { runRagConnectionTest } from '@/features/rag/server/test';
 
 const ragTestSchema = z.object({
   apiKey: z.string().min(1),
+  provider: z.enum(RAG_CONFIG.PROVIDER_IDS).optional(),
 });
 
 async function requireAuth() {
@@ -38,7 +40,10 @@ export async function POST(request: Request) {
     await upsertProfileFromAuthUser(user, {}, supabase);
 
     const input = await validateRequest(request, ragTestSchema);
-    const result = await runRagConnectionTest(input.apiKey);
+    const result = await runRagConnectionTest({
+      apiKey: input.apiKey,
+      provider: input.provider ?? RAG_CONFIG.DEFAULT_PROVIDER,
+    });
 
     return Response.json(result);
   } catch (error) {

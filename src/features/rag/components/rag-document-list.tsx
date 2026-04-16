@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Spinner } from '@/components/ui/spinner';
-import type { RagDocument, RagDocumentMetadata } from '@/features/rag/types';
+import type { RagDocument, RagDocumentMetadata, RagProviderId } from '@/features/rag/types';
 
 interface RagDocumentListProps {
   apiKey: string;
@@ -28,8 +28,9 @@ interface RagDocumentListProps {
   isReindexingId: string | null;
   onOpenChange?: (open: boolean) => void;
   onDelete: (id: string) => Promise<boolean>;
-  onReindex: (input: { apiKey: string; id: string }) => Promise<boolean>;
+  onReindex: (input: { apiKey: string; id: string; provider: RagProviderId }) => Promise<boolean>;
   open?: boolean;
+  provider: RagProviderId;
 }
 
 function getMetadata(document: RagDocument) {
@@ -65,6 +66,7 @@ export function RagDocumentList({
   onDelete,
   onReindex,
   open = false,
+  provider,
 }: RagDocumentListProps) {
   const t = useTranslations();
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -229,7 +231,7 @@ export function RagDocumentList({
                           size="sm"
                           type="button"
                           variant="ghost"
-                          onClick={() => void onReindex({ apiKey, id: document.id })}
+                          onClick={() => void onReindex({ apiKey, id: document.id, provider })}
                         >
                           {isReindexingId === document.id ? (
                             <Spinner data-icon="inline-start" />

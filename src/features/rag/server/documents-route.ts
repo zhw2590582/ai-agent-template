@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
 import { TEXT_LIMITS } from '@/config/limits';
 import { API_NAMESPACES } from '@/config/namespaces';
+import { RAG_CONFIG } from '@/config/rag';
 import { requireAuthenticatedUser } from '@/features/auth/server/session';
 import { upsertProfileFromAuthUser } from '@/features/auth/storage/profiles';
 import { parseRagDocumentFile } from '@/features/rag/server/document-parser';
@@ -17,6 +18,7 @@ import { validateRequest } from '@/lib/validation';
 
 const createRagFileDocumentSchema = z.object({
   apiKey: z.string().min(1),
+  provider: z.enum(RAG_CONFIG.PROVIDER_IDS).optional(),
   source: z.string().trim().max(TEXT_LIMITS.RAG_DOCUMENT_SOURCE).optional().or(z.literal('')),
   title: z.string().trim().max(TEXT_LIMITS.RAG_DOCUMENT_TITLE).optional().or(z.literal('')),
 });
@@ -28,6 +30,7 @@ const deleteRagDocumentSchema = z.object({
 const reindexRagDocumentSchema = z.object({
   apiKey: z.string().min(1),
   id: z.string().min(1),
+  provider: z.enum(RAG_CONFIG.PROVIDER_IDS).optional(),
 });
 
 async function parseCreateRagDocumentInput(request: Request) {
@@ -54,6 +57,7 @@ async function parseCreateRagDocumentInput(request: Request) {
 
   const metadata = createRagFileDocumentSchema.safeParse({
     apiKey: formData.get('apiKey'),
+    provider: formData.get('provider'),
     source: formData.get('source'),
     title: formData.get('title'),
   });
@@ -76,6 +80,7 @@ async function parseCreateRagDocumentInput(request: Request) {
     fileSize: parsedFile.fileSize,
     fileType: parsedFile.fileType,
     mimeType: parsedFile.mimeType,
+    provider: metadata.data.provider ?? RAG_CONFIG.DEFAULT_PROVIDER,
     source: metadata.data.source || null,
     title: metadata.data.title?.trim() || parsedFile.title,
   };
@@ -119,6 +124,7 @@ export async function POST(request: Request) {
         fileSize: input.fileSize,
         fileType: input.fileType,
         mimeType: input.mimeType,
+        provider: input.provider,
         source: input.source,
         supabase,
         title: input.title,
@@ -165,6 +171,7 @@ export async function PATCH(request: Request) {
       await reindexRagDocument({
         apiKey: input.apiKey,
         documentId: input.id,
+        provider: input.provider ?? RAG_CONFIG.DEFAULT_PROVIDER,
         supabase,
       })
     );

@@ -15,7 +15,7 @@
 - 已落地的 Search / Tavily 工具接入
 - 已落地的 Sandbox V1：E2B 配置、连接测试和首批工具
 - 已落地的远程 MCP tools integration
-- 已落地的 RAG V1：文档上传、向量检索、Voyage rerank 与来源展示
+- 已落地的 RAG V1：文档上传、向量检索、provider-based rerank 与来源展示
 - 已收口的聊天 `agent-runtime` harness
 - 为 RAG、Planning、多代理预留结构边界
 
@@ -45,6 +45,7 @@
 - `Sandbox` 配置弹窗：E2B key、template、运行目录、连接测试
 - Sandbox tools：`sandbox_run_command`、`sandbox_read_file`、`sandbox_write_file`
 - Sandbox workspace/session/telemetry 骨架
+- `RAG` provider registry / factory：当前默认 provider 为 Voyage
 - `MCP` 配置弹窗：多远程 server 配置、连接测试、结果展示
 - 聊天时合并远程 MCP tools
 - 基础 tool loop 与聊天 workflow 分层

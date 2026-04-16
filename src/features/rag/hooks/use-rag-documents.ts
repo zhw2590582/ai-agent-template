@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { API_ROUTES } from '@/config/api';
-import type { RagDocument } from '@/features/rag/types';
+import type { RagDocument, RagProviderId } from '@/features/rag/types';
 
 interface UseRagDocumentsOptions {
   deleteFailedMessage: string;
@@ -19,6 +19,7 @@ interface UseRagDocumentsOptions {
 type RagDocumentImportInput = {
   apiKey: string;
   file: File;
+  provider: RagProviderId;
   source: string;
   title: string;
   type: 'file';
@@ -73,6 +74,7 @@ export function useRagDocuments({
           const formData = new FormData();
           formData.set('apiKey', input.apiKey);
           formData.set('file', input.file);
+          formData.set('provider', input.provider);
           formData.set('source', input.source);
           formData.set('title', input.title);
           return formData;
@@ -131,7 +133,11 @@ export function useRagDocuments({
     }
   };
 
-  const reindexDocument = async (input: { apiKey: string; id: string }) => {
+  const reindexDocument = async (input: {
+    apiKey: string;
+    id: string;
+    provider: RagProviderId;
+  }) => {
     setIsReindexingId(input.id);
     try {
       const response = await fetch(API_ROUTES.ragDocuments, {

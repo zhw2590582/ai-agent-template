@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
+import { RAG_CONFIG } from '@/config/rag';
 import { API_NAMESPACES } from '@/config/namespaces';
 import { requireAuthenticatedUser } from '@/features/auth/server/session';
 import {
@@ -67,6 +68,7 @@ const profilePatchSchema = z.object({
       matchCount: z.number().int().optional(),
       matchThreshold: z.number().optional(),
       maxContextCharacters: z.number().int().optional(),
+      provider: z.enum(RAG_CONFIG.PROVIDER_IDS).optional(),
     }),
     search: z.object({
       crawl: z

@@ -64,6 +64,7 @@ export function useRagSettings({
         },
         body: JSON.stringify({
           apiKey: localSettings.apiKey,
+          provider: localSettings.provider,
         }),
       });
 

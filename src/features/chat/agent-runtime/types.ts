@@ -27,6 +27,7 @@ export interface ChatProfileRagSettings {
   matchCount?: number;
   matchThreshold?: number;
   maxContextCharacters?: number;
+  provider?: RagSettings['provider'];
 }
 
 export interface McpInjectedToolMetadata {

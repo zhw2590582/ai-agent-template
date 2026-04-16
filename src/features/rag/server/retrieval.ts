@@ -12,12 +12,15 @@ function toVectorLiteral(embedding: number[]) {
   return `[${embedding.join(',')}]`;
 }
 
-export async function generateQueryEmbedding(query: string, apiKey: string) {
-  if (!hasResolvedEmbeddingAccess(apiKey)) {
+export async function generateQueryEmbedding(
+  query: string,
+  ragSettings: Pick<RagSettings, 'apiKey' | 'provider'>
+) {
+  if (!hasResolvedEmbeddingAccess(ragSettings)) {
     throw new Error('RAG embedding configuration is missing.');
   }
 
-  return embedQueryWithProvider(query, apiKey);
+  return embedQueryWithProvider(query, ragSettings);
 }
 
 export async function retrieveRelevantChunks({
@@ -35,12 +38,12 @@ export async function retrieveRelevantChunks({
     return [];
   }
 
-  if (!hasResolvedEmbeddingAccess(ragSettings.apiKey)) {
+  if (!hasResolvedEmbeddingAccess(ragSettings)) {
     logger.warn('RAG retrieval skipped: embedding configuration missing');
     return [];
   }
 
-  const embedding = await generateQueryEmbedding(query, ragSettings.apiKey);
+  const embedding = await generateQueryEmbedding(query, ragSettings);
   const candidateMatchCount = Math.min(
     RAG_CONFIG.MAX_CANDIDATE_MATCH_COUNT,
     Math.max(
@@ -60,7 +63,7 @@ export async function retrieveRelevantChunks({
   }
 
   try {
-    const rerankedResults = await createRerankProvider(ragSettings.apiKey).rerank({
+    const rerankedResults = await createRerankProvider(ragSettings).rerank({
       documents: retrievedChunks.map((chunk) => chunk.content),
       query,
       topK: ragSettings.matchCount,

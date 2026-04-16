@@ -1,9 +1,12 @@
+export type RagProviderId = 'voyage';
+
 export interface RagSettings {
   apiKey: string;
   enabled: boolean;
   matchCount: number;
   matchThreshold: number;
   maxContextCharacters: number;
+  provider: RagProviderId;
 }
 
 export interface RagDocumentMetadata {

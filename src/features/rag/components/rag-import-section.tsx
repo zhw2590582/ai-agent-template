@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
+import type { RagProviderId } from '@/features/rag/types';
 
 interface RagImportSectionProps {
   apiKey: string;
@@ -15,13 +16,20 @@ interface RagImportSectionProps {
   onImport: (input: {
     apiKey: string;
     file: File;
+    provider: RagProviderId;
     source: string;
     title: string;
     type: 'file';
   }) => Promise<boolean>;
+  provider: RagProviderId;
 }
 
-export function RagImportSection({ apiKey, isImporting, onImport }: RagImportSectionProps) {
+export function RagImportSection({
+  apiKey,
+  isImporting,
+  onImport,
+  provider,
+}: RagImportSectionProps) {
   const t = useTranslations();
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -44,6 +52,7 @@ export function RagImportSection({ apiKey, isImporting, onImport }: RagImportSec
     const success = await onImport({
       apiKey,
       file,
+      provider,
       source: source.trim(),
       title: normalizedTitle,
       type: 'file',

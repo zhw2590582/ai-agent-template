@@ -74,14 +74,15 @@
 
 ### 5. RAG 收尾
 
-目标：把当前已落地的 RAG V1 打磨成更稳定、更可维护的能力。
+目标：把当前已落地的 RAG V1 和已建立的 provider 边界，继续打磨成更稳定、更可维护的能力。
 
 优先做：
 
 1. 文档详情和重建索引体验
 2. 更细的错误反馈与观测
 3. 来源交互增强
-4. 评估更多 provider / query rewrite 的必要性
+4. 补第二个 RAG provider，实现真正可替换
+5. 再评估 query rewrite / agentic RAG 的必要性
 
 ### 6. Agent Runtime 稳定化
 

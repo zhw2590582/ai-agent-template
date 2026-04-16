@@ -14,7 +14,7 @@ import {
   insertRagDocument,
   updateRagDocument,
 } from '@/features/rag/storage/rag-documents';
-import type { RagDocument } from '@/features/rag/types';
+import type { RagDocument, RagProviderId } from '@/features/rag/types';
 
 function buildContentHash(content: string) {
   return createHash('sha256').update(content).digest('hex');
@@ -33,6 +33,7 @@ export async function ingestRagTextDocument({
   fileSize,
   fileType,
   mimeType,
+  provider,
   source,
   supabase,
   title,
@@ -44,6 +45,7 @@ export async function ingestRagTextDocument({
   fileSize?: number | null;
   fileType?: string | null;
   mimeType?: string | null;
+  provider: RagProviderId;
   source?: string | null;
   supabase: SupabaseClient<Database>;
   title: string;
@@ -57,7 +59,10 @@ export async function ingestRagTextDocument({
     throw new Error('RAG document content is empty after normalization.');
   }
 
-  const embeddings = await embedDocumentsWithProvider(chunks, apiKey);
+  const embeddings = await embedDocumentsWithProvider(chunks, {
+    apiKey,
+    provider,
+  });
   const knowledgeBase = await ensureDefaultKnowledgeBase(supabase, userId);
   const document = await insertRagDocument(supabase, {
     content_hash: buildContentHash(normalizedContent),
@@ -100,10 +105,12 @@ export async function ingestRagTextDocument({
 export async function reindexRagDocument({
   apiKey,
   documentId,
+  provider,
   supabase,
 }: {
   apiKey: string;
   documentId: string;
+  provider: RagProviderId;
   supabase: SupabaseClient<Database>;
 }): Promise<{ chunkCount: number; document: RagDocument }> {
   const documentRow = await getRagDocumentForUser(supabase, documentId);
@@ -121,7 +128,10 @@ export async function reindexRagDocument({
     throw new Error('RAG document content is empty after normalization.');
   }
 
-  const embeddings = await embedDocumentsWithProvider(chunks, apiKey);
+  const embeddings = await embedDocumentsWithProvider(chunks, {
+    apiKey,
+    provider,
+  });
   const indexedAt = new Date().toISOString();
 
   await deleteRagChunksForDocument(supabase, documentId);

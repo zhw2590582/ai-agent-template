@@ -7,6 +7,7 @@ export const DEFAULT_RAG_SETTINGS: RagSettings = {
   matchCount: RAG_CONFIG.DEFAULT_MATCH_COUNT,
   matchThreshold: RAG_CONFIG.DEFAULT_MATCH_THRESHOLD,
   maxContextCharacters: RAG_CONFIG.DEFAULT_MAX_CONTEXT_CHARACTERS,
+  provider: RAG_CONFIG.DEFAULT_PROVIDER,
 };
 
 function clampInteger(value: unknown, fallback: number, min: number, max: number) {
@@ -42,6 +43,7 @@ export function normalizeRagSettings(input?: Partial<RagSettings> | null): RagSe
       500,
       RAG_CONFIG.MAX_CONTEXT_CHARACTERS
     ),
+    provider: input?.provider === 'voyage' ? input.provider : DEFAULT_RAG_SETTINGS.provider,
   };
 }
 

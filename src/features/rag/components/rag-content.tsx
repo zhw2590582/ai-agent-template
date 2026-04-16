@@ -121,6 +121,7 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
             apiKey={localSettings.apiKey}
             isImporting={isImporting}
             onImport={importDocument}
+            provider={localSettings.provider}
           />
           <RagDocumentList
             apiKey={localSettings.apiKey}
@@ -132,6 +133,7 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
             onOpenChange={setIsDocumentsOpen}
             onDelete={deleteDocument}
             onReindex={reindexDocument}
+            provider={localSettings.provider}
           />
         </section>
       </div>

@@ -45,7 +45,7 @@
 | Search             | 已实现 V1 | Tavily settings、连接测试、`web_search / web_extract / web_crawl`     | `src/features/search/`                                      |
 | Sandbox            | 已实现 V1 | E2B settings、首批 tools、workspace/session/telemetry 骨架            | `src/features/sandbox/`, `src/features/chat/agent-runtime/` |
 | MCP                | 部分具备  | 远程 MCP server 配置、测试、tool merge；未消费 resources/prompts      | `src/features/mcp/`                                         |
-| RAG                | 已实现 V1 | 文档导入、pgvector 检索、Voyage embeddings/rerank、来源展示           | `src/features/rag/`                                         |
+| RAG                | 已实现 V1 | 文档导入、pgvector 检索、provider-based embeddings/rerank、来源展示   | `src/features/rag/`                                         |
 | Skills             | 部分具备  | 只有 settings UI 和持久化，还没进入 runtime                           | `src/features/skills/`                                      |
 | Planning           | 占位      | 只保留导航和边界，不做真实 orchestration                              | 待定                                                        |
 | Subagent           | 占位      | 只保留边界，不做真实多代理                                            | 待定                                                        |
@@ -217,18 +217,20 @@
 
 - `Supabase + pgvector`
 - 文档上传导入
-- Voyage embeddings + rerank
+- RAG provider registry / factory 已建立
+- 当前默认 provider：Voyage embeddings + rerank
 - 聊天注入和来源展示
 
 未完成：
 
-- 多 provider
+- 非 Voyage provider 实现
 - 多知识库管理
 - agentic RAG / query rewrite
 
 关键位置：
 
 - [../src/features/rag](../src/features/rag)
+- [../src/features/rag/server/providers](../src/features/rag/server/providers)
 
 ### Skills
 
