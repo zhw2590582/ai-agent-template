@@ -58,6 +58,15 @@ export const zhCNChatMessages = {
       title: '来源',
       used_count: '使用了 {count} 条来源',
     },
+    tools: {
+      subagent: {
+        delegation: '委派',
+        delegated_to: '委派给',
+        task: '任务',
+        result: '结果',
+        summary: '摘要',
+      },
+    },
     external_link: {
       title: '打开外部链接？',
       description: '你将打开一个外部网站：',

@@ -2,6 +2,7 @@
 
 import type { UIMessage } from 'ai';
 import { AlertCircleIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import {
   Tool,
@@ -11,6 +12,10 @@ import {
   ToolOutput,
 } from '@/components/ai-elements/tool';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  isDelegateToSubagentInput,
+  isDelegateToSubagentOutput,
+} from '@/features/subagent/delegation';
 import { cn } from '@/lib/utils';
 
 interface ChatToolPartProps {
@@ -28,9 +33,14 @@ export function ChatToolPart({
   part,
   partIndex,
 }: ChatToolPartProps) {
+  const t = useTranslations('chat.tools.subagent');
   const toolName = part.type === 'dynamic-tool' ? part.toolName : part.type.replace('tool-', '');
   const errorText = 'errorText' in part ? part.errorText : undefined;
   const output = 'output' in part ? part.output : undefined;
+  const input = 'input' in part ? part.input : undefined;
+  const delegateInput = isDelegateToSubagentInput(input) ? input : null;
+  const delegateOutput = isDelegateToSubagentOutput(output) ? output : null;
+  const isDelegateToSubagent = toolName === 'delegate_to_subagent';
   const toolKey =
     'toolCallId' in part && part.toolCallId != null && String(part.toolCallId).trim() !== ''
       ? part.toolCallId
@@ -55,7 +65,29 @@ export function ChatToolPart({
             <ToolHeader state={part.state} title={getToolTitle(toolName)} type={part.type} />
           )}
           <ToolContent>
-            {'input' in part && part.input !== undefined ? <ToolInput input={part.input} /> : null}
+            {delegateInput && isDelegateToSubagent ? (
+              <div className="space-y-2 overflow-hidden">
+                <h4 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                  {t('delegation')}
+                </h4>
+                <div className="bg-muted/40 space-y-3 rounded-xl border p-4">
+                  <div className="space-y-1">
+                    <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                      {t('delegated_to')}
+                    </div>
+                    <div className="font-medium">{delegateInput.subagentId}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                      {t('task')}
+                    </div>
+                    <p className="text-sm leading-6">{delegateInput.task}</p>
+                  </div>
+                </div>
+              </div>
+            ) : 'input' in part && part.input !== undefined ? (
+              <ToolInput input={part.input} />
+            ) : null}
             {errorText ? (
               <Alert variant="destructive">
                 <AlertCircleIcon />
@@ -63,7 +95,53 @@ export function ChatToolPart({
                 <AlertDescription>{errorText}</AlertDescription>
               </Alert>
             ) : null}
-            <ToolOutput errorText={undefined} output={output} />
+            {delegateOutput && isDelegateToSubagent ? (
+              <div className="space-y-2">
+                <h4 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                  {t('result')}
+                </h4>
+                <div
+                  className="bg-muted/40 space-y-3 rounded-xl border p-4"
+                  style={
+                    delegateOutput.subagentThemeColor
+                      ? { borderColor: delegateOutput.subagentThemeColor }
+                      : undefined
+                  }
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className="size-2.5 rounded-full"
+                      style={{ backgroundColor: delegateOutput.subagentThemeColor }}
+                    />
+                    <div className="min-w-0">
+                      <div className="font-medium">{delegateOutput.subagentName}</div>
+                      {delegateOutput.subagentDescription ? (
+                        <p className="text-muted-foreground text-sm leading-6">
+                          {delegateOutput.subagentDescription}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                      {t('task')}
+                    </div>
+                    <p className="text-sm leading-6">{delegateOutput.task}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                      {t('summary')}
+                    </div>
+                    <p className="text-sm leading-6 whitespace-pre-wrap">
+                      {delegateOutput.summary}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <ToolOutput errorText={undefined} output={output} />
+            )}
           </ToolContent>
         </Tool>
       </div>

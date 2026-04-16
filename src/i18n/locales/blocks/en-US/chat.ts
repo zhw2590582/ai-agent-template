@@ -59,6 +59,15 @@ export const enUSChatMessages = {
       title: 'Sources',
       used_count: 'Used {count} sources',
     },
+    tools: {
+      subagent: {
+        delegation: 'Delegation',
+        delegated_to: 'Delegated to',
+        task: 'Task',
+        result: 'Result',
+        summary: 'Summary',
+      },
+    },
     external_link: {
       title: 'Open external link?',
       description: 'You are about to open an external website:',

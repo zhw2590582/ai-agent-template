@@ -3,9 +3,15 @@ import { z } from 'zod';
 
 import { AI_CONFIG } from '@/config/chat';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
+import type {
+  DelegateToSubagentInput,
+  DelegateToSubagentOutput,
+} from '@/features/subagent/delegation';
+import { isDelegateToSubagentOutput } from '@/features/subagent/delegation';
 import { listActiveSubagents } from '@/features/subagent/settings';
 import type { SubagentSettings } from '@/features/subagent/types';
 import type { ChatRuntimeModel } from '@/features/models/types';
+import { logger } from '@/lib/logger';
 
 interface CreateDelegateToSubagentToolOptions {
   runtimeModel: ChatRuntimeModel;
@@ -63,13 +69,38 @@ export function createDelegateToSubagentTool({
       subagentId: z.string().min(1).describe('The id of the subagent to delegate to'),
       task: z.string().min(1).describe('The task the selected subagent should complete'),
     }),
-    execute: async ({ subagentId, task }, { abortSignal }) => {
+    toModelOutput: ({ output }) => {
+      if (!isDelegateToSubagentOutput(output)) {
+        return {
+          type: 'text',
+          value: 'Subagent task completed.',
+        };
+      }
+
+      return {
+        type: 'text',
+        value: `${output.subagentName} summary:\n${output.summary}`,
+      };
+    },
+    execute: async (
+      { subagentId, task }: DelegateToSubagentInput,
+      { abortSignal, toolCallId }
+    ): Promise<DelegateToSubagentOutput> => {
       const activeSubagents = listActiveSubagents(subagentSettings);
       const subagent = activeSubagents.find((agent) => agent.id === subagentId);
 
       if (!subagent) {
         throw new Error(`Unknown or disabled subagent: ${subagentId}`);
       }
+
+      logger.info('Subagent delegation: started', {
+        modelId: runtimeModel.modelId,
+        providerId: runtimeModel.providerId,
+        subagentId: subagent.id,
+        subagentName: subagent.name,
+        taskLength: task.length,
+        toolCallId,
+      });
 
       const subagentAgent = new ToolLoopAgent({
         instructions: buildSubagentInstructions(
@@ -84,12 +115,41 @@ export function createDelegateToSubagentTool({
         tools,
       });
 
-      const result = await subagentAgent.generate({
-        abortSignal,
-        prompt: task,
-      });
+      try {
+        const result = await subagentAgent.generate({
+          abortSignal,
+          prompt: task,
+        });
+        const summary = result.text.trim() || `${subagent.name} completed the delegated task.`;
 
-      return result.text.trim() || `${subagent.name} completed the delegated task.`;
+        logger.info('Subagent delegation: completed', {
+          modelId: runtimeModel.modelId,
+          providerId: runtimeModel.providerId,
+          subagentId: subagent.id,
+          subagentName: subagent.name,
+          summaryLength: summary.length,
+          toolCallId,
+        });
+
+        return {
+          subagentDescription: subagent.description,
+          subagentId: subagent.id,
+          subagentName: subagent.name,
+          subagentThemeColor: subagent.themeColor,
+          summary,
+          task,
+        };
+      } catch (error) {
+        logger.error('Subagent delegation: failed', {
+          error: error instanceof Error ? error.message : String(error),
+          modelId: runtimeModel.modelId,
+          providerId: runtimeModel.providerId,
+          subagentId: subagent.id,
+          subagentName: subagent.name,
+          toolCallId,
+        });
+        throw error;
+      }
     },
   });
 }
