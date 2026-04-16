@@ -1,9 +1,12 @@
+import type { UIMessage } from 'ai';
+
 export interface DelegateToSubagentInput {
   subagentId: string;
   task: string;
 }
 
 export interface DelegateToSubagentOutput {
+  message: UIMessage;
   subagentDescription: string;
   subagentId: string;
   subagentName: string;
@@ -32,6 +35,8 @@ export function isDelegateToSubagentOutput(value: unknown): value is DelegateToS
 
   const record = value as Record<string, unknown>;
   return (
+    typeof record.message === 'object' &&
+    record.message != null &&
     hasOwnString(record, 'subagentDescription') &&
     hasOwnString(record, 'subagentId') &&
     hasOwnString(record, 'subagentName') &&
@@ -39,4 +44,15 @@ export function isDelegateToSubagentOutput(value: unknown): value is DelegateToS
     hasOwnString(record, 'summary') &&
     hasOwnString(record, 'task')
   );
+}
+
+export function getDelegateToSubagentSummary(message: UIMessage, fallback: string) {
+  const lastTextPart = [...message.parts]
+    .reverse()
+    .find(
+      (part): part is Extract<(typeof message.parts)[number], { type: 'text' }> =>
+        part.type === 'text' && part.text.trim().length > 0
+    );
+
+  return lastTextPart?.text.trim() || fallback;
 }

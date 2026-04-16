@@ -20,7 +20,7 @@
 当前还没有做成的平台能力是：
 
 - Planning
-- Multi-Agent / Subagent
+- Multi-Agent orchestration
 - Skills runtime
 - durable run storage / resume
 - 本项目自己的正式 MCP server
@@ -35,21 +35,21 @@
 
 ## Capability Snapshot
 
-| Capability         | 状态      | 当前边界                                                                      | 主要位置                                                    |
-| ------------------ | --------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Chat               | 已实现    | `useChat -> /api/chat -> agent-runtime -> stream response` 主链路稳定         | `src/features/chat/`                                        |
-| Models / Providers | 已实现    | 用户可配置 provider、探测连接、同步模型、自定义模型                           | `src/features/models/`                                      |
-| Auth + Profile     | 已实现    | Supabase OAuth、`profiles.settings` 持久化                                    | `src/features/auth/`                                        |
-| Conversations      | 已实现    | 登录用户走 Supabase，guest 走 localStorage                                    | `src/features/chat/storage/`                                |
-| Memory             | 已实现 V1 | 会话摘要、长期记忆、跨会话注入、Memory 管理 UI                                | `src/features/memory/`                                      |
-| Search             | 已实现 V1 | provider-based search tools、连接测试、`web_search / web_extract / web_crawl` | `src/features/search/`                                      |
-| Sandbox            | 已实现 V1 | provider-based sandbox runtime、首批 tools、workspace/session/telemetry 骨架  | `src/features/sandbox/`, `src/features/chat/agent-runtime/` |
-| MCP                | 部分具备  | 远程 MCP server 配置、测试、tool merge；未消费 resources/prompts              | `src/features/mcp/`                                         |
-| RAG                | 已实现 V1 | 文档导入、pgvector 检索、provider-based embeddings/rerank、来源展示           | `src/features/rag/`                                         |
-| Skills             | 部分具备  | 只有 settings UI 和持久化，还没进入 runtime                                   | `src/features/skills/`                                      |
-| Planning           | 占位      | 只保留导航和边界，不做真实 orchestration                                      | 待定                                                        |
-| Subagent           | 占位      | 只保留边界，不做真实多代理                                                    | 待定                                                        |
-| Testing            | 基础具备  | unit / integration 可用，E2E 仍是占位                                         | `tests/`                                                    |
+| Capability         | 状态      | 当前边界                                                                         | 主要位置                                                    |
+| ------------------ | --------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Chat               | 已实现    | `useChat -> /api/chat -> agent-runtime -> stream response` 主链路稳定            | `src/features/chat/`                                        |
+| Models / Providers | 已实现    | 用户可配置 provider、探测连接、同步模型、自定义模型                              | `src/features/models/`                                      |
+| Auth + Profile     | 已实现    | Supabase OAuth、`profiles.settings` 持久化                                       | `src/features/auth/`                                        |
+| Conversations      | 已实现    | 登录用户走 Supabase，guest 走 localStorage                                       | `src/features/chat/storage/`                                |
+| Memory             | 已实现 V1 | 会话摘要、长期记忆、跨会话注入、Memory 管理 UI                                   | `src/features/memory/`                                      |
+| Search             | 已实现 V1 | provider-based search tools、连接测试、`web_search / web_extract / web_crawl`    | `src/features/search/`                                      |
+| Sandbox            | 已实现 V1 | provider-based sandbox runtime、首批 tools、workspace/session/telemetry 骨架     | `src/features/sandbox/`, `src/features/chat/agent-runtime/` |
+| MCP                | 部分具备  | 远程 MCP server 配置、测试、tool merge；未消费 resources/prompts                 | `src/features/mcp/`                                         |
+| RAG                | 已实现 V1 | 文档导入、pgvector 检索、provider-based embeddings/rerank、来源展示              | `src/features/rag/`                                         |
+| Skills             | 部分具备  | 只有 settings UI 和持久化，还没进入 runtime                                      | `src/features/skills/`                                      |
+| Planning           | 占位      | 只保留导航和边界，不做真实 orchestration                                         | 待定                                                        |
+| Subagent           | 已实现 V1 | 最小串行 `Orchestrator-Subagent`，支持配置、内建角色、tool delegation 和基础展示 | `src/features/subagent/`, `src/features/chat/ai/tools/`     |
+| Testing            | 基础具备  | unit / integration 可用，E2E 仍是占位                                            | `tests/`                                                    |
 
 ## 当前边界
 
@@ -258,7 +258,21 @@
 
 ### Planning / Subagent
 
-当前仍是占位边界。
+当前已具备最小串行版 `Orchestrator-Subagent`：
+
+- Subagents 配置 UI
+- 内建预设角色
+- `delegate_to_subagent` tool
+- 基础结果展示
+- `toModelOutput` 摘要压缩
+
+但现在还没有：
+
+- 并行 subagents
+- agent teams
+- shared state / message bus
+- durable orchestration
+- 更复杂的 handoff graph
 
 现阶段不建议为了它们继续扩抽象，先把现有 chat runtime 骨架稳住。
 
@@ -266,6 +280,7 @@
 
 - [multi-agent/multi-agent-coordination-patterns.md](./multi-agent/multi-agent-coordination-patterns.md)
 - [multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md](./multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md)
+- [multi-agent/ai-sdk-subagents.md](./multi-agent/ai-sdk-subagents.md)
 
 ## 当前优先级
 

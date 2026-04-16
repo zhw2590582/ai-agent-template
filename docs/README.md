@@ -24,6 +24,9 @@
 - `ai-agents-for-beginners/`: AI Agent 理论与设计模式参考
 - `mcp-for-beginners/`: MCP 协议与工具化参考
 - `multi-agent/`: 多代理协调模式、拆分边界和何时值得引入多代理的参考
+  - [multi-agent-coordination-patterns.md](./multi-agent/multi-agent-coordination-patterns.md)
+  - [building-multi-agent-systems-when-and-how-to-use-them.md](./multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md)
+  - [ai-sdk-subagents.md](./multi-agent/ai-sdk-subagents.md)
 
 文档约定：
 

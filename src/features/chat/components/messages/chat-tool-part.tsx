@@ -4,6 +4,7 @@ import type { UIMessage } from 'ai';
 import { AlertCircleIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { MessageResponse } from '@/components/ai-elements/message';
 import {
   Tool,
   ToolContent,
@@ -12,6 +13,7 @@ import {
   ToolOutput,
 } from '@/components/ai-elements/tool';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import {
   isDelegateToSubagentInput,
   isDelegateToSubagentOutput,
@@ -24,6 +26,12 @@ interface ChatToolPartProps {
   messageKey: string;
   part: Extract<UIMessage['parts'][number], { type: `tool-${string}` | 'dynamic-tool' }>;
   partIndex: number;
+}
+
+function isToolPart(
+  part: UIMessage['parts'][number]
+): part is Extract<UIMessage['parts'][number], { type: `tool-${string}` | 'dynamic-tool' }> {
+  return part.type === 'dynamic-tool' || part.type.startsWith('tool-');
 }
 
 export function ChatToolPart({
@@ -41,6 +49,9 @@ export function ChatToolPart({
   const delegateInput = isDelegateToSubagentInput(input) ? input : null;
   const delegateOutput = isDelegateToSubagentOutput(output) ? output : null;
   const isDelegateToSubagent = toolName === 'delegate_to_subagent';
+  const isPreliminary =
+    part.state === 'output-available' && 'preliminary' in part && part.preliminary === true;
+  const defaultOpen = part.state !== 'output-available' || isPreliminary;
   const toolKey =
     'toolCallId' in part && part.toolCallId != null && String(part.toolCallId).trim() !== ''
       ? part.toolCallId
@@ -50,10 +61,7 @@ export function ChatToolPart({
   return (
     <div className={cn('ml-0', isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl')} key={toolStateKey}>
       <div className="pt-3">
-        <Tool
-          className="border-border/80 bg-card/60"
-          defaultOpen={part.state !== 'output-available'}
-        >
+        <Tool className="border-border/80 bg-card/60" defaultOpen={defaultOpen}>
           {part.type === 'dynamic-tool' ? (
             <ToolHeader
               state={part.state}
@@ -75,7 +83,9 @@ export function ChatToolPart({
                     <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                       {t('delegated_to')}
                     </div>
-                    <div className="font-medium">{delegateInput.subagentId}</div>
+                    <div className="font-medium">
+                      {delegateOutput?.subagentName ?? delegateInput.subagentId}
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
@@ -108,20 +118,25 @@ export function ChatToolPart({
                       : undefined
                   }
                 >
-                  <div className="flex items-center gap-2">
-                    <span
-                      aria-hidden="true"
-                      className="size-2.5 rounded-full"
-                      style={{ backgroundColor: delegateOutput.subagentThemeColor }}
-                    />
-                    <div className="min-w-0">
-                      <div className="font-medium">{delegateOutput.subagentName}</div>
-                      {delegateOutput.subagentDescription ? (
-                        <p className="text-muted-foreground text-sm leading-6">
-                          {delegateOutput.subagentDescription}
-                        </p>
-                      ) : null}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span
+                        aria-hidden="true"
+                        className="size-2.5 rounded-full"
+                        style={{ backgroundColor: delegateOutput.subagentThemeColor }}
+                      />
+                      <div className="min-w-0">
+                        <div className="font-medium">{delegateOutput.subagentName}</div>
+                        {delegateOutput.subagentDescription ? (
+                          <p className="text-muted-foreground text-sm leading-6">
+                            {delegateOutput.subagentDescription}
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
+                    <Badge className="shrink-0" variant="secondary">
+                      {isPreliminary ? t('running') : t('completed')}
+                    </Badge>
                   </div>
                   <div className="space-y-1">
                     <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
@@ -131,12 +146,59 @@ export function ChatToolPart({
                   </div>
                   <div className="space-y-1">
                     <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                      {t('summary')}
+                      {t('progress')}
                     </div>
-                    <p className="text-sm leading-6 whitespace-pre-wrap">
-                      {delegateOutput.summary}
-                    </p>
+                    {delegateOutput.message.parts.length > 0 ? (
+                      <div className="space-y-3">
+                        {delegateOutput.message.parts.map((nestedPart, nestedPartIndex) => {
+                          if (nestedPart.type === 'text') {
+                            if (!nestedPart.text) {
+                              return null;
+                            }
+
+                            return (
+                              <div
+                                className="bg-background/70 rounded-xl border px-4 py-3 text-sm"
+                                key={`${toolKey}-subagent-text-${nestedPartIndex}`}
+                              >
+                                <MessageResponse>{nestedPart.text}</MessageResponse>
+                              </div>
+                            );
+                          }
+
+                          if (!isToolPart(nestedPart)) {
+                            return null;
+                          }
+
+                          return (
+                            <ChatToolPart
+                              getToolTitle={getToolTitle}
+                              isSidebarOpen={isSidebarOpen}
+                              key={`${toolKey}-subagent-tool-${nestedPartIndex}`}
+                              messageKey={`${toolKey}-subagent`}
+                              part={nestedPart}
+                              partIndex={nestedPartIndex}
+                            />
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-sm leading-6">{t('waiting')}</p>
+                    )}
                   </div>
+                  {!isPreliminary && delegateOutput.summary ? (
+                    <div className="space-y-1">
+                      <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                        {t('summary')}
+                      </div>
+                      <p className="text-sm leading-6 whitespace-pre-wrap">
+                        {delegateOutput.summary}
+                      </p>
+                    </div>
+                  ) : null}
+                  {isPreliminary ? (
+                    <p className="text-muted-foreground text-xs">{t('running_description')}</p>
+                  ) : null}
                 </div>
               </div>
             ) : (

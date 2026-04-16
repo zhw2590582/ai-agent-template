@@ -1,13 +1,23 @@
-import { stepCountIs, tool, ToolLoopAgent, type ToolSet } from 'ai';
+import {
+  readUIMessageStream,
+  stepCountIs,
+  tool,
+  ToolLoopAgent,
+  type ToolSet,
+  type UIMessage,
+} from 'ai';
 import { z } from 'zod';
 
 import { AI_CONFIG } from '@/config/chat';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
+import {
+  getDelegateToSubagentSummary,
+  isDelegateToSubagentOutput,
+} from '@/features/subagent/delegation';
 import type {
   DelegateToSubagentInput,
   DelegateToSubagentOutput,
 } from '@/features/subagent/delegation';
-import { isDelegateToSubagentOutput } from '@/features/subagent/delegation';
 import { listActiveSubagents } from '@/features/subagent/settings';
 import type { SubagentSettings } from '@/features/subagent/types';
 import type { ChatRuntimeModel } from '@/features/models/types';
@@ -52,6 +62,40 @@ function buildSubagentInstructions(name: string, description: string, systemProm
     .join('\n\n');
 }
 
+function createEmptySubagentMessage(toolCallId: string): UIMessage {
+  return {
+    id: `${toolCallId}-subagent`,
+    parts: [],
+    role: 'assistant',
+  };
+}
+
+function createDelegateOutput({
+  message,
+  subagentDescription,
+  subagentId,
+  subagentName,
+  subagentThemeColor,
+  task,
+}: {
+  message: UIMessage;
+  subagentDescription: string;
+  subagentId: string;
+  subagentName: string;
+  subagentThemeColor: string;
+  task: string;
+}): DelegateToSubagentOutput {
+  return {
+    message,
+    subagentDescription,
+    subagentId,
+    subagentName,
+    subagentThemeColor,
+    summary: getDelegateToSubagentSummary(message, `${subagentName} completed the delegated task.`),
+    task,
+  };
+}
+
 export function createDelegateToSubagentTool({
   runtimeModel,
   subagentSettings,
@@ -82,10 +126,10 @@ export function createDelegateToSubagentTool({
         value: `${output.subagentName} summary:\n${output.summary}`,
       };
     },
-    execute: async (
+    execute: async function* (
       { subagentId, task }: DelegateToSubagentInput,
       { abortSignal, toolCallId }
-    ): Promise<DelegateToSubagentOutput> => {
+    ) {
       const activeSubagents = listActiveSubagents(subagentSettings);
       const subagent = activeSubagents.find((agent) => agent.id === subagentId);
 
@@ -116,29 +160,44 @@ export function createDelegateToSubagentTool({
       });
 
       try {
-        const result = await subagentAgent.generate({
+        let finalOutput: DelegateToSubagentOutput | null = createDelegateOutput({
+          message: createEmptySubagentMessage(toolCallId),
+          subagentDescription: subagent.description,
+          subagentId: subagent.id,
+          subagentName: subagent.name,
+          subagentThemeColor: subagent.themeColor,
+          task,
+        });
+
+        yield finalOutput;
+
+        const result = await subagentAgent.stream({
           abortSignal,
           prompt: task,
         });
-        const summary = result.text.trim() || `${subagent.name} completed the delegated task.`;
+
+        for await (const message of readUIMessageStream({
+          stream: result.toUIMessageStream(),
+        })) {
+          finalOutput = createDelegateOutput({
+            message,
+            subagentDescription: subagent.description,
+            subagentId: subagent.id,
+            subagentName: subagent.name,
+            subagentThemeColor: subagent.themeColor,
+            task,
+          });
+          yield finalOutput;
+        }
 
         logger.info('Subagent delegation: completed', {
           modelId: runtimeModel.modelId,
           providerId: runtimeModel.providerId,
           subagentId: subagent.id,
           subagentName: subagent.name,
-          summaryLength: summary.length,
+          summaryLength: finalOutput.summary.length,
           toolCallId,
         });
-
-        return {
-          subagentDescription: subagent.description,
-          subagentId: subagent.id,
-          subagentName: subagent.name,
-          subagentThemeColor: subagent.themeColor,
-          summary,
-          task,
-        };
       } catch (error) {
         logger.error('Subagent delegation: failed', {
           error: error instanceof Error ? error.message : String(error),

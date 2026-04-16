@@ -110,6 +110,7 @@
 
 - [multi-agent/multi-agent-coordination-patterns.md](./multi-agent/multi-agent-coordination-patterns.md)
 - [multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md](./multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md)
+- [multi-agent/ai-sdk-subagents.md](./multi-agent/ai-sdk-subagents.md)
 
 ### 9. Production Readiness
 

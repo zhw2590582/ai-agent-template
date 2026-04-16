@@ -65,6 +65,12 @@ export const enUSChatMessages = {
         delegated_to: 'Delegated to',
         task: 'Task',
         result: 'Result',
+        progress: 'Progress',
+        waiting: 'Waiting for subagent output…',
+        running: 'Running',
+        running_description:
+          'The subagent is still working. New steps will stream into this panel.',
+        completed: 'Completed',
         summary: 'Summary',
       },
     },
