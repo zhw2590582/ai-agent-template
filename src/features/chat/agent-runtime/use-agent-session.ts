@@ -6,7 +6,7 @@ import { DefaultChatTransport, type UIMessage } from 'ai';
 
 import type { AppProfileSettings } from '@/features/auth/profile/types';
 import { buildAgentRunRequest } from '@/features/chat/agent-runtime/build-agent-run-request';
-import { CHAT_RATE_LIMIT_ERROR_CODE } from '@/features/chat/utils/chat-errors';
+import { CHAT_RATE_LIMIT_ERROR_CODE, ChatRequestError } from '@/features/chat/utils/chat-errors';
 import { resolveChatRuntimeModel } from '@/features/models/utils/runtime-model';
 import type { ChatModelOption } from '@/features/models/types';
 import { readApiError } from '@/lib/api-client';
@@ -88,12 +88,24 @@ export function useAgentSession({
         fetch: async (input, init) => {
           const response = await fetch(input, init);
 
-          if (response.status === 429) {
+          if (!response.ok) {
             const error = await readApiError(response);
 
             if (error.code === CHAT_RATE_LIMIT_ERROR_CODE) {
-              throw new Error(CHAT_RATE_LIMIT_ERROR_CODE);
+              throw new ChatRequestError(
+                error.code,
+                error.message ?? CHAT_RATE_LIMIT_ERROR_CODE,
+                error.details,
+                response.status
+              );
             }
+
+            throw new ChatRequestError(
+              error.code,
+              error.message ?? `Request failed (${response.status})`,
+              error.details,
+              response.status
+            );
           }
 
           return response;

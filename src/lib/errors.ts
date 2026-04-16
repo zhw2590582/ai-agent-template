@@ -105,16 +105,73 @@ function isLikelyModelProviderError(error: Error) {
     'fetch failed',
     'gemini',
     'google',
+    'insufficient balance',
     'model',
     'network request',
     'openai',
     'overload',
     'provider',
+    'billing',
     'quota',
     'rate limit',
+    'suspended',
     'timed out',
     'timeout',
   ].some((hint) => normalizedMessage.includes(hint));
+}
+
+export function getUserFacingModelErrorDetails(message: string) {
+  const normalizedMessage = message.toLowerCase();
+
+  if (normalizedMessage.includes('tavily ') && normalizedMessage.includes('api key')) {
+    return 'Web search authentication failed. Check the Tavily API key and try again.';
+  }
+
+  if (
+    normalizedMessage.includes('tavily ') &&
+    (normalizedMessage.includes('fetch failed') || normalizedMessage.includes('network request'))
+  ) {
+    return 'Web search request failed. Check Tavily network access and try again.';
+  }
+
+  if (
+    normalizedMessage.includes('insufficient balance') ||
+    normalizedMessage.includes('billing') ||
+    normalizedMessage.includes('recharge your account') ||
+    (normalizedMessage.includes('suspended') && normalizedMessage.includes('account'))
+  ) {
+    return 'Model provider account has insufficient balance or billing is suspended. Recharge the account or check the current plan and billing details.';
+  }
+
+  if (
+    normalizedMessage.includes('api key') ||
+    normalizedMessage.includes('unauthorized') ||
+    normalizedMessage.includes('authentication')
+  ) {
+    return 'Model provider authentication failed. Check the API key and base URL.';
+  }
+
+  if (normalizedMessage.includes('rate limit') || normalizedMessage.includes('quota')) {
+    return 'Model provider rate limit or quota exceeded. Try again later or check your account limits.';
+  }
+
+  if (normalizedMessage.includes('timed out') || normalizedMessage.includes('timeout')) {
+    return 'Model provider request timed out. Try again.';
+  }
+
+  if (normalizedMessage.includes('overload') || normalizedMessage.includes('overloaded')) {
+    return 'Model provider is temporarily overloaded. Try again later.';
+  }
+
+  if (
+    normalizedMessage.includes('fetch failed') ||
+    normalizedMessage.includes('network request') ||
+    normalizedMessage.includes('connection')
+  ) {
+    return 'Network request to the model provider failed. Check the provider base URL and network access.';
+  }
+
+  return message;
 }
 
 export const handleErrorWithLocale = (error: unknown, locale: Locale): Response => {
@@ -131,7 +188,7 @@ export const handleErrorWithLocale = (error: unknown, locale: Locale): Response 
       ErrorCode.MODEL_ERROR,
       t(locale, 'errors.model_error'),
       500,
-      error.message
+      getUserFacingModelErrorDetails(error.message)
     ).toResponse(locale);
   }
 

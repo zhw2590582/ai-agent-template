@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import type { UIMessage } from 'ai';
-import { SparklesIcon } from 'lucide-react';
+import { AlertCircleIcon, SparklesIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -11,10 +11,15 @@ import {
   ConversationContent,
   ConversationScrollButton,
 } from '@/components/ai-elements/conversation';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Message, MessageContent } from '@/components/ai-elements/message';
 import { Shimmer } from '@/components/ai-elements/shimmer';
 import { ChatMessageRow } from '@/features/chat/components/messages/chat-message-row';
-import { isChatRateLimitError } from '@/features/chat/utils/chat-errors';
+import {
+  getChatDisplayErrorMessage,
+  isChatModelError,
+  isChatRateLimitError,
+} from '@/features/chat/utils/chat-errors';
 import { cn } from '@/lib/utils';
 
 interface ChatMessageListProps {
@@ -44,12 +49,25 @@ export function ChatMessageList({
   status,
 }: ChatMessageListProps) {
   const t = useTranslations();
+  const modelErrorLabel = t('errors.model_error');
+  const rateLimitLabel = t('chat.errors.rate_limit');
+  const requestFailedLabel = t('chat.errors.request_failed');
+  const requestFailedTitle = t('chat.errors.request_failed_title');
   const errorMessage =
     messages.length > 0 && error
       ? isChatRateLimitError(error)
-        ? t('chat.errors.rate_limit')
-        : t('chat.errors.request_failed')
+        ? rateLimitLabel
+        : getChatDisplayErrorMessage(error, requestFailedLabel)
       : null;
+  const errorTitle =
+    messages.length > 0 && error
+      ? isChatRateLimitError(error)
+        ? rateLimitLabel
+        : isChatModelError(error)
+          ? modelErrorLabel
+          : requestFailedTitle
+      : null;
+  const showErrorTitle = errorMessage != null && errorTitle != null && errorMessage !== errorTitle;
   const lastAssistantMessageId = [...messages]
     .reverse()
     .find((message) => message.role === 'assistant')?.id;
@@ -128,9 +146,11 @@ export function ChatMessageList({
         ) : null}
 
         {errorMessage ? (
-          <div className="border-destructive/20 bg-destructive/10 text-destructive rounded-2xl border px-5 py-4 text-sm">
-            {errorMessage}
-          </div>
+          <Alert className="rounded-2xl" variant="destructive">
+            <AlertCircleIcon />
+            {showErrorTitle ? <AlertTitle>{errorTitle}</AlertTitle> : null}
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
         ) : null}
       </ConversationContent>
       <ConversationScrollButton />

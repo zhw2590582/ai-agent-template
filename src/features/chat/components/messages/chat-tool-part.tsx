@@ -1,6 +1,7 @@
 'use client';
 
 import type { UIMessage } from 'ai';
+import { AlertCircleIcon } from 'lucide-react';
 
 import {
   Tool,
@@ -9,6 +10,7 @@ import {
   ToolInput,
   ToolOutput,
 } from '@/components/ai-elements/tool';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 
 interface ChatToolPartProps {
@@ -27,6 +29,8 @@ export function ChatToolPart({
   partIndex,
 }: ChatToolPartProps) {
   const toolName = part.type === 'dynamic-tool' ? part.toolName : part.type.replace('tool-', '');
+  const errorText = 'errorText' in part ? part.errorText : undefined;
+  const output = 'output' in part ? part.output : undefined;
   const toolKey =
     'toolCallId' in part && part.toolCallId != null && String(part.toolCallId).trim() !== ''
       ? part.toolCallId
@@ -52,10 +56,14 @@ export function ChatToolPart({
           )}
           <ToolContent>
             {'input' in part && part.input !== undefined ? <ToolInput input={part.input} /> : null}
-            <ToolOutput
-              errorText={'errorText' in part ? part.errorText : undefined}
-              output={'output' in part ? part.output : undefined}
-            />
+            {errorText ? (
+              <Alert variant="destructive">
+                <AlertCircleIcon />
+                <AlertTitle>{getToolTitle(toolName)} failed</AlertTitle>
+                <AlertDescription>{errorText}</AlertDescription>
+              </Alert>
+            ) : null}
+            <ToolOutput errorText={undefined} output={output} />
           </ToolContent>
         </Tool>
       </div>

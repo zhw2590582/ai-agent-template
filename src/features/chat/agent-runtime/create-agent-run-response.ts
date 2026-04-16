@@ -1,3 +1,4 @@
+import { getUserFacingModelErrorDetails } from '@/lib/errors';
 import { t } from '@/lib/i18n';
 import { executeAgentRun } from '@/features/chat/agent-runtime/execute-agent-run';
 import { createAgentRunFinishHandler } from '@/features/chat/agent-runtime/finish-agent-run';
@@ -75,6 +76,10 @@ export async function createAgentRunResponse({
         runMetadata,
         stage: 'stream',
       });
+
+      if (error instanceof Error) {
+        return getUserFacingModelErrorDetails(error.message);
+      }
 
       return t(locale, 'chat.errors.request_failed');
     },

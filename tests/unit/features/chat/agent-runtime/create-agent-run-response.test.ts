@@ -154,11 +154,53 @@ describe('createAgentRunResponse', () => {
       ragSources,
     });
     expect(capturedOptions?.onFinish).toBe('finish-handler');
-    expect(onError?.(new Error('stream failed'))).toBe('translated:chat.errors.request_failed');
+    expect(onError?.(new Error('stream failed'))).toBe('stream failed');
     expect(mockLogAgentRunFailed).toHaveBeenCalledWith(
       expect.objectContaining({
         stage: 'stream',
       })
+    );
+  });
+
+  it('returns normalized provider error details for stream failures', async () => {
+    const response = new Response('ok');
+    const closeAgentResources = vi.fn(async () => undefined);
+    let capturedOptions: Record<string, unknown> | undefined;
+
+    mockExecuteAgentRun.mockResolvedValue({
+      toUIMessageStreamResponse: vi.fn((options) => {
+        capturedOptions = options;
+        return response;
+      }),
+    });
+
+    await createAgentRunResponse({
+      closeAgentResources,
+      hasAgentTools: false,
+      locale: 'en-US',
+      memoryContext: null,
+      memorySettings: null,
+      messages,
+      mcpInjectedTools: [],
+      persistedConversationSummary: null,
+      ragContext: null,
+      runMetadataBase,
+      runtimeModel,
+      supabase: {} as never,
+      tools: {},
+      user: null,
+    });
+
+    const onError = capturedOptions?.onError as ((error: Error) => string) | undefined;
+
+    expect(
+      onError?.(
+        new Error(
+          'Failed after 3 attempts. Last error: Your account is suspended due to insufficient balance, please recharge your account or check your plan and billing details'
+        )
+      )
+    ).toBe(
+      'Model provider account has insufficient balance or billing is suspended. Recharge the account or check the current plan and billing details.'
     );
   });
 

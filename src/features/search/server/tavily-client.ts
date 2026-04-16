@@ -8,6 +8,11 @@ function getTavilyErrorMessage(scope: string, status: number, body: string) {
   return `Tavily ${scope} failed (${status}): ${suffix}`;
 }
 
+function getTavilyNetworkErrorMessage(scope: string, error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return `Tavily ${scope} request failed: ${message}`;
+}
+
 export function assertTavilyEnabled(settings: SearchSettings | null | undefined) {
   return hasSearchAccess(settings);
 }
@@ -19,14 +24,22 @@ export async function tavilyRequest<TSchema extends z.ZodTypeAny>(options: {
   responseSchema: TSchema;
   scope: 'crawl' | 'extract' | 'search' | 'test';
 }) {
-  const response = await fetch(options.endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${options.apiKey.trim()}`,
-    },
-    body: JSON.stringify(options.body),
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(options.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${options.apiKey.trim()}`,
+      },
+      body: JSON.stringify(options.body),
+    });
+  } catch (error) {
+    throw new Error(getTavilyNetworkErrorMessage(options.scope, error), {
+      cause: error instanceof Error ? error : undefined,
+    });
+  }
 
   if (!response.ok) {
     const text = await response.text();

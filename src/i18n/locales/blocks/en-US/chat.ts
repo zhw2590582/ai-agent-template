@@ -69,6 +69,7 @@ export const enUSChatMessages = {
     },
     errors: {
       rate_limit: 'Too many requests',
+      request_failed_title: 'Request failed',
       request_failed: 'Request failed. Check the current model configuration or try again later.',
       invalid_conversation: 'Conversation not found or has been deleted',
       create_conversation_failed: 'Failed to create conversation',

@@ -68,6 +68,7 @@ export const zhCNChatMessages = {
     },
     errors: {
       rate_limit: '请求过于频繁',
+      request_failed_title: '请求失败',
       request_failed: '请求失败。请检查当前模型配置，或稍后重试。',
       invalid_conversation: '对话不存在或已被删除',
       create_conversation_failed: '创建对话失败，请重试',

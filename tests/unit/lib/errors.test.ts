@@ -70,6 +70,9 @@ describe('errors', () => {
 
       expect(response.status).toBe(500);
       expect(json.error.code).toBe(ErrorCode.MODEL_ERROR);
+      expect(json.error.details).toBe(
+        'Model provider rate limit or quota exceeded. Try again later or check your account limits.'
+      );
     });
 
     it('does not treat generic API wording as a model error', async () => {
@@ -78,6 +81,47 @@ describe('errors', () => {
 
       expect(response.status).toBe(500);
       expect(json.error.code).toBe(ErrorCode.UNKNOWN);
+    });
+
+    it('normalizes provider network failures into user-facing details', async () => {
+      const response = handleErrorWithLocale(new Error('fetch failed'), 'en-US');
+      const json = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(json.error.code).toBe(ErrorCode.MODEL_ERROR);
+      expect(json.error.details).toBe(
+        'Network request to the model provider failed. Check the provider base URL and network access.'
+      );
+    });
+
+    it('normalizes Tavily search failures into clearer details', async () => {
+      const response = handleErrorWithLocale(
+        new Error('Tavily search request failed: fetch failed'),
+        'en-US'
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(json.error.code).toBe(ErrorCode.MODEL_ERROR);
+      expect(json.error.details).toBe(
+        'Web search request failed. Check Tavily network access and try again.'
+      );
+    });
+
+    it('normalizes insufficient balance failures into clearer details', async () => {
+      const response = handleErrorWithLocale(
+        new Error(
+          'Failed after 3 attempts. Last error: Your account is suspended due to insufficient balance, please recharge your account or check your plan and billing details'
+        ),
+        'en-US'
+      );
+      const json = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(json.error.code).toBe(ErrorCode.MODEL_ERROR);
+      expect(json.error.details).toBe(
+        'Model provider account has insufficient balance or billing is suspended. Recharge the account or check the current plan and billing details.'
+      );
     });
   });
 });
