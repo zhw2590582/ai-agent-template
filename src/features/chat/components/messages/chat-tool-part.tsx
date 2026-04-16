@@ -14,6 +14,7 @@ import {
 } from '@/components/ai-elements/tool';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   isDelegateToSubagentInput,
   isDelegateToSubagentOutput,
@@ -138,64 +139,68 @@ export function ChatToolPart({
                       {isPreliminary ? t('running') : t('completed')}
                     </Badge>
                   </div>
-                  <div className="space-y-1">
-                    <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                      {t('task')}
-                    </div>
-                    <p className="text-sm leading-6">{delegateOutput.task}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                      {t('progress')}
-                    </div>
-                    {delegateOutput.message.parts.length > 0 ? (
-                      <div className="space-y-3">
-                        {delegateOutput.message.parts.map((nestedPart, nestedPartIndex) => {
-                          if (nestedPart.type === 'text') {
-                            if (!nestedPart.text) {
-                              return null;
-                            }
-
-                            return (
-                              <div
-                                className="bg-background/70 rounded-xl border px-4 py-3 text-sm"
-                                key={`${toolKey}-subagent-text-${nestedPartIndex}`}
-                              >
-                                <MessageResponse>{nestedPart.text}</MessageResponse>
-                              </div>
-                            );
-                          }
-
-                          if (!isToolPart(nestedPart)) {
-                            return null;
-                          }
-
-                          return (
-                            <ChatToolPart
-                              getToolTitle={getToolTitle}
-                              isSidebarOpen={isSidebarOpen}
-                              key={`${toolKey}-subagent-tool-${nestedPartIndex}`}
-                              messageKey={`${toolKey}-subagent`}
-                              part={nestedPart}
-                              partIndex={nestedPartIndex}
-                            />
-                          );
-                        })}
+                  <ScrollArea className="max-h-80 overflow-y-auto">
+                    <div className="space-y-3 pr-4">
+                      <div className="space-y-1">
+                        <div className="text-muted-foreground text-base font-medium tracking-wide uppercase">
+                          {t('task')}
+                        </div>
+                        <p className="text-sm leading-6">{delegateOutput.task}</p>
                       </div>
-                    ) : (
-                      <p className="text-muted-foreground text-sm leading-6">{t('waiting')}</p>
-                    )}
-                  </div>
-                  {!isPreliminary && delegateOutput.summary ? (
-                    <div className="space-y-1">
-                      <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                        {t('summary')}
+                      <div className="space-y-1">
+                        <div className="text-muted-foreground text-base font-medium tracking-wide uppercase">
+                          {t('progress')}
+                        </div>
+                        {delegateOutput.message.parts.length > 0 ? (
+                          <div className="space-y-3">
+                            {delegateOutput.message.parts.map((nestedPart, nestedPartIndex) => {
+                              if (nestedPart.type === 'text') {
+                                if (!nestedPart.text) {
+                                  return null;
+                                }
+
+                                return (
+                                  <div
+                                    className="bg-background/70 rounded-xl border px-4 py-3 text-sm"
+                                    key={`${toolKey}-subagent-text-${nestedPartIndex}`}
+                                  >
+                                    <MessageResponse>{nestedPart.text}</MessageResponse>
+                                  </div>
+                                );
+                              }
+
+                              if (!isToolPart(nestedPart)) {
+                                return null;
+                              }
+
+                              return (
+                                <ChatToolPart
+                                  getToolTitle={getToolTitle}
+                                  isSidebarOpen={isSidebarOpen}
+                                  key={`${toolKey}-subagent-tool-${nestedPartIndex}`}
+                                  messageKey={`${toolKey}-subagent`}
+                                  part={nestedPart}
+                                  partIndex={nestedPartIndex}
+                                />
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground text-sm leading-6">{t('waiting')}</p>
+                        )}
                       </div>
-                      <div className="bg-background/70 rounded-xl border px-4 py-3 text-sm">
-                        <MessageResponse>{delegateOutput.summary}</MessageResponse>
-                      </div>
+                      {!isPreliminary && delegateOutput.summary ? (
+                        <div className="space-y-1">
+                          <div className="text-muted-foreground text-base font-medium tracking-wide uppercase">
+                            {t('summary')}
+                          </div>
+                          <div className="bg-background/70 rounded-xl border px-4 py-3 text-sm">
+                            <MessageResponse>{delegateOutput.summary}</MessageResponse>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
+                  </ScrollArea>
                 </div>
               </div>
             ) : (
