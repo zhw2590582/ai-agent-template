@@ -65,8 +65,9 @@ export function useSearchSettings({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          apiKey: localSettings.tavilyApiKey,
+          apiKey: localSettings.apiKey,
           maxResults: localSettings.search.maxResults,
+          provider: localSettings.provider,
           searchDepth: localSettings.search.searchDepth,
           topic: localSettings.search.topic,
         }),

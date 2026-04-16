@@ -35,21 +35,21 @@
 
 ## Capability Snapshot
 
-| Capability         | 状态      | 当前边界                                                              | 主要位置                                                    |
-| ------------------ | --------- | --------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Chat               | 已实现    | `useChat -> /api/chat -> agent-runtime -> stream response` 主链路稳定 | `src/features/chat/`                                        |
-| Models / Providers | 已实现    | 用户可配置 provider、探测连接、同步模型、自定义模型                   | `src/features/models/`                                      |
-| Auth + Profile     | 已实现    | Supabase OAuth、`profiles.settings` 持久化                            | `src/features/auth/`                                        |
-| Conversations      | 已实现    | 登录用户走 Supabase，guest 走 localStorage                            | `src/features/chat/storage/`                                |
-| Memory             | 已实现 V1 | 会话摘要、长期记忆、跨会话注入、Memory 管理 UI                        | `src/features/memory/`                                      |
-| Search             | 已实现 V1 | Tavily settings、连接测试、`web_search / web_extract / web_crawl`     | `src/features/search/`                                      |
-| Sandbox            | 已实现 V1 | E2B settings、首批 tools、workspace/session/telemetry 骨架            | `src/features/sandbox/`, `src/features/chat/agent-runtime/` |
-| MCP                | 部分具备  | 远程 MCP server 配置、测试、tool merge；未消费 resources/prompts      | `src/features/mcp/`                                         |
-| RAG                | 已实现 V1 | 文档导入、pgvector 检索、provider-based embeddings/rerank、来源展示   | `src/features/rag/`                                         |
-| Skills             | 部分具备  | 只有 settings UI 和持久化，还没进入 runtime                           | `src/features/skills/`                                      |
-| Planning           | 占位      | 只保留导航和边界，不做真实 orchestration                              | 待定                                                        |
-| Subagent           | 占位      | 只保留边界，不做真实多代理                                            | 待定                                                        |
-| Testing            | 基础具备  | unit / integration 可用，E2E 仍是占位                                 | `tests/`                                                    |
+| Capability         | 状态      | 当前边界                                                                      | 主要位置                                                    |
+| ------------------ | --------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Chat               | 已实现    | `useChat -> /api/chat -> agent-runtime -> stream response` 主链路稳定         | `src/features/chat/`                                        |
+| Models / Providers | 已实现    | 用户可配置 provider、探测连接、同步模型、自定义模型                           | `src/features/models/`                                      |
+| Auth + Profile     | 已实现    | Supabase OAuth、`profiles.settings` 持久化                                    | `src/features/auth/`                                        |
+| Conversations      | 已实现    | 登录用户走 Supabase，guest 走 localStorage                                    | `src/features/chat/storage/`                                |
+| Memory             | 已实现 V1 | 会话摘要、长期记忆、跨会话注入、Memory 管理 UI                                | `src/features/memory/`                                      |
+| Search             | 已实现 V1 | provider-based search tools、连接测试、`web_search / web_extract / web_crawl` | `src/features/search/`                                      |
+| Sandbox            | 已实现 V1 | E2B settings、首批 tools、workspace/session/telemetry 骨架                    | `src/features/sandbox/`, `src/features/chat/agent-runtime/` |
+| MCP                | 部分具备  | 远程 MCP server 配置、测试、tool merge；未消费 resources/prompts              | `src/features/mcp/`                                         |
+| RAG                | 已实现 V1 | 文档导入、pgvector 检索、provider-based embeddings/rerank、来源展示           | `src/features/rag/`                                         |
+| Skills             | 部分具备  | 只有 settings UI 和持久化，还没进入 runtime                                   | `src/features/skills/`                                      |
+| Planning           | 占位      | 只保留导航和边界，不做真实 orchestration                                      | 待定                                                        |
+| Subagent           | 占位      | 只保留边界，不做真实多代理                                                    | 待定                                                        |
+| Testing            | 基础具备  | unit / integration 可用，E2E 仍是占位                                         | `tests/`                                                    |
 
 ## 当前边界
 
@@ -148,6 +148,7 @@
 
 - Tavily key 和 Search / Extract / Crawl 设置
 - `/api/search/test`
+- Search provider registry / factory 已建立
 - 聊天 runtime 动态挂载：
   - `web_search`
   - `web_extract`
@@ -155,6 +156,7 @@
 
 未完成：
 
+- 第二个 Search provider，实现真正可替换
 - 搜索结果展示层
 - 错误分层反馈
 - 缓存、配额和更细的观测

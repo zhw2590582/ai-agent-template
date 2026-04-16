@@ -70,7 +70,7 @@ export function SearchContent({ onClose, onSearchSettingsChange, settings }: Sea
           <div className="flex items-center justify-end gap-2">
             <div className="flex flex-wrap items-center gap-2">
               <Button
-                disabled={!localSettings.tavilyApiKey.trim() || isTesting}
+                disabled={!localSettings.apiKey.trim() || isTesting}
                 size="sm"
                 type="button"
                 variant="outline"

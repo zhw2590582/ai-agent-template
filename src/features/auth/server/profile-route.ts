@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { API_RATE_LIMITS } from '@/config/api-rate-limit';
 import { RAG_CONFIG } from '@/config/rag';
+import { SEARCH_CONFIG } from '@/config/search';
 import { API_NAMESPACES } from '@/config/namespaces';
 import { requireAuthenticatedUser } from '@/features/auth/server/session';
 import {
@@ -93,7 +94,8 @@ const profilePatchSchema = z.object({
           topic: z.enum(['finance', 'general', 'news']).optional(),
         })
         .optional(),
-      tavilyApiKey: z.string().optional(),
+      apiKey: z.string().optional(),
+      provider: z.enum(SEARCH_CONFIG.PROVIDER_IDS).optional(),
     }),
     skills: z.object({
       enabled: z.boolean().optional(),

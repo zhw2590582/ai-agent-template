@@ -10,7 +10,7 @@ function clamp(value: unknown, fallback: number, min: number, max: number) {
 }
 
 export function hasSearchAccess(settings: SearchSettings | null | undefined) {
-  return Boolean(settings?.enabled && settings.tavilyApiKey.trim().length > 0);
+  return Boolean(settings?.enabled && settings.apiKey.trim().length > 0);
 }
 
 export function normalizeSearchSettings(input: unknown): SearchSettings {
@@ -70,7 +70,10 @@ export function normalizeSearchSettings(input: unknown): SearchSettings {
           ? existingSearch.search.topic
           : SEARCH_CONFIG.DEFAULT_TOPIC,
     },
-    tavilyApiKey:
-      typeof existingSearch?.tavilyApiKey === 'string' ? existingSearch.tavilyApiKey : '',
+    apiKey: typeof existingSearch?.apiKey === 'string' ? existingSearch.apiKey : '',
+    provider:
+      existingSearch?.provider === 'tavily'
+        ? existingSearch.provider
+        : SEARCH_CONFIG.DEFAULT_PROVIDER,
   };
 }

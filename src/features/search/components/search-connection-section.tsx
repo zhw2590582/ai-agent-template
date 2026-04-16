@@ -62,12 +62,12 @@ export function SearchConnectionSection({
           placeholder={t('search_page.api_key_placeholder')}
           spellCheck={false}
           type={isApiKeyVisible ? 'text' : 'password'}
-          value={settings.tavilyApiKey}
+          value={settings.apiKey}
           onChange={(event) => {
             const value = event.target.value;
             onUpdateSettings((current) => ({
               ...current,
-              tavilyApiKey: value,
+              apiKey: value,
             }));
           }}
         />

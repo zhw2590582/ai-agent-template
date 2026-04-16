@@ -1,4 +1,6 @@
 export const SEARCH_CONFIG = {
+  PROVIDER_IDS: ['tavily'],
+  DEFAULT_PROVIDER: 'tavily',
   TAVILY_CRAWL_ENDPOINT: 'https://api.tavily.com/crawl',
   TAVILY_EXTRACT_ENDPOINT: 'https://api.tavily.com/extract',
   TAVILY_ENDPOINT: 'https://api.tavily.com/search',

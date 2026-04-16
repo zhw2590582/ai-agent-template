@@ -2,24 +2,16 @@ import { tool } from 'ai';
 import { z } from 'zod';
 
 import { SEARCH_CONFIG } from '@/config/search';
-import { assertTavilyEnabled, tavilyRequest } from '@/features/search/server/tavily-client';
+import { createSearchProvider, hasResolvedSearchAccess } from '@/features/search/server/providers';
 import type { SearchSettings } from '@/features/search/types';
 
-const tavilyCrawlResultSchema = z.object({
-  raw_content: z.string().nullable().optional(),
-  url: z.string().url(),
-});
-
-const tavilyCrawlResponseSchema = z.object({
-  results: z.array(tavilyCrawlResultSchema).default([]),
-});
-
 export function createWebCrawlTool(settings: SearchSettings | null | undefined) {
-  if (!settings || !assertTavilyEnabled(settings)) {
+  if (!settings || !hasResolvedSearchAccess(settings)) {
     return null;
   }
 
   const resolvedSettings = settings;
+  const provider = createSearchProvider(resolvedSettings);
 
   return tool({
     description:
@@ -33,35 +25,18 @@ export function createWebCrawlTool(settings: SearchSettings | null | undefined) 
       url: z.string().min(1).describe('The website or page URL to start crawling from.'),
     }),
     execute: async ({ instructions, url }) => {
-      const parsed = await tavilyRequest({
-        apiKey: resolvedSettings.tavilyApiKey,
-        body: {
-          url,
-          instructions,
-          max_depth: resolvedSettings.crawl.maxDepth ?? SEARCH_CONFIG.DEFAULT_CRAWL_MAX_DEPTH,
-          limit: resolvedSettings.crawl.pageLimit ?? SEARCH_CONFIG.DEFAULT_CRAWL_PAGE_LIMIT,
-          allow_external: resolvedSettings.crawl.allowExternal ?? true,
-          extract_depth:
-            resolvedSettings.extract.extractDepth ?? SEARCH_CONFIG.DEFAULT_EXTRACT_DEPTH,
-          format: resolvedSettings.extract.format ?? SEARCH_CONFIG.DEFAULT_EXTRACT_FORMAT,
-          chunks_per_source:
-            resolvedSettings.extract.chunksPerSource ??
-            SEARCH_CONFIG.DEFAULT_EXTRACT_CHUNKS_PER_SOURCE,
-          include_favicon: true,
-          include_images: false,
-        },
-        endpoint: SEARCH_CONFIG.TAVILY_CRAWL_ENDPOINT,
-        responseSchema: tavilyCrawlResponseSchema,
-        scope: 'crawl',
+      return provider.crawl({
+        allowExternal: resolvedSettings.crawl.allowExternal ?? true,
+        chunksPerSource:
+          resolvedSettings.extract.chunksPerSource ??
+          SEARCH_CONFIG.DEFAULT_EXTRACT_CHUNKS_PER_SOURCE,
+        extractDepth: resolvedSettings.extract.extractDepth ?? SEARCH_CONFIG.DEFAULT_EXTRACT_DEPTH,
+        format: resolvedSettings.extract.format ?? SEARCH_CONFIG.DEFAULT_EXTRACT_FORMAT,
+        instructions,
+        maxDepth: resolvedSettings.crawl.maxDepth ?? SEARCH_CONFIG.DEFAULT_CRAWL_MAX_DEPTH,
+        pageLimit: resolvedSettings.crawl.pageLimit ?? SEARCH_CONFIG.DEFAULT_CRAWL_PAGE_LIMIT,
+        url,
       });
-
-      return {
-        resultCount: parsed.results.length,
-        results: parsed.results.map((result) => ({
-          content: result.raw_content?.trim() || null,
-          url: result.url,
-        })),
-      };
     },
   });
 }

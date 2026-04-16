@@ -2,6 +2,7 @@ export type TavilySearchDepth = 'advanced' | 'basic';
 export type TavilySearchTopic = 'finance' | 'general' | 'news';
 export type TavilyExtractDepth = 'advanced' | 'basic';
 export type TavilyExtractFormat = 'markdown' | 'text';
+export type SearchProviderId = 'tavily';
 
 export interface SearchSettings {
   crawl: {
@@ -20,5 +21,6 @@ export interface SearchSettings {
     searchDepth: TavilySearchDepth;
     topic: TavilySearchTopic;
   };
-  tavilyApiKey: string;
+  apiKey: string;
+  provider: SearchProviderId;
 }

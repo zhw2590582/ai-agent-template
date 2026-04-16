@@ -8,6 +8,7 @@
 
 import { z } from 'zod';
 import { RAG_CONFIG } from '@/config/rag';
+import { SEARCH_CONFIG } from '@/config/search';
 import { TEXT_LIMITS } from '@/config/limits';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
 
@@ -96,7 +97,8 @@ export const chatPostSchema = z.object({
         searchDepth: z.enum(['advanced', 'basic']),
         topic: z.enum(['finance', 'general', 'news']),
       }),
-      tavilyApiKey: z.string(),
+      apiKey: z.string(),
+      provider: z.enum(SEARCH_CONFIG.PROVIDER_IDS),
     })
     .optional(),
   runtimeModel: z
