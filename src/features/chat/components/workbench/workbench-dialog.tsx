@@ -45,6 +45,10 @@ function getDialogDescriptionKey(view: Exclude<WorkbenchView, 'chat'>) {
     return 'sandbox_page.description';
   }
 
+  if (view === 'subagent') {
+    return 'subagent_page.description';
+  }
+
   return `placeholders.${view}.description`;
 }
 

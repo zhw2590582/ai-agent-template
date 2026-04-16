@@ -5,6 +5,7 @@ import type { RagSettings } from '@/features/rag/types';
 import type { SandboxSettings } from '@/features/sandbox/types';
 import type { SearchSettings } from '@/features/search/types';
 import type { SkillsSettings } from '@/features/skills/types';
+import type { SubagentSettings } from '@/features/subagent/types';
 
 export interface MemorySettings {
   autoWrite: boolean;
@@ -23,6 +24,7 @@ export interface AppProfileSettings {
   sandbox: SandboxSettings;
   search: SearchSettings;
   skills: SkillsSettings;
+  subagent: SubagentSettings;
 }
 
 export interface AppProfile extends Omit<ProfileRecord, 'settings'> {

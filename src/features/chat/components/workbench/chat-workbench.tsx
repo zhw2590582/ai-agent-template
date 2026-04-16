@@ -74,6 +74,12 @@ const SkillsContent = dynamic(
   { loading: DialogContentLoading }
 );
 
+const SubagentContent = dynamic(
+  () =>
+    import('@/features/subagent/components/subagent-content').then((mod) => mod.SubagentContent),
+  { loading: DialogContentLoading }
+);
+
 interface ChatWorkbenchProps {
   activeView: WorkbenchView;
   initialConversationId: string | null;
@@ -224,6 +230,12 @@ export function ChatWorkbench({
               onClose={closeDialog}
               onSkillsSettingsChange={workbench.setSkillsSettings}
               settings={workbench.skillsSettings}
+            />
+          ) : activeDialogView === 'subagent' ? (
+            <SubagentContent
+              onClose={closeDialog}
+              onSubagentSettingsChange={workbench.setSubagentSettings}
+              settings={workbench.subagentSettings}
             />
           ) : (
             <WorkbenchDialogPanel

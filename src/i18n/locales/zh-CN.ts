@@ -7,6 +7,7 @@ import { zhCNRagMessages } from '@/i18n/locales/blocks/zh-CN/rag';
 import { zhCNSandboxMessages } from '@/i18n/locales/blocks/zh-CN/sandbox';
 import { zhCNSearchMessages } from '@/i18n/locales/blocks/zh-CN/search';
 import { zhCNSkillsMessages } from '@/i18n/locales/blocks/zh-CN/skills';
+import { zhCNSubagentMessages } from '@/i18n/locales/blocks/zh-CN/subagent';
 import { zhCNSharedMessages } from '@/i18n/locales/blocks/zh-CN/shared';
 
 const zhCN = {
@@ -19,6 +20,7 @@ const zhCN = {
   ...zhCNSandboxMessages,
   ...zhCNSearchMessages,
   ...zhCNSkillsMessages,
+  ...zhCNSubagentMessages,
   ...zhCNAuthMessages,
 };
 

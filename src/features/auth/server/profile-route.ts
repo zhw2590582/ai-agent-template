@@ -116,6 +116,23 @@ const profilePatchSchema = z.object({
         )
         .optional(),
     }),
+    subagent: z.object({
+      agents: z
+        .array(
+          z.object({
+            description: z.string().optional(),
+            enabled: z.boolean().optional(),
+            id: z.string().optional(),
+            maxTokens: z.number().int().optional(),
+            name: z.string().optional(),
+            systemPrompt: z.string().optional(),
+            temperature: z.number().optional(),
+            themeColor: z.string().optional(),
+          })
+        )
+        .optional(),
+      enabled: z.boolean().optional(),
+    }),
   }),
 });
 

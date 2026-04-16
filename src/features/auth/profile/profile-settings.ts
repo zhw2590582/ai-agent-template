@@ -13,6 +13,8 @@ import type { SearchSettings } from '@/features/search/types';
 import { normalizeSearchSettings } from '@/features/search/settings';
 import type { SkillsSettings } from '@/features/skills/types';
 import { normalizeSkillsSettings } from '@/features/skills/settings';
+import type { SubagentSettings } from '@/features/subagent/types';
+import { normalizeSubagentSettings } from '@/features/subagent/settings';
 import {
   buildCustomProviderSettings,
   buildProviderSettings,
@@ -171,6 +173,20 @@ function readSkillsSettings(input: unknown): Partial<SkillsSettings> | undefined
   return undefined;
 }
 
+function readSubagentSettings(input: unknown): Partial<SubagentSettings> | undefined {
+  if (
+    typeof input === 'object' &&
+    input != null &&
+    'subagent' in input &&
+    typeof input.subagent === 'object' &&
+    input.subagent != null
+  ) {
+    return input.subagent as Partial<SubagentSettings>;
+  }
+
+  return undefined;
+}
+
 function clampMemoryNumber(value: unknown, fallback: number, min: number, max: number) {
   if (typeof value !== 'number' || Number.isNaN(value)) {
     return fallback;
@@ -251,8 +267,9 @@ export function normalizeProfileSettings(input?: unknown) {
   const sandbox = normalizeSandboxSettings(readSandboxSettings(input));
   const mcp = normalizeMcpSettings(readMcpSettings(input));
   const skills = normalizeSkillsSettings(readSkillsSettings(input));
+  const subagent = normalizeSubagentSettings(readSubagentSettings(input));
 
-  return { memory, mcp, models, rag, sandbox, search, skills } satisfies AppProfileSettings;
+  return { memory, mcp, models, rag, sandbox, search, skills, subagent } satisfies AppProfileSettings;
 }
 
 export function getOrderedProviders(settings: AppProfileSettings) {

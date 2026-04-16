@@ -162,6 +162,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
         sandbox: current.settings.sandbox,
         search: current.settings.search,
         skills: current.settings.skills,
+        subagent: current.settings.subagent,
       }),
       theme,
       updated_at: new Date().toISOString(),
@@ -238,6 +239,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
             sandbox: current.settings.sandbox,
             search: updater(current.settings.search),
             skills: current.settings.skills,
+            subagent: current.settings.subagent,
           }),
           theme,
           updated_at: new Date().toISOString(),
@@ -269,6 +271,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
             sandbox: current.settings.sandbox,
             search: current.settings.search,
             skills: current.settings.skills,
+            subagent: current.settings.subagent,
           }),
           theme,
           updated_at: new Date().toISOString(),
@@ -300,6 +303,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
             sandbox: updater(current.settings.sandbox),
             search: current.settings.search,
             skills: current.settings.skills,
+            subagent: current.settings.subagent,
           }),
           theme,
           updated_at: new Date().toISOString(),
@@ -331,6 +335,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
             sandbox: current.settings.sandbox,
             search: current.settings.search,
             skills: current.settings.skills,
+            subagent: current.settings.subagent,
           }),
           theme,
           updated_at: new Date().toISOString(),
@@ -362,6 +367,41 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
             sandbox: current.settings.sandbox,
             search: current.settings.search,
             skills: updater(current.settings.skills),
+            subagent: current.settings.subagent,
+          }),
+          theme,
+          updated_at: new Date().toISOString(),
+        };
+
+        profileRef.current = nextProfile;
+        setProfile(nextProfile);
+
+        return persistProfile(nextProfile, { silent: options?.silent });
+      },
+    [locale, persistProfile, theme]
+  );
+
+  const updateSubagentSettings = useMemo(
+    () =>
+      async (
+        updater: (
+          subagent: AppProfile['settings']['subagent']
+        ) => AppProfile['settings']['subagent'],
+        options?: { silent?: boolean }
+      ) => {
+        const current = profileRef.current;
+        const nextProfile = {
+          ...current,
+          locale,
+          settings: normalizeProfileSettings({
+            memory: current.settings.memory,
+            mcp: current.settings.mcp,
+            models: current.settings.models,
+            rag: current.settings.rag,
+            sandbox: current.settings.sandbox,
+            search: current.settings.search,
+            skills: current.settings.skills,
+            subagent: updater(current.settings.subagent),
           }),
           theme,
           updated_at: new Date().toISOString(),
@@ -390,6 +430,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
     updateSearchSettings,
     updateSandboxSettings,
     updateSkillsSettings,
+    updateSubagentSettings,
     updateProvider: actions.updateProvider,
     updateSelectedChatModelId: actions.updateSelectedChatModelId,
     updateSelectedProviderId: actions.updateSelectedProviderId,
