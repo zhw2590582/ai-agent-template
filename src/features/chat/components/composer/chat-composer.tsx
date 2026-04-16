@@ -57,16 +57,23 @@ export function ChatComposer({
   ];
 
   return (
-    <div className="px-6 py-5 select-none">
+    <div className="px-4 py-4 select-none sm:px-6 sm:py-5">
       <div
-        className={`mx-auto w-full transition-[max-width] duration-300 ease-out ${isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl'}`}
+        className={`mx-auto w-full min-w-0 transition-[max-width] duration-300 ease-out ${isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl'}`}
       >
         {!hasActiveConversation ? (
-          <Suggestions className="mb-3">
-            {composerSuggestions.map((suggestion) => (
-              <Suggestion key={suggestion} suggestion={suggestion} onClick={onInputChange} />
-            ))}
-          </Suggestions>
+          <div className="mb-3 w-full max-w-full min-w-0 overflow-hidden">
+            <Suggestions className="max-w-max">
+              {composerSuggestions.map((suggestion) => (
+                <Suggestion
+                  className="max-w-[min(18rem,calc(100vw-6rem))] truncate sm:max-w-none"
+                  key={suggestion}
+                  suggestion={suggestion}
+                  onClick={onInputChange}
+                />
+              ))}
+            </Suggestions>
+          </div>
         ) : null}
 
         <PromptInput
@@ -83,7 +90,7 @@ export function ChatComposer({
           </PromptInputBody>
           <PromptInputFooter>
             <PromptInputTools>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <ChatModelSelector
                   models={availableModels}
                   value={model}

@@ -1,31 +1,57 @@
-import { SettingsIcon } from 'lucide-react';
+import { MenuIcon, PanelLeftIcon, SettingsIcon } from 'lucide-react';
 
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/app-ui/drawer';
 import { LanguageSwitcher } from '@/features/chat/components/preferences/language-switcher';
 import { ThemeToggle } from '@/features/chat/components/preferences/theme-toggle';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { HEADER_NAV_ITEMS } from '@/config/navigation';
 import { AuthDialog } from '@/features/auth/components/auth-dialog';
 import type { WorkbenchView } from '@/features/chat/types';
+import { getHeaderNavItem } from '@/config/navigation';
+import { useState } from 'react';
 
 type TranslateFn = (key: string, values?: Record<string, string | number>) => string;
 
 interface ChatTopBarProps {
   activeView: WorkbenchView;
+  onOpenSidebarDrawer: () => void;
   onOpenView: (view: Exclude<WorkbenchView, 'chat'>) => void;
   t: TranslateFn;
 }
 
-export function ChatTopBar({ activeView, onOpenView, t }: ChatTopBarProps) {
+function getMobileTitle(activeView: WorkbenchView, t: TranslateFn) {
+  if (activeView === 'chat') {
+    return t('chat.sidebar.agent_workspace');
+  }
+
+  if (activeView === 'settings') {
+    return t('navigation.settings');
+  }
+
+  return t(getHeaderNavItem(activeView).translationKey);
+}
+
+export function ChatTopBar({ activeView, onOpenSidebarDrawer, onOpenView, t }: ChatTopBarProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <div className="border-border bg-muted/50 h-12 border-b px-4 py-2">
-      <div className="flex w-full flex-col gap-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-2">
+    <div className="border-border bg-muted/50 shrink-0 border-b px-3 py-3 sm:px-4">
+      <div className="hidden w-full flex-col gap-3 lg:flex">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:pb-0">
             {HEADER_NAV_ITEMS.map((item) => {
               const Icon = item.icon;
 
               return (
                 <Button
+                  className="shrink-0"
                   key={item.id}
                   size="sm"
                   type="button"
@@ -38,7 +64,7 @@ export function ChatTopBar({ activeView, onOpenView, t }: ChatTopBarProps) {
               );
             })}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <LanguageSwitcher triggerClassName="w-10" />
             <ThemeToggle />
             <Button
@@ -70,6 +96,107 @@ export function ChatTopBar({ activeView, onOpenView, t }: ChatTopBarProps) {
           </div>
         </div>
       </div>
+
+      <div className="flex items-center justify-between gap-3 lg:hidden">
+        <Button
+          aria-label={t('chat.header.show_sidebar')}
+          size="icon"
+          type="button"
+          variant="outline"
+          onClick={onOpenSidebarDrawer}
+        >
+          <PanelLeftIcon />
+        </Button>
+        <div className="min-w-0 flex-1 text-center">
+          <div className="truncate text-sm font-medium">{getMobileTitle(activeView, t)}</div>
+        </div>
+        <Button
+          aria-label={t('common.menu')}
+          size="icon"
+          type="button"
+          variant="outline"
+          onClick={() => setIsMobileMenuOpen(true)}
+        >
+          <MenuIcon />
+        </Button>
+      </div>
+
+      <Drawer
+        direction="right"
+        open={isMobileMenuOpen}
+        shouldScaleBackground={false}
+        onOpenChange={setIsMobileMenuOpen}
+      >
+        <DrawerContent
+          className="inset-y-0 right-0 h-dvh w-[min(24rem,calc(100vw-0.75rem))] rounded-none border-l px-4 py-4"
+          showHandle={false}
+        >
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>{t('chat.sidebar.agent_workspace')}</DrawerTitle>
+            <DrawerDescription>{t('common.menu')}</DrawerDescription>
+          </DrawerHeader>
+
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+            <div className="flex flex-col gap-2">
+              {HEADER_NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <Button
+                    className="justify-start"
+                    key={item.id}
+                    type="button"
+                    variant={activeView === item.id ? 'secondary' : 'ghost'}
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      onOpenView(item.id);
+                    }}
+                  >
+                    <Icon data-icon="inline-start" />
+                    {t(item.translationKey)}
+                  </Button>
+                );
+              })}
+              <Button
+                className="justify-start"
+                type="button"
+                variant={activeView === 'settings' ? 'secondary' : 'ghost'}
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onOpenView('settings');
+                }}
+              >
+                <SettingsIcon data-icon="inline-start" />
+                {t('navigation.settings')}
+              </Button>
+            </div>
+
+            <Separator />
+
+            <div className="flex flex-wrap items-center gap-2">
+              <LanguageSwitcher triggerClassName="w-12" />
+              <ThemeToggle />
+              <AuthDialog
+                configurationMissingDescription={t('auth.configuration_missing_description')}
+                configurationMissingTitle={t('auth.configuration_missing_title')}
+                description={t('auth.description')}
+                githubLabel={t('auth.sign_in_with_github')}
+                googleLabel={t('auth.sign_in_with_google')}
+                privacyPolicyLabel={t('auth.privacy_policy')}
+                signInFailedLabel={t('auth.errors.sign_in_failed')}
+                signInLabel={t('auth.sign_in')}
+                signOutFailedLabel={t('auth.errors.sign_out_failed')}
+                signOutLabel={t('auth.sign_out')}
+                signOutSuccessLabel={t('auth.toast.sign_out_success')}
+                signedInAsLabel={t('auth.signed_in_as')}
+                termsAgreementLabel={t('auth.terms_agreement')}
+                termsOfServiceLabel={t('auth.terms_of_service')}
+                title={t('auth.title')}
+              />
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

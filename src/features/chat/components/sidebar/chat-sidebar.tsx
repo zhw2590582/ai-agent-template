@@ -57,6 +57,7 @@ interface ChatSidebarProps {
   onLoadMoreConversations?: () => void | Promise<void>;
   onRenameConversation?: (conversationId: string, title: string) => Promise<boolean> | boolean;
   onSearchQueryChange?: (value: string) => void;
+  onSelectConversation?: () => void;
   onToggleOpen: () => void;
   searchQuery?: string;
 }
@@ -72,6 +73,7 @@ export function ChatSidebar({
   onLoadMoreConversations,
   onRenameConversation,
   onSearchQueryChange,
+  onSelectConversation,
   onToggleOpen,
   searchQuery = '',
 }: ChatSidebarProps) {
@@ -88,10 +90,12 @@ export function ChatSidebar({
 
   const handleNewChatClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (pathname !== homeHref) {
+      onSelectConversation?.();
       return;
     }
     event.preventDefault();
     onClearChat();
+    onSelectConversation?.();
   };
 
   const loadMoreRef = useRef(onLoadMoreConversations);
@@ -233,7 +237,7 @@ export function ChatSidebar({
       />
 
       <div className="pl-3">
-        <ScrollArea className="mt-3 h-[calc(100vh-10.5rem)]">
+        <ScrollArea className="mt-3 h-[calc(100dvh-10.5rem)]">
           <div className="flex flex-col gap-1.5 pr-3 pb-2">
             {conversations.length > 0 ? (
               <>
@@ -245,7 +249,11 @@ export function ChatSidebar({
                       item.id === activeConversationId || openMenuId === item.id ? 'bg-accent' : ''
                     )}
                   >
-                    <Link className="min-w-0 flex-1" href={`/${locale}?id=${item.id}`}>
+                    <Link
+                      className="min-w-0 flex-1"
+                      href={`/${locale}?id=${item.id}`}
+                      onClick={() => onSelectConversation?.()}
+                    >
                       <div className="max-w-52 truncate">{item.title}</div>
                     </Link>
                     <DropdownMenu

@@ -58,11 +58,11 @@ export function WorkbenchDialog({ children, onOpenChange, open, t, view }: Workb
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="flex h-[min(90vh,56rem)] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-6xl"
+        className="flex h-[min(calc(100dvh-1rem),56rem)] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] flex-col gap-0 overflow-hidden p-0 sm:h-[min(90vh,56rem)] sm:max-w-6xl"
         showCloseButton
       >
-        <DialogHeader className="bg-muted/50 shrink-0 border-b px-6 py-4 pr-12">
-          <DialogTitle className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+        <DialogHeader className="bg-muted/50 shrink-0 border-b px-4 py-4 pr-12 sm:px-6">
+          <DialogTitle className="flex items-center gap-2 text-xl font-semibold tracking-tight sm:text-2xl">
             {Icon ? <Icon className="size-6 shrink-0" /> : null}
             <span>{t(`navigation.${view}`)}</span>
           </DialogTitle>

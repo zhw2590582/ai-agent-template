@@ -93,12 +93,12 @@ export function ChatMessageList({
     <Conversation className="min-h-0 flex-1">
       <ConversationContent
         className={cn(
-          'mx-auto flex w-full flex-col gap-6 px-6 py-8 transition-[max-width] duration-300 ease-out',
+          'mx-auto flex w-full flex-col gap-6 px-4 py-6 transition-[max-width] duration-300 ease-out sm:px-6 sm:py-8',
           isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl'
         )}
       >
         {messages.length === 0 ? (
-          <div className="flex min-h-[42vh] items-center justify-center">
+          <div className="flex min-h-[36vh] items-center justify-center sm:min-h-[42vh]">
             <div className="max-w-2xl text-center">
               <h3 className="text-3xl font-semibold tracking-tight">
                 {t('chat.empty_state.title')}

@@ -18,12 +18,19 @@ import type { ConversationSummary } from '@/features/chat/storage/types';
 import type { WorkbenchView } from '@/features/chat/types';
 import type { MemoryListItem } from '@/features/memory/types';
 import { cn } from '@/lib/utils';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/app-ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function DialogContentLoading() {
   return (
-    <div className="flex min-h-105 flex-col px-6 py-6">
+    <div className="flex min-h-[26rem] flex-col px-4 py-5 sm:min-h-105 sm:px-6 sm:py-6">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <div className="space-y-3">
           <Skeleton className="h-6 w-40 rounded-md" />
@@ -112,6 +119,7 @@ export function ChatWorkbench({
   const [activeDialogView, setActiveDialogView] = useState<Exclude<WorkbenchView, 'chat'> | null>(
     activeView === 'chat' ? null : activeView
   );
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const closeDialog = () => {
     setActiveDialogView(null);
@@ -126,7 +134,7 @@ export function ChatWorkbench({
   };
 
   return (
-    <main className="bg-background text-foreground h-screen">
+    <main className="bg-background text-foreground h-dvh min-h-0">
       <div className="flex h-full w-full overflow-hidden">
         <div
           className={cn(
@@ -150,8 +158,13 @@ export function ChatWorkbench({
           />
         </div>
 
-        <section className="bg-background flex min-h-0 flex-1 flex-col transition-[width] duration-300 ease-out">
-          <ChatTopBar activeView={activeDialogView ?? 'chat'} onOpenView={openView} t={t} />
+        <section className="bg-background flex min-h-0 min-w-0 flex-1 flex-col transition-[width] duration-300 ease-out">
+          <ChatTopBar
+            activeView={activeDialogView ?? 'chat'}
+            onOpenSidebarDrawer={() => setIsMobileSidebarOpen(true)}
+            onOpenView={openView}
+            t={t}
+          />
           <>
             <ChatMessageList
               error={workbench.error}
@@ -178,6 +191,32 @@ export function ChatWorkbench({
           </>
         </section>
       </div>
+      <Drawer direction="left" open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+        <DrawerContent
+          className="inset-y-0 left-0 h-dvh w-[min(24rem,calc(100vw-0.75rem))] rounded-l-none rounded-r-2xl border-r"
+          showHandle={false}
+        >
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>{t('chat.sidebar.agent_workspace')}</DrawerTitle>
+            <DrawerDescription>{t('chat.sidebar.search_placeholder')}</DrawerDescription>
+          </DrawerHeader>
+          <ChatSidebar
+            activeConversationId={workbench.activeThreadId}
+            conversations={workbench.sidebar.conversations}
+            hasMoreConversations={workbench.sidebar.hasMore}
+            isLoadingMoreConversations={workbench.sidebar.isLoadingMore}
+            isOpen
+            onClearChat={workbench.handleClearChat}
+            onDeleteConversation={workbench.deleteConversation}
+            onLoadMoreConversations={workbench.sidebar.loadMore}
+            onRenameConversation={workbench.renameConversation}
+            onSearchQueryChange={workbench.setSidebarSearchQuery}
+            onSelectConversation={() => setIsMobileSidebarOpen(false)}
+            onToggleOpen={() => setIsMobileSidebarOpen(false)}
+            searchQuery={workbench.sidebarSearchQuery}
+          />
+        </DrawerContent>
+      </Drawer>
       {activeDialogView ? (
         <WorkbenchDialog
           open

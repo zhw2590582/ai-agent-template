@@ -60,7 +60,7 @@ export function SubagentEditorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl">
+      <DialogContent className="max-h-[min(calc(100dvh-1rem),48rem)] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>
             {isEditing
@@ -74,7 +74,7 @@ export function SubagentEditorDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto px-1">
+        <div className="flex max-h-[min(68dvh,32rem)] flex-col gap-4 overflow-y-auto px-1">
           <div className="border-border flex items-center justify-between gap-4 rounded-md border px-4 py-3">
             <div className="flex flex-col gap-1">
               <h3 className="text-sm font-medium">{t('subagent_page.agent_enabled_label')}</h3>
@@ -95,7 +95,7 @@ export function SubagentEditorDialog({
             <label className="text-sm font-medium" htmlFor="subagent-name">
               {t('subagent_page.name_label')}
             </label>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Input
                 aria-label={t('subagent_page.theme_color_label')}
                 className="h-9 w-10 shrink-0 cursor-pointer p-1"

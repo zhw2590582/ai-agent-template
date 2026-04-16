@@ -58,14 +58,14 @@ export function SubagentList({
   return (
     <>
       <section className="flex flex-col gap-4">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-1">
             <h2 className="text-xl font-semibold">{t('subagent_page.subagents_title')}</h2>
             <p className="text-muted-foreground text-sm">
               {t('subagent_page.subagents_description')}
             </p>
           </div>
-          <Button type="button" variant="outline" onClick={onAddAgent}>
+          <Button className="w-full sm:w-auto" type="button" variant="outline" onClick={onAddAgent}>
             <PlusIcon data-icon="inline-start" />
             {t('subagent_page.add_subagent')}
           </Button>
@@ -82,15 +82,15 @@ export function SubagentList({
                 className="border-border flex flex-col gap-3 border-b px-5 py-4 last:border-b-0"
                 key={agent.id}
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex min-w-0 flex-1 flex-col gap-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span
                         aria-hidden
                         className="border-border size-3 shrink-0 rounded-full border"
                         style={{ backgroundColor: agent.themeColor }}
                       />
-                      <h3 className="truncate text-sm font-medium">{agent.name}</h3>
+                      <h3 className="min-w-0 text-sm font-medium sm:truncate">{agent.name}</h3>
                       <Badge variant={agent.enabled ? 'secondary' : 'outline'}>
                         {agent.enabled ? t('common.enabled') : t('common.disabled')}
                       </Badge>
@@ -114,7 +114,7 @@ export function SubagentList({
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-end gap-2 sm:justify-start">
                     <Switch
                       checked={agent.enabled}
                       className="data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"

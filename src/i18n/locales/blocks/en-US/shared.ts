@@ -8,6 +8,7 @@ export const enUSSharedMessages = {
     delete: 'Delete',
     disabled: 'Disabled',
     enabled: 'Enabled',
+    menu: 'Menu',
     not_supported: 'Not supported',
     save: 'Save',
     supported: 'Supported',
