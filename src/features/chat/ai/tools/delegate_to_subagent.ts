@@ -13,11 +13,11 @@ import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import {
   getDelegateToSubagentSummary,
   isDelegateToSubagentOutput,
-} from '@/features/subagents/delegation';
+} from '@/features/subagents/delegation-contract';
 import type {
   DelegateToSubagentInput,
   DelegateToSubagentOutput,
-} from '@/features/subagents/delegation';
+} from '@/features/subagents/delegation-contract';
 import { listActiveSubagents } from '@/features/subagents/settings';
 import type { SubagentSettings } from '@/features/subagents/types';
 import type { ChatRuntimeModel } from '@/features/models/types';

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DelegateToSubagentOutput } from '@/features/subagents/delegation';
+import type { DelegateToSubagentOutput } from '@/features/subagents/delegation-contract';
 
 const {
   loggerErrorMock,
