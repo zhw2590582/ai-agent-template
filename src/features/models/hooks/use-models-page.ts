@@ -16,40 +16,90 @@ export function useModelsPage() {
     models: profile.settings.models,
     profileSettings: profile.settings,
   });
-  const { handleTestConnection, isTestingConnection } = useProviderProbe({
-    provider: modelsDraft.selectedProvider,
-    updateProvider: modelsDraft.updateProvider,
+  const {
+    addCustomProvider,
+    deleteSelectedProvider,
+    draftModels,
+    handleAddModel,
+    isApiKeyVisible,
+    isDirty,
+    providers,
+    removeModel,
+    resetDraft,
+    selectedProvider,
+    setDraftModels,
+    setIsApiKeyVisible,
+    toggleProviderEnabled,
+    updateModel,
+    updateProvider,
+    updateSelectedProviderId,
+  } = modelsDraft;
+  const { handleTestConnection, isTestingConnection, loadProviderModels } = useProviderProbe({
+    provider: selectedProvider,
+    updateProvider,
   });
 
   const saveChanges = useCallback(async () => {
     setIsSavingChanges(true);
 
     try {
-      return await saveProfile(() => modelsDraft.draftModels);
+      let nextDraftModels = draftModels;
+
+      if (
+        selectedProvider &&
+        selectedProvider.models.length === 0 &&
+        selectedProvider.apiKey.trim() &&
+        selectedProvider.baseUrl.trim()
+      ) {
+        const loadedProviderModels = await loadProviderModels({
+          applyResult: false,
+          notifyFailure: true,
+          notifySuccess: false,
+        });
+
+        if (!loadedProviderModels) {
+          return false;
+        }
+
+        nextDraftModels = {
+          ...draftModels,
+          providers: {
+            ...draftModels.providers,
+            [selectedProvider.id]: {
+              ...draftModels.providers[selectedProvider.id],
+              models: loadedProviderModels.mergedModels,
+            },
+          },
+        };
+
+        setDraftModels(nextDraftModels);
+      }
+
+      return await saveProfile(() => nextDraftModels);
     } finally {
       setIsSavingChanges(false);
     }
-  }, [modelsDraft.draftModels, saveProfile]);
+  }, [draftModels, loadProviderModels, saveProfile, selectedProvider, setDraftModels]);
 
   return {
-    addCustomProvider: modelsDraft.addCustomProvider,
-    deleteSelectedProvider: modelsDraft.deleteSelectedProvider,
-    handleAddModel: modelsDraft.handleAddModel,
+    addCustomProvider,
+    deleteSelectedProvider,
+    handleAddModel,
     handleTestConnection,
-    isApiKeyVisible: modelsDraft.isApiKeyVisible,
-    isDirty: modelsDraft.isDirty,
+    isApiKeyVisible,
+    isDirty,
     isLoading,
     isSavingChanges,
     isTestingConnection,
-    providers: modelsDraft.providers,
-    removeModel: modelsDraft.removeModel,
-    resetDraft: modelsDraft.resetDraft,
+    providers,
+    removeModel,
+    resetDraft,
     saveChanges,
-    selectedProvider: modelsDraft.selectedProvider,
-    setIsApiKeyVisible: modelsDraft.setIsApiKeyVisible,
-    toggleProviderEnabled: modelsDraft.toggleProviderEnabled,
-    updateModel: modelsDraft.updateModel,
-    updateProvider: modelsDraft.updateProvider,
-    updateSelectedProviderId: modelsDraft.updateSelectedProviderId,
+    selectedProvider,
+    setIsApiKeyVisible,
+    toggleProviderEnabled,
+    updateModel,
+    updateProvider,
+    updateSelectedProviderId,
   };
 }

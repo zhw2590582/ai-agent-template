@@ -49,8 +49,12 @@ export function useProviderProbe({
     []
   );
 
-  const probeProvider = useCallback(
-    async (notifySuccess: boolean) => {
+  const loadProviderModels = useCallback(
+    async (options?: {
+      applyResult?: boolean;
+      notifyFailure?: boolean;
+      notifySuccess?: boolean;
+    }) => {
       if (!provider) {
         return null;
       }
@@ -73,7 +77,7 @@ export function useProviderProbe({
       });
 
       if (!response.ok) {
-        if (notifySuccess) {
+        if (options?.notifyFailure ?? true) {
           toast.error(
             await getApiErrorToastMessage(response, t, 'models_page.toast.test_connection_failed')
           );
@@ -82,12 +86,16 @@ export function useProviderProbe({
       }
 
       const result = (await response.json()) as ProviderProbeResult;
+      const mergedModels = mergeProviderModels(provider.models, result.models);
 
-      if (notifySuccess) {
+      if (options?.applyResult ?? true) {
         updateProvider(provider.id, (currentProvider) => ({
           ...currentProvider,
           models: mergeProviderModels(currentProvider.models, result.models),
         }));
+      }
+
+      if (options?.notifySuccess) {
         toast.success(
           t('models_page.toast.test_connection_success', {
             count: String(result.models.length),
@@ -95,7 +103,10 @@ export function useProviderProbe({
         );
       }
 
-      return result;
+      return {
+        mergedModels,
+        result,
+      };
     },
     [mergeProviderModels, provider, t, updateProvider]
   );
@@ -103,14 +114,17 @@ export function useProviderProbe({
   const handleTestConnection = useCallback(async () => {
     setIsTestingConnection(true);
     try {
-      await probeProvider(true);
+      await loadProviderModels({
+        notifySuccess: true,
+      });
     } finally {
       setIsTestingConnection(false);
     }
-  }, [probeProvider]);
+  }, [loadProviderModels]);
 
   return {
     handleTestConnection,
     isTestingConnection,
+    loadProviderModels,
   };
 }
