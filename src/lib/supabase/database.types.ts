@@ -1,10 +1,7 @@
 /**
  * Supabase Database type definitions.
  *
- * Derived from the SQL schema in supabase/migrations/20260412_profiles_conversations.sql
- * and supabase/migrations/20260413_memory_v1.sql
- * and supabase/migrations/20260415_rag_v1.sql
- * and supabase/migrations/20260415_rag_voyage_embeddings.sql.
+ * Derived from the SQL schema in supabase/migrations/20260416_initial_schema.sql.
  * When the schema changes, update this file to match.
  * If supabase CLI is configured, regenerate with: npx supabase gen types typescript --local
  */

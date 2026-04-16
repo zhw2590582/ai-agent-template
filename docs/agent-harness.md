@@ -129,6 +129,8 @@ UI / Workbench
 - RAG
 - Subagents
 
+其中 `Subagents V1` 当前仍然是最小串行 `Orchestrator-Subagent`：只支持串行 delegation，不支持并行 subagent orchestration。
+
 ### 当前还没真正进入 harness 的能力
 
 - Skills
