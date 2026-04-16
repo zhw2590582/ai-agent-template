@@ -8,6 +8,13 @@
 
 - OpenAI: `The Next Evolution of the Agents SDK`
   https://openai.com/index/the-next-evolution-of-the-agents-sdk/
+- Lychee Technology Engineering Blog:
+  `Your AI Isn't "Stupid" — It Just Needs a Better Harness`
+  https://blog.ltbase.dev/posts/agents/harness-engineering
+
+补充短文档：
+
+- [harness-engineering.md](./harness-engineering.md)
 
 ## 当前判断
 
