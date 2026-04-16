@@ -113,7 +113,6 @@ src/
 - `src/features/chat/hooks/use-chat-session.ts`
 - `src/features/chat/server/chat-request-context.ts`
 - `src/features/chat/server/chat-finish.ts`
-- `src/features/chat/ai/workflows/generateText.ts`
 
 ### 6. Keep prompts English-first
 

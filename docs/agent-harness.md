@@ -148,7 +148,6 @@ src/features/chat/agent-runtime/
 - `src/features/chat/hooks/use-chat-session.ts`
 - `src/features/chat/server/chat-request-context.ts`
 - `src/features/chat/server/chat-finish.ts`
-- `src/features/chat/ai/workflows/generateText.ts`
 
 这些 wrapper 现在的职责只是兼容旧引用，不应该再继续增长业务逻辑。
 
