@@ -163,6 +163,7 @@ export async function resolveAgentRunContext({
     sandboxSettings: resolvedSandboxSettings,
     searchSettings: resolvedSearchSettings,
   });
+  const hasAgentTools = Object.keys(toolset.agentTools).length > 0;
 
   try {
     if (user) {
@@ -189,7 +190,7 @@ export async function resolveAgentRunContext({
     return {
       agentTools: toolset.agentTools,
       closeAgentResources: toolset.closeAgentResources,
-      hasAgentTools: Object.keys(toolset.agentTools).length > 0,
+      hasAgentTools,
       mcpInjectedTools: toolset.mcpInjectedTools,
       memoryContext,
       memorySettings,
@@ -197,7 +198,7 @@ export async function resolveAgentRunContext({
       ragSettings: resolvedProfileRagSettings ?? resolvedRequestRagSettings,
       runMetadataBase: createAgentRunMetadataBase({
         conversationId,
-        hasAgentTools: Object.keys(toolset.agentTools).length > 0,
+        hasAgentTools,
         hasSearchTools: toolset.hasSearchTools,
         mcpServerNames: toolset.mcpServerNames,
         runtimeModel,

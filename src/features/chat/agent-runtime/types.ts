@@ -115,10 +115,12 @@ export interface CreateAgentRunFinishHandlerOptions {
   user: User | null;
 }
 
-export interface CreateAgentRunResponseOptions
-  extends ExecuteAgentRunOptions, CreateAgentRunFinishHandlerOptions {
+export interface CreateAgentRunResponseOptions extends ExecuteAgentRunOptions {
+  closeAgentResources?: () => Promise<void>;
   ragSources?: RagSourceItem[];
   runMetadataBase: AgentRunMetadataBase;
+  supabase: SupabaseClient;
+  user: User | null;
 }
 
 export interface AgentRunFinishEvent {

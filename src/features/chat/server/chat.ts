@@ -76,7 +76,6 @@ export async function handleChatPost(request: Request) {
 
     return createAgentRunResponse({
       closeAgentResources,
-      conversationId: resolvedConversationId,
       conversationSummary,
       hasAgentTools,
       locale,

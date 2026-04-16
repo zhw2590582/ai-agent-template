@@ -17,9 +17,7 @@ export interface AgentRunMetadata extends AgentRunMetadataBase {
   ragSourceCount: number;
 }
 
-export function createAgentRunMetadataBase(
-  metadata: AgentRunMetadataBase
-): AgentRunMetadataBase {
+export function createAgentRunMetadataBase(metadata: AgentRunMetadataBase): AgentRunMetadataBase {
   return metadata;
 }
 
@@ -57,9 +55,7 @@ export function buildAgentRunMetadataContext(metadata: AgentRunMetadata) {
     workspaceSandboxId: metadata.workspaceTelemetry.sandboxId,
     workspaceSessionState: metadata.workspaceTelemetry.sessionState,
     workspaceTemplate: metadata.workspaceManifest?.template ?? null,
-    workspaceToolCommandsEnabled:
-      metadata.workspaceManifest?.toolPolicy.allowCommands ?? false,
-    workspaceToolFilesystemEnabled:
-      metadata.workspaceManifest?.toolPolicy.allowFilesystem ?? false,
+    workspaceToolCommandsEnabled: metadata.workspaceManifest?.toolPolicy.allowCommands ?? false,
+    workspaceToolFilesystemEnabled: metadata.workspaceManifest?.toolPolicy.allowFilesystem ?? false,
   };
 }

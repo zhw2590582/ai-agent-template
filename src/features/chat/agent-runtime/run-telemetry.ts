@@ -6,26 +6,22 @@ import {
   type AgentRunMetadata,
 } from '@/features/chat/agent-runtime/run-metadata';
 
-export function logAgentRunPrepared(
-  options: {
-    messageCount: number;
-    runMetadata: AgentRunMetadata;
-  }
-) {
+export function logAgentRunPrepared(options: {
+  messageCount: number;
+  runMetadata: AgentRunMetadata;
+}) {
   logger.info('Agent run: prepared', {
     ...buildAgentRunMetadataContext(options.runMetadata),
     messageCount: options.messageCount,
   });
 }
 
-export function logAgentRunFinished(
-  options: {
-    finishReason?: FinishReason;
-    isAborted: boolean;
-    responseMessageCount: number;
-    runMetadata: AgentRunMetadata;
-  }
-) {
+export function logAgentRunFinished(options: {
+  finishReason?: FinishReason;
+  isAborted: boolean;
+  responseMessageCount: number;
+  runMetadata: AgentRunMetadata;
+}) {
   logger.info('Agent run: finished', {
     ...buildAgentRunMetadataContext(options.runMetadata),
     finishReason: options.finishReason ?? null,
@@ -34,13 +30,11 @@ export function logAgentRunFinished(
   });
 }
 
-export function logAgentRunFailed(
-  options: {
-    error: unknown;
-    runMetadata: AgentRunMetadata;
-    stage: 'execute' | 'stream';
-  }
-) {
+export function logAgentRunFailed(options: {
+  error: unknown;
+  runMetadata: AgentRunMetadata;
+  stage: 'execute' | 'stream';
+}) {
   logger.error('Agent run: failed', {
     ...buildAgentRunMetadataContext(options.runMetadata),
     error: options.error instanceof Error ? options.error.message : String(options.error),
