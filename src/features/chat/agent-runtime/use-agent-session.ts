@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 
+import { API_ROUTES } from '@/config/api';
 import type { AppProfileSettings } from '@/features/auth/profile/types';
 import { buildAgentRunRequest } from '@/features/chat/agent-runtime/build-agent-run-request';
 import { CHAT_RATE_LIMIT_ERROR_CODE, ChatRequestError } from '@/features/chat/utils/chat-errors';
@@ -84,7 +85,7 @@ export function useAgentSession({
   const [transport] = useState(
     () =>
       new DefaultChatTransport({
-        api: `/api/chat?lang=${locale}`,
+        api: `${API_ROUTES.chat}?lang=${locale}`,
         fetch: async (input, init) => {
           const response = await fetch(input, init);
 

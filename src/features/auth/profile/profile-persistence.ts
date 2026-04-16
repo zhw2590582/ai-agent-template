@@ -3,6 +3,7 @@
 import type { MutableRefObject } from 'react';
 import { toast } from 'sonner';
 
+import { API_ROUTES } from '@/config/api';
 import type { ThemeMode } from '@/config/theme';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import {
@@ -59,7 +60,7 @@ export function createPersistProfile({
     }
 
     const request = (async () => {
-      const response = await fetch('/api/profile', {
+      const response = await fetch(API_ROUTES.profile, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

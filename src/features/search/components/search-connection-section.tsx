@@ -56,8 +56,11 @@ export function SearchConnectionSection({
         </div>
 
         <Input
+          autoCapitalize="none"
+          autoCorrect="off"
           id="search-tavily-api-key"
           placeholder={t('search_page.api_key_placeholder')}
+          spellCheck={false}
           type={isApiKeyVisible ? 'text' : 'password'}
           value={settings.tavilyApiKey}
           onChange={(event) => {

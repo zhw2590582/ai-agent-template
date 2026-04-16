@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { API_ROUTES } from '@/config/api';
 import { CHAT_UI_CONFIG } from '@/config/chat';
 import type { SearchSettings } from '@/features/search/types';
 
@@ -58,7 +59,7 @@ export function useSearchSettings({
   const runConnectionTest = async () => {
     setIsTesting(true);
     try {
-      const response = await fetch('/api/search/test', {
+      const response = await fetch(API_ROUTES.searchTest, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

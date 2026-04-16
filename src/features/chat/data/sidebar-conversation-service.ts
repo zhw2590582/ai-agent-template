@@ -1,3 +1,4 @@
+import { API_ROUTES } from '@/config/api';
 import { CONVERSATION_SIDEBAR_PAGE_SIZE } from '@/config/chat';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 
@@ -21,7 +22,7 @@ export async function fetchConversationPage(options: {
     params.set('query', options.query);
   }
 
-  const response = await fetch(`/api/conversations?${params.toString()}`, {
+  const response = await fetch(`${API_ROUTES.conversations}?${params.toString()}`, {
     signal: options.signal,
   });
 

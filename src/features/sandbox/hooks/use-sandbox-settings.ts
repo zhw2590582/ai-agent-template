@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { API_ROUTES } from '@/config/api';
 import { CHAT_UI_CONFIG } from '@/config/chat';
 import type { SandboxSettings } from '@/features/sandbox/types';
 
@@ -63,7 +64,7 @@ export function useSandboxSettings({
   const runConnectionTest = async () => {
     setIsTesting(true);
     try {
-      const response = await fetch('/api/sandbox/test', {
+      const response = await fetch(API_ROUTES.sandboxTest, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { API_ROUTES } from '@/config/api';
 import { readApiError } from '@/lib/api-client';
 import type { McpServerSettings, McpSettings } from '@/features/mcp/types';
 
@@ -97,7 +98,7 @@ export function useMcpServerActions({
   const runConnectionTest = async (server: McpServerSettings) => {
     setTestingServerId(server.id);
     try {
-      const response = await fetch('/api/mcp/test', {
+      const response = await fetch(API_ROUTES.mcpTest, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

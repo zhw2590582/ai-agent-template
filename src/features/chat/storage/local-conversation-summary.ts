@@ -1,5 +1,6 @@
 'use client';
 
+import { API_ROUTES } from '@/config/api';
 import type { Locale } from '@/config/i18n';
 import type { ChatRuntimeModel } from '@/features/models/types';
 import {
@@ -33,7 +34,7 @@ export async function generateLocalConversationSummary(input: {
   );
 
   try {
-    const response = await fetch('/api/chat/summary', {
+    const response = await fetch(API_ROUTES.chatSummary, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

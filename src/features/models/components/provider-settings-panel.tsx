@@ -9,6 +9,7 @@ import { InputGroup, InputGroupButton, InputGroupInput } from '@/components/ui/i
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
+import { MODEL_PROVIDER_DEFAULTS } from '@/config/models';
 import { ProviderDeleteDialog } from '@/features/models/components/provider-delete-dialog';
 import { ProviderIcon } from '@/features/models/components/provider-icon';
 import { ProviderModelList } from '@/features/models/components/provider-model-list';
@@ -116,12 +117,8 @@ export function ProviderSettingsPanel({
             <InputGroup>
               <InputGroupInput
                 autoCapitalize="none"
-                autoComplete="new-password"
                 autoCorrect="off"
                 className="h-10"
-                data-1p-ignore="true"
-                data-lpignore="true"
-                name={`${provider.id}-api-token`}
                 placeholder={t('models_page.fields.api_key_placeholder')}
                 spellCheck={false}
                 type={isApiKeyVisible ? 'text' : 'password'}
@@ -147,8 +144,11 @@ export function ProviderSettingsPanel({
                 autoComplete="url"
                 autoCorrect="off"
                 className="h-10"
+                data-form-type="other"
                 name={`${provider.id}-base-url`}
-                placeholder={provider.defaultBaseUrl || 'https://api.example.com/v1'}
+                placeholder={
+                  provider.defaultBaseUrl || MODEL_PROVIDER_DEFAULTS.PLACEHOLDER_BASE_URL
+                }
                 spellCheck={false}
                 value={provider.baseUrl}
                 onChange={(event) => onBaseUrlChange(event.target.value)}

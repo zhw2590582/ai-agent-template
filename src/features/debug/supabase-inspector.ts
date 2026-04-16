@@ -1,3 +1,4 @@
+import { DEV_CONFIG } from '@/config/dev';
 import { conversationListColumns } from '@/features/chat/storage/conversation-repository';
 import type { ConversationRecord } from '@/features/chat/storage/types';
 import type { MemoryRecord } from '@/features/memory/types';
@@ -26,7 +27,7 @@ export async function inspectUserData(userId: string, client: SupabaseAdminClien
       .select(conversationListColumns)
       .eq('user_id', userId)
       .order('last_message_at', { ascending: false })
-      .limit(20)
+      .limit(DEV_CONFIG.SUPABASE_INSPECTOR_CONVERSATION_LIMIT)
       .returns<ConversationRecord[]>(),
     client
       .from('memories')

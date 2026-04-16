@@ -164,8 +164,11 @@ export function McpServerEditorDialog({
             </div>
 
             <Input
+              autoCapitalize="none"
+              autoCorrect="off"
               id="mcp-bearer-token"
               placeholder={t('mcp_page.bearer_token_placeholder')}
+              spellCheck={false}
               type={isTokenVisible ? 'text' : 'password'}
               value={server.bearerToken}
               onChange={(event) => {

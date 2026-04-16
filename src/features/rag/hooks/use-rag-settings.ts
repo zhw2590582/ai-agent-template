@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { API_ROUTES } from '@/config/api';
 import { CHAT_UI_CONFIG } from '@/config/chat';
 import type { RagSettings } from '@/features/rag/types';
 
@@ -56,7 +57,7 @@ export function useRagSettings({
   const runConnectionTest = async () => {
     setIsTesting(true);
     try {
-      const response = await fetch('/api/rag/test', {
+      const response = await fetch(API_ROUTES.ragTest, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

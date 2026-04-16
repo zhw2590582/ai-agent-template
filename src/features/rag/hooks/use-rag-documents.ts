@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { API_ROUTES } from '@/config/api';
 import type { RagDocument } from '@/features/rag/types';
 
 interface UseRagDocumentsOptions {
@@ -41,7 +42,7 @@ export function useRagDocuments({
   const loadDocuments = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/rag/documents');
+      const response = await fetch(API_ROUTES.ragDocuments);
       if (!response.ok) {
         setDocuments([]);
         return;
@@ -66,7 +67,7 @@ export function useRagDocuments({
   const importDocument = async (input: RagDocumentImportInput) => {
     setIsImporting(true);
     try {
-      const response = await fetch('/api/rag/documents', {
+      const response = await fetch(API_ROUTES.ragDocuments, {
         method: 'POST',
         body: (() => {
           const formData = new FormData();
@@ -106,7 +107,7 @@ export function useRagDocuments({
   const deleteDocument = async (id: string) => {
     setIsDeletingId(id);
     try {
-      const response = await fetch('/api/rag/documents', {
+      const response = await fetch(API_ROUTES.ragDocuments, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +134,7 @@ export function useRagDocuments({
   const reindexDocument = async (input: { apiKey: string; id: string }) => {
     setIsReindexingId(input.id);
     try {
-      const response = await fetch('/api/rag/documents', {
+      const response = await fetch(API_ROUTES.ragDocuments, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

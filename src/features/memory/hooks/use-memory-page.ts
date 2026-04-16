@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { API_ROUTES } from '@/config/api';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import type { MemoryKind, MemoryListItem } from '@/features/memory/types';
 import type { MemorySettings } from '@/features/auth/profile/types';
@@ -55,7 +56,7 @@ export function useMemoryPage({
 
     setPendingDeleteId(memoryId);
     try {
-      const response = await fetch('/api/memories', {
+      const response = await fetch(API_ROUTES.memories, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +83,7 @@ export function useMemoryPage({
 
     setPendingEditId(input.id);
     try {
-      const response = await fetch('/api/memories', {
+      const response = await fetch(API_ROUTES.memories, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -138,7 +139,7 @@ export function useMemoryPage({
 
     setPendingSummaryDeleteId(conversationId);
     try {
-      const response = await fetch('/api/conversations', {
+      const response = await fetch(API_ROUTES.conversations, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -176,7 +177,7 @@ export function useMemoryPage({
 
     setPendingSummaryEditId(input.conversationId);
     try {
-      const response = await fetch('/api/conversations', {
+      const response = await fetch(API_ROUTES.conversations, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

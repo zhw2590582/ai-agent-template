@@ -1,3 +1,4 @@
 export const DEV_CONFIG = {
   ENABLE_DEBUG_LOGS: false,
+  SUPABASE_INSPECTOR_CONVERSATION_LIMIT: 20,
 } as const;

@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
+import { API_ROUTES } from '@/config/api';
 import type { ProviderProbeResult, ProviderSettings } from '@/features/models/types';
 import { getApiErrorToastMessage } from '@/lib/api-client';
 
@@ -59,7 +60,7 @@ export function useProviderProbe({
         return null;
       }
 
-      const response = await fetch('/api/models/providers', {
+      const response = await fetch(API_ROUTES.modelsProviders, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

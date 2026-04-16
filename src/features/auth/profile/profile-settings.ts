@@ -1,4 +1,5 @@
 import { MEMORY_CONFIG } from '@/config/memory';
+import { MODEL_PROVIDER_DEFAULTS } from '@/config/models';
 import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
 import type { AppProfileSettings, MemorySettings } from '@/features/auth/profile/types';
 import type { McpSettings } from '@/features/mcp/types';
@@ -211,7 +212,7 @@ export function normalizeProfileSettings(input?: unknown) {
   const selectedProviderId =
     inputSelectedProviderId && providers[inputSelectedProviderId]
       ? inputSelectedProviderId
-      : (MODEL_PROVIDER_PRESETS[0]?.id ?? 'deepseek');
+      : (MODEL_PROVIDER_PRESETS[0]?.id ?? MODEL_PROVIDER_DEFAULTS.DEFAULT_ENABLED_PROVIDER_ID);
 
   const models: ModelsSettings = {
     providers,

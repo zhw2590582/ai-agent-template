@@ -2,6 +2,7 @@
 
 import type { UIMessage } from 'ai';
 
+import { API_ROUTES } from '@/config/api';
 import type { Locale } from '@/config/i18n';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import {
@@ -35,7 +36,7 @@ export async function createConversationRecord(options: {
     };
   }
 
-  const response = await fetch('/api/conversations', {
+  const response = await fetch(API_ROUTES.conversations, {
     body: JSON.stringify({ initialMessage: options.initialMessage }),
     headers: { 'Content-Type': 'application/json' },
     method: 'POST',
@@ -128,7 +129,7 @@ export async function renameConversationRecord(options: {
     });
   }
 
-  const response = await fetch('/api/conversations', {
+  const response = await fetch(API_ROUTES.conversations, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -150,7 +151,7 @@ export async function deleteConversationRecord(options: {
     return deleteLocalConversationThread(options.conversationId);
   }
 
-  const response = await fetch('/api/conversations', {
+  const response = await fetch(API_ROUTES.conversations, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',

@@ -11,3 +11,11 @@ export const MODEL_SYNC_CONFIG = {
     'vision-preview',
   ],
 } as const;
+
+export const MODEL_PROVIDER_DEFAULTS = {
+  CUSTOM_PROVIDER_API_FORMAT: 'openai',
+  CUSTOM_PROVIDER_ID_FALLBACK: 'custom-provider',
+  CUSTOM_PROVIDER_MONOGRAM: 'CP',
+  DEFAULT_ENABLED_PROVIDER_ID: 'deepseek',
+  PLACEHOLDER_BASE_URL: 'https://api.example.com/v1',
+} as const;

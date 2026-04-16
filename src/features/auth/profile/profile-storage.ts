@@ -1,5 +1,6 @@
 'use client';
 
+import { API_ROUTES } from '@/config/api';
 import { STORAGE_KEYS, WINDOW_EVENTS } from '@/config/keys';
 import { SERVER_MESSAGES } from '@/config/strings';
 import type { ThemeMode } from '@/config/theme';
@@ -52,7 +53,7 @@ export async function loadRemoteProfile(userId: string) {
   }
 
   const request = (async () => {
-    const response = await fetch('/api/profile', {
+    const response = await fetch(API_ROUTES.profile, {
       credentials: 'same-origin',
     });
 

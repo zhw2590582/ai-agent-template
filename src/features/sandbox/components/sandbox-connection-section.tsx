@@ -56,8 +56,11 @@ export function SandboxConnectionSection({
         </div>
 
         <Input
+          autoCapitalize="none"
+          autoCorrect="off"
           id="sandbox-api-key"
           placeholder={t('sandbox_page.api_key_placeholder')}
+          spellCheck={false}
           type={isApiKeyVisible ? 'text' : 'password'}
           value={settings.apiKey}
           onChange={(event) => {

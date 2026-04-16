@@ -1,5 +1,6 @@
 'use client';
 
+import { API_ROUTES } from '@/config/api';
 import type { Locale } from '@/config/i18n';
 import type { ChatRuntimeModel } from '@/features/models/types';
 import {
@@ -36,7 +37,7 @@ export async function generateLocalConversationTitle(input: {
   );
 
   try {
-    const response = await fetch('/api/chat/title', {
+    const response = await fetch(API_ROUTES.chatTitle, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

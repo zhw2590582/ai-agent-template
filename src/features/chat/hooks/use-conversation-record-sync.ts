@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import type { UIMessage } from 'ai';
 
+import { API_ROUTES } from '@/config/api';
 import type { Locale } from '@/config/i18n';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import {
@@ -140,7 +141,7 @@ export function useConversationRecordSync({
 
     void (async () => {
       try {
-        const response = await fetch('/api/chat/title', {
+        const response = await fetch(API_ROUTES.chatTitle, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

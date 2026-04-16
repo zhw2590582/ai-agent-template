@@ -1,3 +1,4 @@
+import { MODEL_PROVIDER_DEFAULTS } from '@/config/models';
 import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
 import type { ProviderModelItem, ProviderSettings } from '@/features/models/types';
 import { inferProviderModelItemCapabilities } from '@/features/models/utils/model-capabilities';
@@ -19,7 +20,7 @@ function buildProviderMonogram(name: string) {
     .join('')
     .slice(0, 2);
 
-  return letters || 'CP';
+  return letters || MODEL_PROVIDER_DEFAULTS.CUSTOM_PROVIDER_MONOGRAM;
 }
 
 function buildProviderModels(existing?: ProviderModelItem[]) {
@@ -46,7 +47,7 @@ export function buildProviderSettings(
     baseUrl: existing?.baseUrl ?? preset.defaultBaseUrl,
     defaultBaseUrl: existing?.defaultBaseUrl ?? preset.defaultBaseUrl,
     docsUrl: existing?.docsUrl ?? preset.docsUrl,
-    enabled: existing?.enabled ?? preset.id === 'deepseek',
+    enabled: existing?.enabled ?? preset.id === MODEL_PROVIDER_DEFAULTS.DEFAULT_ENABLED_PROVIDER_ID,
     id: preset.id,
     isCustom: false,
     logoId: existing?.logoId ?? preset.logoId ?? null,
@@ -63,7 +64,10 @@ export function buildCustomProviderSettings(options: {
 }) {
   const normalizedName = options.name.trim();
   const requestedId = options.existing?.id?.trim();
-  const baseId = requestedId || slugifyProviderId(normalizedName) || 'custom-provider';
+  const baseId =
+    requestedId ||
+    slugifyProviderId(normalizedName) ||
+    MODEL_PROVIDER_DEFAULTS.CUSTOM_PROVIDER_ID_FALLBACK;
   const existingIds = new Set(options.existingIds ?? []);
   let nextId = baseId;
   let index = 2;
@@ -76,7 +80,7 @@ export function buildCustomProviderSettings(options: {
   }
 
   return {
-    apiFormat: options.existing?.apiFormat ?? 'openai',
+    apiFormat: options.existing?.apiFormat ?? MODEL_PROVIDER_DEFAULTS.CUSTOM_PROVIDER_API_FORMAT,
     apiKey: options.existing?.apiKey ?? '',
     baseUrl: options.existing?.baseUrl ?? '',
     defaultBaseUrl: options.existing?.defaultBaseUrl ?? '',
