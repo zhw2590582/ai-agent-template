@@ -30,7 +30,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 function DialogContentLoading() {
   return (
-    <div className="flex min-h-[26rem] flex-col px-4 py-5 sm:min-h-105 sm:px-6 sm:py-6">
+    <div className="flex min-h-104 flex-col px-4 py-5 sm:min-h-105 sm:px-6 sm:py-6">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
         <div className="space-y-3">
           <Skeleton className="h-6 w-40 rounded-md" />
