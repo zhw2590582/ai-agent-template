@@ -57,11 +57,11 @@ export function ChatComposer({
   ];
 
   return (
-    <div className="bg-background px-6 py-5 select-none">
+    <div className="px-6 py-5 select-none">
       <div
         className={`mx-auto w-full transition-[max-width] duration-300 ease-out ${isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl'}`}
       >
-        {!hasActiveConversation && input.trim().length === 0 ? (
+        {!hasActiveConversation ? (
           <Suggestions className="mb-3">
             {composerSuggestions.map((suggestion) => (
               <Suggestion key={suggestion} suggestion={suggestion} onClick={onInputChange} />
@@ -70,7 +70,7 @@ export function ChatComposer({
         ) : null}
 
         <PromptInput
-          className="w-full **:data-[slot=input-group]:has-disabled:bg-transparent **:data-[slot=input-group]:has-disabled:opacity-100 dark:**:data-[slot=input-group]:has-disabled:bg-transparent"
+          className="bg-muted/50 w-full **:data-[slot=input-group]:has-disabled:bg-transparent **:data-[slot=input-group]:has-disabled:opacity-100 dark:**:data-[slot=input-group]:has-disabled:bg-transparent"
           onSubmit={(_, event) => onSubmit(event)}
         >
           <PromptInputBody>
