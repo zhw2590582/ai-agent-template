@@ -18,7 +18,6 @@
 - [SETUP.md](./SETUP.md): 本地启动、环境变量、常用命令
 - [testing.md](./testing.md): 测试命令、测试分层、当前覆盖范围
 - [i18n-guide.md](./i18n-guide.md): 国际化实现方式和扩展规则
-- [harness-engineering.md](./harness-engineering.md): 一篇值得保留的 harness engineering 外部参考
 
 参考资料目录：
 

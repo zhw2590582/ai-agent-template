@@ -17,7 +17,7 @@
 - 已落地的远程 MCP tools integration
 - 已落地的 RAG V1：文档上传、向量检索、provider-based rerank 与来源展示
 - 已收口的聊天 `agent-runtime` harness
-- 为 RAG、Planning、多代理预留结构边界
+- 为 RAG、Subagents 和后续扩展预留结构边界
 
 ## 当前真实状态
 
@@ -52,14 +52,14 @@
 - 聊天时合并远程 MCP tools
 - 基础 tool loop 与聊天 workflow 分层
 - 聊天 `agent-runtime`：request、context、toolset、workspace、response、finish 收口
+- `Subagents` V1：最小串行 `Orchestrator-Subagent`、内建角色、tool delegation、流式展示
 - API 频率限制与 429 错误提示
 - 环境变量校验、错误处理、日志、CI
 - Vitest 单元测试和集成测试
 
 仍未完成或仍是占位：
 
-- Planning
-- Multi-Agent
+- 更复杂的 multi-agent orchestration
 - Skills runtime
 - durable run storage / resume
 - 本项目自己的正式 MCP server

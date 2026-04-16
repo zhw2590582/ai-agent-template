@@ -94,8 +94,9 @@
 
 1. 保持 `chat.ts` 和 wrappers 不回长逻辑
 2. 补高价值测试
-3. 只做必要的 telemetry / metadata 收口
-4. 不继续拆更多概念层
+3. 优先补 `contract / evaluation / recovery`
+4. 只做必要的 telemetry / metadata 收口
+5. 不继续拆更多概念层
 
 ## Later
 
@@ -103,9 +104,16 @@
 
 目标：只有在确有需求时，再把 `Skills` 从配置层推进到 runtime contract。
 
-### 8. Planning / Subagent
+### 8. Subagents 稳定化
 
-目标：在现有 harness 足够稳定后，再考虑任务拆解和多代理。
+目标：在现有 `Subagents V1` 基础上，继续做收敛和稳定化，而不是扩成更重的 orchestration 系统。
+
+优先做：
+
+1. delegation budget 和超时控制
+2. 更清楚的 tool access / capability boundary
+3. 更稳定的 subagent telemetry 和失败反馈
+4. 必要时再补独立 KB retrieval，而不是先引入更复杂 handoff graph
 
 参考：
 

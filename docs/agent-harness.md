@@ -12,10 +12,6 @@
   `Your AI Isn't "Stupid" — It Just Needs a Better Harness`
   https://blog.ltbase.dev/posts/agents/harness-engineering
 
-补充短文档：
-
-- [harness-engineering.md](./harness-engineering.md)
-
 ## 当前判断
 
 现阶段不以“迁移到 OpenAI Agents SDK”作为主目标。
@@ -31,7 +27,7 @@
 
 `OpenAI Agents SDK` 这次讨论带来的主要价值，是帮助我们明确“应该怎样重构自己的运行时边界”，而不是立刻替换现有聊天链路。
 
-当前目标是先把本仓库的 V1 `agent harness` 做稳，而不是提前扩成 `agent platform`；后者通常还意味着长任务、恢复、Planning、Subagent、审计和策略治理。
+当前目标是先把本仓库的 V1 `agent harness` 做稳，而不是提前扩成 `agent platform`；后者通常还意味着长任务、恢复、更复杂的多代理编排、审计和策略治理。
 
 ## 什么是 Agent Harness
 
@@ -57,6 +53,53 @@
 如果没有 harness，项目通常只有“UI + model”。
 
 如果有了 harness，项目才开始具备真正的 agent 行为。
+
+## Harness Engineering 补充共识
+
+结合 `Your AI Isn't "Stupid" — It Just Needs a Better Harness`，当前仓库还应继续遵守 4 条原则：
+
+1. `Constrain, don't instruct`
+   能用程序约束的地方，不要只靠 prompt 祈祷
+2. `Externalize state`
+   重要状态不能只活在上下文窗口里
+3. `Make every step verifiable`
+   每一步都要能被规则、工具或独立检查器验证
+4. `Fail locally, not globally`
+   单步失败优先局部重试或 fallback，不要整轮一起炸掉
+
+这 4 条原则对当前仓库最直接的含义是：
+
+- 继续收紧 tool / subagent contract
+- 继续把状态放到 memory / summary / metadata / workspace 这些外部结构里
+- 增加更可验证的 tool output / subagent output
+- 后续优先补局部恢复，而不是继续堆更多 agent 角色
+
+如果按 harness stack 看，当前仓库大致已经覆盖：
+
+- `Cognition`: `build-agent-input.ts`、prompt 组装
+- `Tools`: Search / Sandbox / MCP / RAG
+- `Contracts & Interfaces`: `schemas.ts`、tool schema、subagent contract
+- `Orchestration`: `execute-agent-run.ts`、`create-agent-run-response.ts`、`delegate_to_subagent.ts`
+- `Memory & State`: summary、memory、`run-metadata`、`workspace-session`
+- `Evaluation & Observation`: `run-telemetry`、tool / subagent 日志
+
+当前最弱的一层仍然是：
+
+- `Constraints & Recovery`
+
+也就是：
+
+- step-level retry
+- fallback strategy
+- idempotent recovery
+
+这也是为什么当前阶段更值得补的是：
+
+- `contract`
+- `evaluation`
+- `recovery`
+
+而不是继续扩更重的 DAG / state machine / agent teams。
 
 ## 当前仓库里的 Harness
 
@@ -84,12 +127,11 @@ UI / Workbench
 - Sandbox
 - MCP
 - RAG
+- Subagents
 
 ### 当前还没真正进入 harness 的能力
 
 - Skills
-- Planning
-- Subagent
 - Durable run storage / resume
 
 ## 当前已落地的收口结果
@@ -196,15 +238,15 @@ Capability Providers
   MCP
   Memory
   RAG
+  Subagents
   Skills (future)
-  Subagent (future)
 ```
 
 这里最关键的边界有四个：
 
 1. `/api/chat` 只做入口，不负责 capability 编排
 2. `agent-runtime` 只做 orchestration，不直接长成新的 feature 杂物间
-3. `Search / Sandbox / MCP / RAG / Memory / Skills` 负责提供 capability adapter
+3. `Search / Sandbox / MCP / RAG / Memory / Subagents / Skills` 负责提供 capability adapter
 4. UI 层不再自己知道每类 capability 在服务端如何拼接
 
 ## 目标结构
@@ -270,13 +312,13 @@ src/features/chat/
 
 兼容 wrapper 只为过渡服务。后续新增逻辑应直接落到 `agent-runtime`。
 
-### 4. 先收 runtime contract，再做 Skills / Subagent
+### 4. 先收 runtime contract，再做 Skills / 更复杂 orchestration
 
 `Skills` 当前只是 settings/UI，不是 runtime capability。
 
 在没有明确 contract 之前，不建议直接把技能“硬接”进 prompt 或工具层。
 
-`Subagent` 也同理，必须等 harness 的 run context、workspace、finish、telemetry 这些基础层稳定后再接。
+更复杂的多代理编排也同理，必须等 harness 的 run context、workspace、finish、telemetry 这些基础层稳定后再接。
 
 多代理模式和拆分边界的参考，见：
 
@@ -292,7 +334,7 @@ src/features/chat/
 - client / server 边界已明确
 - workspace lifecycle 已有最小模型
 - run-level metadata 和 telemetry 已经接通
-- 但还没有进入 durable run / skills / subagent 阶段
+- 但还没有进入 durable run / skills / 更复杂 orchestration 阶段
 
 更准确地说：
 
@@ -330,7 +372,7 @@ src/features/chat/
 
 1. 在确有产品需求时，再给 `Skills` 增加 runtime contract
 2. 在确有用户可见收益时，再考虑 durable run storage / replay
-3. 在前两者都稳定后，再考虑 `Subagent`
+3. 在前两者都稳定后，再考虑是否需要更复杂的 orchestration
 
 当前不需要马上做的事情：
 

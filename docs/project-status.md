@@ -16,16 +16,42 @@
 - Sandbox V1
 - 远程 MCP tools integration
 - RAG V1
+- Subagents V1
 
 当前还没有做成的平台能力是：
 
-- Planning
 - Multi-Agent orchestration
 - Skills runtime
 - durable run storage / resume
 - 本项目自己的正式 MCP server
 
 换句话说：当前项目已经具备 V1 `agent harness`，但还没有进入 `agent platform` 阶段；后者通常还包括长任务、恢复、审计和策略治理。
+
+## 当前里程碑
+
+### Core Capabilities V1
+
+可以认为，当前项目已经完成了 `Core Capabilities V1`。
+
+这一阶段已进入 V1 的核心产品能力包括：
+
+- Chat
+- Models / Providers
+- Auth + Profile
+- Conversations
+- Memory V1
+- Search V1
+- Sandbox V1
+- RAG V1
+- Subagents V1
+
+当前仍未进入这一里程碑的能力包括：
+
+- Skills runtime
+- MCP completion
+- durable run / tracing / E2E 等 production readiness
+
+也就是说：从“核心产品功能”角度看，项目已经基本进入 V1；从“平台能力”角度看，还没有全部进入 V1。
 
 ## 建议先看
 
@@ -47,7 +73,6 @@
 | MCP                | 部分具备  | 远程 MCP server 配置、测试、tool merge；未消费 resources/prompts                 | `src/features/mcp/`                                         |
 | RAG                | 已实现 V1 | 文档导入、pgvector 检索、provider-based embeddings/rerank、来源展示              | `src/features/rag/`                                         |
 | Skills             | 部分具备  | 只有 settings UI 和持久化，还没进入 runtime                                      | `src/features/skills/`                                      |
-| Planning           | 占位      | 只保留导航和边界，不做真实 orchestration                                         | 待定                                                        |
 | Subagent           | 已实现 V1 | 最小串行 `Orchestrator-Subagent`，支持配置、内建角色、tool delegation 和基础展示 | `src/features/subagents/`, `src/features/chat/ai/tools/`    |
 | Testing            | 基础具备  | unit / integration 可用，E2E 仍是占位                                            | `tests/`                                                    |
 
@@ -69,8 +94,6 @@
 当前还没有进入 harness 的能力：
 
 - Skills runtime contract
-- Planning
-- Subagent orchestration
 - durable run storage / replay
 
 关键位置：
@@ -85,6 +108,10 @@
 - client 代码只从 `agent-runtime/client` 取值
 - server 代码只从 `agent-runtime/server` 取值
 - `chat.ts` 保持薄入口，不重新堆回编排细节
+
+已知问题：
+
+- 部署到 Vercel 后，如果流式回复接近平台 `maxDuration` 上限，平台硬超时不一定能稳定转换成用户可见的明确 timeout 错误；后续更合适的处理方式是在应用层提前 abort，返回可控错误
 
 ### Models / Providers
 
@@ -257,7 +284,7 @@
 - 当前 `Skills` 只是配置层
 - 现在不要把它误判成 runtime capability
 
-### Planning / Subagent
+### Subagents
 
 当前已具备最小串行版 `Orchestrator-Subagent`：
 

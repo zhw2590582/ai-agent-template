@@ -2,7 +2,7 @@
  * 服务端共享类型定义
  *
  * 功能:
- * 1. 为 memory / rag / planning 等功能提供基础类型
+ * 1. 为聊天服务端共享能力提供基础类型
  * 2. 保持类型定义与业务逻辑的清晰边界
  * 3. 便于后续扩展和重构
  */
@@ -63,33 +63,9 @@ export interface DocumentChunk {
 }
 
 /**
- * 任务步骤（为 planning 预留）
- *
- * 当接入任务规划功能时，该类型用于描述规划中的单个步骤
- */
-export interface TaskStep {
-  id: string;
-  description: string;
-  status: 'pending' | 'in-progress' | 'completed' | 'failed';
-  result?: string;
-  error?: string;
-}
-
-/**
- * 任务计划（为 planning 预留）
- */
-export interface TaskPlan {
-  id: string;
-  goal: string;
-  steps: TaskStep[];
-  createdAt: Date;
-  status: 'pending' | 'in-progress' | 'completed' | 'failed';
-}
-
-/**
  * Agent 配置
  *
- * 用于描述单个 agent 的配置信息，为 multi-agent 预留
+ * 用于描述单个 agent 的配置信息，为后续扩展预留
  */
 export interface AgentConfig {
   id: string;
