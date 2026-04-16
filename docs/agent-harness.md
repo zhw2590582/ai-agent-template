@@ -288,79 +288,41 @@ src/features/chat/
 
 ## 当前真正必要的后续工作
 
-现在真正必须做的，不是继续扩抽象，而是：
+现在真正必须做的，不是继续扩抽象，而是继续稳定化：
 
-1. 补最小测试
+1. 补主链路高价值测试
 2. 让文档持续与代码同步
 3. 继续守住 wrapper 只做兼容层
 
+当前已经完成、但不要再重复设计的内容：
+
+- `workspace-manifest.ts` 和 `workspace-session.ts` 已经落地
+- `run-metadata.ts` 和 `run-telemetry.ts` 已经接通
+- client / server 出口已经拆开
+- 最小测试现在已经覆盖：
+  - `build-agent-run-request`
+  - `workspace-manifest`
+  - `workspace-session`
+  - `run-metadata`
+  - `create-agent-run-response`
+
+当前还值得继续补的测试，优先是：
+
+1. `resolve-agent-run-context`
+2. `finish-agent-run`
+3. 更多 `/api/chat` 集成边界
+
+如果继续往下推进，只考虑这些小步，而不是重新开一轮大设计：
+
+1. 在确有产品需求时，再给 `Skills` 增加 runtime contract
+2. 在确有用户可见收益时，再考虑 durable run storage / replay
+3. 在前两者都稳定后，再考虑 `Subagent`
+
 当前不需要马上做的事情：
 
-- durable run storage
-- subagent orchestration
 - 更重的 sandbox/provider abstraction
 - 新一轮目录拆分
 - 迁移到外部 agent framework
-
-### Phase 2
-
-把 `Sandbox` 从“若干工具”升级成明确的 workspace lifecycle。
-
-优先做：
-
-1. 增加 `workspace-manifest.ts`
-2. 增加 `workspace-session.ts`
-3. 把 session 创建、复用、释放收口到 workspace 生命周期
-4. 为后续多 provider sandbox 预留稳定接口
-
-### Phase 3
-
-把 `Skills` 从配置层推进到 runtime contract。
-
-优先做：
-
-1. 定义 `SkillManifest`
-2. 把 `profile.settings.skills` 接到 `AgentRunRequest`
-3. 先支持 `prompt overlay`
-4. 再支持 `tool policy`
-
-暂时不做：
-
-- 任意远程 skill 执行
-- 技能市场
-- 技能安装系统
-
-### Phase 4
-
-增加 run durability 和 telemetry。
-
-优先做：
-
-1. run metadata
-2. tool events
-3. sandbox session metadata
-4. 基础失败追踪
-5. 页面刷新后仍能看到任务状态
-
-### Phase 5
-
-在新的 harness 上引入 `Subagent`。
-
-原则：
-
-1. 先做 runtime contract
-2. 先串行 delegation，再考虑并发
-3. 不要把 subagent orchestration 混进现有 workbench UI hook
-
-### Phase 6
-
-只有在外部生态足够稳定时，再评估局部接入外部 agent framework。
-
-评估前提：
-
-1. 不影响现有聊天主链路稳定性
-2. 不破坏多 capability 的统一入口
-3. 只迁最适合的长任务 / sandbox-heavy / code-heavy 路径
 
 ## 当前不建议做
 
