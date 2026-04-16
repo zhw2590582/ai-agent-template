@@ -8,6 +8,7 @@ export const zhCNSharedMessages = {
     delete: '删除',
     disabled: '未开启',
     enabled: '已开启',
+    loading: '加载中',
     menu: '菜单',
     not_supported: '不支持',
     save: '保存',

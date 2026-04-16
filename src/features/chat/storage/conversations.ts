@@ -24,6 +24,7 @@ export {
   listConversationsForUser,
   listConversationsForUserPage,
   listConversationsForUserSearchPage,
+  listConversationsWithSummaryPage,
   verifyConversationOwnership,
 } from '@/features/chat/storage/conversation-repository';
 

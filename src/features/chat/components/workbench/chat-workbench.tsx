@@ -244,7 +244,6 @@ export function ChatWorkbench({
               onClose={closeDialog}
               onMemorySettingsChange={workbench.setMemorySettings}
               settings={workbench.memorySettings}
-              summaries={initialConversations}
             />
           ) : activeDialogView === 'mcp' ? (
             <McpContent

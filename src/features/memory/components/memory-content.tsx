@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -8,11 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { CHAT_UI_CONFIG } from '@/config/chat';
-import type { ConversationSummary } from '@/features/chat/storage/types';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import { MemoryControls } from '@/features/memory/components/memory-controls';
 import { MemoryList } from '@/features/memory/components/memory-list';
 import { MemorySummaryList } from '@/features/memory/components/memory-summary-list';
+import { useConversationSummaryPage } from '@/features/memory/hooks/use-conversation-summary-page';
 import { useMemoryPage } from '@/features/memory/hooks/use-memory-page';
 import type { MemoryListItem } from '@/features/memory/types';
 import type { MemorySettings } from '@/features/auth/profile/types';
@@ -26,7 +26,6 @@ interface MemoryContentProps {
     updater: (settings: MemorySettings) => MemorySettings
   ) => Promise<boolean> | void;
   settings: MemorySettings;
-  summaries: ConversationSummary[];
 }
 
 export function MemoryContent({
@@ -36,15 +35,21 @@ export function MemoryContent({
   onClose,
   onMemorySettingsChange,
   settings,
-  summaries,
 }: MemoryContentProps) {
   const t = useTranslations();
   const [showSaved, setShowSaved] = useState(false);
+  const handleSummaryLoadError = useCallback(() => {
+    toast.error(t('memory_page.toast.summary_load_failed'));
+  }, [t]);
+  const summaryPage = useConversationSummaryPage({
+    isAuthenticated,
+    onLoadError: handleSummaryLoadError,
+  });
   const {
     handleDeleteMemory,
-    handleDeleteSummary,
+    handleDeleteSummary: handleDeleteSummaryBase,
     handleEditMemory,
-    handleEditSummary,
+    handleEditSummary: handleEditSummaryBase,
     handleExport,
     isSavingSettings,
     isSettingsDirty,
@@ -63,9 +68,29 @@ export function MemoryContent({
     memories,
     onMemorySettingsChange,
     settings,
-    summaries,
+    summaries: summaryPage.summaries,
     t,
   });
+
+  const handleDeleteSummary = isAuthenticated
+    ? async (conversationId: string) => {
+        const success = await handleDeleteSummaryBase(conversationId);
+        if (success !== false) {
+          summaryPage.refresh();
+        }
+        return success;
+      }
+    : undefined;
+
+  const handleEditSummary = isAuthenticated
+    ? async (input: { conversationId: string; summary: string }) => {
+        const success = await handleEditSummaryBase(input);
+        if (success !== false) {
+          summaryPage.refresh();
+        }
+        return success;
+      }
+    : undefined;
 
   useEffect(() => {
     if (!showSaved) {
@@ -135,13 +160,18 @@ export function MemoryContent({
         />
         <Separator />
         <MemorySummaryList
+          currentPage={summaryPage.currentPage}
+          isLoading={summaryPage.isLoading}
           locale={locale}
           onDeleteSummary={handleDeleteSummary}
           onEditSummary={handleEditSummary}
+          onPageChange={summaryPage.setPage}
           pendingDeleteId={pendingSummaryDeleteId}
           pendingEditId={pendingSummaryEditId}
           summaries={localSummaries}
           t={t}
+          totalItems={summaryPage.totalItems}
+          totalPages={summaryPage.totalPages}
         />
       </div>
     </WorkbenchDialogPanel>

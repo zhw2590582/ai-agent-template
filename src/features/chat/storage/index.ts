@@ -5,6 +5,7 @@ export {
   listConversationsForUser,
   listConversationsForUserPage,
   listConversationsForUserSearchPage,
+  listConversationsWithSummaryPage,
   mapConversationSummary,
   renameConversation,
   saveConversationMessages,

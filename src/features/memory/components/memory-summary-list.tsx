@@ -24,12 +24,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ChevronDownIcon, PencilIcon, Trash2Icon } from 'lucide-react';
+import { CONVERSATION_SUMMARY_PAGE_SIZE } from '@/config/chat';
 import { EmptyMemoryState } from '@/features/memory/components/empty-memory-state';
 import { SummaryEditorDialog } from '@/features/memory/components/summary-editor-dialog';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { cn } from '@/lib/utils';
-
-const SUMMARIES_PER_PAGE = 6;
 
 type PaginationEntry = number | 'ellipsis-left' | 'ellipsis-right';
 
@@ -59,42 +58,49 @@ function buildPaginationEntries(currentPage: number, totalPages: number): Pagina
 }
 
 interface MemorySummaryListProps {
+  currentPage: number;
+  isLoading?: boolean;
   locale: string;
   onDeleteSummary?: (conversationId: string) => Promise<boolean> | void;
   onEditSummary?: (input: { conversationId: string; summary: string }) => Promise<boolean> | void;
+  onPageChange: (page: number) => void;
   pendingDeleteId?: string | null;
   pendingEditId?: string | null;
   summaries: ConversationSummary[];
   t: (key: string, values?: Record<string, string | number>) => string;
+  totalItems: number;
+  totalPages: number;
 }
 
 export function MemorySummaryList({
+  currentPage,
+  isLoading = false,
   locale,
   onDeleteSummary,
   onEditSummary,
+  onPageChange,
   pendingDeleteId,
   pendingEditId,
   summaries,
   t,
+  totalItems,
+  totalPages,
 }: MemorySummaryListProps) {
   const items = summaries.filter((summary) => summary.summary?.trim());
   const [editingSummaryId, setEditingSummaryId] = useState<string | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
   const editingSummary = items.find((summary) => summary.id === editingSummaryId) ?? null;
   const deleteTarget = items.find((summary) => summary.id === deleteTargetId) ?? null;
-  const totalPages = Math.max(1, Math.ceil(items.length / SUMMARIES_PER_PAGE));
-  const currentPage = Math.min(page, totalPages);
-  const paginatedItems = useMemo(() => {
-    const startIndex = (currentPage - 1) * SUMMARIES_PER_PAGE;
-    return items.slice(startIndex, startIndex + SUMMARIES_PER_PAGE);
-  }, [currentPage, items]);
   const paginationEntries = useMemo(
     () => buildPaginationEntries(currentPage, totalPages),
     [currentPage, totalPages]
   );
-  const currentRangeStart = items.length === 0 ? 0 : (currentPage - 1) * SUMMARIES_PER_PAGE + 1;
-  const currentRangeEnd = Math.min(currentPage * SUMMARIES_PER_PAGE, items.length);
+  const currentRangeStart =
+    totalItems === 0 ? 0 : (currentPage - 1) * CONVERSATION_SUMMARY_PAGE_SIZE + 1;
+  const currentRangeEnd = Math.min(
+    (currentPage - 1) * CONVERSATION_SUMMARY_PAGE_SIZE + items.length,
+    totalItems
+  );
   const formatDate = (value: string) =>
     new Intl.DateTimeFormat(locale, {
       day: 'numeric',
@@ -114,13 +120,9 @@ export function MemorySummaryList({
     }
   };
 
-  const updatePage = (nextPage: number) => {
-    setPage(Math.min(Math.max(nextPage, 1), totalPages));
-  };
-
   const handlePaginationClick = (nextPage: number) => (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-    updatePage(nextPage);
+    onPageChange(Math.min(Math.max(nextPage, 1), totalPages));
   };
 
   return (
@@ -138,7 +140,12 @@ export function MemorySummaryList({
           </CollapsibleTrigger>
 
           <CollapsibleContent className="border-t px-5 py-4">
-            {items.length === 0 ? (
+            {isLoading && items.length === 0 ? (
+              <div className="text-muted-foreground flex min-h-32 items-center justify-center gap-2 text-sm">
+                <Spinner data-icon="inline-start" />
+                {t('common.loading')}
+              </div>
+            ) : items.length === 0 ? (
               <EmptyMemoryState
                 description={t('memory_page.summaries.empty_description')}
                 title={t('memory_page.summaries.empty_title')}
@@ -146,7 +153,7 @@ export function MemorySummaryList({
             ) : (
               <div className="space-y-4">
                 <div className="border-border overflow-hidden rounded-md border">
-                  {paginatedItems.map((summary) => (
+                  {items.map((summary) => (
                     <article
                       className="border-border flex flex-col gap-3 border-b px-5 py-4 last:border-b-0"
                       key={summary.id}
@@ -192,13 +199,13 @@ export function MemorySummaryList({
                   ))}
                 </div>
 
-                {items.length > SUMMARIES_PER_PAGE ? (
+                {totalItems > CONVERSATION_SUMMARY_PAGE_SIZE ? (
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-muted-foreground text-sm">
                       {t('memory_page.summaries.pagination.summary', {
                         end: String(currentRangeEnd),
                         start: String(currentRangeStart),
-                        total: String(items.length),
+                        total: String(totalItems),
                       })}
                     </p>
                     <Pagination className="mx-0 w-auto justify-start sm:justify-end">

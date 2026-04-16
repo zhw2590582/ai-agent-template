@@ -66,6 +66,13 @@ type RangeableListQuery = {
   ) => Promise<{ data: ConversationRecord[] | null; error: unknown }>;
 };
 
+type CountableRangeableListQuery = {
+  range: (
+    from: number,
+    to: number
+  ) => Promise<{ count: number | null; data: ConversationRecord[] | null; error: unknown }>;
+};
+
 export const conversationListColumns =
   'id, user_id, title, messages, analysis, summary, summary_updated_at, last_message_at, created_at, updated_at';
 
@@ -183,5 +190,60 @@ export async function listConversationsForUserSearchPage(
   return {
     hasMore: data.length === limit,
     rows: data,
+  };
+}
+
+export async function listConversationsWithSummaryPage(
+  userId: string,
+  client: ConversationsClient,
+  options: { limit: number; offset: number }
+): Promise<{ rows: ConversationRecord[]; total: number }> {
+  const conversations = client.from('conversations') as unknown as {
+    select: (
+      columns: string,
+      options: { count: 'exact' }
+    ) => {
+      eq: (
+        column: 'user_id',
+        value: string
+      ) => {
+        not: (
+          column: 'summary',
+          operator: 'is',
+          value: null
+        ) => {
+          neq: (
+            column: 'summary',
+            value: string
+          ) => {
+            order: (
+              column: 'last_message_at',
+              options: { ascending: boolean }
+            ) => CountableRangeableListQuery;
+          };
+        };
+      };
+    };
+  };
+  const limit = Math.min(50, Math.max(1, options.limit));
+  const offset = Math.max(0, options.offset);
+  const to = offset + limit - 1;
+
+  const filtered = conversations
+    .select(conversationListColumns, { count: 'exact' })
+    .eq('user_id', userId)
+    .not('summary', 'is', null)
+    .neq('summary', '')
+    .order('last_message_at', { ascending: false });
+
+  const { count, data, error } = await filtered.range(offset, to);
+
+  if (error || !data) {
+    return { rows: [], total: 0 };
+  }
+
+  return {
+    rows: data,
+    total: count ?? data.length,
   };
 }

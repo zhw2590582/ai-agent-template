@@ -8,6 +8,7 @@ export const API_ROUTES = {
   chatSummary: '/api/chat/summary',
   chatTitle: '/api/chat/title',
   conversations: '/api/conversations',
+  conversationSummaries: '/api/conversations/summaries',
   mcpTest: '/api/mcp/test',
   memories: '/api/memories',
   modelsProviders: '/api/models/providers',

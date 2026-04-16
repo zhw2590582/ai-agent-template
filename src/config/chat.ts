@@ -17,3 +17,4 @@ export const CHAT_UI_CONFIG = {
 } as const;
 
 export const CONVERSATION_SIDEBAR_PAGE_SIZE = 20;
+export const CONVERSATION_SUMMARY_PAGE_SIZE = 6;
