@@ -1,4 +1,4 @@
-import type { SubagentDefinition } from '@/features/subagent/types';
+import type { SubagentDefinition } from '@/features/subagents/types';
 
 export const DEFAULT_SUBAGENT_DEFINITIONS = [
   {

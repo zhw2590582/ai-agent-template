@@ -13,7 +13,7 @@ import { SEARCH_CONFIG } from '@/config/search';
 import { TEXT_LIMITS } from '@/config/limits';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
 import { SUBAGENT_CONFIG } from '@/config/subagent';
-import { SUBAGENT_TOOL_ACCESS_VALUES } from '@/features/subagent/types';
+import { SUBAGENT_TOOL_ACCESS_VALUES } from '@/features/subagents/types';
 
 /**
  * A single message part. We only enforce it is a non-empty object with a `type` field.

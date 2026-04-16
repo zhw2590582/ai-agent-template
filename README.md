@@ -127,7 +127,7 @@ src/
 │   ├── search/           # Search provider 设置、连接测试、服务端 client
 │   ├── settings/         # 用户设置聚合与页面层
 │   ├── skills/           # Skills workbench UI 与设置持久化
-│   └── subagent/         # 预留的多代理边界
+│   └── subagents/        # 最小串行多代理边界
 ├── i18n/                 # next-intl 请求配置
 ├── lib/                  # 通用工具、错误处理、日志、Supabase client
 └── proxy.ts              # locale 检测与 session 更新

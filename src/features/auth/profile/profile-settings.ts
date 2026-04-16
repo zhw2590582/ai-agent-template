@@ -13,8 +13,8 @@ import type { SearchSettings } from '@/features/search/types';
 import { normalizeSearchSettings } from '@/features/search/settings';
 import type { SkillsSettings } from '@/features/skills/types';
 import { normalizeSkillsSettings } from '@/features/skills/settings';
-import type { SubagentSettings } from '@/features/subagent/types';
-import { normalizeSubagentSettings } from '@/features/subagent/settings';
+import { normalizeSubagentSettings } from '@/features/subagents/settings';
+import type { SubagentSettings } from '@/features/subagents/types';
 import {
   buildCustomProviderSettings,
   buildProviderSettings,

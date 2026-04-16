@@ -5,7 +5,7 @@ import type { ChatRuntimeModel } from '@/features/models/types';
 import type { RagSettings } from '@/features/rag/types';
 import type { SandboxSettings } from '@/features/sandbox/types';
 import type { SearchSettings } from '@/features/search/types';
-import type { SubagentSettings } from '@/features/subagent/types';
+import type { SubagentSettings } from '@/features/subagents/types';
 import type { AgentTransportRequest } from '@/features/chat/agent-runtime/types';
 
 interface BuildAgentRunRequestOptions {

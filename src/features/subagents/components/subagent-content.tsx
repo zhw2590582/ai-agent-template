@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
-import { createSubagentDraft } from '@/features/subagent/settings';
-import { SubagentEditorDialog } from '@/features/subagent/components/subagent-editor-dialog';
-import { SubagentList } from '@/features/subagent/components/subagent-list';
-import { useSubagentSettings } from '@/features/subagent/hooks/use-subagent-settings';
-import type { SubagentDefinition, SubagentSettings } from '@/features/subagent/types';
+import { SubagentEditorDialog } from '@/features/subagents/components/subagent-editor-dialog';
+import { SubagentList } from '@/features/subagents/components/subagent-list';
+import { useSubagentSettings } from '@/features/subagents/hooks/use-subagent-settings';
+import { createSubagentDraft } from '@/features/subagents/settings';
+import type { SubagentDefinition, SubagentSettings } from '@/features/subagents/types';
 
 interface SubagentContentProps {
   onClose?: () => void;

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DelegateToSubagentOutput } from '@/features/subagent/delegation';
+import type { DelegateToSubagentOutput } from '@/features/subagents/delegation';
 
 const {
   loggerErrorMock,
@@ -147,7 +147,6 @@ describe('createDelegateToSubagentTool', () => {
         sandbox_run_command: { description: 'run' },
         mcp_repo_search: { description: 'mcp' },
       } as never,
-      mcpInjectedToolNames: ['mcp_repo_search'],
     });
 
     const abortController = new AbortController();
@@ -258,6 +257,82 @@ describe('createDelegateToSubagentTool', () => {
         subagentName: 'Reviewer',
         summaryLength: 'Subagent summary'.length,
         toolCallId: 'tool-call-1',
+      })
+    );
+  });
+
+  it('limits code subagents to sandbox tools only', async () => {
+    streamMock.mockResolvedValue({
+      toUIMessageStream: () =>
+        (async function* () {
+          yield {
+            id: 'code-message',
+            parts: [{ state: 'done', text: 'Implemented the change', type: 'text' }],
+            role: 'assistant',
+          };
+        })(),
+    });
+    readUIMessageStreamMock.mockImplementation(({ stream }) => stream);
+
+    const tool = createDelegateToSubagentTool({
+      runtimeModel: {
+        apiFormat: 'openai',
+        apiKey: 'key',
+        baseUrl: 'https://example.com/v1',
+        modelId: 'model',
+        providerId: 'provider',
+      },
+      subagentSettings: {
+        agents: [
+          {
+            description: 'Handles implementation',
+            enabled: true,
+            id: 'coder',
+            maxTokens: 1024,
+            name: 'Coder',
+            systemPrompt: 'Write code carefully.',
+            temperature: 0.3,
+            themeColor: '#7c3aed',
+            toolAccess: 'code',
+          },
+        ],
+        enabled: true,
+      },
+      tools: {
+        web_search: { description: 'search' },
+        sandbox_run_command: { description: 'run' },
+        sandbox_write_file: { description: 'write' },
+        mcp_repo_search: { description: 'mcp' },
+      } as never,
+    });
+
+    await collectOutputs(
+      tool!.execute!(
+        {
+          subagentId: 'coder',
+          task: 'Implement the fix',
+        },
+        {
+          toolCallId: 'tool-call-code',
+        } as never
+      ) as AsyncIterable<DelegateToSubagentOutput>
+    );
+
+    expect(toolLoopAgentConstructorMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tools: {
+          sandbox_run_command: { description: 'run' },
+          sandbox_write_file: { description: 'write' },
+        },
+      })
+    );
+    expect(loggerInfoMock).toHaveBeenCalledWith(
+      'Subagent delegation: filtered tools',
+      expect.objectContaining({
+        allowedToolCount: 2,
+        allowedToolNames: ['sandbox_run_command', 'sandbox_write_file'],
+        subagentId: 'coder',
+        toolAccess: 'code',
       })
     );
   });

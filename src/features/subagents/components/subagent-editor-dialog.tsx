@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import type { SubagentDefinition } from '@/features/subagent/types';
+import type { SubagentDefinition } from '@/features/subagents/types';
 import {
   Select,
   SelectContent,

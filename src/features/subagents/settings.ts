@@ -4,7 +4,7 @@ import {
   type SubagentDefinition,
   type SubagentSettings,
   type SubagentToolAccess,
-} from '@/features/subagent/types';
+} from '@/features/subagents/types';
 
 interface SubagentSettingsInput {
   agents?: Array<Partial<SubagentDefinition>>;
@@ -69,7 +69,7 @@ function normalizeSubagentDefinition(
 
   return {
     description: typeof input.description === 'string' ? input.description.trim() : '',
-    enabled: input.enabled ?? true,
+    enabled: input.enabled ?? SUBAGENT_CONFIG.DEFAULT_ENABLED,
     id:
       typeof input.id === 'string' && input.id.trim().length > 0
         ? input.id.trim()

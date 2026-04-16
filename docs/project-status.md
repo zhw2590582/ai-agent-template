@@ -48,7 +48,7 @@
 | RAG                | 已实现 V1 | 文档导入、pgvector 检索、provider-based embeddings/rerank、来源展示              | `src/features/rag/`                                         |
 | Skills             | 部分具备  | 只有 settings UI 和持久化，还没进入 runtime                                      | `src/features/skills/`                                      |
 | Planning           | 占位      | 只保留导航和边界，不做真实 orchestration                                         | 待定                                                        |
-| Subagent           | 已实现 V1 | 最小串行 `Orchestrator-Subagent`，支持配置、内建角色、tool delegation 和基础展示 | `src/features/subagent/`, `src/features/chat/ai/tools/`     |
+| Subagent           | 已实现 V1 | 最小串行 `Orchestrator-Subagent`，支持配置、内建角色、tool delegation 和基础展示 | `src/features/subagents/`, `src/features/chat/ai/tools/`    |
 | Testing            | 基础具备  | unit / integration 可用，E2E 仍是占位                                            | `tests/`                                                    |
 
 ## 当前边界
@@ -266,6 +266,15 @@
 - `delegate_to_subagent` tool
 - 基础结果展示
 - `toModelOutput` 摘要压缩
+- 轻量 subagent roster 注入主 prompt
+- tool access 已按 subagent 收紧为 `none / web / code / rag`
+
+当前边界：
+
+- `code` 目前只拿 `sandbox_*`
+- `web` 目前只拿 `web_*`
+- `rag` 目前只消费当前请求已检索出的 `ragContext`
+- subagent 默认不再继承整套主工具集
 
 但现在还没有：
 

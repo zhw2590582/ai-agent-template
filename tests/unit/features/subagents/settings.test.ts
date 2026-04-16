@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { SUBAGENT_CONFIG } from '@/config/subagent';
-import { createSubagentDraft, normalizeSubagentSettings } from '@/features/subagent/settings';
+import { createSubagentDraft, normalizeSubagentSettings } from '@/features/subagents/settings';
 
 describe('subagent settings', () => {
   it('creates a draft with project defaults', () => {
@@ -51,7 +51,7 @@ describe('subagent settings', () => {
       agents: [
         {
           description: '',
-          enabled: true,
+          enabled: SUBAGENT_CONFIG.DEFAULT_ENABLED,
           id: 'subagent-1',
           maxTokens: SUBAGENT_CONFIG.MAX_TOKENS,
           name: 'Reviewer',
@@ -60,6 +60,28 @@ describe('subagent settings', () => {
           themeColor: SUBAGENT_CONFIG.DEFAULT_THEME_COLOR,
           toolAccess: SUBAGENT_CONFIG.DEFAULT_TOOL_ACCESS,
         },
+      ],
+      enabled: true,
+    });
+  });
+
+  it('preserves explicit enabled=true on imported agents', () => {
+    expect(
+      normalizeSubagentSettings({
+        agents: [
+          {
+            enabled: true,
+            name: 'Reviewer',
+          },
+        ],
+        enabled: true,
+      })
+    ).toEqual({
+      agents: [
+        expect.objectContaining({
+          enabled: true,
+          name: 'Reviewer',
+        }),
       ],
       enabled: true,
     });

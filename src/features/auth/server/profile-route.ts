@@ -5,7 +5,7 @@ import { RAG_CONFIG } from '@/config/rag';
 import { SANDBOX_CONFIG } from '@/config/sandbox';
 import { SEARCH_CONFIG } from '@/config/search';
 import { API_NAMESPACES } from '@/config/namespaces';
-import { SUBAGENT_TOOL_ACCESS_VALUES } from '@/features/subagent/types';
+import { SUBAGENT_TOOL_ACCESS_VALUES } from '@/features/subagents/types';
 import { requireAuthenticatedUser } from '@/features/auth/server/session';
 import {
   getProfileById,

@@ -46,8 +46,10 @@ describe('buildAgentInput', () => {
     });
 
     expect(result.system).toContain('Available subagents:');
-    expect(result.system).toContain('- Reviewer');
+    expect(result.system).toContain('- Reviewer (reviewer)');
+    expect(result.system).toContain('Allowed tools: no tools');
     expect(result.system).not.toContain('- Disabled');
+    expect(result.system).not.toContain('System prompt: Review carefully.');
   });
 
   it('omits the subagent roster when subagents are disabled', async () => {

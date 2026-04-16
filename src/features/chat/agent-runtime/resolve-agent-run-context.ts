@@ -25,8 +25,8 @@ import { normalizeSandboxSettings } from '@/features/sandbox/settings';
 import type { SandboxSettings } from '@/features/sandbox/types';
 import { normalizeSearchSettings } from '@/features/search/settings';
 import type { SearchSettings } from '@/features/search/types';
-import { normalizeSubagentSettings } from '@/features/subagent/settings';
-import type { SubagentSettings } from '@/features/subagent/types';
+import { normalizeSubagentSettings } from '@/features/subagents/settings';
+import type { SubagentSettings } from '@/features/subagents/types';
 import { logger } from '@/lib/logger';
 
 export function resolveChatRequestLocale(request: Request): Locale {

@@ -13,18 +13,17 @@ import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import {
   getDelegateToSubagentSummary,
   isDelegateToSubagentOutput,
-} from '@/features/subagent/delegation';
+} from '@/features/subagents/delegation';
 import type {
   DelegateToSubagentInput,
   DelegateToSubagentOutput,
-} from '@/features/subagent/delegation';
-import { listActiveSubagents } from '@/features/subagent/settings';
-import type { SubagentSettings } from '@/features/subagent/types';
+} from '@/features/subagents/delegation';
+import { listActiveSubagents } from '@/features/subagents/settings';
+import type { SubagentSettings } from '@/features/subagents/types';
 import type { ChatRuntimeModel } from '@/features/models/types';
 import { logger } from '@/lib/logger';
 
 interface CreateDelegateToSubagentToolOptions {
-  mcpInjectedToolNames?: string[];
   ragContext?: string | null;
   runtimeModel: ChatRuntimeModel;
   subagentSettings: SubagentSettings | null | undefined;
@@ -115,7 +114,6 @@ function createDelegateOutput({
 }
 
 function filterToolsForSubagent(options: {
-  mcpInjectedToolNames?: string[];
   subagentId: string;
   toolAccess: 'code' | 'none' | 'rag' | 'web';
   tools: ToolSet;
@@ -124,13 +122,12 @@ function filterToolsForSubagent(options: {
     return {};
   }
 
-  const mcpToolNames = new Set(options.mcpInjectedToolNames ?? []);
   const filteredEntries = Object.entries(options.tools).filter(([toolName]) => {
     if (options.toolAccess === 'web') {
       return toolName.startsWith('web_');
     }
 
-    return toolName.startsWith('sandbox_') || mcpToolNames.has(toolName);
+    return toolName.startsWith('sandbox_');
   });
 
   const filteredTools = Object.fromEntries(filteredEntries);
@@ -146,7 +143,6 @@ function filterToolsForSubagent(options: {
 }
 
 export function createDelegateToSubagentTool({
-  mcpInjectedToolNames,
   ragContext,
   runtimeModel,
   subagentSettings,
@@ -198,7 +194,6 @@ export function createDelegateToSubagentTool({
       });
 
       const filteredTools = filterToolsForSubagent({
-        mcpInjectedToolNames,
         subagentId: subagent.id,
         toolAccess: subagent.toolAccess,
         tools,

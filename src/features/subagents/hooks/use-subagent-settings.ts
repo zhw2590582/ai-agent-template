@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { CHAT_UI_CONFIG } from '@/config/chat';
-import type { SubagentDefinition, SubagentSettings } from '@/features/subagent/types';
+import type { SubagentDefinition, SubagentSettings } from '@/features/subagents/types';
 
 interface UseSubagentSettingsOptions {
   onClose?: () => void;

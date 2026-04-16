@@ -76,7 +76,7 @@ const SkillsContent = dynamic(
 
 const SubagentContent = dynamic(
   () =>
-    import('@/features/subagent/components/subagent-content').then((mod) => mod.SubagentContent),
+    import('@/features/subagents/components/subagent-content').then((mod) => mod.SubagentContent),
   { loading: DialogContentLoading }
 );
 

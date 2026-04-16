@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   isDelegateToSubagentInput,
   isDelegateToSubagentOutput,
-} from '@/features/subagent/delegation';
+} from '@/features/subagents/delegation';
 import { cn } from '@/lib/utils';
 
 interface ChatToolPartProps {
