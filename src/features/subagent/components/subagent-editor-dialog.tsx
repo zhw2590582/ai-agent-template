@@ -155,9 +155,7 @@ export function SubagentEditorDialog({
                 onChange={(event) => {
                   const value = Number(event.target.value);
                   setAgent((current) =>
-                    current && !Number.isNaN(value)
-                      ? { ...current, temperature: value }
-                      : current
+                    current && !Number.isNaN(value) ? { ...current, temperature: value } : current
                   );
                 }}
               />
@@ -180,9 +178,7 @@ export function SubagentEditorDialog({
                 onChange={(event) => {
                   const value = Number(event.target.value);
                   setAgent((current) =>
-                    current && !Number.isNaN(value)
-                      ? { ...current, maxTokens: value }
-                      : current
+                    current && !Number.isNaN(value) ? { ...current, maxTokens: value } : current
                   );
                 }}
               />

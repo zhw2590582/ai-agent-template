@@ -18,7 +18,7 @@ export const enUSSharedMessages = {
   },
   navigation: {
     models: 'Models',
-    subagent: 'Subagent',
+    subagent: 'Subagents',
     sandbox: 'Sandbox',
     mcp: 'MCP',
     skills: 'Skills',
@@ -33,7 +33,7 @@ export const enUSSharedMessages = {
       description: 'This is a placeholder for future model management and connection settings.',
     },
     subagent: {
-      title: 'Subagent Page',
+      title: 'Subagents Page',
       description:
         'This is a placeholder for future subagent roles, strategies, and execution settings.',
     },

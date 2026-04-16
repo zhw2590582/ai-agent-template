@@ -28,6 +28,7 @@ export async function handleChatPost(request: Request) {
       runtimeModel,
       sandboxSettings,
       searchSettings,
+      subagentSettings,
     } = await validateRequest(request, chatPostSchema);
     const resolvedConversationId = conversationId ?? null;
 
@@ -56,6 +57,7 @@ export async function handleChatPost(request: Request) {
       persistedConversationSummary,
       ragSettings: resolvedRagSettings,
       runMetadataBase,
+      subagentSettings: resolvedSubagentSettings,
     } = await resolveAgentRunContext({
       conversationId: resolvedConversationId,
       mcpSettings,
@@ -63,6 +65,7 @@ export async function handleChatPost(request: Request) {
       runtimeModel,
       sandboxSettings,
       searchSettings,
+      subagentSettings,
       supabase,
       user,
     });
@@ -88,6 +91,7 @@ export async function handleChatPost(request: Request) {
       ragSources,
       runMetadataBase,
       runtimeModel,
+      subagentSettings: resolvedSubagentSettings,
       supabase,
       tools: agentTools,
       user,

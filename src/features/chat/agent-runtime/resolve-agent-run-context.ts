@@ -25,6 +25,8 @@ import { normalizeSandboxSettings } from '@/features/sandbox/settings';
 import type { SandboxSettings } from '@/features/sandbox/types';
 import { normalizeSearchSettings } from '@/features/search/settings';
 import type { SearchSettings } from '@/features/search/types';
+import { normalizeSubagentSettings } from '@/features/subagent/settings';
+import type { SubagentSettings } from '@/features/subagent/types';
 import { logger } from '@/lib/logger';
 
 export function resolveChatRequestLocale(request: Request): Locale {
@@ -83,6 +85,22 @@ export function resolveProfileRagSettings(profile: Awaited<ReturnType<typeof get
   return null;
 }
 
+export function resolveProfileSubagentSettings(
+  profile: Awaited<ReturnType<typeof getProfileById>>
+) {
+  if (
+    typeof profile?.settings === 'object' &&
+    profile.settings != null &&
+    'subagent' in profile.settings &&
+    typeof profile.settings.subagent === 'object' &&
+    profile.settings.subagent != null
+  ) {
+    return profile.settings.subagent as SubagentSettings;
+  }
+
+  return null;
+}
+
 export function resolveSearchSettings(input: unknown): SearchSettings | null {
   if (typeof input !== 'object' || input == null) {
     return null;
@@ -113,6 +131,14 @@ export function resolveRagSettings(input: unknown): RagSettings | null {
   }
 
   return normalizeRagSettings(input);
+}
+
+export function resolveSubagentSettings(input: unknown): SubagentSettings | null {
+  if (typeof input !== 'object' || input == null) {
+    return null;
+  }
+
+  return normalizeSubagentSettings(input);
 }
 
 async function loadPersistedConversationSummary(options: {
@@ -146,6 +172,7 @@ export async function resolveAgentRunContext({
   runtimeModel,
   sandboxSettings,
   searchSettings,
+  subagentSettings,
   supabase,
   user,
 }: ResolveAgentRunContextOptions): Promise<AgentRunContext> {
@@ -153,11 +180,13 @@ export async function resolveAgentRunContext({
   let memorySettings: ChatProfileMemorySettings | null = null;
   let persistedConversationSummary: string | null = null;
   let resolvedProfileRagSettings: RagSettings | null = null;
+  let resolvedProfileSubagentSettings: SubagentSettings | null = null;
 
   const resolvedSearchSettings = resolveSearchSettings(searchSettings);
   const resolvedMcpSettings = resolveMcpSettings(mcpSettings);
   const resolvedRequestRagSettings = resolveRagSettings(ragSettings);
   const resolvedSandboxSettings = resolveSandboxSettings(sandboxSettings);
+  const resolvedRequestSubagentSettings = resolveSubagentSettings(subagentSettings);
   const toolset = await buildAgentToolset({
     mcpSettings: resolvedMcpSettings,
     sandboxSettings: resolvedSandboxSettings,
@@ -171,6 +200,9 @@ export async function resolveAgentRunContext({
       memorySettings = resolveProfileMemorySettings(profile);
       resolvedProfileRagSettings = normalizeRagSettings(
         resolvedRequestRagSettings ?? resolveProfileRagSettings(profile)
+      );
+      resolvedProfileSubagentSettings = normalizeSubagentSettings(
+        resolvedRequestSubagentSettings ?? resolveProfileSubagentSettings(profile)
       );
 
       if (memorySettings?.enabled && memorySettings.crossConversation) {
@@ -206,6 +238,7 @@ export async function resolveAgentRunContext({
         workspaceManifest: toolset.workspaceManifest,
         workspaceTelemetry: toolset.workspaceTelemetry,
       }),
+      subagentSettings: resolvedProfileSubagentSettings ?? resolvedRequestSubagentSettings,
     };
   } catch (error) {
     await toolset.closeAgentResourcesOnError();

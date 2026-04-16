@@ -12,6 +12,7 @@ export function getSystemPrompt(
   options?: {
     memoryContext?: string | null;
     ragContext?: string | null;
+    subagentRoster?: string | null;
   }
 ): string {
   const memorySection = options?.memoryContext
@@ -26,11 +27,17 @@ ${options.memoryContext}`
 Retrieved knowledge base:
 ${options.ragContext}`
     : '';
+  const subagentSection = options?.subagentRoster
+    ? `
+
+Available subagents:
+${options.subagentRoster}`
+    : '';
 
   return `${DEFAULT_SYSTEM_PROMPT}
 
 Context:
-- User locale: ${locale}${memorySection}${ragSection}`;
+- User locale: ${locale}${memorySection}${ragSection}${subagentSection}`;
 }
 
 export { DEFAULT_SYSTEM_PROMPT };

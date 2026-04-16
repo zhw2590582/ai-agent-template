@@ -1,6 +1,7 @@
 import { stepCountIs, streamText } from 'ai';
 
 import { AI_CONFIG } from '@/config/chat';
+import { createDelegateToSubagentTool } from '@/features/chat/ai/tools/delegate_to_subagent';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import { buildAgentInput } from '@/features/chat/agent-runtime/build-agent-input';
 import type { ExecuteAgentRunOptions } from '@/features/chat/agent-runtime/types';
@@ -17,6 +18,7 @@ export async function executeAgentRun({
   persistedConversationSummary,
   ragContext,
   runtimeModel,
+  subagentSettings,
   tools,
 }: ExecuteAgentRunOptions) {
   const mcpToolByInjectedName = new Map(
@@ -30,13 +32,26 @@ export async function executeAgentRun({
     messages,
     persistedConversationSummary,
     ragContext,
+    subagentSettings,
   });
+  const delegateToSubagentTool = createDelegateToSubagentTool({
+    runtimeModel,
+    subagentSettings,
+    tools,
+  });
+  const toolsWithSubagents = delegateToSubagentTool
+    ? {
+        ...tools,
+        delegate_to_subagent: delegateToSubagentTool,
+      }
+    : tools;
+  const effectiveHasAgentTools = hasAgentTools || Object.keys(toolsWithSubagents).length > 0;
 
   return streamText({
     model: getRuntimeChatModel(runtimeModel),
     system: agentInput.system,
     messages: agentInput.messages,
-    ...(hasAgentTools
+    ...(effectiveHasAgentTools
       ? {
           onStepFinish: (step) => {
             for (const toolCall of step.toolCalls) {
@@ -74,7 +89,7 @@ export async function executeAgentRun({
             }
           },
           stopWhen: stepCountIs(AI_CONFIG.AGENT_MAX_STEPS),
-          tools,
+          tools: toolsWithSubagents,
         }
       : {}),
     maxOutputTokens: AI_CONFIG.DEFAULT_MAX_TOKENS,

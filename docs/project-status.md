@@ -262,6 +262,11 @@
 
 现阶段不建议为了它们继续扩抽象，先把现有 chat runtime 骨架稳住。
 
+相关参考：
+
+- [multi-agent/multi-agent-coordination-patterns.md](./multi-agent/multi-agent-coordination-patterns.md)
+- [multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md](./multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md)
+
 ## 当前优先级
 
 1. Memory V1 收尾

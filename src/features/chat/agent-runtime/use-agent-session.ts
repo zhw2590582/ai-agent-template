@@ -62,6 +62,7 @@ export function useAgentSession({
   const ragSettingsRef = useRef(profileSettings?.rag);
   const sandboxSettingsRef = useRef(profileSettings?.sandbox);
   const searchSettingsRef = useRef(profileSettings?.search);
+  const subagentSettingsRef = useRef(profileSettings?.subagent);
 
   useEffect(() => {
     runtimeModelRef.current = runtimeModel;
@@ -71,6 +72,7 @@ export function useAgentSession({
     ragSettingsRef.current = profileSettings?.rag;
     sandboxSettingsRef.current = profileSettings?.sandbox;
     searchSettingsRef.current = profileSettings?.search;
+    subagentSettingsRef.current = profileSettings?.subagent;
   }, [
     activeThreadId,
     conversationSummary,
@@ -78,6 +80,7 @@ export function useAgentSession({
     profileSettings?.rag,
     profileSettings?.sandbox,
     profileSettings?.search,
+    profileSettings?.subagent,
     runtimeModel,
   ]);
 
@@ -130,6 +133,7 @@ export function useAgentSession({
             runtimeModel: runtimeModelRef.current,
             sandboxSettings: sandboxSettingsRef.current,
             searchSettings: searchSettingsRef.current,
+            subagentSettings: subagentSettingsRef.current,
             trigger,
           }),
         }),

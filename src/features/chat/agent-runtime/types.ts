@@ -11,6 +11,7 @@ import type { ChatRuntimeModel } from '@/features/models/types';
 import type { RagSettings, RagSourceItem } from '@/features/rag/types';
 import type { SandboxSettings } from '@/features/sandbox/types';
 import type { SearchSettings } from '@/features/search/types';
+import type { SubagentSettings } from '@/features/subagent/types';
 
 export interface ChatProfileMemorySettings {
   autoWrite?: boolean;
@@ -46,6 +47,7 @@ export interface AgentRunRequest {
   runtimeModel?: ChatRuntimeModel;
   sandboxSettings?: SandboxSettings;
   searchSettings?: SearchSettings;
+  subagentSettings?: SubagentSettings;
 }
 
 export interface AgentTransportRequest extends AgentRunRequest {
@@ -65,6 +67,7 @@ export interface AgentRunContext {
   persistedConversationSummary: string | null;
   ragSettings: RagSettings | null;
   runMetadataBase: AgentRunMetadataBase;
+  subagentSettings: SubagentSettings | null;
 }
 
 export interface ResolveAgentRunContextOptions {
@@ -74,6 +77,7 @@ export interface ResolveAgentRunContextOptions {
   runtimeModel: ChatRuntimeModel;
   sandboxSettings: unknown;
   searchSettings: unknown;
+  subagentSettings: unknown;
   supabase: SupabaseClient;
   user: User | null;
 }
@@ -86,6 +90,7 @@ export interface BuildAgentInputOptions {
   messages: UIMessage[];
   persistedConversationSummary?: string | null;
   ragContext?: string | null;
+  subagentSettings?: SubagentSettings | null;
 }
 
 export interface ExecuteAgentRunOptions extends BuildAgentInputOptions {

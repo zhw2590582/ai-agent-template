@@ -80,10 +80,17 @@ function normalizeSubagentDefinition(
   };
 }
 
+function getDefaultSubagents() {
+  return SUBAGENT_CONFIG.DEFAULT_SUBAGENTS.map((agent, index) => ({
+    ...agent,
+    id: agent.id.trim() || `subagent-${index + 1}`,
+  }));
+}
+
 export function createSubagentDraft(): SubagentDefinition {
   return {
     description: '',
-    enabled: true,
+    enabled: SUBAGENT_CONFIG.DEFAULT_ENABLED,
     id: createSubagentId(),
     maxTokens: SUBAGENT_CONFIG.DEFAULT_MAX_TOKENS,
     name: '',
@@ -93,13 +100,21 @@ export function createSubagentDraft(): SubagentDefinition {
   };
 }
 
+export function listActiveSubagents(settings: SubagentSettings | null | undefined) {
+  if (!settings?.enabled) {
+    return [] as SubagentDefinition[];
+  }
+
+  return settings.agents.filter((agent) => agent.enabled);
+}
+
 export function normalizeSubagentSettings(input?: SubagentSettingsInput | null): SubagentSettings {
   return {
     agents: Array.isArray(input?.agents)
       ? input.agents
           .map((agent, index) => normalizeSubagentDefinition(agent, index))
           .filter((agent): agent is SubagentDefinition => agent != null)
-      : [],
-    enabled: input?.enabled ?? false,
+      : getDefaultSubagents(),
+    enabled: input?.enabled ?? SUBAGENT_CONFIG.DEFAULT_ENABLED,
   };
 }

@@ -106,6 +106,11 @@
 
 目标：在现有 harness 足够稳定后，再考虑任务拆解和多代理。
 
+参考：
+
+- [multi-agent/multi-agent-coordination-patterns.md](./multi-agent/multi-agent-coordination-patterns.md)
+- [multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md](./multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md)
+
 ### 9. Production Readiness
 
 目标：补 tracing、权限、审计、E2E，并在必要时增加 durable run 存储。

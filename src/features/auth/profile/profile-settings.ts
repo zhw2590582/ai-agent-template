@@ -269,7 +269,16 @@ export function normalizeProfileSettings(input?: unknown) {
   const skills = normalizeSkillsSettings(readSkillsSettings(input));
   const subagent = normalizeSubagentSettings(readSubagentSettings(input));
 
-  return { memory, mcp, models, rag, sandbox, search, skills, subagent } satisfies AppProfileSettings;
+  return {
+    memory,
+    mcp,
+    models,
+    rag,
+    sandbox,
+    search,
+    skills,
+    subagent,
+  } satisfies AppProfileSettings;
 }
 
 export function getOrderedProviders(settings: AppProfileSettings) {

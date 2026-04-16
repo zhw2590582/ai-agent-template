@@ -8,7 +8,7 @@ describe('subagent settings', () => {
     const draft = createSubagentDraft();
 
     expect(draft.id).toMatch(/^subagent-/);
-    expect(draft.enabled).toBe(true);
+    expect(draft.enabled).toBe(SUBAGENT_CONFIG.DEFAULT_ENABLED);
     expect(draft.maxTokens).toBe(SUBAGENT_CONFIG.DEFAULT_MAX_TOKENS);
     expect(draft.systemPrompt).toBe(SUBAGENT_CONFIG.DEFAULT_SYSTEM_PROMPT);
     expect(draft.temperature).toBe(SUBAGENT_CONFIG.DEFAULT_TEMPERATURE);
@@ -17,7 +17,14 @@ describe('subagent settings', () => {
 
   it('normalizes missing settings to a disabled empty state', () => {
     expect(normalizeSubagentSettings(undefined)).toEqual({
-      agents: [],
+      agents: SUBAGENT_CONFIG.DEFAULT_SUBAGENTS,
+      enabled: false,
+    });
+  });
+
+  it('uses built-in subagents when settings exist but agents are omitted', () => {
+    expect(normalizeSubagentSettings({ enabled: false })).toEqual({
+      agents: SUBAGENT_CONFIG.DEFAULT_SUBAGENTS,
       enabled: false,
     });
   });

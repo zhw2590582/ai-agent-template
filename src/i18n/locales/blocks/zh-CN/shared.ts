@@ -18,7 +18,7 @@ export const zhCNSharedMessages = {
   },
   navigation: {
     models: 'Models',
-    subagent: 'Subagent',
+    subagent: 'Subagents',
     sandbox: 'Sandbox',
     mcp: 'MCP',
     skills: 'Skills',
@@ -33,7 +33,7 @@ export const zhCNSharedMessages = {
       description: '这里先保留为空页面，后续用于管理模型和连接配置。',
     },
     subagent: {
-      title: 'Subagent 页面',
+      title: 'Subagents 页面',
       description: '这里先保留为空页面，后续用于管理 subagent 角色、策略和执行配置。',
     },
     sandbox: {

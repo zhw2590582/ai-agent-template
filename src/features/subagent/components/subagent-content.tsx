@@ -50,9 +50,7 @@ export function SubagentContent({
   });
 
   const editingAgent =
-    editingAgentDraft ??
-    localSettings.agents.find((agent) => agent.id === editingAgentId) ??
-    null;
+    editingAgentDraft ?? localSettings.agents.find((agent) => agent.id === editingAgentId) ?? null;
 
   return (
     <WorkbenchDialogPanel

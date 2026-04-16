@@ -271,6 +271,11 @@ src/features/chat/
 
 `Subagent` 也同理，必须等 harness 的 run context、workspace、finish、telemetry 这些基础层稳定后再接。
 
+多代理模式和拆分边界的参考，见：
+
+- [multi-agent/multi-agent-coordination-patterns.md](./multi-agent/multi-agent-coordination-patterns.md)
+- [multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md](./multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md)
+
 ## 当前状态判断
 
 当前 `agent harness` 的状态可以定义为：

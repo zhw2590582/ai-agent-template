@@ -55,4 +55,37 @@ describe('buildAgentRunRequest', () => {
     expect(request.conversationId).toBe('thread_from_state');
     expect(request.runtimeModel?.modelId).toBe('gpt-test');
   });
+
+  it('includes subagent settings when provided', () => {
+    const request = buildAgentRunRequest({
+      activeThreadId: 'thread_from_state',
+      messages,
+      runtimeModel: null,
+      subagentSettings: {
+        agents: [
+          {
+            description: 'Reviews factual risks',
+            enabled: true,
+            id: 'subagent-reviewer',
+            maxTokens: 1024,
+            name: 'Reviewer',
+            systemPrompt: 'Review the answer carefully.',
+            temperature: 0.3,
+            themeColor: '#14b8a6',
+          },
+        ],
+        enabled: true,
+      },
+    });
+
+    expect(request.subagentSettings).toEqual({
+      agents: [
+        expect.objectContaining({
+          id: 'subagent-reviewer',
+          name: 'Reviewer',
+        }),
+      ],
+      enabled: true,
+    });
+  });
 });

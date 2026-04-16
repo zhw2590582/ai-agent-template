@@ -12,6 +12,7 @@ import { SANDBOX_CONFIG } from '@/config/sandbox';
 import { SEARCH_CONFIG } from '@/config/search';
 import { TEXT_LIMITS } from '@/config/limits';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
+import { SUBAGENT_CONFIG } from '@/config/subagent';
 
 /**
  * A single message part. We only enforce it is a non-empty object with a `type` field.
@@ -101,6 +102,30 @@ export const chatPostSchema = z.object({
       }),
       apiKey: z.string(),
       provider: z.enum(SEARCH_CONFIG.PROVIDER_IDS),
+    })
+    .optional(),
+  subagentSettings: z
+    .object({
+      agents: z.array(
+        z.object({
+          description: z.string(),
+          enabled: z.boolean(),
+          id: z.string(),
+          maxTokens: z
+            .number()
+            .int()
+            .min(SUBAGENT_CONFIG.MIN_TOKENS)
+            .max(SUBAGENT_CONFIG.MAX_TOKENS),
+          name: z.string(),
+          systemPrompt: z.string(),
+          temperature: z
+            .number()
+            .min(SUBAGENT_CONFIG.MIN_TEMPERATURE)
+            .max(SUBAGENT_CONFIG.MAX_TEMPERATURE),
+          themeColor: z.string(),
+        })
+      ),
+      enabled: z.boolean(),
     })
     .optional(),
   runtimeModel: z
