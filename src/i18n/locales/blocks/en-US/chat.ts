@@ -68,8 +68,6 @@ export const enUSChatMessages = {
         progress: 'Progress',
         waiting: 'Waiting for subagent output…',
         running: 'Running',
-        running_description:
-          'The subagent is still working. New steps will stream into this panel.',
         completed: 'Completed',
         summary: 'Summary',
       },

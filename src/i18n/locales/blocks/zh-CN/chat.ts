@@ -67,7 +67,6 @@ export const zhCNChatMessages = {
         progress: '进度',
         waiting: '正在等待 subagent 输出…',
         running: '执行中',
-        running_description: 'subagent 仍在执行中，新的步骤会持续流式显示在这里。',
         completed: '已完成',
         summary: '摘要',
       },

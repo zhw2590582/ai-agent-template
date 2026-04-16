@@ -196,9 +196,6 @@ export function ChatToolPart({
                       </p>
                     </div>
                   ) : null}
-                  {isPreliminary ? (
-                    <p className="text-muted-foreground text-xs">{t('running_description')}</p>
-                  ) : null}
                 </div>
               </div>
             ) : (
