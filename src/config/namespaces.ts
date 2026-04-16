@@ -1,17 +1,9 @@
-export const API_NAMESPACES = {
-  CHAT: 'api:chat',
-  CHAT_SUMMARY: 'api:chat-summary',
-  CHAT_TITLE: 'api:chat-title',
-  CONVERSATIONS_READ: 'api:conversations:read',
-  CONVERSATIONS_WRITE: 'api:conversations:write',
-  MCP: 'api:mcp',
-  MEMORIES_READ: 'api:memories:read',
-  MEMORIES_WRITE: 'api:memories:write',
-  PROFILE_READ: 'api:profile:read',
-  PROFILE_WRITE: 'api:profile:write',
-  RAG_READ: 'api:rag:read',
-  RAG_TEST: 'api:rag:test',
-  RAG_WRITE: 'api:rag:write',
-  SEARCH_TEST: 'api:search:test',
-  SANDBOX_TEST: 'api:sandbox:test',
-} as const;
+import { API_RATE_LIMITS } from '@/config/api-rate-limit';
+
+type ApiNamespaces = {
+  [K in keyof typeof API_RATE_LIMITS]: (typeof API_RATE_LIMITS)[K]['namespace'];
+};
+
+export const API_NAMESPACES = Object.fromEntries(
+  Object.entries(API_RATE_LIMITS).map(([key, value]) => [key, value.namespace])
+) as ApiNamespaces;

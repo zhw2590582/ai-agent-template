@@ -96,6 +96,27 @@ export const handleError = (error: unknown): Response => {
   return handleErrorWithLocale(error, DEFAULT_LOCALE);
 };
 
+function isLikelyModelProviderError(error: Error) {
+  const normalizedMessage = `${error.name} ${error.message}`.toLowerCase();
+
+  return [
+    'anthropic',
+    'api key',
+    'fetch failed',
+    'gemini',
+    'google',
+    'model',
+    'network request',
+    'openai',
+    'overload',
+    'provider',
+    'quota',
+    'rate limit',
+    'timed out',
+    'timeout',
+  ].some((hint) => normalizedMessage.includes(hint));
+}
+
 export const handleErrorWithLocale = (error: unknown, locale: Locale): Response => {
   // Known application errors
   if (error instanceof AppError) {
@@ -103,8 +124,8 @@ export const handleErrorWithLocale = (error: unknown, locale: Locale): Response 
     return error.toResponse(locale);
   }
 
-  // AI SDK or provider errors
-  if (error instanceof Error && error.message.includes('API')) {
+  // Likely AI SDK / provider errors
+  if (error instanceof Error && isLikelyModelProviderError(error)) {
     logger.error('[API_ERROR] Model request failed', { message: error.message });
     return new AppError(
       ErrorCode.MODEL_ERROR,

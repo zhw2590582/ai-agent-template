@@ -2,8 +2,8 @@
  * 错误处理工具函数测试
  */
 
-import { describe, it, expect } from 'vitest';
-import { AppError, ErrorCode, ERROR_MESSAGES } from '@/lib/errors';
+import { describe, expect, it } from 'vitest';
+import { AppError, ErrorCode, ERROR_MESSAGES, handleErrorWithLocale } from '@/lib/errors';
 
 describe('errors', () => {
   describe('AppError', () => {
@@ -60,6 +60,24 @@ describe('errors', () => {
       expect(ERROR_MESSAGES[ErrorCode.API_NETWORK]).toBe(
         'Network request failed. Check your connection.'
       );
+    });
+  });
+
+  describe('handleErrorWithLocale', () => {
+    it('maps likely provider failures to MODEL_ERROR', async () => {
+      const response = handleErrorWithLocale(new Error('OpenAI rate limit exceeded'), 'en-US');
+      const json = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(json.error.code).toBe(ErrorCode.MODEL_ERROR);
+    });
+
+    it('does not treat generic API wording as a model error', async () => {
+      const response = handleErrorWithLocale(new Error('Profile API route failed'), 'en-US');
+      const json = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(json.error.code).toBe(ErrorCode.UNKNOWN);
     });
   });
 });

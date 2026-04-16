@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   try {
     enforceRateLimit(request, {
       config: API_RATE_LIMITS.MODEL_PROBE,
-      namespace: 'api:model-probe',
+      namespace: API_RATE_LIMITS.MODEL_PROBE.namespace,
     });
 
     const input = await validateRequest(request, providerProbeSchema);

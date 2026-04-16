@@ -13,7 +13,10 @@
 - 登录、会话持久化、分页和搜索
 - 已落地的 Memory V1
 - 已落地的 Search / Tavily 工具接入
+- 已落地的 Sandbox V1：E2B 配置、连接测试和首批工具
+- 已落地的远程 MCP tools integration
 - 已落地的 RAG V1：文档上传、向量检索、Voyage rerank 与来源展示
+- 已收口的聊天 `agent-runtime` harness
 - 为 RAG、Planning、多代理预留结构边界
 
 ## 当前真实状态
@@ -39,7 +42,13 @@
 - `Memory` 配置弹窗：控制项、记忆编辑/删除/导出、会话摘要编辑/删除
 - `Search` 配置弹窗：Tavily key、Search / Extract / Crawl 设置、连接测试
 - Tavily tools：`web_search`、`web_extract`、`web_crawl`
+- `Sandbox` 配置弹窗：E2B key、template、运行目录、连接测试
+- Sandbox tools：`sandbox_run_command`、`sandbox_read_file`、`sandbox_write_file`
+- Sandbox workspace/session/telemetry 骨架
+- `MCP` 配置弹窗：多远程 server 配置、连接测试、结果展示
+- 聊天时合并远程 MCP tools
 - 基础 tool loop 与聊天 workflow 分层
+- 聊天 `agent-runtime`：request、context、toolset、workspace、response、finish 收口
 - API 频率限制与 429 错误提示
 - 环境变量校验、错误处理、日志、CI
 - Vitest 单元测试和集成测试
@@ -48,7 +57,9 @@
 
 - Planning
 - Multi-Agent
-- 除聊天、Models、Memory、Search、Sandbox、RAG 外的大多数工作台弹窗的真实业务实现
+- Skills runtime
+- durable run storage / resume
+- 本项目自己的正式 MCP server
 - E2E 自动化测试
 
 更准确的状态说明见 [docs/project-status.md](./docs/project-status.md)。
@@ -103,13 +114,17 @@ src/
 ├── features/
 │   ├── auth/             # 登录和 profile 同步
 │   ├── chat/             # 聊天工作台、消息链路、会话存储
+│   │   └── agent-runtime/ # 聊天运行时编排层
+│   ├── debug/            # 调试工具和诊断辅助
 │   ├── mcp/              # 远程 MCP server 配置、测试、tool client
 │   ├── memory/           # 长期记忆、摘要列表、Memory 页面
 │   ├── models/           # provider 配置、模型同步、自定义 provider/model
 │   ├── rag/              # 文档上传、向量检索、来源展示
 │   ├── sandbox/          # E2B runtime 配置与 tools
 │   ├── search/           # Tavily 搜索设置、连接测试、服务端 client
-│   └── skills/           # Skills workbench UI 与设置持久化
+│   ├── settings/         # 用户设置聚合与页面层
+│   ├── skills/           # Skills workbench UI 与设置持久化
+│   └── subagent/         # 预留的多代理边界
 ├── i18n/                 # next-intl 请求配置
 ├── lib/                  # 通用工具、错误处理、日志、Supabase client
 └── proxy.ts              # locale 检测与 session 更新

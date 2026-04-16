@@ -89,6 +89,7 @@ src/
 当前：
 
 - `src/features/chat/server/*`
+- `src/features/chat/agent-runtime/*`
 - `src/features/chat/ai/*`
 - `src/features/*/server/*`
 
@@ -102,6 +103,17 @@ src/
 - `src/features/sandbox/server/*`
 
 不要提前把目录拆得很深。
+
+聊天 runtime 的新增编排逻辑，优先进入：
+
+- `src/features/chat/agent-runtime/*`
+
+兼容 wrapper 只保留在这些位置，不继续增长业务逻辑：
+
+- `src/features/chat/hooks/use-chat-session.ts`
+- `src/features/chat/server/chat-request-context.ts`
+- `src/features/chat/server/chat-finish.ts`
+- `src/features/chat/ai/workflows/generateText.ts`
 
 ### 6. Keep prompts English-first
 
@@ -130,7 +142,9 @@ src/
 
 优先参考：
 
+- [`docs/project-status.md`](docs/project-status.md)
 - [`docs/architecture.md`](docs/architecture.md)
+- [`docs/agent-harness.md`](docs/agent-harness.md)
 - [`docs/conventions.md`](docs/conventions.md)
 - [`docs/roadmap.md`](docs/roadmap.md)
 
