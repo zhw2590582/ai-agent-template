@@ -1,5 +1,4 @@
 import { MEMORY_CONFIG } from '@/config/memory';
-import { MODEL_PROVIDER_DEFAULTS } from '@/config/models';
 import { MODEL_PROVIDER_PRESETS } from '@/features/models/catalog';
 import type { McpSettings } from '@/features/mcp/types';
 import { normalizeMcpSettings } from '@/features/mcp/settings';
@@ -40,11 +39,6 @@ function readExistingProviders(input: unknown) {
 
 function readExistingProviderSettings(input: unknown, providerId: string) {
   return readExistingProviders(input)[providerId];
-}
-
-function readSelectedProviderId(input: unknown) {
-  const models = readSettingsSection<{ selectedProviderId?: string }>(input, 'models');
-  return models?.selectedProviderId;
 }
 
 function readSelectedChatModelId(input: unknown) {
@@ -88,18 +82,12 @@ export function normalizeAppProfileSettings(input?: unknown) {
     });
   }
 
-  const inputSelectedProviderId = readSelectedProviderId(input);
   const inputSelectedChatModelId = readSelectedChatModelId(input);
-  const selectedProviderId =
-    inputSelectedProviderId && providers[inputSelectedProviderId]
-      ? inputSelectedProviderId
-      : (MODEL_PROVIDER_PRESETS[0]?.id ?? MODEL_PROVIDER_DEFAULTS.DEFAULT_ENABLED_PROVIDER_ID);
 
   const models: ModelsSettings = {
     providers,
     selectedChatModelId:
       typeof inputSelectedChatModelId === 'string' ? inputSelectedChatModelId : null,
-    selectedProviderId,
   };
 
   const existingMemory = readSettingsSection<MemorySettings>(input, 'memory');

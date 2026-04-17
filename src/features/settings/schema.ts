@@ -32,7 +32,6 @@ export const mcpSettingsSchema = z.object({
 export const modelsSettingsSchema = z.object({
   providers: z.record(z.string(), z.unknown()),
   selectedChatModelId: z.string().nullable(),
-  selectedProviderId: z.string().min(1),
 });
 
 export const ragSettingsSchema = z.object({

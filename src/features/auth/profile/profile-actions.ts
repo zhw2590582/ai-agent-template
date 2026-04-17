@@ -29,16 +29,6 @@ export function createProfileActions({
     return nextProfile;
   };
 
-  const updateSelectedProviderId = (providerId: string) => {
-    const current = profileRef.current;
-    commitProfile(
-      buildNextProfile(current, {
-        ...current.settings.models,
-        selectedProviderId: providerId,
-      })
-    );
-  };
-
   const updateProvider = (
     providerId: string,
     updater: (provider: ProviderSettings) => ProviderSettings
@@ -68,7 +58,6 @@ export function createProfileActions({
           ...current.settings.models.providers,
           [nextProvider.id]: nextProvider,
         },
-        selectedProviderId: nextProvider.id,
       })
     );
 
@@ -90,9 +79,6 @@ export function createProfileActions({
     const nextProviders = { ...current.settings.models.providers };
     delete nextProviders[providerId];
 
-    const remainingProviders = Object.values(nextProviders);
-    const fallbackProviderId =
-      remainingProviders.find((item) => !item.isCustom)?.id ?? remainingProviders[0]?.id ?? '';
     const selectedChatModelId = current.settings.models.selectedChatModelId?.startsWith(
       `${providerId}::`
     )
@@ -103,10 +89,6 @@ export function createProfileActions({
         ...current.settings.models,
         providers: nextProviders,
         selectedChatModelId,
-        selectedProviderId:
-          current.settings.models.selectedProviderId === providerId
-            ? fallbackProviderId
-            : current.settings.models.selectedProviderId,
       })
     );
 
@@ -173,6 +155,5 @@ export function createProfileActions({
     saveProviderEnabled,
     updateProvider,
     updateSelectedChatModelId,
-    updateSelectedProviderId,
   };
 }

@@ -37,7 +37,6 @@ export interface ProviderSettings {
 export interface ModelsSettings {
   selectedChatModelId: string | null;
   providers: Record<string, ProviderSettings>;
-  selectedProviderId: string;
 }
 
 export interface ChatRuntimeModel {

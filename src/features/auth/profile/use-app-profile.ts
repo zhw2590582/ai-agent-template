@@ -39,16 +39,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
 
   const orderedProviders = useMemo(() => getOrderedProviders(profile.settings), [profile.settings]);
 
-  const selectedProvider = useMemo(
-    () =>
-      profile.settings.models.providers[profile.settings.models.selectedProviderId] ??
-      orderedProviders[0],
-    [
-      orderedProviders,
-      profile.settings.models.providers,
-      profile.settings.models.selectedProviderId,
-    ]
-  );
+  const selectedProvider = useMemo(() => orderedProviders[0], [orderedProviders]);
 
   const buildNextProfile = useMemo(
     () => (current: AppProfile, nextModels: AppProfile['settings']['models']) => ({
@@ -144,10 +135,6 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
     },
     []
   );
-
-  const updateSelectedProviderId = useCallback((providerId: string) => {
-    actionsRef.current?.updateSelectedProviderId(providerId);
-  }, []);
 
   const updateSettingsSection = useCallback(
     async <K extends Exclude<keyof AppProfile['settings'], 'models'>>(
@@ -246,7 +233,6 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
     updateRagSettings,
     updateSearchSettings,
     updateSelectedChatModelId,
-    updateSelectedProviderId,
     updateSandboxSettings,
     updateSkillsSettings,
     updateSubagentSettings,

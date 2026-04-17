@@ -11,7 +11,6 @@ import { buildCustomProviderSettings } from '@/features/models/utils/provider-fa
 function cloneModelsSettings(models: ModelsSettings): ModelsSettings {
   return {
     selectedChatModelId: models.selectedChatModelId,
-    selectedProviderId: models.selectedProviderId,
     providers: Object.fromEntries(
       Object.entries(models.providers).map(([providerId, provider]) => [
         providerId,
@@ -32,6 +31,7 @@ export function useModelsDraft({
   profileSettings: AppProfileSettings;
 }) {
   const [draftModels, setDraftModels] = useState<ModelsSettings>(() => cloneModelsSettings(models));
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
   const draftSnapshot = useMemo(() => JSON.stringify(draftModels), [draftModels]);
   const sourceSnapshot = useMemo(() => JSON.stringify(models), [models]);
@@ -46,17 +46,17 @@ export function useModelsDraft({
   );
 
   const selectedProvider = useMemo(
-    () => draftModels.providers[draftModels.selectedProviderId] ?? orderedDraftProviders[0] ?? null,
-    [draftModels.providers, draftModels.selectedProviderId, orderedDraftProviders]
+    () =>
+      (selectedProviderId ? draftModels.providers[selectedProviderId] : null) ??
+      orderedDraftProviders[0] ??
+      null,
+    [draftModels.providers, orderedDraftProviders, selectedProviderId]
   );
 
   const isDirty = useMemo(() => draftSnapshot !== sourceSnapshot, [draftSnapshot, sourceSnapshot]);
 
   const updateSelectedProviderId = useCallback((providerId: string) => {
-    setDraftModels((current) => ({
-      ...current,
-      selectedProviderId: providerId,
-    }));
+    setSelectedProviderId(providerId);
   }, []);
 
   const updateProvider = useCallback(
@@ -130,23 +130,26 @@ export function useModelsDraft({
     [selectedProvider, updateProvider]
   );
 
-  const addCustomProvider = useCallback((providerName: string) => {
-    setDraftModels((current) => {
+  const addCustomProvider = useCallback(
+    (providerName: string) => {
       const nextProvider = buildCustomProviderSettings({
-        existingIds: Object.keys(current.providers),
+        existingIds: Object.keys(draftModels.providers),
         name: providerName,
       });
 
-      return {
-        ...current,
-        providers: {
-          ...current.providers,
-          [nextProvider.id]: nextProvider,
-        },
-        selectedProviderId: nextProvider.id,
-      };
-    });
-  }, []);
+      setDraftModels((current) => {
+        return {
+          ...current,
+          providers: {
+            ...current.providers,
+            [nextProvider.id]: nextProvider,
+          },
+        };
+      });
+      setSelectedProviderId(nextProvider.id);
+    },
+    [draftModels.providers]
+  );
 
   const toggleProviderEnabled = useCallback((providerId: string) => {
     setDraftModels((current) => ({
@@ -178,21 +181,22 @@ export function useModelsDraft({
 
       const remainingProviders = Object.values(nextProviders);
       const fallbackProviderId =
-        remainingProviders.find((item) => !item.isCustom)?.id ?? remainingProviders[0]?.id ?? '';
+        remainingProviders.find((item) => !item.isCustom)?.id ?? remainingProviders[0]?.id ?? null;
+
+      if (selectedProviderId === selectedProvider.id) {
+        setSelectedProviderId(fallbackProviderId);
+      }
 
       return {
         ...current,
         providers: nextProviders,
-        selectedProviderId:
-          current.selectedProviderId === selectedProvider.id
-            ? fallbackProviderId
-            : current.selectedProviderId,
       };
     });
-  }, [selectedProvider]);
+  }, [selectedProvider, selectedProviderId]);
 
   const resetDraft = useCallback(() => {
     setDraftModels(cloneModelsSettings(models));
+    setSelectedProviderId(null);
     setIsApiKeyVisible(false);
   }, [models]);
 
