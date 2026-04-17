@@ -6,6 +6,7 @@ import type { UIMessage } from 'ai';
 
 import type { LocalConversationThread } from '@/features/chat/storage/local-conversation-store';
 import {
+  markLocalConversationMemoryExtracted,
   readLocalConversationThreads,
   subscribeToLocalConversationUpdates,
   upsertLocalConversationThread,
@@ -85,5 +86,39 @@ describe('local-conversation-store', () => {
       'local-1',
     ]);
     expect(readLocalConversationThreads()[1]?.lastMessageAt).toBe('2026-04-17T00:00:00.000Z');
+  });
+
+  it('clears the memory extraction key when a thread gets new messages', async () => {
+    await writeLocalConversationThreads([
+      {
+        ...SAMPLE_THREAD,
+        memoryExtractionKey: '1:message-1',
+      },
+    ]);
+
+    await upsertLocalConversationThread({
+      id: SAMPLE_THREAD.id,
+      messages: [
+        SAMPLE_MESSAGE,
+        {
+          id: 'message-2',
+          parts: [{ type: 'text', text: 'Updated' }],
+          role: 'assistant',
+        },
+      ],
+    });
+
+    expect(readLocalConversationThreads()[0]?.memoryExtractionKey).toBeNull();
+  });
+
+  it('stores the memory extraction key for an extracted thread', async () => {
+    await writeLocalConversationThreads([SAMPLE_THREAD]);
+
+    await markLocalConversationMemoryExtracted({
+      id: SAMPLE_THREAD.id,
+      key: '1:message-1',
+    });
+
+    expect(readLocalConversationThreads()[0]?.memoryExtractionKey).toBe('1:message-1');
   });
 });

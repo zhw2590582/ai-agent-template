@@ -32,7 +32,6 @@ interface UseConversationRecordsOptions {
   ) => void;
   router: AppRouterInstance;
   runtimeModel?: ChatRuntimeModel | null;
-  setMessages: (messages: UIMessage[]) => void;
   urlConversationId: string | null;
   user: AuthUserSnapshot | null;
 }
@@ -51,7 +50,6 @@ export function useConversationRecords({
   onOptimisticPatchConversation,
   router,
   runtimeModel,
-  setMessages,
   urlConversationId,
   user,
 }: UseConversationRecordsOptions) {
@@ -66,7 +64,6 @@ export function useConversationRecords({
     messages,
     onOptimisticPatchConversation,
     runtimeModel,
-    setMessages,
     urlConversationId,
     user,
   });

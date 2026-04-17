@@ -3,6 +3,11 @@
 import { STORAGE_KEYS, WINDOW_EVENTS } from '@/config/keys';
 import type { Locale } from '@/config/i18n';
 import { API_ROUTES } from '@/config/api';
+import {
+  buildLocalConversationMemoryExtractionKey,
+  getLocalConversationThreadById,
+  markLocalConversationMemoryExtracted,
+} from '@/features/chat/storage/local-conversations';
 import type { ChatRuntimeModel } from '@/features/models/types';
 import { dedupeExtractedMemories, planMemoryMerge } from '@/features/memory/storage/memory-merge';
 import { normalizeMemoryContent } from '@/features/memory/storage/memory-utils';
@@ -173,6 +178,13 @@ export async function extractAndMergeLocalMemories(input: {
     return readLocalMemories();
   }
 
+  const extractionKey = buildLocalConversationMemoryExtractionKey(input.messages);
+  const existingThread = await getLocalConversationThreadById(input.conversationId);
+
+  if (existingThread?.memoryExtractionKey === extractionKey) {
+    return readLocalMemories();
+  }
+
   const response = await fetch(API_ROUTES.memoriesExtract, {
     method: 'POST',
     headers: {
@@ -193,8 +205,15 @@ export async function extractAndMergeLocalMemories(input: {
     memories?: Array<{ content: string; kind: MemoryKind }>;
   };
 
-  return await mergeExtractedLocalMemories({
+  await mergeExtractedLocalMemories({
     conversationId: input.conversationId,
     extracted: data.memories ?? [],
   });
+
+  await markLocalConversationMemoryExtracted({
+    id: input.conversationId,
+    key: extractionKey,
+  });
+
+  return readLocalMemories();
 }

@@ -1,5 +1,26 @@
 import type { UIMessage } from 'ai';
 
+export type ConversationSyncPhase = 'bootstrapping' | 'ready' | 'unmanaged';
+
+export function isLocalConversationId(conversationId: string | null) {
+  return Boolean(conversationId?.startsWith('local-'));
+}
+
+export function getConversationSyncPhase(options: {
+  activeThreadId: string | null;
+  bootstrappingThreadId: string | null;
+}): ConversationSyncPhase {
+  if (!options.activeThreadId || !isLocalConversationId(options.activeThreadId)) {
+    return 'unmanaged';
+  }
+
+  if (options.bootstrappingThreadId === options.activeThreadId) {
+    return 'bootstrapping';
+  }
+
+  return 'ready';
+}
+
 export function shouldResetToStarter(options: {
   urlConversationId: string | null;
   pendingThreadId: string | null;
@@ -13,11 +34,11 @@ export function hasUrlChanged(prevUrlId: string | null, nextUrlId: string | null
 
 export function shouldSkipUrlSync(options: {
   urlConversationId: string | null;
-  bootstrappingThreadId: string | null;
+  phase: ConversationSyncPhase;
   isBusy: boolean;
 }) {
   if (options.urlConversationId == null) return true;
-  if (options.bootstrappingThreadId === options.urlConversationId) return true;
+  if (options.phase === 'bootstrapping') return true;
   if (options.isBusy) return true;
   return false;
 }

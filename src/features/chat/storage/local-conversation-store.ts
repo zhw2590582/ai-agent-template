@@ -18,6 +18,7 @@ export interface LocalConversationThread {
   createdAt?: string;
   id: string;
   lastMessageAt: string;
+  memoryExtractionKey?: string | null;
   messages: UIMessage[];
   preview: string | null;
   summary?: string | null;
@@ -50,6 +51,11 @@ function buildTitle(messages: UIMessage[]) {
     (message) => message.role === 'user' && getMessageText(message).length > 0
   );
   return buildConversationTitleFromText(firstUserMessage ? getMessageText(firstUserMessage) : '');
+}
+
+export function buildLocalConversationMemoryExtractionKey(messages: UIMessage[]) {
+  const lastMessage = messages.at(-1);
+  return `${messages.length}:${lastMessage?.id ?? ''}`;
 }
 
 function buildConversationSummaries(threads: LocalConversationThread[]) {
@@ -155,6 +161,7 @@ export async function upsertLocalConversationThread(input: {
     lastMessageAt: hasMessageChanges
       ? new Date().toISOString()
       : (existingThread?.lastMessageAt ?? new Date().toISOString()),
+    memoryExtractionKey: hasMessageChanges ? null : (existingThread?.memoryExtractionKey ?? null),
     messages: input.messages,
     preview: buildPreview(input.messages),
     summary: existingThread?.summary ?? null,
@@ -173,6 +180,33 @@ export async function upsertLocalConversationThread(input: {
   ]);
 
   return nextThread;
+}
+
+export async function markLocalConversationMemoryExtracted(input: { id: string; key: string }) {
+  await ensureLocalConversationThreadsLoaded();
+  const existingThreads = readLocalConversationThreads();
+  const targetThread = existingThreads.find((thread) => thread.id === input.id);
+
+  if (!targetThread) {
+    return false;
+  }
+
+  if (targetThread.memoryExtractionKey === input.key) {
+    return true;
+  }
+
+  await writeLocalConversationThreads(
+    existingThreads.map((thread) =>
+      thread.id === input.id
+        ? {
+            ...thread,
+            memoryExtractionKey: input.key,
+          }
+        : thread
+    )
+  );
+
+  return true;
 }
 
 export async function renameLocalConversationThread(input: { id: string; title: string }) {

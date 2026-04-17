@@ -1,11 +1,15 @@
 'use client';
 
-import { startTransition, useEffect, useRef } from 'react';
+import { startTransition, useEffect, useMemo, useRef } from 'react';
 import type { UIMessage } from 'ai';
 
+import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
+import { createConversationRecordSource } from '@/features/chat/sources/conversation-record-source';
 import {
   chooseMessagesForUrl,
+  getConversationSyncPhase,
   hasUrlChanged,
+  isLocalConversationId,
   pickNewMessages,
   shouldMergeServerMessages,
   shouldResetToStarter,
@@ -31,6 +35,8 @@ interface UseChatSyncOptions {
   bootstrappingThreadId: string | null;
   /** Callback to clear the bootstrapping flag. */
   clearBootstrapping: () => void;
+  /** Current user snapshot to resolve local vs remote conversation sources. */
+  user: AuthUserSnapshot | null;
 }
 
 export function useChatSync({
@@ -43,7 +49,9 @@ export function useChatSync({
   setMessages,
   bootstrappingThreadId,
   clearBootstrapping,
+  user,
 }: UseChatSyncOptions) {
+  const recordSource = useMemo(() => createConversationRecordSource(user), [user]);
   const prevUrlIdRef = useRef<string | null>(null);
   // Version counter: incremented on every URL change to discard stale updates
   const syncVersionRef = useRef(0);
@@ -69,28 +77,57 @@ export function useChatSync({
 
     if (!urlChanged) return;
 
-    if (shouldSkipUrlSync({ urlConversationId, bootstrappingThreadId, isBusy })) return;
+    const phase = getConversationSyncPhase({
+      activeThreadId: urlConversationId,
+      bootstrappingThreadId,
+    });
+
+    if (shouldSkipUrlSync({ urlConversationId, phase, isBusy })) return;
 
     syncVersionRef.current++;
+    const capturedVersion = syncVersionRef.current;
 
-    const nextMessages = chooseMessagesForUrl({
-      urlConversationId,
-      initialConversationId,
-      initialMessages,
-      starterMessages,
-    });
+    if (isLocalConversationId(urlConversationId)) {
+      startTransition(() => {
+        setMessages(starterMessages);
+      });
+
+      void (async () => {
+        const localMessages = await recordSource.getMessages(urlConversationId);
+
+        startTransition(() => {
+          setMessages((current) => {
+            if (syncVersionRef.current !== capturedVersion) {
+              return current;
+            }
+
+            return localMessages ?? starterMessages;
+          });
+        });
+      })();
+
+      return;
+    }
 
     startTransition(() => {
-      setMessages(nextMessages);
+      setMessages(
+        chooseMessagesForUrl({
+          urlConversationId,
+          initialConversationId,
+          initialMessages,
+          starterMessages,
+        })
+      );
     });
   }, [
-    urlConversationId,
     initialConversationId,
     initialMessages,
-    starterMessages,
     isBusy,
     bootstrappingThreadId,
+    recordSource,
     setMessages,
+    starterMessages,
+    urlConversationId,
   ]);
 
   // Effect 3: Merge server-refreshed messages (e.g. after router.refresh())
@@ -100,7 +137,12 @@ export function useChatSync({
     }
 
     // Clear bootstrapping flag once server has the messages
-    if (bootstrappingThreadId === urlConversationId) {
+    if (
+      getConversationSyncPhase({
+        activeThreadId: urlConversationId,
+        bootstrappingThreadId,
+      }) === 'bootstrapping'
+    ) {
       clearBootstrapping();
     }
 

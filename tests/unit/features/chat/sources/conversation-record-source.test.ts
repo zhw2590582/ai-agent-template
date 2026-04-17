@@ -45,16 +45,35 @@ describe('createConversationRecordSource', () => {
     const plan = source.getSyncPlan({
       activeThreadId: 'local-thread-1',
       bootstrappingThreadId: 'local-thread-1',
-      hydratedConversationId: null,
       isBusy: false,
       messages: SAMPLE_MESSAGES,
       urlConversationId: null,
     });
 
     expect(plan).toEqual({
-      hydrationConversationId: null,
+      phase: 'bootstrapping',
       shouldPersistMessages: true,
+      shouldClearBootstrappingAfterPersist: true,
       shouldRunDerivedState: true,
+    });
+  });
+
+  it('keeps bootstrapping local threads writable while streaming without clearing bootstrap yet', () => {
+    const source = createConversationRecordSource(null);
+
+    const plan = source.getSyncPlan({
+      activeThreadId: 'local-thread-1',
+      bootstrappingThreadId: 'local-thread-1',
+      isBusy: true,
+      messages: SAMPLE_MESSAGES,
+      urlConversationId: 'local-thread-1',
+    });
+
+    expect(plan).toEqual({
+      phase: 'bootstrapping',
+      shouldPersistMessages: true,
+      shouldClearBootstrappingAfterPersist: false,
+      shouldRunDerivedState: false,
     });
   });
 
@@ -65,15 +84,15 @@ describe('createConversationRecordSource', () => {
     const plan = source.getSyncPlan({
       activeThreadId: 'local-thread-1',
       bootstrappingThreadId: null,
-      hydratedConversationId: null,
       isBusy: false,
       messages: SAMPLE_MESSAGES,
       urlConversationId: 'local-thread-1',
     });
 
     expect(plan).toEqual({
-      hydrationConversationId: 'local-thread-1',
+      phase: 'ready',
       shouldPersistMessages: false,
+      shouldClearBootstrappingAfterPersist: false,
       shouldRunDerivedState: false,
     });
   });
@@ -89,15 +108,15 @@ describe('createConversationRecordSource', () => {
     const plan = source.getSyncPlan({
       activeThreadId: 'conversation-1',
       bootstrappingThreadId: null,
-      hydratedConversationId: null,
       isBusy: false,
       messages: SAMPLE_MESSAGES,
       urlConversationId: 'conversation-1',
     });
 
     expect(plan).toEqual({
-      hydrationConversationId: null,
+      phase: 'unmanaged',
       shouldPersistMessages: false,
+      shouldClearBootstrappingAfterPersist: false,
       shouldRunDerivedState: false,
     });
   });

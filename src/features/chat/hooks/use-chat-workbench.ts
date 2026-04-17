@@ -155,6 +155,7 @@ export function useChatWorkbench({
     clearBootstrapping: useCallback(() => {
       setBootstrappingThreadId(null);
     }, [setBootstrappingThreadId]),
+    user,
   });
 
   const createConversation = useCallback(
@@ -205,7 +206,6 @@ export function useChatWorkbench({
     onOptimisticPatchConversation: sidebar.patchConversation,
     router,
     runtimeModel,
-    setMessages,
     urlConversationId,
     user,
   });

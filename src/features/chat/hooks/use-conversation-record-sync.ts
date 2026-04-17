@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { UIMessage } from 'ai';
 
 import { API_ROUTES } from '@/config/api';
@@ -18,6 +18,11 @@ import {
   buildConversationTitleFromText,
   getMessageText,
 } from '@/features/chat/storage/conversation-analysis';
+import {
+  buildLocalConversationMemoryExtractionKey,
+  getLocalConversationThread,
+} from '@/features/chat/storage/local-conversations';
+import { isLocalConversationId } from '@/features/chat/utils/chat-sync';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
 interface UseConversationRecordSyncOptions {
@@ -39,7 +44,6 @@ interface UseConversationRecordSyncOptions {
     }
   ) => void;
   runtimeModel?: ChatRuntimeModel | null;
-  setMessages: (messages: UIMessage[]) => void;
   urlConversationId: string | null;
   user: AuthUserSnapshot | null;
 }
@@ -55,66 +59,26 @@ export function useConversationRecordSync({
   messages,
   onOptimisticPatchConversation,
   runtimeModel,
-  setMessages,
   urlConversationId,
   user,
 }: UseConversationRecordSyncOptions) {
   const recordSource = useMemo(() => createConversationRecordSource(user), [user]);
   const generatedTitleKeyRef = useRef<string | null>(null);
   const generatedMemoryKeyRef = useRef<string | null>(null);
-  const hydratedConversationIdRef = useRef<string | null>(null);
+  const buildSyncPlan = useCallback(
+    () =>
+      recordSource.getSyncPlan({
+        activeThreadId,
+        bootstrappingThreadId,
+        isBusy,
+        messages,
+        urlConversationId,
+      }),
+    [activeThreadId, bootstrappingThreadId, isBusy, messages, recordSource, urlConversationId]
+  );
 
   useEffect(() => {
-    const syncPlan = recordSource.getSyncPlan({
-      activeThreadId,
-      bootstrappingThreadId,
-      hydratedConversationId: hydratedConversationIdRef.current,
-      isBusy,
-      messages,
-      urlConversationId,
-    });
-
-    if (!syncPlan.hydrationConversationId) {
-      hydratedConversationIdRef.current = null;
-      return;
-    }
-
-    let cancelled = false;
-    const targetConversationId = syncPlan.hydrationConversationId;
-
-    void (async () => {
-      const sourceMessages = await recordSource.getMessages(targetConversationId);
-
-      if (!sourceMessages || cancelled) {
-        return;
-      }
-
-      hydratedConversationIdRef.current = targetConversationId;
-      setMessages(sourceMessages);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    activeThreadId,
-    bootstrappingThreadId,
-    isBusy,
-    messages,
-    recordSource,
-    setMessages,
-    urlConversationId,
-  ]);
-
-  useEffect(() => {
-    const syncPlan = recordSource.getSyncPlan({
-      activeThreadId,
-      bootstrappingThreadId,
-      hydratedConversationId: hydratedConversationIdRef.current,
-      isBusy,
-      messages,
-      urlConversationId,
-    });
+    const syncPlan = buildSyncPlan();
 
     if (!activeThreadId || !syncPlan.shouldPersistMessages) {
       return;
@@ -129,32 +93,14 @@ export function useConversationRecordSync({
         user,
       });
 
-      if (bootstrappingThreadId === activeThreadId && !isBusy) {
+      if (syncPlan.shouldClearBootstrappingAfterPersist) {
         clearBootstrapping();
       }
     })();
-  }, [
-    activeThreadId,
-    bootstrappingThreadId,
-    clearBootstrapping,
-    isBusy,
-    locale,
-    messages,
-    recordSource,
-    runtimeModel,
-    urlConversationId,
-    user,
-  ]);
+  }, [activeThreadId, clearBootstrapping, locale, messages, runtimeModel, user, buildSyncPlan]);
 
   useEffect(() => {
-    const syncPlan = recordSource.getSyncPlan({
-      activeThreadId,
-      bootstrappingThreadId,
-      hydratedConversationId: hydratedConversationIdRef.current,
-      isBusy,
-      messages,
-      urlConversationId,
-    });
+    const syncPlan = buildSyncPlan();
 
     if (!activeThreadId || !runtimeModel || !syncPlan.shouldRunDerivedState) {
       return;
@@ -166,17 +112,7 @@ export function useConversationRecordSync({
       runtimeModel,
       user,
     });
-  }, [
-    activeThreadId,
-    bootstrappingThreadId,
-    isBusy,
-    locale,
-    messages,
-    recordSource,
-    runtimeModel,
-    urlConversationId,
-    user,
-  ]);
+  }, [activeThreadId, buildSyncPlan, locale, runtimeModel, user]);
 
   useEffect(() => {
     if (!user || isBusy || !activeThreadId || !runtimeModel || messages.length === 0) {
@@ -249,14 +185,7 @@ export function useConversationRecordSync({
   ]);
 
   useEffect(() => {
-    const syncPlan = recordSource.getSyncPlan({
-      activeThreadId,
-      bootstrappingThreadId,
-      hydratedConversationId: hydratedConversationIdRef.current,
-      isBusy,
-      messages,
-      urlConversationId,
-    });
+    const syncPlan = buildSyncPlan();
 
     if (!activeThreadId || !runtimeModel || !syncPlan.shouldRunDerivedState) {
       return;
@@ -268,27 +197,10 @@ export function useConversationRecordSync({
       runtimeModel,
       user,
     });
-  }, [
-    activeThreadId,
-    bootstrappingThreadId,
-    isBusy,
-    locale,
-    messages,
-    recordSource,
-    runtimeModel,
-    urlConversationId,
-    user,
-  ]);
+  }, [activeThreadId, buildSyncPlan, locale, runtimeModel, user]);
 
   useEffect(() => {
-    const syncPlan = recordSource.getSyncPlan({
-      activeThreadId,
-      bootstrappingThreadId,
-      hydratedConversationId: hydratedConversationIdRef.current,
-      isBusy,
-      messages,
-      urlConversationId,
-    });
+    const syncPlan = buildSyncPlan();
 
     if (
       !memorySettings.enabled ||
@@ -302,9 +214,19 @@ export function useConversationRecordSync({
 
     const lastMessage = messages.at(-1);
     const requestKey = `${activeThreadId}:${messages.length}:${lastMessage?.id ?? ''}`;
+    const extractionKey = buildLocalConversationMemoryExtractionKey(messages);
 
     if (generatedMemoryKeyRef.current === requestKey) {
       return;
+    }
+
+    if (!user && isLocalConversationId(activeThreadId)) {
+      const localThread = getLocalConversationThread(activeThreadId);
+
+      if (localThread?.memoryExtractionKey === extractionKey) {
+        generatedMemoryKeyRef.current = requestKey;
+        return;
+      }
     }
 
     generatedMemoryKeyRef.current = requestKey;
@@ -318,15 +240,12 @@ export function useConversationRecordSync({
     });
   }, [
     activeThreadId,
-    bootstrappingThreadId,
-    isBusy,
     locale,
     memorySettings.autoWrite,
     memorySettings.enabled,
     messages,
     runtimeModel,
-    recordSource,
     user,
-    urlConversationId,
+    buildSyncPlan,
   ]);
 }
