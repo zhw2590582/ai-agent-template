@@ -119,11 +119,17 @@ export function useChatSync({
 
     if (cachedMessages || initialUrlMessages) {
       setHydratedConversationId(urlConversationId);
-      return;
+
+      if (!cachedMessages) {
+        return;
+      }
     }
 
     void (async () => {
-      const nextMessages = (await recordSource.getMessages(urlConversationId)) ?? starterMessages;
+      const nextMessages =
+        (cachedMessages
+          ? await recordSource.refreshMessages(urlConversationId)
+          : await recordSource.getMessages(urlConversationId)) ?? starterMessages;
 
       if (nextMessages !== starterMessages) {
         recordSource.cacheMessages(urlConversationId, nextMessages);
@@ -141,7 +147,7 @@ export function useChatSync({
             return current;
           }
 
-          return nextMessages;
+          return pickNewMessages({ current, server: nextMessages });
         });
       });
     })();

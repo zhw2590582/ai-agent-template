@@ -56,7 +56,6 @@ interface ChatSidebarProps {
   onDeleteConversation?: (conversationId: string) => Promise<boolean> | boolean;
   onLoadMoreConversations?: () => void | Promise<void>;
   onOpenConversation?: (conversationId: string) => void;
-  onPrefetchConversation?: (conversationId: string) => void;
   onRenameConversation?: (conversationId: string, title: string) => Promise<boolean> | boolean;
   onSearchQueryChange?: (value: string) => void;
   onSelectConversation?: () => void;
@@ -74,7 +73,6 @@ export function ChatSidebar({
   onDeleteConversation,
   onLoadMoreConversations,
   onOpenConversation,
-  onPrefetchConversation,
   onRenameConversation,
   onSearchQueryChange,
   onSelectConversation,
@@ -269,11 +267,7 @@ export function ChatSidebar({
                       onSelectConversation?.();
                     }}
                   >
-                    <div
-                      className="min-w-0 flex-1"
-                      onFocus={() => onPrefetchConversation?.(item.id)}
-                      onMouseEnter={() => onPrefetchConversation?.(item.id)}
-                    >
+                    <div className="min-w-0 flex-1">
                       <span className="block max-w-52 truncate">{item.title}</span>
                     </div>
                     <DropdownMenu

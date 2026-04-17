@@ -70,6 +70,7 @@ export interface ConversationRecordSource {
   getMessages: (conversationId: string) => Promise<UIMessage[] | null>;
   getSyncPlan: (options: ConversationRecordSyncPlanOptions) => ConversationRecordSyncPlan;
   prefetchMessages: (conversationId: string) => void;
+  refreshMessages: (conversationId: string) => Promise<UIMessage[] | null>;
   persistMessages: (options: {
     conversationId: string;
     locale: Locale;
@@ -187,6 +188,11 @@ function createLocalConversationRecordSource(): ConversationRecordSource {
         void getLocalConversationThreadById(conversationId);
       });
     },
+    refreshMessages: async (conversationId) => {
+      await ensureLocalConversationThreadsLoaded();
+      const thread = await getLocalConversationThreadById(conversationId);
+      return thread?.messages ?? null;
+    },
     persistMessages: async ({ conversationId, messages }) => {
       await upsertLocalConversationThread({
         id: conversationId,
@@ -204,10 +210,10 @@ function createLocalConversationRecordSource(): ConversationRecordSource {
 const remoteConversationMessagesCache = new Map<string, UIMessage[]>();
 const remoteConversationMessagesRequests = new Map<string, Promise<UIMessage[] | null>>();
 
-function fetchRemoteConversationMessages(conversationId: string) {
+function fetchRemoteConversationMessages(conversationId: string, options?: { force?: boolean }) {
   const cachedMessages = remoteConversationMessagesCache.get(conversationId);
 
-  if (cachedMessages) {
+  if (cachedMessages && !options?.force) {
     return Promise.resolve(cachedMessages);
   }
 
@@ -306,6 +312,8 @@ function createRemoteConversationRecordSource(): ConversationRecordSource {
     prefetchMessages: (conversationId) => {
       void fetchRemoteConversationMessages(conversationId);
     },
+    refreshMessages: async (conversationId) =>
+      await fetchRemoteConversationMessages(conversationId, { force: true }),
     persistMessages: async () => {},
     renameRecord: async (conversationId, title) => {
       const response = await fetch(API_ROUTES.conversations, {

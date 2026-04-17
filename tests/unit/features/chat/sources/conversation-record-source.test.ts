@@ -37,6 +37,7 @@ describe('createConversationRecordSource', () => {
   beforeEach(() => {
     areLocalConversationThreadsLoaded.mockReset();
     getLocalConversationThread.mockReset();
+    vi.restoreAllMocks();
   });
 
   it('uses a sync plan that keeps bootstrapping local threads writable without hydration', () => {
@@ -151,5 +152,51 @@ describe('createConversationRecordSource', () => {
       shouldClearBootstrappingAfterPersist: false,
       shouldRunDerivedState: false,
     });
+  });
+
+  it('refreshes authenticated conversation messages even when cache exists', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          conversation: {
+            messages: [
+              ...SAMPLE_MESSAGES,
+              {
+                id: 'message-2',
+                parts: [{ type: 'text', text: 'fresh' }],
+                role: 'assistant',
+              },
+            ],
+          },
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    );
+
+    const source = createConversationRecordSource({
+      avatarUrl: null,
+      email: 'user@example.com',
+      fullName: null,
+      id: 'user-1',
+    });
+
+    source.cacheMessages('conversation-1', SAMPLE_MESSAGES);
+
+    const cached = await source.getMessages('conversation-1');
+    const refreshed = await source.refreshMessages('conversation-1');
+
+    expect(cached).toEqual(SAMPLE_MESSAGES);
+    expect(refreshed).toEqual([
+      ...SAMPLE_MESSAGES,
+      {
+        id: 'message-2',
+        parts: [{ type: 'text', text: 'fresh' }],
+        role: 'assistant',
+      },
+    ]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

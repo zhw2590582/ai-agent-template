@@ -19,7 +19,6 @@ import { useInvalidConversationGuard } from '@/features/chat/hooks/use-invalid-c
 import { useChatSession } from '@/features/chat/hooks/use-chat-session';
 import { useChatSync } from '@/features/chat/hooks/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/hooks/use-sidebar-conversations';
-import { createConversationRecordSource } from '@/features/chat/sources/conversation-record-source';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import { updateConversationUrl } from '@/features/chat/utils/chat-controller';
 import { getInitialMessages } from '@/features/chat/utils/chat-config';
@@ -134,7 +133,6 @@ export function useChatWorkbench({
     () => availableModels.find((model) => model.id === selectedModel) ?? null,
     [availableModels, selectedModel]
   );
-  const conversationRecordSource = useMemo(() => createConversationRecordSource(user), [user]);
 
   const isBusy = status === 'submitted' || status === 'streaming';
 
@@ -239,17 +237,6 @@ export function useChatWorkbench({
     [pathname, urlConversationId]
   );
 
-  const prefetchConversation = useCallback(
-    (conversationId: string) => {
-      if (conversationId === urlConversationId) {
-        return;
-      }
-
-      conversationRecordSource.prefetchMessages(conversationId);
-    },
-    [conversationRecordSource, urlConversationId]
-  );
-
   const guardedSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       if (models.isLoading) {
@@ -333,7 +320,6 @@ export function useChatWorkbench({
     regenerate: guardedRegenerate,
     renameConversation: conversationRecordActions.renameConversation,
     availableModels,
-    prefetchConversation,
     selectedModel,
     selectConversation,
     setSelectedModel: handleModelChange,

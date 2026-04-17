@@ -148,7 +148,6 @@ export function ChatWorkbench({
             onDeleteConversation={workbench.deleteConversation}
             onLoadMoreConversations={workbench.sidebar.loadMore}
             onOpenConversation={workbench.selectConversation}
-            onPrefetchConversation={workbench.prefetchConversation}
             onRenameConversation={workbench.renameConversation}
             onSearchQueryChange={workbench.setSidebarSearchQuery}
             onToggleOpen={() => workbench.setIsSidebarOpen((value) => !value)}
@@ -213,7 +212,6 @@ export function ChatWorkbench({
             onDeleteConversation={workbench.deleteConversation}
             onLoadMoreConversations={workbench.sidebar.loadMore}
             onOpenConversation={workbench.selectConversation}
-            onPrefetchConversation={workbench.prefetchConversation}
             onRenameConversation={workbench.renameConversation}
             onSearchQueryChange={workbench.setSidebarSearchQuery}
             onSelectConversation={() => setIsMobileSidebarOpen(false)}
