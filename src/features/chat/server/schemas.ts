@@ -65,6 +65,26 @@ export const memoryExtractPostSchema = z.object({
 
 export type MemoryExtractPostInput = z.infer<typeof memoryExtractPostSchema>;
 
+const consolidatableMemoryKindSchema = z.enum(['fact', 'preference', 'profile', 'workflow']);
+
+const memoryConsolidateItemSchema = z.object({
+  content: z.string().trim().min(1),
+  conversationId: z.string().nullable(),
+  id: z.string().min(1),
+  kind: consolidatableMemoryKindSchema,
+  source: z.string().min(1),
+  updatedAt: z.string().min(1),
+});
+
+export const memoryConsolidatePostSchema = z.object({
+  kind: consolidatableMemoryKindSchema,
+  locale: z.enum(SUPPORTED_LOCALES),
+  memories: z.array(memoryConsolidateItemSchema).min(1),
+  runtimeModel: runtimeModelSchema,
+});
+
+export type MemoryConsolidatePostInput = z.infer<typeof memoryConsolidatePostSchema>;
+
 /* ---------- Conversations ---------- */
 
 export const createConversationSchema = z.object({
