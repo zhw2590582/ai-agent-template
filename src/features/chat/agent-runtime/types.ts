@@ -41,7 +41,9 @@ export interface McpInjectedToolMetadata {
 export interface AgentRunRequest {
   conversationId?: string;
   conversationSummary?: string;
+  guestMemoryContext?: string;
   mcpSettings?: McpSettings;
+  memorySettings?: ChatProfileMemorySettings;
   messages: UIMessage[];
   ragSettings?: RagSettings;
   runtimeModel?: ChatRuntimeModel;
@@ -72,7 +74,9 @@ export interface AgentRunContext {
 
 export interface ResolveAgentRunContextOptions {
   conversationId: string | null;
+  guestMemoryContext?: string | null;
   mcpSettings: unknown;
+  memorySettings: unknown;
   ragSettings: unknown;
   runtimeModel: ChatRuntimeModel;
   sandboxSettings: unknown;

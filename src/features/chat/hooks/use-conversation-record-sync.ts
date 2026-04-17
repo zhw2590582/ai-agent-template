@@ -6,7 +6,9 @@ import type { UIMessage } from 'ai';
 import { API_ROUTES } from '@/config/api';
 import type { Locale } from '@/config/i18n';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
+import type { MemorySettings } from '@/features/auth/profile/types';
 import {
+  generateConversationRecordMemories,
   generateConversationRecordTitle,
   generateConversationRecordSummary,
   getConversationMessages,
@@ -27,6 +29,7 @@ interface UseConversationRecordSyncOptions {
   activeThreadTitle: string | null;
   isBusy: boolean;
   locale: Locale;
+  memorySettings: MemorySettings;
   messages: UIMessage[];
   onOptimisticPatchConversation: (
     conversationId: string,
@@ -48,6 +51,7 @@ export function useConversationRecordSync({
   activeThreadTitle,
   isBusy,
   locale,
+  memorySettings,
   messages,
   onOptimisticPatchConversation,
   runtimeModel,
@@ -56,6 +60,7 @@ export function useConversationRecordSync({
   user,
 }: UseConversationRecordSyncOptions) {
   const generatedTitleKeyRef = useRef<string | null>(null);
+  const generatedMemoryKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (user || !urlConversationId || !isLocalConversationId(urlConversationId) || isBusy) {
@@ -201,4 +206,45 @@ export function useConversationRecordSync({
       user,
     });
   }, [activeThreadId, isBusy, locale, messages.length, runtimeModel, user]);
+
+  useEffect(() => {
+    if (
+      user ||
+      isBusy ||
+      !memorySettings.enabled ||
+      !memorySettings.autoWrite ||
+      !activeThreadId ||
+      !isLocalConversationId(activeThreadId) ||
+      messages.length === 0 ||
+      !runtimeModel
+    ) {
+      return;
+    }
+
+    const lastMessage = messages.at(-1);
+    const requestKey = `${activeThreadId}:${messages.length}:${lastMessage?.id ?? ''}`;
+
+    if (generatedMemoryKeyRef.current === requestKey) {
+      return;
+    }
+
+    generatedMemoryKeyRef.current = requestKey;
+
+    void generateConversationRecordMemories({
+      conversationId: activeThreadId,
+      locale,
+      messages,
+      runtimeModel,
+      user,
+    });
+  }, [
+    activeThreadId,
+    isBusy,
+    locale,
+    memorySettings.autoWrite,
+    memorySettings.enabled,
+    messages,
+    runtimeModel,
+    user,
+  ]);
 }

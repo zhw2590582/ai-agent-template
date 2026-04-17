@@ -47,9 +47,9 @@ export function MemoryContent({
   });
   const {
     handleDeleteMemory,
-    handleDeleteSummary: handleDeleteSummaryBase,
+    handleDeleteSummary,
     handleEditMemory,
-    handleEditSummary: handleEditSummaryBase,
+    handleEditSummary,
     handleExport,
     isSavingSettings,
     isSettingsDirty,
@@ -72,25 +72,21 @@ export function MemoryContent({
     t,
   });
 
-  const handleDeleteSummary = isAuthenticated
-    ? async (conversationId: string) => {
-        const success = await handleDeleteSummaryBase(conversationId);
-        if (success !== false) {
-          summaryPage.refresh();
-        }
-        return success;
-      }
-    : undefined;
+  const handleSummaryDelete = async (conversationId: string) => {
+    const success = await handleDeleteSummary(conversationId);
+    if (success !== false && isAuthenticated) {
+      summaryPage.refresh();
+    }
+    return success;
+  };
 
-  const handleEditSummary = isAuthenticated
-    ? async (input: { conversationId: string; summary: string }) => {
-        const success = await handleEditSummaryBase(input);
-        if (success !== false) {
-          summaryPage.refresh();
-        }
-        return success;
-      }
-    : undefined;
+  const handleSummaryEdit = async (input: { conversationId: string; summary: string }) => {
+    const success = await handleEditSummary(input);
+    if (success !== false && isAuthenticated) {
+      summaryPage.refresh();
+    }
+    return success;
+  };
 
   useEffect(() => {
     if (!showSaved) {
@@ -163,8 +159,8 @@ export function MemoryContent({
           currentPage={summaryPage.currentPage}
           isLoading={summaryPage.isLoading}
           locale={locale}
-          onDeleteSummary={handleDeleteSummary}
-          onEditSummary={handleEditSummary}
+          onDeleteSummary={handleSummaryDelete}
+          onEditSummary={handleSummaryEdit}
           onPageChange={summaryPage.setPage}
           pendingDeleteId={pendingSummaryDeleteId}
           pendingEditId={pendingSummaryEditId}

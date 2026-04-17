@@ -5,15 +5,14 @@ import type { UIMessage } from 'ai';
 import { STORAGE_KEYS, WINDOW_EVENTS } from '@/config/keys';
 import { buildConversationTitleFromText } from '@/features/chat/storage/conversations';
 import type { ConversationSummary } from '@/features/chat/storage/types';
+import { createLocalStorageStore } from '@/lib/local-storage-store';
 
 const LOCAL_CHAT_CONVERSATIONS_STORAGE_KEY = STORAGE_KEYS.LOCAL_CHAT_CONVERSATIONS;
 const LOCAL_CHAT_CONVERSATIONS_UPDATED_EVENT = WINDOW_EVENTS.LOCAL_CHAT_CONVERSATIONS_UPDATED;
 const EMPTY_LOCAL_CONVERSATION_THREADS: LocalConversationThread[] = [];
 const EMPTY_LOCAL_CONVERSATION_SUMMARIES: ConversationSummary[] = [];
 
-let localConversationThreadsCache: LocalConversationThread[] = EMPTY_LOCAL_CONVERSATION_THREADS;
 let localConversationSummariesCache: ConversationSummary[] = EMPTY_LOCAL_CONVERSATION_SUMMARIES;
-let localConversationStorageRawCache: string | null = null;
 
 export interface LocalConversationThread {
   id: string;
@@ -52,82 +51,48 @@ function buildTitle(messages: UIMessage[]) {
   return buildConversationTitleFromText(firstUserMessage ? getMessageText(firstUserMessage) : '');
 }
 
-function emitLocalConversationUpdate() {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  window.dispatchEvent(new CustomEvent(LOCAL_CHAT_CONVERSATIONS_UPDATED_EVENT));
-}
-
-export function readLocalConversationThreads() {
-  if (typeof window === 'undefined') {
-    return localConversationThreadsCache;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(LOCAL_CHAT_CONVERSATIONS_STORAGE_KEY);
-    if (!raw) {
-      localConversationStorageRawCache = null;
-      return localConversationThreadsCache;
-    }
-
-    if (raw === localConversationStorageRawCache) {
-      return localConversationThreadsCache;
-    }
-
-    const parsed = JSON.parse(raw) as LocalConversationThread[];
-    if (!Array.isArray(parsed)) {
-      return localConversationThreadsCache;
-    }
-
-    const nextThreads = parsed
-      .filter((item) => item && typeof item.id === 'string')
-      .sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
-    localConversationStorageRawCache = raw;
-    localConversationThreadsCache = nextThreads;
-    localConversationSummariesCache = nextThreads.map((thread) => ({
-      id: thread.id,
-      lastMessageAt: thread.lastMessageAt,
-      preview: thread.preview,
-      summary: thread.summary ?? null,
-      title: thread.title,
-    }));
-    return localConversationThreadsCache;
-  } catch {
-    return localConversationThreadsCache;
-  }
-}
-
-export function writeLocalConversationThreads(threads: LocalConversationThread[]) {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  const nextThreads = threads.sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
-  localConversationThreadsCache = nextThreads;
-  localConversationSummariesCache = nextThreads.map((thread) => ({
+function buildConversationSummaries(threads: LocalConversationThread[]) {
+  return threads.map((thread) => ({
     id: thread.id,
     lastMessageAt: thread.lastMessageAt,
     preview: thread.preview,
     summary: thread.summary ?? null,
     title: thread.title,
   }));
-  const raw = JSON.stringify(nextThreads);
-  localConversationStorageRawCache = raw;
-  window.localStorage.setItem(LOCAL_CHAT_CONVERSATIONS_STORAGE_KEY, raw);
-  emitLocalConversationUpdate();
+}
+
+function parseLocalConversationThreads(input: unknown) {
+  if (!Array.isArray(input)) {
+    return null;
+  }
+
+  return input
+    .filter((item) => item && typeof item === 'object' && typeof item.id === 'string')
+    .sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt)) as LocalConversationThread[];
+}
+
+const localConversationStore = createLocalStorageStore<LocalConversationThread[]>({
+  emptyValue: EMPTY_LOCAL_CONVERSATION_THREADS,
+  eventName: LOCAL_CHAT_CONVERSATIONS_UPDATED_EVENT,
+  onCacheChange: (threads) => {
+    localConversationSummariesCache = buildConversationSummaries(threads);
+  },
+  parse: parseLocalConversationThreads,
+  prepareForWrite: (threads) =>
+    [...threads].sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt)),
+  storageKey: LOCAL_CHAT_CONVERSATIONS_STORAGE_KEY,
+});
+
+export function readLocalConversationThreads() {
+  return localConversationStore.read();
+}
+
+export function writeLocalConversationThreads(threads: LocalConversationThread[]) {
+  localConversationStore.write(threads);
 }
 
 export function subscribeToLocalConversationUpdates(onChange: () => void) {
-  if (typeof window === 'undefined') {
-    return () => {};
-  }
-
-  window.addEventListener(LOCAL_CHAT_CONVERSATIONS_UPDATED_EVENT, onChange);
-  return () => {
-    window.removeEventListener(LOCAL_CHAT_CONVERSATIONS_UPDATED_EVENT, onChange);
-  };
+  return localConversationStore.subscribe(onChange);
 }
 
 export function listLocalConversationSummaries(): ConversationSummary[] {
@@ -203,6 +168,32 @@ export function renameLocalConversationThread(input: { id: string; title: string
             title: nextTitle,
             titleGenerated: true,
             titleGenerating: false,
+          }
+        : thread
+    )
+  );
+
+  return true;
+}
+
+export function updateLocalConversationSummary(input: { id: string; summary: string | null }) {
+  const existingThreads = readLocalConversationThreads();
+  const targetThread = existingThreads.find((thread) => thread.id === input.id);
+
+  if (!targetThread) {
+    return false;
+  }
+
+  const nextSummary = input.summary?.trim() || null;
+
+  writeLocalConversationThreads(
+    existingThreads.map((thread) =>
+      thread.id === input.id
+        ? {
+            ...thread,
+            summary: nextSummary,
+            summaryGenerating: false,
+            summaryUpdatedAt: nextSummary ? new Date().toISOString() : null,
           }
         : thread
     )

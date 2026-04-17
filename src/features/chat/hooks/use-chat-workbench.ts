@@ -123,6 +123,7 @@ export function useChatWorkbench({
     availableModels,
     conversationSummary: activeConversationSummary,
     initialMessages: useChatInitialMessages,
+    isAuthenticated: !!user,
     locale,
     onFinish: () => {
       window.setTimeout(() => {
@@ -190,6 +191,7 @@ export function useChatWorkbench({
     handleClearChat,
     isBusy,
     locale: titleLocale,
+    memorySettings: models.profile.settings.memory,
     messages,
     onOptimisticRemoveConversation: sidebar.removeConversation,
     onOptimisticPatchConversation: sidebar.patchConversation,

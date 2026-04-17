@@ -4,10 +4,17 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { API_ROUTES } from '@/config/api';
+import { updateLocalConversationSummary } from '@/features/chat/storage/local-conversations';
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import type { MemoryKind, MemoryListItem } from '@/features/memory/types';
 import type { MemorySettings } from '@/features/auth/profile/types';
 import { useMemorySettingsDraft } from '@/features/memory/hooks/use-memory-settings-draft';
+import {
+  deleteLocalMemory,
+  readLocalMemories,
+  subscribeToLocalMemoryUpdates,
+  updateLocalMemory,
+} from '@/features/memory/storage/local-memories';
 import { getApiErrorToastMessage } from '@/lib/api-client';
 
 interface UseMemoryPageOptions {
@@ -42,20 +49,34 @@ export function useMemoryPage({
   });
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setLocalMemories(readLocalMemories());
+
+      return subscribeToLocalMemoryUpdates(() => {
+        setLocalMemories(readLocalMemories());
+      });
+    }
+
     setLocalMemories(memories);
-  }, [memories]);
+  }, [isAuthenticated, memories]);
 
   useEffect(() => {
     setLocalSummaries(summaries);
   }, [summaries]);
 
   const handleDeleteMemory = async (memoryId: string) => {
-    if (!isAuthenticated) {
-      return false;
-    }
-
     setPendingDeleteId(memoryId);
     try {
+      if (!isAuthenticated) {
+        const success = deleteLocalMemory(memoryId);
+
+        if (success) {
+          setLocalMemories(readLocalMemories());
+        }
+
+        return success;
+      }
+
       const response = await fetch(API_ROUTES.memories, {
         method: 'DELETE',
         headers: {
@@ -77,12 +98,18 @@ export function useMemoryPage({
   };
 
   const handleEditMemory = async (input: { content: string; id: string; kind: MemoryKind }) => {
-    if (!isAuthenticated) {
-      return false;
-    }
-
     setPendingEditId(input.id);
     try {
+      if (!isAuthenticated) {
+        const success = updateLocalMemory(input);
+
+        if (success) {
+          setLocalMemories(readLocalMemories());
+        }
+
+        return success;
+      }
+
       const response = await fetch(API_ROUTES.memories, {
         method: 'PATCH',
         headers: {
@@ -133,12 +160,30 @@ export function useMemoryPage({
   };
 
   const handleDeleteSummary = async (conversationId: string) => {
-    if (!isAuthenticated) {
-      return false;
-    }
-
     setPendingSummaryDeleteId(conversationId);
     try {
+      if (!isAuthenticated) {
+        const success = updateLocalConversationSummary({
+          id: conversationId,
+          summary: null,
+        });
+
+        if (success) {
+          setLocalSummaries((current) =>
+            current.map((summary) =>
+              summary.id === conversationId
+                ? {
+                    ...summary,
+                    summary: null,
+                  }
+                : summary
+            )
+          );
+        }
+
+        return success;
+      }
+
       const response = await fetch(API_ROUTES.conversations, {
         method: 'PATCH',
         headers: {
@@ -171,12 +216,30 @@ export function useMemoryPage({
   };
 
   const handleEditSummary = async (input: { conversationId: string; summary: string }) => {
-    if (!isAuthenticated) {
-      return false;
-    }
-
     setPendingSummaryEditId(input.conversationId);
     try {
+      if (!isAuthenticated) {
+        const success = updateLocalConversationSummary({
+          id: input.conversationId,
+          summary: input.summary,
+        });
+
+        if (success) {
+          setLocalSummaries((current) =>
+            current.map((summary) =>
+              summary.id === input.conversationId
+                ? {
+                    ...summary,
+                    summary: input.summary.trim(),
+                  }
+                : summary
+            )
+          );
+        }
+
+        return success;
+      }
+
       const response = await fetch(API_ROUTES.conversations, {
         method: 'PATCH',
         headers: {

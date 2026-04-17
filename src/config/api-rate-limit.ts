@@ -36,6 +36,11 @@ export const API_RATE_LIMITS = {
     namespace: 'api:memories:read',
     windowMs: API_CONFIG.RATE_LIMIT_WINDOW,
   },
+  MEMORIES_EXTRACT: {
+    maxRequests: 20,
+    namespace: 'api:memories:extract',
+    windowMs: API_CONFIG.RATE_LIMIT_WINDOW,
+  },
   MEMORIES_WRITE: {
     maxRequests: 30,
     namespace: 'api:memories:write',

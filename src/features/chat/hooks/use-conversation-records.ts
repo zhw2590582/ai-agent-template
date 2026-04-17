@@ -5,6 +5,7 @@ import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.
 
 import type { Locale } from '@/config/i18n';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
+import type { MemorySettings } from '@/features/auth/profile/types';
 import { useConversationRecordActions } from '@/features/chat/hooks/use-conversation-record-actions';
 import { useConversationRecordSync } from '@/features/chat/hooks/use-conversation-record-sync';
 import type { ChatRuntimeModel } from '@/features/models/types';
@@ -15,6 +16,7 @@ interface UseConversationRecordsOptions {
   handleClearChat: () => void;
   isBusy: boolean;
   locale: Locale;
+  memorySettings: MemorySettings;
   messages: UIMessage[];
   onOptimisticRemoveConversation: (conversationId: string) => void;
   onOptimisticPatchConversation: (
@@ -39,6 +41,7 @@ export function useConversationRecords({
   handleClearChat,
   isBusy,
   locale,
+  memorySettings,
   messages,
   onOptimisticRemoveConversation,
   onOptimisticPatchConversation,
@@ -53,6 +56,7 @@ export function useConversationRecords({
     activeThreadTitle,
     isBusy,
     locale,
+    memorySettings,
     messages,
     onOptimisticPatchConversation,
     runtimeModel,

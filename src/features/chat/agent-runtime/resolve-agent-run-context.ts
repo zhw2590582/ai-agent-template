@@ -101,6 +101,14 @@ export function resolveProfileSubagentSettings(
   return null;
 }
 
+export function resolveMemorySettings(input: unknown): ChatProfileMemorySettings | null {
+  if (typeof input !== 'object' || input == null) {
+    return null;
+  }
+
+  return input as ChatProfileMemorySettings;
+}
+
 export function resolveSearchSettings(input: unknown): SearchSettings | null {
   if (typeof input !== 'object' || input == null) {
     return null;
@@ -167,7 +175,9 @@ async function loadPersistedConversationSummary(options: {
 
 export async function resolveAgentRunContext({
   conversationId,
+  guestMemoryContext,
   mcpSettings,
+  memorySettings: requestMemorySettings,
   ragSettings,
   runtimeModel,
   sandboxSettings,
@@ -176,8 +186,11 @@ export async function resolveAgentRunContext({
   supabase,
   user,
 }: ResolveAgentRunContextOptions): Promise<AgentRunContext> {
-  let memoryContext: string | null = null;
-  let memorySettings: ChatProfileMemorySettings | null = null;
+  let memoryContext =
+    typeof guestMemoryContext === 'string' && guestMemoryContext.trim().length > 0
+      ? guestMemoryContext.trim()
+      : null;
+  let memorySettings = resolveMemorySettings(requestMemorySettings);
   let persistedConversationSummary: string | null = null;
   let resolvedProfileRagSettings: RagSettings | null = null;
   let resolvedProfileSubagentSettings: SubagentSettings | null = null;
@@ -197,7 +210,7 @@ export async function resolveAgentRunContext({
   try {
     if (user) {
       const profile = await getProfileById(user.id, supabase);
-      memorySettings = resolveProfileMemorySettings(profile);
+      memorySettings = memorySettings ?? resolveProfileMemorySettings(profile);
       resolvedProfileRagSettings = normalizeRagSettings(
         resolvedRequestRagSettings ?? resolveProfileRagSettings(profile)
       );

@@ -36,6 +36,17 @@ const messageSchema = z
 export const chatPostSchema = z.object({
   conversationId: z.string().min(1).optional(),
   conversationSummary: z.string().trim().min(1).optional(),
+  guestMemoryContext: z.string().trim().min(1).optional(),
+  memorySettings: z
+    .object({
+      autoWrite: z.boolean(),
+      contextMaxItems: z.number().int(),
+      crossConversation: z.boolean(),
+      enabled: z.boolean(),
+      recentMessageWindow: z.number().int(),
+      summaryMinMessages: z.number().int(),
+    })
+    .optional(),
   mcpSettings: z
     .object({
       enabled: z.boolean(),
@@ -171,6 +182,20 @@ export const chatSummaryPostSchema = z.object({
 });
 
 export type ChatSummaryPostInput = z.infer<typeof chatSummaryPostSchema>;
+
+export const memoryExtractPostSchema = z.object({
+  locale: z.enum(SUPPORTED_LOCALES),
+  messages: z.array(messageSchema).min(1),
+  runtimeModel: z.object({
+    apiFormat: z.enum(['anthropic', 'openai']),
+    apiKey: z.string().min(1),
+    baseUrl: z.string().min(1),
+    modelId: z.string().min(1),
+    providerId: z.string().min(1),
+  }),
+});
+
+export type MemoryExtractPostInput = z.infer<typeof memoryExtractPostSchema>;
 
 /* ---------- Conversations ---------- */
 

@@ -22,7 +22,9 @@ export async function handleChatPost(request: Request) {
     const {
       conversationId,
       conversationSummary,
+      guestMemoryContext,
       mcpSettings,
+      memorySettings: requestedMemorySettings,
       messages,
       ragSettings,
       runtimeModel,
@@ -65,7 +67,9 @@ export async function handleChatPost(request: Request) {
       subagentSettings: resolvedSubagentSettings,
     } = await resolveAgentRunContext({
       conversationId: resolvedConversationId,
+      guestMemoryContext,
       mcpSettings,
+      memorySettings: requestedMemorySettings,
       ragSettings,
       runtimeModel,
       sandboxSettings,

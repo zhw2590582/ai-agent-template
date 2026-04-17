@@ -11,6 +11,7 @@ export const API_ROUTES = {
   conversationSummaries: '/api/conversations/summaries',
   mcpTest: '/api/mcp/test',
   memories: '/api/memories',
+  memoriesExtract: '/api/memories/extract',
   modelsProviders: '/api/models/providers',
   profile: '/api/profile',
   ragDocuments: '/api/rag/documents',

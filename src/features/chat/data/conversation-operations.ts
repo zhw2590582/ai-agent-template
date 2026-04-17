@@ -14,6 +14,7 @@ import {
   renameLocalConversationThread,
   upsertLocalConversationThread,
 } from '@/features/chat/storage/local-conversations';
+import { extractAndMergeLocalMemories } from '@/features/memory/storage/local-memories';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
 export async function createConversationRecord(options: {
@@ -108,6 +109,25 @@ export function generateConversationRecordSummary(options: {
   void generateLocalConversationSummary({
     id: options.conversationId,
     locale: options.locale,
+    runtimeModel: options.runtimeModel,
+  });
+}
+
+export function generateConversationRecordMemories(options: {
+  conversationId: string;
+  locale: Locale;
+  messages: UIMessage[];
+  runtimeModel?: ChatRuntimeModel | null;
+  user: AuthUserSnapshot | null;
+}) {
+  if (options.user) {
+    return;
+  }
+
+  void extractAndMergeLocalMemories({
+    conversationId: options.conversationId,
+    locale: options.locale,
+    messages: options.messages,
     runtimeModel: options.runtimeModel,
   });
 }

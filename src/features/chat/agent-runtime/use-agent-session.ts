@@ -10,6 +10,8 @@ import { buildAgentRunRequest } from '@/features/chat/agent-runtime/build-agent-
 import { CHAT_RATE_LIMIT_ERROR_CODE, ChatRequestError } from '@/features/chat/utils/chat-errors';
 import { resolveChatRuntimeModel } from '@/features/models/utils/runtime-model';
 import type { ChatModelOption } from '@/features/models/types';
+import { buildMemoryContext } from '@/features/memory/storage/memory-retrieval';
+import { readLocalMemories } from '@/features/memory/storage/local-memories';
 import { readApiError } from '@/lib/api-client';
 
 interface UseAgentSessionOptions {
@@ -17,6 +19,7 @@ interface UseAgentSessionOptions {
   availableModels: ChatModelOption[];
   conversationSummary?: string | null;
   initialMessages: UIMessage[];
+  isAuthenticated: boolean;
   locale: string;
   onFinish: () => void;
   profileSettings: AppProfileSettings | null;
@@ -27,6 +30,7 @@ export function useAgentSession({
   availableModels,
   conversationSummary,
   initialMessages,
+  isAuthenticated,
   locale,
   onFinish,
   profileSettings,
@@ -58,6 +62,8 @@ export function useAgentSession({
   const runtimeModelRef = useRef(runtimeModel);
   const activeThreadIdRef = useRef(activeThreadId);
   const conversationSummaryRef = useRef(conversationSummary);
+  const isAuthenticatedRef = useRef(isAuthenticated);
+  const memorySettingsRef = useRef(profileSettings?.memory);
   const mcpSettingsRef = useRef(profileSettings?.mcp);
   const ragSettingsRef = useRef(profileSettings?.rag);
   const sandboxSettingsRef = useRef(profileSettings?.sandbox);
@@ -68,6 +74,8 @@ export function useAgentSession({
     runtimeModelRef.current = runtimeModel;
     activeThreadIdRef.current = activeThreadId;
     conversationSummaryRef.current = conversationSummary;
+    isAuthenticatedRef.current = isAuthenticated;
+    memorySettingsRef.current = profileSettings?.memory;
     mcpSettingsRef.current = profileSettings?.mcp;
     ragSettingsRef.current = profileSettings?.rag;
     sandboxSettingsRef.current = profileSettings?.sandbox;
@@ -76,6 +84,8 @@ export function useAgentSession({
   }, [
     activeThreadId,
     conversationSummary,
+    isAuthenticated,
+    profileSettings?.memory,
     profileSettings?.mcp,
     profileSettings?.rag,
     profileSettings?.sandbox,
@@ -125,8 +135,17 @@ export function useAgentSession({
             activeThreadId: activeThreadIdRef.current,
             body: requestBody,
             conversationSummary: conversationSummaryRef.current,
+            guestMemoryContext:
+              !isAuthenticatedRef.current &&
+              memorySettingsRef.current?.enabled &&
+              memorySettingsRef.current.crossConversation
+                ? buildMemoryContext(readLocalMemories(), {
+                    memorySettings: memorySettingsRef.current,
+                  })
+                : null,
             id,
             mcpSettings: mcpSettingsRef.current,
+            memorySettings: memorySettingsRef.current,
             messageId,
             messages,
             ragSettings: ragSettingsRef.current,

@@ -12,8 +12,17 @@ interface BuildAgentRunRequestOptions {
   activeThreadId: string | null;
   body?: Record<string, unknown>;
   conversationSummary?: string | null;
+  guestMemoryContext?: string | null;
   id?: string;
   mcpSettings?: McpSettings;
+  memorySettings?: {
+    autoWrite: boolean;
+    contextMaxItems: number;
+    crossConversation: boolean;
+    enabled: boolean;
+    recentMessageWindow: number;
+    summaryMinMessages: number;
+  };
   messageId?: string;
   messages: UIMessage[];
   ragSettings?: RagSettings;
@@ -28,8 +37,10 @@ export function buildAgentRunRequest({
   activeThreadId,
   body = {},
   conversationSummary,
+  guestMemoryContext,
   id,
   mcpSettings,
+  memorySettings,
   messageId,
   messages,
   ragSettings,
@@ -43,10 +54,12 @@ export function buildAgentRunRequest({
     ...body,
     conversationId: (body.conversationId as string | undefined) ?? activeThreadId ?? undefined,
     conversationSummary: conversationSummary ?? undefined,
+    guestMemoryContext: guestMemoryContext ?? undefined,
     id,
     messageId,
     messages,
     mcpSettings,
+    memorySettings,
     ragSettings,
     runtimeModel: runtimeModel ?? undefined,
     sandboxSettings,
