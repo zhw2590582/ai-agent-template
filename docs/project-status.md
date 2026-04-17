@@ -1,6 +1,6 @@
 # Project Status
 
-最后核对时间：2026-04-16
+最后核对时间：2026-04-17
 
 ## 一句话
 
@@ -155,6 +155,7 @@
 - `profiles.settings` 持久化
 - 已登录会话分页、搜索、重命名、删除
 - guest 本地会话存储和标题生成
+- `Profile` 已开始按 `local / supabase` 两种 source 分层，而不是继续把 guest / 登录用户分支散在页面 hook 里
 
 当前默认行为：
 
@@ -189,6 +190,7 @@
 - guest 和登录用户在 UI 体感上基本一致
 - guest 的长期记忆和摘要只在当前浏览器 / 当前设备生效
 - 登录用户继续使用 Supabase 持久化，并支持跨设备同步
+- `Memory` 页面已开始按 `local / supabase` 两种 source 工作，避免继续把 guest / 登录用户逻辑直接散在 UI 组件里
 
 关键位置：
 

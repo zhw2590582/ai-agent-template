@@ -9,19 +9,12 @@ import type { MemorySettings } from '@/features/auth/profile/types';
 
 interface MemoryControlsProps {
   onExport?: () => void;
-  isAuthenticated: boolean;
   onSettingsChange: (updater: (settings: MemorySettings) => MemorySettings) => void;
   settings: MemorySettings;
   t: (key: string) => string;
 }
 
-export function MemoryControls({
-  onExport,
-  isAuthenticated,
-  onSettingsChange,
-  settings,
-  t,
-}: MemoryControlsProps) {
+export function MemoryControls({ onExport, onSettingsChange, settings, t }: MemoryControlsProps) {
   const [draftNumbers, setDraftNumbers] = useState({
     contextMaxItems: String(settings.contextMaxItems),
     recentMessageWindow: String(settings.recentMessageWindow),
@@ -135,7 +128,6 @@ export function MemoryControls({
             <Switch
               checked={item.checked}
               className="data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
-              disabled={!isAuthenticated}
               onCheckedChange={(checked) => {
                 onSettingsChange((current) => ({
                   ...current,
@@ -161,7 +153,6 @@ export function MemoryControls({
               {t('memory_page.controls.summary_min_messages_label')}
             </label>
             <Input
-              disabled={!isAuthenticated}
               id="memory-summary-min-messages"
               min={MEMORY_EXTRACTION_CONFIG.MIN_MESSAGES}
               onBlur={(event) => {
@@ -202,7 +193,6 @@ export function MemoryControls({
               {t('memory_page.controls.recent_message_window_label')}
             </label>
             <Input
-              disabled={!isAuthenticated}
               id="memory-recent-message-window"
               min={MEMORY_EXTRACTION_CONFIG.MIN_MESSAGES}
               onBlur={(event) => {
@@ -243,7 +233,6 @@ export function MemoryControls({
               {t('memory_page.controls.context_max_items_label')}
             </label>
             <Input
-              disabled={!isAuthenticated}
               id="memory-context-max-items"
               min={1}
               onBlur={(event) => {

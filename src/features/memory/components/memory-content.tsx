@@ -12,7 +12,6 @@ import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workb
 import { MemoryControls } from '@/features/memory/components/memory-controls';
 import { MemoryList } from '@/features/memory/components/memory-list';
 import { MemorySummaryList } from '@/features/memory/components/memory-summary-list';
-import { useConversationSummaryPage } from '@/features/memory/hooks/use-conversation-summary-page';
 import { useMemoryPage } from '@/features/memory/hooks/use-memory-page';
 import type { MemoryListItem } from '@/features/memory/types';
 import type { MemorySettings } from '@/features/auth/profile/types';
@@ -41,11 +40,8 @@ export function MemoryContent({
   const handleSummaryLoadError = useCallback(() => {
     toast.error(t('memory_page.toast.summary_load_failed'));
   }, [t]);
-  const summaryPage = useConversationSummaryPage({
-    isAuthenticated,
-    onLoadError: handleSummaryLoadError,
-  });
   const {
+    currentPage,
     handleDeleteMemory,
     handleDeleteSummary,
     handleEditMemory,
@@ -53,6 +49,7 @@ export function MemoryContent({
     handleExport,
     isSavingSettings,
     isSettingsDirty,
+    isLoading,
     localMemories,
     localSettings,
     localSummaries,
@@ -62,31 +59,18 @@ export function MemoryContent({
     pendingSummaryEditId,
     resetDraftSettings,
     saveSettings,
+    setPage,
+    totalItems,
+    totalPages,
     updateDraftSettings,
   } = useMemoryPage({
     isAuthenticated,
     memories,
+    onSummaryLoadError: handleSummaryLoadError,
     onMemorySettingsChange,
     settings,
-    summaries: summaryPage.summaries,
     t,
   });
-
-  const handleSummaryDelete = async (conversationId: string) => {
-    const success = await handleDeleteSummary(conversationId);
-    if (success !== false && isAuthenticated) {
-      summaryPage.refresh();
-    }
-    return success;
-  };
-
-  const handleSummaryEdit = async (input: { conversationId: string; summary: string }) => {
-    const success = await handleEditSummary(input);
-    if (success !== false && isAuthenticated) {
-      summaryPage.refresh();
-    }
-    return success;
-  };
 
   useEffect(() => {
     if (!showSaved) {
@@ -137,7 +121,6 @@ export function MemoryContent({
     >
       <div className="text-foreground mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-8">
         <MemoryControls
-          isAuthenticated={isAuthenticated}
           key={`${localSettings.summaryMinMessages}-${localSettings.recentMessageWindow}-${localSettings.contextMaxItems}`}
           onExport={handleExport}
           onSettingsChange={updateDraftSettings}
@@ -156,18 +139,18 @@ export function MemoryContent({
         />
         <Separator />
         <MemorySummaryList
-          currentPage={summaryPage.currentPage}
-          isLoading={summaryPage.isLoading}
+          currentPage={currentPage}
+          isLoading={isLoading}
           locale={locale}
-          onDeleteSummary={handleSummaryDelete}
-          onEditSummary={handleSummaryEdit}
-          onPageChange={summaryPage.setPage}
+          onDeleteSummary={handleDeleteSummary}
+          onEditSummary={handleEditSummary}
+          onPageChange={setPage}
           pendingDeleteId={pendingSummaryDeleteId}
           pendingEditId={pendingSummaryEditId}
           summaries={localSummaries}
           t={t}
-          totalItems={summaryPage.totalItems}
-          totalPages={summaryPage.totalPages}
+          totalItems={totalItems}
+          totalPages={totalPages}
         />
       </div>
     </WorkbenchDialogPanel>

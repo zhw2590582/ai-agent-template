@@ -7,12 +7,28 @@ import type { ThemeMode } from '@/config/theme';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import { createProfileDraft } from '@/features/auth/profile/profile-draft';
 import type { AppProfile } from '@/features/auth/profile/types';
+import { createLocalStorageStore } from '@/lib/local-storage-store';
 
 export const LOCAL_APP_PROFILE_STORAGE_KEY = STORAGE_KEYS.LOCAL_MODEL_PROFILE;
 export const APP_PROFILE_UPDATED_EVENT = WINDOW_EVENTS.MODEL_PROFILE_UPDATED;
 
 export const profileCache = new Map<string, Partial<AppProfile>>();
 export const profileRequestCache = new Map<string, Promise<Partial<AppProfile> | null>>();
+
+function parseLocalProfile(input: unknown) {
+  if (typeof input !== 'object' || input == null) {
+    return null;
+  }
+
+  return input as Partial<AppProfile>;
+}
+
+const localProfileStore = createLocalStorageStore<Partial<AppProfile> | null>({
+  emptyValue: null,
+  eventName: APP_PROFILE_UPDATED_EVENT,
+  parse: parseLocalProfile,
+  storageKey: LOCAL_APP_PROFILE_STORAGE_KEY,
+});
 
 export function emitProfileUpdated(profile: Partial<AppProfile>) {
   if (typeof window === 'undefined') return;
@@ -25,20 +41,15 @@ export function emitProfileUpdated(profile: Partial<AppProfile>) {
 }
 
 export function readLocalProfile() {
-  if (typeof window === 'undefined') return null;
-
-  try {
-    const raw = window.localStorage.getItem(LOCAL_APP_PROFILE_STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as Partial<AppProfile>;
-  } catch {
-    return null;
-  }
+  return localProfileStore.read();
 }
 
 export function writeLocalProfile(profile: AppProfile) {
-  if (typeof window === 'undefined') return;
-  window.localStorage.setItem(LOCAL_APP_PROFILE_STORAGE_KEY, JSON.stringify(profile));
+  localProfileStore.write(profile);
+}
+
+export function subscribeToLocalProfileUpdates(onChange: () => void) {
+  return localProfileStore.subscribe(onChange);
 }
 
 export async function loadRemoteProfile(userId: string) {

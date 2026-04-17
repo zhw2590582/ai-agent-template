@@ -1,42 +1,48 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { toast } from 'sonner';
 
 import { CONVERSATION_SUMMARY_PAGE_SIZE } from '@/config/chat';
+import { API_ROUTES } from '@/config/api';
 import { fetchConversationSummaryPage } from '@/features/chat/data/conversation-summary-service';
 import {
   listLocalConversationSummaries,
   subscribeToLocalConversationUpdates,
+  updateLocalConversationSummary,
 } from '@/features/chat/storage/local-conversations';
 import type { ConversationSummary } from '@/features/chat/storage/types';
+import { getApiErrorToastMessage } from '@/lib/api-client';
 
 const EMPTY_SUMMARIES: ConversationSummary[] = [];
 
-interface UseConversationSummaryPageOptions {
-  isAuthenticated: boolean;
-  onLoadError?: () => void;
-}
-
 interface RemoteSummaryPageState {
   page: number;
-  source: 'authenticated';
   summaries: ConversationSummary[];
   total: number;
 }
 
-export function useConversationSummaryPage({
+interface UseConversationSummarySourceOptions {
+  isAuthenticated: boolean;
+  onLoadError?: () => void;
+  t: (key: string) => string;
+}
+
+export function useConversationSummarySource({
   isAuthenticated,
   onLoadError,
-}: UseConversationSummaryPageOptions) {
+  t,
+}: UseConversationSummarySourceOptions) {
   const [page, setPage] = useState(1);
-  const [remotePageState, setRemotePageState] = useState<RemoteSummaryPageState | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [resolvedRequest, setResolvedRequest] = useState<{
     page: number;
     refreshKey: number;
   } | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [remotePageState, setRemotePageState] = useState<RemoteSummaryPageState | null>(null);
+  const [pendingEditId, setPendingEditId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const requestIdRef = useRef(0);
-  const source = isAuthenticated ? 'authenticated' : 'local';
 
   const subscribe = useCallback(
     (onStoreChange: () => void) =>
@@ -56,7 +62,7 @@ export function useConversationSummaryPage({
     1,
     Math.ceil(localSummaryItems.length / CONVERSATION_SUMMARY_PAGE_SIZE)
   );
-  const remoteTotal = remotePageState?.source === 'authenticated' ? remotePageState.total : 0;
+  const remoteTotal = remotePageState?.total ?? 0;
   const remoteTotalPages = Math.max(1, Math.ceil(remoteTotal / CONVERSATION_SUMMARY_PAGE_SIZE));
   const totalPages = isAuthenticated ? remoteTotalPages : localTotalPages;
   const currentPage = Math.min(page, totalPages);
@@ -82,7 +88,6 @@ export function useConversationSummaryPage({
 
         setRemotePageState({
           page: currentPage,
-          source: 'authenticated',
           summaries: data.conversations,
           total: data.total,
         });
@@ -109,23 +114,99 @@ export function useConversationSummaryPage({
     return localSummaryItems.slice(startIndex, startIndex + CONVERSATION_SUMMARY_PAGE_SIZE);
   }, [currentPage, localSummaryItems]);
 
-  const remoteSummaries =
-    remotePageState?.source === source && remotePageState.page === currentPage
+  const summaries =
+    isAuthenticated && remotePageState?.page === currentPage
       ? remotePageState.summaries
-      : EMPTY_SUMMARIES;
+      : isAuthenticated
+        ? EMPTY_SUMMARIES
+        : paginatedLocalSummaries;
+  const totalItems = isAuthenticated ? remoteTotal : localSummaryItems.length;
   const isLoading =
     isAuthenticated &&
     (resolvedRequest == null ||
       resolvedRequest.page !== currentPage ||
       resolvedRequest.refreshKey !== refreshKey);
 
+  const refresh = () => setRefreshKey((value) => value + 1);
+
+  const handleDeleteSummary = async (conversationId: string) => {
+    setPendingDeleteId(conversationId);
+    try {
+      if (!isAuthenticated) {
+        return updateLocalConversationSummary({
+          id: conversationId,
+          summary: null,
+        });
+      }
+
+      const response = await fetch(API_ROUTES.conversations, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ conversationId, summary: null }),
+      });
+
+      if (!response.ok) {
+        toast.error(
+          await getApiErrorToastMessage(response, t, 'memory_page.toast.summary_delete_failed')
+        );
+        return false;
+      }
+
+      refresh();
+      return true;
+    } finally {
+      setPendingDeleteId(null);
+    }
+  };
+
+  const handleEditSummary = async (input: { conversationId: string; summary: string }) => {
+    setPendingEditId(input.conversationId);
+    try {
+      if (!isAuthenticated) {
+        return updateLocalConversationSummary({
+          id: input.conversationId,
+          summary: input.summary,
+        });
+      }
+
+      const response = await fetch(API_ROUTES.conversations, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversationId: input.conversationId,
+          summary: input.summary.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        toast.error(
+          await getApiErrorToastMessage(response, t, 'memory_page.toast.summary_update_failed')
+        );
+        return false;
+      }
+
+      refresh();
+      return true;
+    } finally {
+      setPendingEditId(null);
+    }
+  };
+
   return {
     currentPage,
+    handleDeleteSummary,
+    handleEditSummary,
     isLoading,
-    refresh: () => setRefreshKey((value) => value + 1),
+    pendingDeleteId,
+    pendingEditId,
+    refresh,
     setPage: (nextPage: number) => setPage(Math.min(Math.max(nextPage, 1), totalPages)),
-    summaries: isAuthenticated ? remoteSummaries : paginatedLocalSummaries,
-    totalItems: isAuthenticated ? remoteTotal : localSummaryItems.length,
+    summaries,
+    totalItems,
     totalPages,
   };
 }

@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 
 import { useTheme } from '@/features/chat/components/preferences/theme-provider';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
@@ -12,144 +11,33 @@ import {
   getOrderedProviders,
   normalizeProfileSettings,
 } from '@/features/auth/profile/profile-settings';
-import {
-  APP_PROFILE_UPDATED_EVENT,
-  buildProfileFromSource,
-  loadRemoteProfile,
-  profileCache,
-  readLocalProfile,
-} from '@/features/auth/profile/profile-storage';
 import type { AppProfile } from '@/features/auth/profile/types';
+import { useProfileSource } from '@/features/auth/profile/use-profile-source';
 
 export function useAppProfile(user: AuthUserSnapshot | null) {
   const t = useTranslations();
   const locale = useLocale();
   const { theme } = useTheme();
-  const [profile, setProfile] = useState<AppProfile>(() => {
-    const cachedProfile = user ? profileCache.get(user.id) : null;
-
-    return buildProfileFromSource({
-      existing: cachedProfile ?? undefined,
-      locale,
-      theme,
-      user,
-    });
+  const { isLoading, profile, setProfile } = useProfileSource({
+    locale,
+    t,
+    theme,
+    user,
   });
-  const [isLoading, setIsLoading] = useState(user ? !profileCache.has(user.id) : true);
   const profileRef = useRef(profile);
   const saveInFlightRef = useRef<Promise<boolean> | null>(null);
   const queuedSaveRef = useRef<{
     nextProfile: AppProfile;
     options?: { silent?: boolean };
   } | null>(null);
+  const persistProfileRef = useRef<
+    (nextProfile: AppProfile, options?: { silent?: boolean }) => Promise<boolean>
+  >(async () => false);
+  const actionsRef = useRef<ReturnType<typeof createProfileActions> | null>(null);
 
   useEffect(() => {
     profileRef.current = profile;
   }, [profile]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!user) {
-      const localProfile = readLocalProfile();
-      if (!cancelled) {
-        setProfile(
-          buildProfileFromSource({
-            existing: localProfile ?? undefined,
-            locale,
-            theme,
-            user: null,
-          })
-        );
-        setIsLoading(false);
-      }
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    const cachedProfile = profileCache.get(user.id);
-
-    if (!cancelled) {
-      setIsLoading(!cachedProfile);
-      setProfile(
-        buildProfileFromSource({
-          existing: cachedProfile ?? undefined,
-          locale,
-          theme,
-          user,
-        })
-      );
-    }
-
-    void (async () => {
-      try {
-        const remoteProfile = await loadRemoteProfile(user.id);
-
-        if (!cancelled) {
-          setProfile(
-            buildProfileFromSource({
-              existing: remoteProfile ?? undefined,
-              locale,
-              theme,
-              user,
-            })
-          );
-        }
-      } catch {
-        if (!cancelled) {
-          setProfile(
-            buildProfileFromSource({
-              locale,
-              theme,
-              user,
-            })
-          );
-          toast.error(t('models_page.toast.load_failed'));
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [locale, t, theme, user]);
-
-  useEffect(() => {
-    const handleProfileUpdated = (event: Event) => {
-      const detail = (event as CustomEvent<Partial<AppProfile>>).detail;
-      if (!detail) {
-        return;
-      }
-
-      if (user) {
-        if (detail.id !== user.id) {
-          return;
-        }
-      } else if (detail.id !== 'guest-local') {
-        return;
-      }
-
-      setProfile(
-        buildProfileFromSource({
-          existing: detail,
-          locale,
-          theme,
-          user,
-        })
-      );
-    };
-
-    window.addEventListener(APP_PROFILE_UPDATED_EVENT, handleProfileUpdated as EventListener);
-
-    return () => {
-      window.removeEventListener(APP_PROFILE_UPDATED_EVENT, handleProfileUpdated as EventListener);
-    };
-  }, [locale, theme, user]);
 
   const orderedProviders = useMemo(() => getOrderedProviders(profile.settings), [profile.settings]);
 
@@ -184,269 +72,185 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
     [locale, theme]
   );
 
-  const persistProfile = useMemo(
-    () =>
-      createPersistProfile({
+  useEffect(() => {
+    persistProfileRef.current = createPersistProfile({
+      locale,
+      queuedSaveRef,
+      saveInFlightRef,
+      setProfile,
+      t,
+      theme,
+      user,
+    });
+  }, [locale, setProfile, t, theme, user]);
+
+  const persistProfile = useCallback(
+    (nextProfile: AppProfile, options?: { silent?: boolean }) =>
+      persistProfileRef.current(nextProfile, options),
+    []
+  );
+
+  useEffect(() => {
+    actionsRef.current = createProfileActions({
+      buildNextProfile,
+      persistProfile,
+      profileRef,
+      setProfile,
+    });
+  }, [buildNextProfile, persistProfile, setProfile]);
+
+  const addCustomProvider = useCallback((name: string) => {
+    const actions = actionsRef.current;
+    return actions ? actions.addCustomProvider(name) : Promise.resolve(null);
+  }, []);
+
+  const removeCustomProvider = useCallback((providerId: string) => {
+    const actions = actionsRef.current;
+    return actions ? actions.removeCustomProvider(providerId) : Promise.resolve(false);
+  }, []);
+
+  const saveProfile = useCallback(
+    (
+      updater?: (models: AppProfile['settings']['models']) => AppProfile['settings']['models'],
+      options?: { silent?: boolean }
+    ) => {
+      const actions = actionsRef.current;
+      return actions ? actions.saveProfile(updater, options) : Promise.resolve(false);
+    },
+    []
+  );
+
+  const saveProviderEnabled = useCallback((providerId: string, enabled: boolean) => {
+    const actions = actionsRef.current;
+    return actions ? actions.saveProviderEnabled(providerId, enabled) : Promise.resolve(false);
+  }, []);
+
+  const updateProvider = useCallback(
+    (
+      providerId: string,
+      updater: (
+        provider: AppProfile['settings']['models']['providers'][string]
+      ) => AppProfile['settings']['models']['providers'][string]
+    ) => {
+      actionsRef.current?.updateProvider(providerId, updater);
+    },
+    []
+  );
+
+  const updateSelectedChatModelId = useCallback(
+    (selectedChatModelId: string | null, options?: { persist?: boolean; silent?: boolean }) => {
+      const actions = actionsRef.current;
+      return actions
+        ? actions.updateSelectedChatModelId(selectedChatModelId, options)
+        : Promise.resolve(false);
+    },
+    []
+  );
+
+  const updateSelectedProviderId = useCallback((providerId: string) => {
+    actionsRef.current?.updateSelectedProviderId(providerId);
+  }, []);
+
+  const updateSettingsSection = useCallback(
+    async <K extends Exclude<keyof AppProfile['settings'], 'models'>>(
+      section: K,
+      updater: (value: AppProfile['settings'][K]) => AppProfile['settings'][K],
+      options?: { silent?: boolean }
+    ) => {
+      const current = profileRef.current;
+      const nextProfile = {
+        ...current,
         locale,
-        queuedSaveRef,
-        saveInFlightRef,
-        setProfile,
-        t,
+        settings: normalizeProfileSettings({
+          ...current.settings,
+          [section]: updater(current.settings[section]),
+        }),
         theme,
-        user,
-      }),
-    [locale, t, theme, user]
+        updated_at: new Date().toISOString(),
+      };
+
+      profileRef.current = nextProfile;
+      setProfile(nextProfile);
+
+      return persistProfile(nextProfile, { silent: options?.silent });
+    },
+    [locale, persistProfile, setProfile, theme]
   );
 
-  const actions = useMemo(
-    () =>
-      createProfileActions({
-        buildNextProfile,
-        persistProfile,
-        profileRef,
-        setProfile,
-      }),
-    [buildNextProfile, persistProfile]
+  const updateMemorySettings = useCallback(
+    (
+      updater: (memory: AppProfile['settings']['memory']) => AppProfile['settings']['memory'],
+      options?: { silent?: boolean }
+    ) => updateSettingsSection('memory', updater, options),
+    [updateSettingsSection]
   );
 
-  const updateMemorySettings = useMemo(
-    () =>
-      async (
-        updater: (memory: AppProfile['settings']['memory']) => AppProfile['settings']['memory'],
-        options?: { silent?: boolean }
-      ) => {
-        const current = profileRef.current;
-        const nextProfile = {
-          ...current,
-          locale,
-          settings: normalizeProfileSettings({
-            ...current.settings,
-            memory: updater(current.settings.memory),
-          }),
-          theme,
-          updated_at: new Date().toISOString(),
-        };
-
-        profileRef.current = nextProfile;
-        setProfile(nextProfile);
-
-        return persistProfile(nextProfile, { silent: options?.silent });
-      },
-    [locale, persistProfile, theme]
+  const updateSearchSettings = useCallback(
+    (
+      updater: (search: AppProfile['settings']['search']) => AppProfile['settings']['search'],
+      options?: { silent?: boolean }
+    ) => updateSettingsSection('search', updater, options),
+    [updateSettingsSection]
   );
 
-  const updateSearchSettings = useMemo(
-    () =>
-      async (
-        updater: (search: AppProfile['settings']['search']) => AppProfile['settings']['search'],
-        options?: { silent?: boolean }
-      ) => {
-        const current = profileRef.current;
-        const nextProfile = {
-          ...current,
-          locale,
-          settings: normalizeProfileSettings({
-            memory: current.settings.memory,
-            mcp: current.settings.mcp,
-            models: current.settings.models,
-            rag: current.settings.rag,
-            sandbox: current.settings.sandbox,
-            search: updater(current.settings.search),
-            skills: current.settings.skills,
-            subagent: current.settings.subagent,
-          }),
-          theme,
-          updated_at: new Date().toISOString(),
-        };
-
-        profileRef.current = nextProfile;
-        setProfile(nextProfile);
-
-        return persistProfile(nextProfile, { silent: options?.silent });
-      },
-    [locale, persistProfile, theme]
+  const updateMcpSettings = useCallback(
+    (
+      updater: (mcp: AppProfile['settings']['mcp']) => AppProfile['settings']['mcp'],
+      options?: { silent?: boolean }
+    ) => updateSettingsSection('mcp', updater, options),
+    [updateSettingsSection]
   );
 
-  const updateMcpSettings = useMemo(
-    () =>
-      async (
-        updater: (mcp: AppProfile['settings']['mcp']) => AppProfile['settings']['mcp'],
-        options?: { silent?: boolean }
-      ) => {
-        const current = profileRef.current;
-        const nextProfile = {
-          ...current,
-          locale,
-          settings: normalizeProfileSettings({
-            memory: current.settings.memory,
-            mcp: updater(current.settings.mcp),
-            models: current.settings.models,
-            rag: current.settings.rag,
-            sandbox: current.settings.sandbox,
-            search: current.settings.search,
-            skills: current.settings.skills,
-            subagent: current.settings.subagent,
-          }),
-          theme,
-          updated_at: new Date().toISOString(),
-        };
-
-        profileRef.current = nextProfile;
-        setProfile(nextProfile);
-
-        return persistProfile(nextProfile, { silent: options?.silent });
-      },
-    [locale, persistProfile, theme]
+  const updateSandboxSettings = useCallback(
+    (
+      updater: (sandbox: AppProfile['settings']['sandbox']) => AppProfile['settings']['sandbox'],
+      options?: { silent?: boolean }
+    ) => updateSettingsSection('sandbox', updater, options),
+    [updateSettingsSection]
   );
 
-  const updateSandboxSettings = useMemo(
-    () =>
-      async (
-        updater: (sandbox: AppProfile['settings']['sandbox']) => AppProfile['settings']['sandbox'],
-        options?: { silent?: boolean }
-      ) => {
-        const current = profileRef.current;
-        const nextProfile = {
-          ...current,
-          locale,
-          settings: normalizeProfileSettings({
-            memory: current.settings.memory,
-            mcp: current.settings.mcp,
-            models: current.settings.models,
-            rag: current.settings.rag,
-            sandbox: updater(current.settings.sandbox),
-            search: current.settings.search,
-            skills: current.settings.skills,
-            subagent: current.settings.subagent,
-          }),
-          theme,
-          updated_at: new Date().toISOString(),
-        };
-
-        profileRef.current = nextProfile;
-        setProfile(nextProfile);
-
-        return persistProfile(nextProfile, { silent: options?.silent });
-      },
-    [locale, persistProfile, theme]
+  const updateRagSettings = useCallback(
+    (
+      updater: (rag: AppProfile['settings']['rag']) => AppProfile['settings']['rag'],
+      options?: { silent?: boolean }
+    ) => updateSettingsSection('rag', updater, options),
+    [updateSettingsSection]
   );
 
-  const updateRagSettings = useMemo(
-    () =>
-      async (
-        updater: (rag: AppProfile['settings']['rag']) => AppProfile['settings']['rag'],
-        options?: { silent?: boolean }
-      ) => {
-        const current = profileRef.current;
-        const nextProfile = {
-          ...current,
-          locale,
-          settings: normalizeProfileSettings({
-            memory: current.settings.memory,
-            mcp: current.settings.mcp,
-            models: current.settings.models,
-            rag: updater(current.settings.rag),
-            sandbox: current.settings.sandbox,
-            search: current.settings.search,
-            skills: current.settings.skills,
-            subagent: current.settings.subagent,
-          }),
-          theme,
-          updated_at: new Date().toISOString(),
-        };
-
-        profileRef.current = nextProfile;
-        setProfile(nextProfile);
-
-        return persistProfile(nextProfile, { silent: options?.silent });
-      },
-    [locale, persistProfile, theme]
+  const updateSkillsSettings = useCallback(
+    (
+      updater: (skills: AppProfile['settings']['skills']) => AppProfile['settings']['skills'],
+      options?: { silent?: boolean }
+    ) => updateSettingsSection('skills', updater, options),
+    [updateSettingsSection]
   );
 
-  const updateSkillsSettings = useMemo(
-    () =>
-      async (
-        updater: (skills: AppProfile['settings']['skills']) => AppProfile['settings']['skills'],
-        options?: { silent?: boolean }
-      ) => {
-        const current = profileRef.current;
-        const nextProfile = {
-          ...current,
-          locale,
-          settings: normalizeProfileSettings({
-            memory: current.settings.memory,
-            mcp: current.settings.mcp,
-            models: current.settings.models,
-            rag: current.settings.rag,
-            sandbox: current.settings.sandbox,
-            search: current.settings.search,
-            skills: updater(current.settings.skills),
-            subagent: current.settings.subagent,
-          }),
-          theme,
-          updated_at: new Date().toISOString(),
-        };
-
-        profileRef.current = nextProfile;
-        setProfile(nextProfile);
-
-        return persistProfile(nextProfile, { silent: options?.silent });
-      },
-    [locale, persistProfile, theme]
-  );
-
-  const updateSubagentSettings = useMemo(
-    () =>
-      async (
-        updater: (
-          subagent: AppProfile['settings']['subagent']
-        ) => AppProfile['settings']['subagent'],
-        options?: { silent?: boolean }
-      ) => {
-        const current = profileRef.current;
-        const nextProfile = {
-          ...current,
-          locale,
-          settings: normalizeProfileSettings({
-            memory: current.settings.memory,
-            mcp: current.settings.mcp,
-            models: current.settings.models,
-            rag: current.settings.rag,
-            sandbox: current.settings.sandbox,
-            search: current.settings.search,
-            skills: current.settings.skills,
-            subagent: updater(current.settings.subagent),
-          }),
-          theme,
-          updated_at: new Date().toISOString(),
-        };
-
-        profileRef.current = nextProfile;
-        setProfile(nextProfile);
-
-        return persistProfile(nextProfile, { silent: options?.silent });
-      },
-    [locale, persistProfile, theme]
+  const updateSubagentSettings = useCallback(
+    (
+      updater: (subagent: AppProfile['settings']['subagent']) => AppProfile['settings']['subagent'],
+      options?: { silent?: boolean }
+    ) => updateSettingsSection('subagent', updater, options),
+    [updateSettingsSection]
   );
 
   return {
-    addCustomProvider: actions.addCustomProvider,
+    addCustomProvider,
     isLoading,
     profile,
     providers: orderedProviders,
-    removeCustomProvider: actions.removeCustomProvider,
-    saveProfile: actions.saveProfile,
-    saveProviderEnabled: actions.saveProviderEnabled,
+    removeCustomProvider,
+    saveProfile,
+    saveProviderEnabled,
     selectedProvider,
     updateMcpSettings,
     updateMemorySettings,
+    updateProvider,
     updateRagSettings,
     updateSearchSettings,
+    updateSelectedChatModelId,
+    updateSelectedProviderId,
     updateSandboxSettings,
     updateSkillsSettings,
     updateSubagentSettings,
-    updateProvider: actions.updateProvider,
-    updateSelectedChatModelId: actions.updateSelectedChatModelId,
-    updateSelectedProviderId: actions.updateSelectedProviderId,
   };
 }

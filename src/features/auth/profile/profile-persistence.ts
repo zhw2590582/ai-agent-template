@@ -44,7 +44,6 @@ export function createPersistProfile({
   const persistProfile = async (nextProfile: AppProfile, options?: PersistProfileOptions) => {
     if (!user) {
       writeLocalProfile(nextProfile);
-      emitProfileUpdated(nextProfile);
       return true;
     }
 
