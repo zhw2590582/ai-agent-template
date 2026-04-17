@@ -33,6 +33,8 @@ export function useModelsDraft({
 }) {
   const [draftModels, setDraftModels] = useState<ModelsSettings>(() => cloneModelsSettings(models));
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
+  const draftSnapshot = useMemo(() => JSON.stringify(draftModels), [draftModels]);
+  const sourceSnapshot = useMemo(() => JSON.stringify(models), [models]);
 
   const orderedDraftProviders = useMemo(
     () =>
@@ -48,10 +50,7 @@ export function useModelsDraft({
     [draftModels.providers, draftModels.selectedProviderId, orderedDraftProviders]
   );
 
-  const isDirty = useMemo(
-    () => JSON.stringify(draftModels) !== JSON.stringify(models),
-    [draftModels, models]
-  );
+  const isDirty = useMemo(() => draftSnapshot !== sourceSnapshot, [draftSnapshot, sourceSnapshot]);
 
   const updateSelectedProviderId = useCallback((providerId: string) => {
     setDraftModels((current) => ({

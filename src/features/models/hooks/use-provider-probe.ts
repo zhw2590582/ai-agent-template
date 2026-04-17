@@ -52,14 +52,17 @@ export function useProviderProbe({
   const loadProviderModels = useCallback(
     async (options?: {
       applyResult?: boolean;
+      providerOverride?: ProviderSettings;
       notifyFailure?: boolean;
       notifySuccess?: boolean;
     }) => {
-      if (!provider) {
+      const targetProvider = options?.providerOverride ?? provider;
+
+      if (!targetProvider) {
         return null;
       }
 
-      if (!provider.apiKey.trim() || !provider.baseUrl.trim()) {
+      if (!targetProvider.apiKey.trim() || !targetProvider.baseUrl.trim()) {
         toast.error(t('models_page.toast.provider_config_required'));
         return null;
       }
@@ -70,9 +73,9 @@ export function useProviderProbe({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          apiFormat: provider.apiFormat,
-          apiKey: provider.apiKey,
-          baseUrl: provider.baseUrl,
+          apiFormat: targetProvider.apiFormat,
+          apiKey: targetProvider.apiKey,
+          baseUrl: targetProvider.baseUrl,
         }),
       });
 
@@ -86,10 +89,10 @@ export function useProviderProbe({
       }
 
       const result = (await response.json()) as ProviderProbeResult;
-      const mergedModels = mergeProviderModels(provider.models, result.models);
+      const mergedModels = mergeProviderModels(targetProvider.models, result.models);
 
       if (options?.applyResult ?? true) {
-        updateProvider(provider.id, (currentProvider) => ({
+        updateProvider(targetProvider.id, (currentProvider) => ({
           ...currentProvider,
           models: mergeProviderModels(currentProvider.models, result.models),
         }));

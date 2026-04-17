@@ -27,7 +27,7 @@ vi.mock('e2b', () => ({
   },
 }));
 
-import { E2BSandboxSession } from '@/features/sandbox/server/e2b-client';
+import { E2BSandboxSession, testE2BSandboxConnection } from '@/features/sandbox/server/e2b-client';
 import type { SandboxSettings } from '@/features/sandbox/types';
 
 function createSandboxSettings(overrides?: Partial<SandboxSettings>): SandboxSettings {
@@ -92,5 +92,34 @@ describe('E2BSandboxSession', () => {
       exitCode: 0,
       stdout: 'ok',
     });
+  });
+
+  it('tests sandbox connectivity with workspace preparation and a minimal command', async () => {
+    runMock
+      .mockResolvedValueOnce({
+        exitCode: 0,
+        stderr: '',
+        stdout: '',
+      })
+      .mockResolvedValueOnce({
+        exitCode: 0,
+        stderr: '',
+        stdout: '/workspace/project',
+      });
+
+    const result = await testE2BSandboxConnection(createSandboxSettings());
+
+    expect(runMock).toHaveBeenNthCalledWith(1, "mkdir -p -- '/workspace/project'", {
+      timeoutMs: 10_000,
+    });
+    expect(runMock).toHaveBeenNthCalledWith(2, 'pwd', {
+      cwd: '/workspace/project',
+      timeoutMs: 10_000,
+    });
+    expect(result).toEqual({
+      sandboxId: 'sandbox_123',
+      template: 'base',
+    });
+    expect(sandboxMock.kill).toHaveBeenCalledTimes(1);
   });
 });

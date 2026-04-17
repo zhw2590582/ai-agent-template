@@ -58,6 +58,7 @@ export const zhCNRagMessages = {
       reindex_success: '文档重新索引完成（{count} 个片段）',
       delete_failed: 'RAG 文档删除失败',
       delete_success: 'RAG 文档已删除',
+      load_failed: '加载已索引文档失败',
       test_failed: 'RAG embedding 连接测试失败',
       test_success: 'RAG embedding 连接成功（{dimensions} 维）',
     },

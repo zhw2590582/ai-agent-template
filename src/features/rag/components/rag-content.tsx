@@ -59,6 +59,7 @@ export function RagContent({ onClose, onRagSettingsChange, settings }: RagConten
     enabled: isDocumentsOpen,
     importFailedMessage: t('rag_page.toast.import_failed'),
     importSuccessMessage: (count) => t('rag_page.toast.import_success', { count }),
+    loadFailedMessage: t('rag_page.toast.load_failed'),
     reindexFailedMessage: t('rag_page.toast.reindex_failed'),
     reindexSuccessMessage: (count) => t('rag_page.toast.reindex_success', { count }),
   });

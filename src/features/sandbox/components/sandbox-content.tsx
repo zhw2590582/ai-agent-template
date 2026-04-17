@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
+import { SandboxAccessSection } from '@/features/sandbox/components/sandbox-access-section';
 import { SandboxConnectionSection } from '@/features/sandbox/components/sandbox-connection-section';
 import { SandboxEnvironmentSection } from '@/features/sandbox/components/sandbox-environment-section';
 import { SandboxRuntimeSection } from '@/features/sandbox/components/sandbox-runtime-section';
@@ -100,6 +101,8 @@ export function SandboxContent({
           />
 
           <SandboxRuntimeSection settings={localSettings} onUpdateSettings={updateSettings} />
+
+          <SandboxAccessSection settings={localSettings} onUpdateSettings={updateSettings} />
 
           <SandboxEnvironmentSection settings={localSettings} onUpdateSettings={updateSettings} />
         </section>

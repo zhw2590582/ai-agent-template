@@ -61,6 +61,7 @@ export const enUSRagMessages = {
       reindex_success: 'Document reindexed successfully ({count} segments).',
       delete_failed: 'Failed to delete the RAG document.',
       delete_success: 'RAG document deleted.',
+      load_failed: 'Failed to load indexed documents.',
       test_failed: 'Failed to test the RAG embedding connection.',
       test_success: 'RAG embedding connection succeeded ({dimensions} dimensions).',
     },

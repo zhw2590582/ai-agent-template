@@ -8,16 +8,33 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { CHAT_UI_CONFIG } from '@/config/chat';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
+import { useAuthUser } from '@/features/auth/components/auth-user-provider';
+import { useAppProfile } from '@/features/auth/profile/use-app-profile';
+import type { AppProfileSettings } from '@/features/auth/profile/types';
 import { ProviderList } from '@/features/models/components/provider-list';
 import { ProviderSettingsPanel } from '@/features/models/components/provider-settings-panel';
 import { useModelsPage } from '@/features/models/hooks/use-models-page';
+import type { ModelsSettings } from '@/features/models/types';
 
 interface ModelsContentProps {
   onClose: () => void;
   onSaved?: () => void;
 }
 
-export function ModelsContent({ onClose, onSaved }: ModelsContentProps) {
+interface ModelsEditorContentProps extends ModelsContentProps {
+  profileSettings: AppProfileSettings;
+  saveProfile: (
+    updater?: (models: ModelsSettings) => ModelsSettings,
+    options?: { silent?: boolean }
+  ) => Promise<boolean>;
+}
+
+function ModelsEditorContent({
+  onClose,
+  onSaved,
+  profileSettings,
+  saveProfile,
+}: ModelsEditorContentProps) {
   const t = useTranslations();
   const [showSaved, setShowSaved] = useState(false);
   const {
@@ -39,7 +56,7 @@ export function ModelsContent({ onClose, onSaved }: ModelsContentProps) {
     removeModel,
     updateProvider,
     updateSelectedProviderId,
-  } = useModelsPage();
+  } = useModelsPage({ profileSettings, saveProfile });
 
   useEffect(() => {
     if (!showSaved) {
@@ -132,5 +149,33 @@ export function ModelsContent({ onClose, onSaved }: ModelsContentProps) {
         </div>
       </div>
     </WorkbenchDialogPanel>
+  );
+}
+
+export function ModelsContent({ onClose, onSaved }: ModelsContentProps) {
+  const t = useTranslations();
+  const { user } = useAuthUser();
+  const { isLoading, profile, saveProfile } = useAppProfile(user);
+  const modelsSourceKey = JSON.stringify(profile.settings.models);
+
+  if (isLoading) {
+    return (
+      <WorkbenchDialogPanel bodyClassName="overflow-hidden" footer={null}>
+        <div className="text-foreground mx-auto flex h-full w-full max-w-5xl items-center justify-center gap-3">
+          <Spinner />
+          <span className="text-sm">{t('common.loading')}</span>
+        </div>
+      </WorkbenchDialogPanel>
+    );
+  }
+
+  return (
+    <ModelsEditorContent
+      key={modelsSourceKey}
+      onClose={onClose}
+      onSaved={onSaved}
+      profileSettings={profile.settings}
+      saveProfile={saveProfile}
+    />
   );
 }

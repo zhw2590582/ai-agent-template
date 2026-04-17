@@ -74,10 +74,10 @@ export function useMcpSettings({
 
   const { deleteServer, runConnectionTest, saveServer, testResults, testingServerId } =
     useMcpServerActions({
+      localSettings,
       onMcpSettingsChange,
       saveFailedMessage,
       saveSuccessMessage,
-      savedSettings,
       setIsSaving,
       setLocalSettings,
       setSavedSettings,

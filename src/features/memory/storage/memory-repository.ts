@@ -68,7 +68,10 @@ function getMemoriesTable(client: MemoriesClient) {
   return client.from('memories') as MemoriesTable;
 }
 
-export async function listMemoriesForUser(userId: string, client: MemoriesClient) {
+export async function listMemoriesForUser(
+  userId: string,
+  client: MemoriesClient
+): Promise<MemoryListItem[]> {
   const memories = getMemoriesTable(client);
   const { data, error } = await memories
     .select(
@@ -78,8 +81,12 @@ export async function listMemoriesForUser(userId: string, client: MemoriesClient
     .eq('status', 'active')
     .order('updated_at', { ascending: false });
 
-  if (error || !data) {
-    return [] satisfies MemoryListItem[];
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    throw new Error('Failed to load memories.');
   }
 
   return data.map((memory) => ({

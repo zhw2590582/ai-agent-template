@@ -83,4 +83,24 @@ describe('buildWorkspaceManifest', () => {
 
     expect(manifest?.workspaceRoot).toBe(SANDBOX_CONFIG.DEFAULT_WORKING_DIRECTORY);
   });
+
+  it('respects sandbox access settings when deriving tool policy', () => {
+    const manifest = buildWorkspaceManifest({
+      sandboxSettings: createSandboxSettings({
+        access: {
+          allowCommands: false,
+          allowFileDownload: true,
+          allowFileUpload: true,
+          allowFilesystem: true,
+          allowInternetAccess: true,
+          allowPty: false,
+        },
+      }),
+    });
+
+    expect(manifest?.toolPolicy).toEqual({
+      allowCommands: false,
+      allowFilesystem: true,
+    });
+  });
 });

@@ -190,6 +190,10 @@ export async function listRemoteMcpTools(server: McpServerSettings) {
   }
 }
 
+async function closeMcpClientsQuietly(clients: MCPClient[]) {
+  await Promise.allSettled(clients.map((client) => client.close()));
+}
+
 export async function createMcpAgentToolBundles(settings: McpSettings): Promise<{
   clients: MCPClient[];
   injectedTools: Array<{
@@ -211,41 +215,47 @@ export async function createMcpAgentToolBundles(settings: McpSettings): Promise<
   }> = [];
   const serverNames: string[] = [];
 
-  for (const server of settings.servers) {
-    if (!server.enabled || !hasMcpConnectionSettings(server)) {
-      continue;
+  try {
+    for (const server of settings.servers) {
+      if (!server.enabled || !hasMcpConnectionSettings(server)) {
+        continue;
+      }
+
+      const client = await createRemoteMcpClient(server);
+
+      if (!client) {
+        continue;
+      }
+
+      clients.push(client);
+
+      const definitions = await client.listTools();
+      const rawTools = client.toolsFromDefinitions(definitions);
+      const serverName = getServerLabel(server, client);
+      const toolPrefix = `mcp_${sanitizeToolToken(serverName) || sanitizeToolToken(server.id) || 'server'}`;
+
+      Object.assign(
+        tools,
+        Object.fromEntries(
+          Object.entries(rawTools).map(([name, tool]) => {
+            const injectedToolName = `${toolPrefix}_${sanitizeToolToken(name)}`;
+            injectedTools.push({
+              injectedToolName,
+              originalToolName: name,
+              serverId: server.id,
+              serverName,
+            });
+
+            return [injectedToolName, tool];
+          })
+        )
+      );
+
+      serverNames.push(serverName);
     }
-
-    const client = await createRemoteMcpClient(server);
-
-    if (!client) {
-      continue;
-    }
-
-    const definitions = await client.listTools();
-    const rawTools = client.toolsFromDefinitions(definitions);
-    const serverName = getServerLabel(server, client);
-    const toolPrefix = `mcp_${sanitizeToolToken(serverName) || sanitizeToolToken(server.id) || 'server'}`;
-
-    Object.assign(
-      tools,
-      Object.fromEntries(
-        Object.entries(rawTools).map(([name, tool]) => {
-          const injectedToolName = `${toolPrefix}_${sanitizeToolToken(name)}`;
-          injectedTools.push({
-            injectedToolName,
-            originalToolName: name,
-            serverId: server.id,
-            serverName,
-          });
-
-          return [injectedToolName, tool];
-        })
-      )
-    );
-
-    clients.push(client);
-    serverNames.push(serverName);
+  } catch (error) {
+    await closeMcpClientsQuietly(clients);
+    throw error;
   }
 
   return {

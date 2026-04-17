@@ -12,6 +12,7 @@ interface UseRagDocumentsOptions {
   enabled?: boolean;
   importFailedMessage: string;
   importSuccessMessage: (count: string) => string;
+  loadFailedMessage: string;
   reindexFailedMessage: string;
   reindexSuccessMessage: (count: string) => string;
 }
@@ -31,6 +32,7 @@ export function useRagDocuments({
   enabled = true,
   importFailedMessage,
   importSuccessMessage,
+  loadFailedMessage,
   reindexFailedMessage,
   reindexSuccessMessage,
 }: UseRagDocumentsOptions) {
@@ -45,16 +47,18 @@ export function useRagDocuments({
     try {
       const response = await fetch(API_ROUTES.ragDocuments);
       if (!response.ok) {
-        setDocuments([]);
+        toast.error(loadFailedMessage);
         return;
       }
 
       const data = (await response.json()) as { documents?: RagDocument[] };
       setDocuments(data.documents ?? []);
+    } catch {
+      toast.error(loadFailedMessage);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [loadFailedMessage]);
 
   useEffect(() => {
     if (!enabled) {

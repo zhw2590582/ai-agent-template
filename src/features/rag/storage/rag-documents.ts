@@ -8,6 +8,7 @@ type RagDocumentInsert = Database['public']['Tables']['rag_documents']['Insert']
 type RagDocumentRow = Database['public']['Tables']['rag_documents']['Row'];
 type RagDocumentUpdate = Database['public']['Tables']['rag_documents']['Update'];
 type RagChunkInsert = Database['public']['Tables']['rag_chunks']['Insert'];
+type RagChunkRow = Database['public']['Tables']['rag_chunks']['Row'];
 
 type RagKnowledgeBasesTable = {
   insert: (values: Database['public']['Tables']['rag_knowledge_bases']['Insert']) => {
@@ -77,6 +78,17 @@ type RagChunksTable = {
     eq: (column: 'document_id', value: string) => PromiseLike<{ error: unknown }>;
   };
   insert: (values: RagChunkInsert[]) => PromiseLike<{ error: unknown }>;
+  select: (columns: string) => {
+    eq: (
+      column: 'document_id',
+      value: string
+    ) => {
+      order: (
+        column: 'chunk_index',
+        options: { ascending: boolean }
+      ) => PromiseLike<{ data: RagChunkRow[] | null; error: unknown }>;
+    };
+  };
 };
 
 function mapKnowledgeBase(row: RagKnowledgeBaseRow): RagKnowledgeBase {
@@ -195,6 +207,23 @@ export async function insertRagChunks(client: SupabaseClient<Database>, values: 
   if (error) {
     throw error;
   }
+}
+
+export async function listRagChunksForDocument(
+  client: SupabaseClient<Database>,
+  documentId: string
+) {
+  const ragChunks = client.from('rag_chunks') as unknown as RagChunksTable;
+  const { data, error } = await ragChunks
+    .select('document_id, chunk_index, content, metadata, embedding')
+    .eq('document_id', documentId)
+    .order('chunk_index', { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
 }
 
 export async function deleteRagChunksForDocument(

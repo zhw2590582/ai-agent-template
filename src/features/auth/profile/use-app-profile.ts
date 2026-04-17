@@ -68,6 +68,20 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
       };
     }
 
+    const cachedProfile = profileCache.get(user.id);
+
+    if (!cancelled) {
+      setIsLoading(!cachedProfile);
+      setProfile(
+        buildProfileFromSource({
+          existing: cachedProfile ?? undefined,
+          locale,
+          theme,
+          user,
+        })
+      );
+    }
+
     void (async () => {
       try {
         const remoteProfile = await loadRemoteProfile(user.id);

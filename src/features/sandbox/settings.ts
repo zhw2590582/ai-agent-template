@@ -15,8 +15,8 @@ export function hasSandboxAccess(settings: SandboxSettings | null | undefined) {
 
 export function getSandboxToolPolicy(settings: SandboxSettings | null | undefined) {
   return {
-    allowCommands: Boolean(settings?.enabled),
-    allowFilesystem: Boolean(settings?.enabled),
+    allowCommands: Boolean(settings?.enabled && settings?.access.allowCommands),
+    allowFilesystem: Boolean(settings?.enabled && settings?.access.allowFilesystem),
   };
 }
 

@@ -119,7 +119,7 @@ export function useSidebarConversations({
         ? search.isLoading
         : pagination.isLoading
       : false,
-    loadMore: pagination.loadMore,
+    loadMore: isSearching ? search.loadMore : pagination.loadMore,
     patchConversation: listStore.patchConversation,
     removeConversation: listStore.removeConversation,
     setPendingSidebarHead: listStore.clearInsertedConversation,

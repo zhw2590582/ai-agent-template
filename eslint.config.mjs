@@ -13,6 +13,7 @@ const eslintConfig = defineConfig([
     '.next/**',
     'out/**',
     'build/**',
+    'public/**',
     'next-env.d.ts',
   ]),
   // Prettier integration

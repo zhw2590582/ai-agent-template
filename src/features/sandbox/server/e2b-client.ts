@@ -162,6 +162,10 @@ export async function testE2BSandboxConnection(settings: SandboxSettings) {
     const sandbox = await createE2BSandbox(settings);
 
     try {
+      await prepareSandboxWorkspace(sandbox, getWorkspaceRoot(settings), {
+        validateCommandExecution: true,
+      });
+
       return {
         sandboxId: sandbox.sandboxId,
         template: settings.template.trim() || SANDBOX_CONFIG.DEFAULT_TEMPLATE,
@@ -180,6 +184,25 @@ async function closeSandboxQuietly(sandbox: Sandbox) {
   } catch {
     // Ignore teardown failures for user-facing operations.
   }
+}
+
+async function prepareSandboxWorkspace(
+  sandbox: Sandbox,
+  workspaceRoot: string,
+  options?: { validateCommandExecution?: boolean }
+) {
+  await sandbox.commands.run(`mkdir -p -- ${quoteShellArgument(workspaceRoot)}`, {
+    timeoutMs: 10_000,
+  });
+
+  if (!options?.validateCommandExecution) {
+    return;
+  }
+
+  await sandbox.commands.run('pwd', {
+    cwd: workspaceRoot,
+    timeoutMs: 10_000,
+  });
 }
 
 export class E2BSandboxSession implements SandboxRuntimeSession {
@@ -269,9 +292,7 @@ export class E2BSandboxSession implements SandboxRuntimeSession {
   }
 
   private async ensureWorkspaceRootExists(sandbox: Sandbox) {
-    await sandbox.commands.run(`mkdir -p -- ${quoteShellArgument(this.workspaceRoot)}`, {
-      timeoutMs: 10_000,
-    });
+    await prepareSandboxWorkspace(sandbox, this.workspaceRoot);
   }
 
   async getSandbox() {

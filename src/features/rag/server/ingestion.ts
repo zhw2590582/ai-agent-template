@@ -4,14 +4,17 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { RAG_CONFIG } from '@/config/rag';
 import type { Database } from '@/lib/supabase/database.types';
+import { logger } from '@/lib/logger';
 import { chunkDocumentText } from '@/features/rag/server/chunking';
 import { embedDocumentsWithProvider } from '@/features/rag/server/embeddings';
 import {
+  deleteRagDocumentForUser,
   deleteRagChunksForDocument,
   ensureDefaultKnowledgeBase,
   getRagDocumentForUser,
   insertRagChunks,
   insertRagDocument,
+  listRagChunksForDocument,
   updateRagDocument,
 } from '@/features/rag/storage/rag-documents';
 import type { RagDocument, RagProviderId } from '@/features/rag/types';
@@ -83,18 +86,31 @@ export async function ingestRagTextDocument({
     title,
   });
 
-  await insertRagChunks(
-    supabase,
-    chunks.map((chunk, index) => ({
-      chunk_index: index,
-      content: chunk,
-      document_id: document.id,
-      embedding: embeddings[index],
-      metadata: {
-        characterCount: chunk.length,
-      },
-    }))
-  );
+  try {
+    await insertRagChunks(
+      supabase,
+      chunks.map((chunk, index) => ({
+        chunk_index: index,
+        content: chunk,
+        document_id: document.id,
+        embedding: embeddings[index],
+        metadata: {
+          characterCount: chunk.length,
+        },
+      }))
+    );
+  } catch (error) {
+    try {
+      await deleteRagDocumentForUser(supabase, document.id);
+    } catch (rollbackError) {
+      logger.error('RAG import rollback failed after chunk insert error', {
+        documentId: document.id,
+        rollbackError,
+      });
+    }
+
+    throw error;
+  }
 
   return {
     chunkCount: chunks.length,
@@ -133,20 +149,46 @@ export async function reindexRagDocument({
     provider,
   });
   const indexedAt = new Date().toISOString();
+  const existingChunks = await listRagChunksForDocument(supabase, documentId);
 
   await deleteRagChunksForDocument(supabase, documentId);
-  await insertRagChunks(
-    supabase,
-    chunks.map((chunk, index) => ({
-      chunk_index: index,
-      content: chunk,
-      document_id: documentId,
-      embedding: embeddings[index],
-      metadata: {
-        characterCount: chunk.length,
-      },
-    }))
-  );
+
+  try {
+    await insertRagChunks(
+      supabase,
+      chunks.map((chunk, index) => ({
+        chunk_index: index,
+        content: chunk,
+        document_id: documentId,
+        embedding: embeddings[index],
+        metadata: {
+          characterCount: chunk.length,
+        },
+      }))
+    );
+  } catch (error) {
+    if (existingChunks.length > 0) {
+      try {
+        await insertRagChunks(
+          supabase,
+          existingChunks.map((chunk) => ({
+            chunk_index: chunk.chunk_index,
+            content: chunk.content,
+            document_id: chunk.document_id,
+            embedding: chunk.embedding,
+            metadata: chunk.metadata,
+          }))
+        );
+      } catch (rollbackError) {
+        logger.error('RAG reindex rollback failed after chunk replacement error', {
+          documentId,
+          rollbackError,
+        });
+      }
+    }
+
+    throw error;
+  }
 
   const document = await updateRagDocument(supabase, documentId, {
     content_hash: buildContentHash(originalText),

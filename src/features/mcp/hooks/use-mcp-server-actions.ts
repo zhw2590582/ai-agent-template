@@ -5,6 +5,10 @@ import { toast } from 'sonner';
 
 import { API_ROUTES } from '@/config/api';
 import { readApiError } from '@/lib/api-client';
+import {
+  buildNextMcpSettingsForServerDelete,
+  buildNextMcpSettingsForServerSave,
+} from '@/features/mcp/server-state';
 import type { McpServerSettings, McpSettings } from '@/features/mcp/types';
 
 interface McpTestResult {
@@ -40,10 +44,10 @@ interface McpTestResult {
 }
 
 interface UseMcpServerActionsOptions {
+  localSettings: McpSettings;
   onMcpSettingsChange: (updater: (settings: McpSettings) => McpSettings) => Promise<boolean> | void;
   saveFailedMessage: string;
   saveSuccessMessage: string;
-  savedSettings: McpSettings;
   setIsSaving: React.Dispatch<React.SetStateAction<boolean>>;
   setLocalSettings: React.Dispatch<React.SetStateAction<McpSettings>>;
   setSavedSettings: React.Dispatch<React.SetStateAction<McpSettings>>;
@@ -55,10 +59,10 @@ interface UseMcpServerActionsOptions {
 export type { McpTestResult };
 
 export function useMcpServerActions({
+  localSettings,
   onMcpSettingsChange,
   saveFailedMessage,
   saveSuccessMessage,
-  savedSettings,
   setIsSaving,
   setLocalSettings,
   setSavedSettings,
@@ -69,30 +73,12 @@ export function useMcpServerActions({
   const [testingServerId, setTestingServerId] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<Record<string, McpTestResult>>({});
 
-  const upsertServer = (servers: McpServerSettings[], server: McpServerSettings) => {
-    const existingIndex = servers.findIndex((item) => item.id === server.id);
-
-    if (existingIndex === -1) {
-      return [...servers, server];
-    }
-
-    return servers.map((item) => (item.id === server.id ? server : item));
-  };
-
   const clearTestResult = (serverId: string) => {
     setTestResults((results) => {
       const nextResults = { ...results };
       delete nextResults[serverId];
       return nextResults;
     });
-  };
-
-  const removeServerFromLocalState = (serverId: string) => {
-    setLocalSettings((current) => ({
-      ...current,
-      servers: current.servers.filter((server) => server.id !== serverId),
-    }));
-    clearTestResult(serverId);
   };
 
   const runConnectionTest = async (server: McpServerSettings) => {
@@ -221,10 +207,7 @@ export function useMcpServerActions({
   };
 
   const saveServer = async (server: McpServerSettings) => {
-    const nextSavedSettings: McpSettings = {
-      ...savedSettings,
-      servers: upsertServer(savedSettings.servers, server),
-    };
+    const nextSavedSettings = buildNextMcpSettingsForServerSave(localSettings, server);
 
     setIsSaving(true);
     try {
@@ -236,10 +219,7 @@ export function useMcpServerActions({
       }
 
       setSavedSettings(nextSavedSettings);
-      setLocalSettings((current) => ({
-        ...current,
-        servers: upsertServer(current.servers, server),
-      }));
+      setLocalSettings(nextSavedSettings);
       setShowSaved(true);
       toast.success(saveSuccessMessage);
       return true;
@@ -249,10 +229,7 @@ export function useMcpServerActions({
   };
 
   const deleteServer = async (serverId: string) => {
-    const nextSavedSettings: McpSettings = {
-      ...savedSettings,
-      servers: savedSettings.servers.filter((server) => server.id !== serverId),
-    };
+    const nextSavedSettings = buildNextMcpSettingsForServerDelete(localSettings, serverId);
 
     setIsSaving(true);
     try {
@@ -264,7 +241,8 @@ export function useMcpServerActions({
       }
 
       setSavedSettings(nextSavedSettings);
-      removeServerFromLocalState(serverId);
+      setLocalSettings(nextSavedSettings);
+      clearTestResult(serverId);
       setShowSaved(true);
       toast.success(saveSuccessMessage);
       return true;

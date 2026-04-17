@@ -20,6 +20,10 @@ import { logger } from '@/lib/logger';
 export function buildSearchAgentTools(options: {
   searchSettings?: SearchSettings | null;
 }): ToolSet {
+  if (!options.searchSettings?.enabled) {
+    return {};
+  }
+
   const webCrawlTool = createWebCrawlTool(options.searchSettings);
   const webExtractTool = createWebExtractTool(options.searchSettings);
   const webSearchTool = createWebSearchTool(options.searchSettings);

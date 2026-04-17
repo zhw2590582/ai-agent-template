@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { API_ROUTES } from '@/config/api';
 import { CHAT_UI_CONFIG } from '@/config/chat';
 import type { SearchSettings } from '@/features/search/types';
+import { readApiError } from '@/lib/api-client';
 
 interface UseSearchSettingsOptions {
   onClose?: () => void;
@@ -74,7 +75,8 @@ export function useSearchSettings({
       });
 
       if (!response.ok) {
-        toast.error(testFailedMessage);
+        const error = await readApiError(response);
+        toast.error(error.message ?? testFailedMessage);
         return;
       }
 
