@@ -82,7 +82,6 @@ export function ChatSidebar({
   const t = useTranslations();
   const locale = useLocale();
   const pathname = usePathname();
-  const rootHref = `/${locale}`;
   const chatHomeHref = `/${locale}/chat`;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -207,7 +206,8 @@ export function ChatSidebar({
       <div className="border-border mb-3 flex h-14 items-center justify-between border-b px-3">
         <Link
           className="text-foreground flex shrink-0 items-center gap-2 truncate text-sm font-medium"
-          href={rootHref}
+          href={chatHomeHref}
+          onClick={handleNewChatClick}
         >
           <BotIcon className="size-4" />
           {t('chat.sidebar.agent_workspace')}
