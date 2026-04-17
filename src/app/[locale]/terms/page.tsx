@@ -1,4 +1,24 @@
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { normalizeLocale } from '@/config/i18n';
+import { createPageMetadata, getSeoCopy } from '@/config/seo';
+
+type TermsPageProps = {
+  params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: TermsPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const normalizedLocale = normalizeLocale(locale);
+  const copy = getSeoCopy(normalizedLocale);
+
+  return createPageMetadata({
+    description: copy.termsDescription,
+    locale: normalizedLocale,
+    pathname: '/terms',
+    title: copy.termsTitle,
+  });
+}
 
 export default async function TermsPage() {
   const t = await getTranslations();

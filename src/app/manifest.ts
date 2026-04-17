@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
+import { APP_NAME } from '@/config/seo';
 
-const APP_NAME = 'AI Agent Template';
-const APP_DESCRIPTION = 'A general AI agent chat interface built with Next.js and AI SDK.';
+const APP_DESCRIPTION =
+  'Open-source AI agent template built with Next.js and AI SDK, featuring local-first chat, Memory, Search, Sandbox, RAG, MCP, and Subagents.';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {

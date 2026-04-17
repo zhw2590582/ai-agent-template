@@ -1,4 +1,24 @@
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { normalizeLocale } from '@/config/i18n';
+import { createPageMetadata, getSeoCopy } from '@/config/seo';
+
+type PrivacyPageProps = {
+  params: Promise<{ locale: string }>;
+};
+
+export async function generateMetadata({ params }: PrivacyPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const normalizedLocale = normalizeLocale(locale);
+  const copy = getSeoCopy(normalizedLocale);
+
+  return createPageMetadata({
+    description: copy.privacyDescription,
+    locale: normalizedLocale,
+    pathname: '/privacy',
+    title: copy.privacyTitle,
+  });
+}
 
 export default async function PrivacyPage() {
   const t = await getTranslations();
