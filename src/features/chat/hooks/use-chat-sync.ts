@@ -6,10 +6,8 @@ import type { UIMessage } from 'ai';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import { createConversationRecordSource } from '@/features/chat/sources/conversation-record-source';
 import {
-  chooseMessagesForUrl,
   getConversationSyncPhase,
   hasUrlChanged,
-  isLocalConversationId,
   pickNewMessages,
   shouldMergeServerMessages,
   shouldResetToStarter,
@@ -87,38 +85,37 @@ export function useChatSync({
     syncVersionRef.current++;
     const capturedVersion = syncVersionRef.current;
 
-    if (isLocalConversationId(urlConversationId)) {
-      startTransition(() => {
-        setMessages(starterMessages);
-      });
+    const cachedMessages = recordSource.getCachedMessages(urlConversationId);
+    const initialUrlMessages =
+      initialConversationId === urlConversationId && initialMessages.length > 0
+        ? initialMessages
+        : null;
 
-      void (async () => {
-        const localMessages = await recordSource.getMessages(urlConversationId);
+    startTransition(() => {
+      setMessages(cachedMessages ?? initialUrlMessages ?? starterMessages);
+    });
 
-        startTransition(() => {
-          setMessages((current) => {
-            if (syncVersionRef.current !== capturedVersion) {
-              return current;
-            }
-
-            return localMessages ?? starterMessages;
-          });
-        });
-      })();
-
+    if (cachedMessages || initialUrlMessages) {
       return;
     }
 
-    startTransition(() => {
-      setMessages(
-        chooseMessagesForUrl({
-          urlConversationId,
-          initialConversationId,
-          initialMessages,
-          starterMessages,
-        })
-      );
-    });
+    void (async () => {
+      const nextMessages = (await recordSource.getMessages(urlConversationId)) ?? starterMessages;
+
+      if (nextMessages !== starterMessages) {
+        recordSource.cacheMessages(urlConversationId, nextMessages);
+      }
+
+      startTransition(() => {
+        setMessages((current) => {
+          if (syncVersionRef.current !== capturedVersion) {
+            return current;
+          }
+
+          return nextMessages;
+        });
+      });
+    })();
   }, [
     initialConversationId,
     initialMessages,
@@ -146,6 +143,10 @@ export function useChatSync({
       clearBootstrapping();
     }
 
+    if (urlConversationId) {
+      recordSource.cacheMessages(urlConversationId, initialMessages);
+    }
+
     const capturedVersion = syncVersionRef.current;
 
     startTransition(() => {
@@ -157,6 +158,7 @@ export function useChatSync({
       });
     });
   }, [
+    recordSource,
     urlConversationId,
     initialConversationId,
     initialMessages,

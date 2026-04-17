@@ -8,6 +8,7 @@ import { SERVER_MESSAGES } from '@/config/strings';
 import { requireAuthenticatedUser } from '@/features/auth/server/session';
 import { upsertProfileFromAuthUser } from '@/features/auth/storage/profiles';
 import {
+  getConversationById,
   createConversation,
   deleteConversation,
   listConversationsForUserPage,
@@ -28,6 +29,7 @@ import { validateRequest } from '@/lib/validation';
 
 function resolveConversationPage(request: Request) {
   const { searchParams } = new URL(request.url);
+  const conversationId = (searchParams.get('id') ?? '').trim() || null;
   const query = (searchParams.get('query') ?? '').trim();
   const offset = Math.min(
     PAGINATION_CONFIG.CONVERSATIONS_MAX_OFFSET,
@@ -38,12 +40,12 @@ function resolveConversationPage(request: Request) {
     ? Math.min(PAGINATION_CONFIG.CONVERSATIONS_MAX_LIMIT, Math.max(1, limitParam))
     : CONVERSATION_SIDEBAR_PAGE_SIZE;
 
-  return { limit, offset, query };
+  return { conversationId, limit, offset, query };
 }
 
 export async function GET(request: Request) {
   try {
-    const { limit, offset, query } = resolveConversationPage(request);
+    const { conversationId, limit, offset, query } = resolveConversationPage(request);
     const { supabase, user } = await requireAuthenticatedUser();
 
     enforceRateLimit(request, {
@@ -52,6 +54,23 @@ export async function GET(request: Request) {
       namespace: API_NAMESPACES.CONVERSATIONS_READ,
     });
     await upsertProfileFromAuthUser(user, {}, supabase);
+
+    if (conversationId) {
+      const conversation = await getConversationById(conversationId, supabase);
+
+      if (!conversation || conversation.user_id !== user.id) {
+        throw new AppError(ErrorCode.UNKNOWN, SERVER_MESSAGES.CONVERSATION_NOT_FOUND, 404);
+      }
+
+      return Response.json({
+        conversation: {
+          id: conversation.id,
+          messages: conversation.messages,
+          summary: conversation.summary,
+          title: conversation.title,
+        },
+      });
+    }
 
     const { hasMore, rows } = query
       ? await listConversationsForUserSearchPage(user.id, supabase, {

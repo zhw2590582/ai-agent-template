@@ -6,6 +6,7 @@ export const CHAT_STRINGS = {
 export const SERVER_MESSAGES = {
   AUTHENTICATION_REQUIRED: 'Authentication required.',
   CONVERSATION_CREATION_FAILED: 'Conversation creation failed.',
+  CONVERSATION_NOT_FOUND: 'Conversation not found.',
   MCP_UNDER_CONSTRUCTION: 'MCP endpoint is under construction.',
   PROFILE_LOAD_FAILED: 'Failed to load profile',
   TOO_MANY_REQUESTS: 'Too many requests. Please try again later.',

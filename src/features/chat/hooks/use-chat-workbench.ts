@@ -20,7 +20,9 @@ import { useInvalidConversationGuard } from '@/features/chat/hooks/use-invalid-c
 import { useChatSession } from '@/features/chat/hooks/use-chat-session';
 import { useChatSync } from '@/features/chat/hooks/use-chat-sync';
 import { useSidebarConversations } from '@/features/chat/hooks/use-sidebar-conversations';
+import { createConversationRecordSource } from '@/features/chat/sources/conversation-record-source';
 import type { ConversationSummary } from '@/features/chat/storage/types';
+import { updateConversationUrl } from '@/features/chat/utils/chat-controller';
 import { getInitialMessages } from '@/features/chat/utils/chat-config';
 import { isChatCapableModel } from '@/features/models/utils/model-capabilities';
 import { getChatModelOptions } from '@/features/models/utils/runtime-model';
@@ -140,6 +142,7 @@ export function useChatWorkbench({
     () => availableModels.find((model) => model.id === selectedModel) ?? null,
     [availableModels, selectedModel]
   );
+  const conversationRecordSource = useMemo(() => createConversationRecordSource(user), [user]);
 
   const isBusy = status === 'submitted' || status === 'streaming';
 
@@ -180,7 +183,6 @@ export function useChatWorkbench({
     onSendMessage: sendMessage,
     onSendError: () => toast.error(t('chat.errors.send_message_failed')),
     onStop: stop,
-    router,
     setBootstrappingThreadId,
     setInput,
     setIsStartingThread,
@@ -224,6 +226,28 @@ export function useChatWorkbench({
       });
     },
     [updateSelectedChatModelId]
+  );
+
+  const selectConversation = useCallback(
+    (conversationId: string) => {
+      if (conversationId === urlConversationId) {
+        return;
+      }
+
+      updateConversationUrl(pathname, conversationId);
+    },
+    [pathname, urlConversationId]
+  );
+
+  const prefetchConversation = useCallback(
+    (conversationId: string) => {
+      if (conversationId === urlConversationId) {
+        return;
+      }
+
+      conversationRecordSource.prefetchMessages(conversationId);
+    },
+    [conversationRecordSource, urlConversationId]
   );
 
   const guardedSubmit = useCallback(
@@ -309,7 +333,9 @@ export function useChatWorkbench({
     regenerate: guardedRegenerate,
     renameConversation: conversationRecordActions.renameConversation,
     availableModels,
+    prefetchConversation,
     selectedModel,
+    selectConversation,
     setSelectedModel: handleModelChange,
     setInput,
     setIsSidebarOpen,

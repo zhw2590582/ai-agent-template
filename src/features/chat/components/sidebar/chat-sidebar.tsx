@@ -55,6 +55,8 @@ interface ChatSidebarProps {
   onClearChat: () => void;
   onDeleteConversation?: (conversationId: string) => Promise<boolean> | boolean;
   onLoadMoreConversations?: () => void | Promise<void>;
+  onOpenConversation?: (conversationId: string) => void;
+  onPrefetchConversation?: (conversationId: string) => void;
   onRenameConversation?: (conversationId: string, title: string) => Promise<boolean> | boolean;
   onSearchQueryChange?: (value: string) => void;
   onSelectConversation?: () => void;
@@ -71,6 +73,8 @@ export function ChatSidebar({
   onClearChat,
   onDeleteConversation,
   onLoadMoreConversations,
+  onOpenConversation,
+  onPrefetchConversation,
   onRenameConversation,
   onSearchQueryChange,
   onSelectConversation,
@@ -249,13 +253,18 @@ export function ChatSidebar({
                       item.id === activeConversationId || openMenuId === item.id ? 'bg-accent' : ''
                     )}
                   >
-                    <Link
-                      className="min-w-0 flex-1"
-                      href={`/${locale}?id=${item.id}`}
-                      onClick={() => onSelectConversation?.()}
+                    <button
+                      className="min-w-0 flex-1 cursor-pointer text-left"
+                      type="button"
+                      onFocus={() => onPrefetchConversation?.(item.id)}
+                      onMouseEnter={() => onPrefetchConversation?.(item.id)}
+                      onClick={() => {
+                        onOpenConversation?.(item.id);
+                        onSelectConversation?.();
+                      }}
                     >
                       <span className="block max-w-52 truncate">{item.title}</span>
-                    </Link>
+                    </button>
                     <DropdownMenu
                       open={openMenuId === item.id}
                       onOpenChange={(open) => setOpenMenuId(open ? item.id : null)}

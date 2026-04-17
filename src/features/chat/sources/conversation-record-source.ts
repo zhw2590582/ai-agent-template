@@ -41,6 +41,7 @@ export interface ConversationRecordSyncPlan {
 }
 
 export interface ConversationRecordSource {
+  cacheMessages: (conversationId: string, messages: UIMessage[]) => void;
   createRecord: (options: {
     initialMessage: string;
     locale: Locale;
@@ -63,8 +64,10 @@ export interface ConversationRecordSource {
     locale: Locale;
     runtimeModel?: ChatRuntimeModel | null;
   }) => void;
+  getCachedMessages: (conversationId: string) => UIMessage[] | null;
   getMessages: (conversationId: string) => Promise<UIMessage[] | null>;
   getSyncPlan: (options: ConversationRecordSyncPlanOptions) => ConversationRecordSyncPlan;
+  prefetchMessages: (conversationId: string) => void;
   persistMessages: (options: {
     conversationId: string;
     locale: Locale;
@@ -132,6 +135,7 @@ function buildLocalConversationSyncPlan(
 
 function createLocalConversationRecordSource(): ConversationRecordSource {
   return {
+    cacheMessages: () => {},
     createRecord: async ({ initialMessage }) => {
       const localConversation = createLocalConversationThread(initialMessage);
       await upsertLocalConversationThread({
@@ -168,6 +172,13 @@ function createLocalConversationRecordSource(): ConversationRecordSource {
         runtimeModel,
       });
     },
+    getCachedMessages: (conversationId) => {
+      if (!areLocalConversationThreadsLoaded()) {
+        return null;
+      }
+
+      return getLocalConversationThread(conversationId)?.messages ?? null;
+    },
     getMessages: async (conversationId) => {
       await ensureLocalConversationThreadsLoaded();
       const thread = await getLocalConversationThreadById(conversationId);
@@ -181,6 +192,11 @@ function createLocalConversationRecordSource(): ConversationRecordSource {
         messages,
         urlConversationId,
       }),
+    prefetchMessages: (conversationId) => {
+      void ensureLocalConversationThreadsLoaded().then(() => {
+        void getLocalConversationThreadById(conversationId);
+      });
+    },
     persistMessages: async ({ conversationId, messages }) => {
       await upsertLocalConversationThread({
         id: conversationId,
@@ -195,8 +211,61 @@ function createLocalConversationRecordSource(): ConversationRecordSource {
   };
 }
 
+const remoteConversationMessagesCache = new Map<string, UIMessage[]>();
+const remoteConversationMessagesRequests = new Map<string, Promise<UIMessage[] | null>>();
+
+function fetchRemoteConversationMessages(conversationId: string) {
+  const cachedMessages = remoteConversationMessagesCache.get(conversationId);
+
+  if (cachedMessages) {
+    return Promise.resolve(cachedMessages);
+  }
+
+  const inFlightRequest = remoteConversationMessagesRequests.get(conversationId);
+  if (inFlightRequest) {
+    return inFlightRequest;
+  }
+
+  const request = (async () => {
+    const params = new URLSearchParams({ id: conversationId });
+    const response = await fetch(`${API_ROUTES.conversations}?${params.toString()}`, {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = (await response.json()) as {
+      conversation?: {
+        messages?: UIMessage[];
+      };
+    };
+    const messages = data.conversation?.messages ?? null;
+
+    if (messages) {
+      remoteConversationMessagesCache.set(conversationId, messages);
+    }
+
+    return messages;
+  })();
+
+  remoteConversationMessagesRequests.set(conversationId, request);
+
+  void request.finally(() => {
+    if (remoteConversationMessagesRequests.get(conversationId) === request) {
+      remoteConversationMessagesRequests.delete(conversationId);
+    }
+  });
+
+  return request;
+}
+
 function createRemoteConversationRecordSource(): ConversationRecordSource {
   return {
+    cacheMessages: (conversationId, messages) => {
+      remoteConversationMessagesCache.set(conversationId, messages);
+    },
     createRecord: async ({ initialMessage }) => {
       const response = await fetch(API_ROUTES.conversations, {
         body: JSON.stringify({ initialMessage }),
@@ -209,6 +278,7 @@ function createRemoteConversationRecordSource(): ConversationRecordSource {
       }
 
       const data: { conversation: { id: string; title: string } } = await response.json();
+      remoteConversationMessagesCache.set(data.conversation.id, []);
       return data.conversation;
     },
     deleteRecord: async (conversationId) => {
@@ -222,18 +292,30 @@ function createRemoteConversationRecordSource(): ConversationRecordSource {
         }),
       });
 
+      if (response.ok) {
+        remoteConversationMessagesCache.delete(conversationId);
+        remoteConversationMessagesRequests.delete(conversationId);
+      }
+
       return response.ok;
     },
     generateMemories: () => {},
     generateSummary: () => {},
     generateTitle: () => {},
-    getMessages: async () => null,
+    getCachedMessages: (conversationId) =>
+      remoteConversationMessagesCache.has(conversationId)
+        ? (remoteConversationMessagesCache.get(conversationId) ?? null)
+        : null,
+    getMessages: async (conversationId) => await fetchRemoteConversationMessages(conversationId),
     getSyncPlan: () => ({
       phase: 'unmanaged',
       shouldPersistMessages: false,
       shouldClearBootstrappingAfterPersist: false,
       shouldRunDerivedState: false,
     }),
+    prefetchMessages: (conversationId) => {
+      void fetchRemoteConversationMessages(conversationId);
+    },
     persistMessages: async () => {},
     renameRecord: async (conversationId, title) => {
       const response = await fetch(API_ROUTES.conversations, {

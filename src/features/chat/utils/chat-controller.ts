@@ -1,5 +1,4 @@
 import type { UIMessage } from 'ai';
-import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { nanoid } from 'nanoid';
 
 export function buildUserMessage(text: string): UIMessage {
@@ -10,16 +9,11 @@ export function buildUserMessage(text: string): UIMessage {
   };
 }
 
-export function updateConversationUrl(
-  router: AppRouterInstance,
-  pathname: string,
-  conversationId: string | null
-) {
+export function updateConversationUrl(pathname: string, conversationId: string | null) {
   const target = conversationId ? `${pathname}?id=${conversationId}` : pathname;
-  router.replace(target, { scroll: false });
+  window.history.pushState(null, '', target);
 }
 
-export function clearConversationUrl(router: AppRouterInstance, pathname: string) {
-  window.history.replaceState(window.history.state, '', pathname);
-  router.replace(pathname, { scroll: false });
+export function clearConversationUrl(pathname: string) {
+  window.history.replaceState(null, '', pathname);
 }

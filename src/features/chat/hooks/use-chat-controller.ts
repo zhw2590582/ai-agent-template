@@ -1,5 +1,4 @@
 import type { UIMessage } from 'ai';
-import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
 import type { ConversationSummary } from '@/features/chat/storage/types';
 import {
@@ -22,7 +21,6 @@ interface UseChatControllerOptions {
   ) => Promise<void>;
   onSendError: () => void;
   onStop: () => void;
-  router: AppRouterInstance;
   setBootstrappingThreadId: (value: string | null) => void;
   setInput: (value: string) => void;
   setIsStartingThread: (value: boolean) => void;
@@ -46,7 +44,6 @@ export function useChatController({
   onSendMessage,
   onSendError,
   onStop,
-  router,
   setBootstrappingThreadId,
   setInput,
   setIsStartingThread,
@@ -83,7 +80,7 @@ export function useChatController({
           title: created.title,
         });
         setBootstrappingThreadId(created.id);
-        updateConversationUrl(router, pathname, created.id);
+        updateConversationUrl(pathname, created.id);
 
         const userMessage: UIMessage = buildUserMessage(text);
         setMessages([userMessage]);
@@ -124,7 +121,7 @@ export function useChatController({
     setMessages(starterMessages);
     setInput('');
 
-    clearConversationUrl(router, pathname);
+    clearConversationUrl(pathname);
   };
 
   return { handleClearChat, handleSubmit };
