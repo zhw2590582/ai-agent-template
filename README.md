@@ -1,166 +1,73 @@
-# AI Agent App
+# AI Agent Template
 
-[![CI](https://github.com/zhw2590582/ai-agent-template/workflows/CI/badge.svg)](https://github.com/zhw2590582/ai-agent-template/actions)
+A local-first, extensible AI agent web app template built with Next.js, AI SDK, and Supabase.
 
-一个面向长期扩展的 AI Agent Web App 骨架。
+This repository is designed as a practical starting point for building an AI chat product with memory, tools, retrieval, sandbox execution, and multi-agent workflows. It is not a tutorial demo and not a one-off prototype.
 
-## 当前定位
+## Feature Status
 
-当前项目不是完整 agent 平台，而是一个已经跑通的聊天工作台骨架，重点在：
+| Feature Area  | Available Now                                                                                        | Still Missing                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Chat Runtime  | Stable `useChat -> /api/chat -> agent-runtime` flow with streaming responses and tool support        | More runtime hardening, recovery, and broader end-to-end coverage                |
+| Models        | Provider configuration, connection testing, model syncing, and runtime model selection               | Deeper provider abstraction, fallback strategy, and more regression tests        |
+| Auth          | Supabase OAuth, persisted profile settings, and local-first guest fallback                           | Further cleanup of long-term settings boundaries                                 |
+| Conversations | Signed-in conversations in Supabase and guest conversations in IndexedDB-backed local storage        | Further simplification of the guest conversation lifecycle                       |
+| Memory        | Cross-conversation memory, local-first guest memory, and conversation summaries in one shared UI     | Memory import, stronger consolidation/retrieval, and tighter source alignment    |
+| Search        | Provider-based search tools, extraction, crawl support, and connection testing                       | A second provider, richer result presentation, and more provider-neutral UX      |
+| Sandbox       | Provider-based sandbox runtime with configurable access policy and initial tool support              | Broader capability coverage and deeper toolset tests                             |
+| RAG           | Document ingestion, pgvector retrieval, provider-based embeddings, and grounded answers with sources | Multi-knowledge-base product UX, tighter triggering rules, and a second provider |
+| Subagents     | Minimal serial subagent delegation with configurable agents and basic UI feedback                    | Delegation budget, stronger telemetry, and broader tests                         |
+| MCP           | Remote MCP server settings, connection testing, and runtime tool merge                               | Resources/prompts support and a more complete runtime surface                    |
+| Skills        | Settings UI and persistence surface                                                                  | Runtime contract and actual skill execution support                              |
+| Testing       | Core unit tests and targeted integration coverage                                                    | Full end-to-end coverage and stronger production-readiness checks                |
 
-- 流式聊天主链路
-- 用户自配置的模型/provider 接入
-- 登录、会话持久化、分页和搜索
-- 已落地的 Memory V1
-- 已落地的 Search V1：provider-based tools，当前默认 provider 为 Tavily
-- 已落地的 Sandbox V1：provider-based runtime，当前默认 provider 为 E2B
-- 已落地的远程 MCP tools integration
-- 已落地的 RAG V1：文档上传、向量检索、provider-based rerank 与来源展示
-- 已收口的聊天 `agent-runtime` harness
-- 为 RAG、Subagents 和后续扩展预留结构边界
+## Local-First Behavior
 
-## 当前真实状态
+Guests can use most of the app without signing in.
 
-已完成：
+- Conversations and memories are stored locally for guest users
+- Profile and feature settings fall back to local storage when needed
+- Signed-in users use Supabase-backed persistence and syncing
 
-- 基于 `useChat` 的流式聊天
-- 服务端 `/api/chat` 到 `streamText(...)` 的主链路
-- `Models` 配置弹窗已落地
-- 运行时模型配置：OpenAI 兼容 / Anthropic 兼容
-- provider 配置持久化：guest 存本地，登录用户写入 `profile.settings`
-- 自定义 provider：可新增、删除、显式保存
-- 模型同步和自定义模型管理
-- 国际化：`en-US` / `zh-CN`，默认语言为英文
-- 主题切换
-- Supabase 社交登录（GitHub / Google）
-- 会话持久化（`conversations` 表）
-- 会话列表、分页、搜索、标题生成
-- guest 本地会话线程、列表与标题生成
-- sidebar 的乐观插入 / 重命名 / 删除
-- Memory V1：会话摘要、长期记忆、跨会话注入
-- Memory V1：最小版单维度 consolidation
-- `Memory` 配置弹窗：控制项、记忆编辑/删除/导出、会话摘要编辑/删除
-- `Search` 配置弹窗：Tavily key、Search / Extract / Crawl 设置、连接测试
-- `Search` provider registry / factory：当前默认 provider 为 Tavily
-- Search tools：`web_search`、`web_extract`、`web_crawl`
-- `Sandbox` 配置弹窗：E2B key、template、运行目录、连接测试
-- `Sandbox` provider registry / runtime session factory：当前默认 provider 为 E2B
-- Sandbox tools：`sandbox_run_command`、`sandbox_read_file`、`sandbox_write_file`
-- Sandbox workspace/session/telemetry 骨架
-- `RAG` provider registry / factory：当前默认 provider 为 Voyage
-- `MCP` 配置弹窗：多远程 server 配置、连接测试、结果展示
-- 聊天时合并远程 MCP tools
-- 基础 tool loop 与聊天 workflow 分层
-- 聊天 `agent-runtime`：request、context、toolset、workspace、response、finish 收口
-- `Subagents` V1：最小串行 `Orchestrator-Subagent`、内建角色、tool delegation、流式展示
-- API 频率限制与 429 错误提示
-- 环境变量校验、错误处理、日志、CI
-- Vitest 单元测试和集成测试
-
-仍未完成或仍是占位：
-
-- 更复杂的 multi-agent orchestration
-- Skills runtime
-- durable run storage / resume
-- 本项目自己的正式 MCP server
-- E2E 自动化测试
-
-更准确的状态说明见 [docs/project-status.md](./docs/project-status.md)。
-
-## 快速开始
+## Quick Start
 
 ```bash
 bun install
-cp .env.example .env.local
+cp .env.example .env
 bun run dev
 ```
 
-访问地址：
+Open `http://localhost:3000`.
 
-- 英文：`http://localhost:3000/en-US`
-- 中文：`http://localhost:3000/zh-CN`
-- 默认：`http://localhost:3000`（英文）
+## Environment
 
-最低可运行环境变量：
+At minimum, configure:
 
-- 无
+- model provider keys for chat
+- `NEXT_PUBLIC_APP_URL` for canonical URLs and sitemap metadata
 
-聊天模型改为在顶部 `Models` 弹窗里由用户自行配置。
+Optional:
 
-## Local-First
+- Supabase for auth and server persistence
+- Tavily or other search providers
+- Voyage or other embedding providers
+- E2B for sandbox execution
 
-当前模板默认是 `local-first`。
+See [`.env.example`](./.env.example) for the full list.
 
-- 匿名用户也可以使用绝大部分核心功能
-- 不登录时，模型配置和大部分工作台设置默认保存在当前浏览器本地；guest 的会话线程与长期记忆使用 IndexedDB 持久化
-- 不登录时，`Memory` 也可用：guest 走本地长期记忆 + 本地会话摘要，并在新会话中继续跨会话注入
-- 配置了 Supabase 之后，才会显示登录入口，并把 profile / conversations 等数据持久化到远端
-- 当前 `Memory / Profile` 已开始按 `local / supabase` 两种 source 分层，后续会继续把这套边界扩到 conversations
+## Docs
 
-未登录用户也可以使用聊天，且在 `Memory` 面板中的体感与登录用户基本一致；差别只在于 guest 数据只保存在当前浏览器本地，不会跨设备同步。
+- [Project Status](./docs/project-status.md)
+- [Architecture](./docs/architecture.md)
+- [Conventions](./docs/conventions.md)
+- [Roadmap](./docs/roadmap.md)
+- [Feature Boundary Review](./docs/feature-boundary-review.md)
 
-如果要启用登录和会话持久化，还需要配置：
+## Stack
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-
-## 技术栈
-
-- Next.js 16
-- React 19
+- Next.js
 - AI SDK
-- AI Elements
-- shadcn/ui
-- Tailwind CSS v4
-- next-intl
 - Supabase
-- Zod
+- shadcn/ui
+- Tailwind CSS
 - Bun
-
-## 当前结构
-
-```text
-src/
-├── app/                  # Next.js 路由入口与 API route
-├── components/           # 基础 UI 和 AI Elements 组件
-├── config/               # 按主题拆分的配置
-├── features/
-│   ├── auth/             # 登录和 profile 同步
-│   ├── chat/             # 聊天工作台、消息链路、会话存储
-│   │   └── agent-runtime/ # 聊天运行时编排层
-│   ├── debug/            # 调试工具和诊断辅助
-│   ├── mcp/              # 远程 MCP server 配置、测试、tool client
-│   ├── memory/           # 长期记忆、摘要列表、Memory 页面
-│   ├── models/           # provider 配置、模型同步、自定义 provider/model
-│   ├── rag/              # 文档上传、向量检索、来源展示
-│   ├── sandbox/          # Sandbox provider 配置、runtime session 与 tools
-│   ├── search/           # Search provider 设置、连接测试、服务端 client
-│   ├── settings/         # app 级 settings schema / source 聚合层
-│   ├── skills/           # Skills workbench UI 与设置持久化
-│   └── subagents/        # 最小串行多代理边界
-├── i18n/                 # next-intl 请求配置
-├── lib/                  # 通用工具、错误处理、日志、Supabase client
-└── proxy.ts              # locale 检测与 session 更新
-```
-
-## 文档入口
-
-AI 或新协作者建议按这个顺序看：
-
-1. [docs/project-status.md](./docs/project-status.md)
-2. [docs/architecture.md](./docs/architecture.md)
-3. [docs/agent-harness.md](./docs/agent-harness.md)（只在改聊天 runtime 时看）
-4. [docs/conventions.md](./docs/conventions.md)
-5. [docs/roadmap.md](./docs/roadmap.md)
-
-其他文档：
-
-- [docs/SETUP.md](./docs/SETUP.md)
-- [docs/testing.md](./docs/testing.md)
-- [docs/i18n-guide.md](./docs/i18n-guide.md)
-- [docs/README.md](./docs/README.md)
-
-参考资料目录：
-
-- [docs/ai-agents-for-beginners](./docs/ai-agents-for-beginners)
-- [docs/mcp-for-beginners](./docs/mcp-for-beginners)
