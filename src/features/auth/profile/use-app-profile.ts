@@ -35,7 +35,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
       user,
     });
   });
-  const [isLoading, setIsLoading] = useState(Boolean(user && !profileCache.has(user.id)));
+  const [isLoading, setIsLoading] = useState(user ? !profileCache.has(user.id) : true);
   const profileRef = useRef(profile);
   const saveInFlightRef = useRef<Promise<boolean> | null>(null);
   const queuedSaveRef = useRef<{

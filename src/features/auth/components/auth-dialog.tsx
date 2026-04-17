@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { CircleUserRoundIcon, LogInIcon, LogOutIcon } from 'lucide-react';
 import { useLocale } from 'next-intl';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -59,8 +58,6 @@ export function AuthDialog({
   signInLabel,
   signInFailedLabel,
   signOutLabel,
-  signOutFailedLabel,
-  signOutSuccessLabel,
   signedInAsLabel,
   termsAgreementLabel,
   termsOfServiceLabel,
@@ -97,25 +94,8 @@ export function AuthDialog({
     };
   }, [router, setUser, supabaseConfigured]);
 
-  const handleSignOut = async () => {
-    if (!supabaseConfigured) {
-      return;
-    }
-
-    try {
-      const supabase = createClient();
-      await supabase.auth.signOut();
-      setUser(null);
-      setIsOpen(false);
-      router.replace(`/${locale}`);
-      router.refresh();
-      if (signOutSuccessLabel) toast.success(signOutSuccessLabel);
-    } catch {
-      if (signOutFailedLabel) toast.error(signOutFailedLabel);
-    }
-  };
-
   const nextPath = pathname || '/';
+  const signOutHref = `/auth/sign-out?next=${encodeURIComponent(`/${locale}`)}`;
   const displayName = user?.fullName ?? user?.email ?? 'User';
   const avatarUrl = user?.avatarUrl ?? null;
   const initials = displayName.trim().charAt(0).toUpperCase() || 'U';
@@ -154,9 +134,11 @@ export function AuthDialog({
               <div className="text-muted-foreground truncate text-xs">{user.email}</div>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut} variant="destructive">
-              <LogOutIcon data-icon="inline-start" />
-              {signOutLabel}
+            <DropdownMenuItem asChild variant="destructive">
+              <a href={signOutHref}>
+                <LogOutIcon data-icon="inline-start" />
+                {signOutLabel}
+              </a>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
