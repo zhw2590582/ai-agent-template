@@ -249,22 +249,32 @@ export function ChatSidebar({
                   <div
                     key={item.id}
                     className={cn(
-                      'group hover:bg-accent text-foreground flex items-center gap-2 rounded-md px-1.5 py-1 text-sm transition',
+                      'group hover:bg-accent text-foreground flex cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-sm transition',
                       item.id === activeConversationId || openMenuId === item.id ? 'bg-accent' : ''
                     )}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      onOpenConversation?.(item.id);
+                      onSelectConversation?.();
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key !== 'Enter' && event.key !== ' ') {
+                        return;
+                      }
+
+                      event.preventDefault();
+                      onOpenConversation?.(item.id);
+                      onSelectConversation?.();
+                    }}
                   >
-                    <button
-                      className="min-w-0 flex-1 cursor-pointer text-left"
-                      type="button"
+                    <div
+                      className="min-w-0 flex-1"
                       onFocus={() => onPrefetchConversation?.(item.id)}
                       onMouseEnter={() => onPrefetchConversation?.(item.id)}
-                      onClick={() => {
-                        onOpenConversation?.(item.id);
-                        onSelectConversation?.();
-                      }}
                     >
                       <span className="block max-w-52 truncate">{item.title}</span>
-                    </button>
+                    </div>
                     <DropdownMenu
                       open={openMenuId === item.id}
                       onOpenChange={(open) => setOpenMenuId(open ? item.id : null)}
@@ -276,6 +286,7 @@ export function ChatSidebar({
                             'shrink-0 opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100',
                             openMenuId === item.id ? 'opacity-100' : ''
                           )}
+                          onClick={(event) => event.stopPropagation()}
                           onPointerDown={(event) => event.stopPropagation()}
                           size="icon-sm"
                           type="button"
