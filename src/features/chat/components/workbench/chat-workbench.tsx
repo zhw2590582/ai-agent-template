@@ -166,6 +166,7 @@ export function ChatWorkbench({
           />
           <ChatMessageList
             error={workbench.error}
+            hasActiveConversation={Boolean(workbench.activeThreadId)}
             isSidebarOpen={workbench.isSidebarOpen}
             messages={workbench.messages}
             onEditUserMessage={workbench.setInput}

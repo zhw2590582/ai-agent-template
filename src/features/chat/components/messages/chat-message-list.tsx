@@ -12,6 +12,7 @@ import {
   ConversationScrollButton,
 } from '@/components/ai-elements/conversation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Message, MessageContent } from '@/components/ai-elements/message';
 import { Shimmer } from '@/components/ai-elements/shimmer';
 import { ChatMessageRow } from '@/features/chat/components/messages/chat-message-row';
@@ -24,6 +25,7 @@ import { cn } from '@/lib/utils';
 
 interface ChatMessageListProps {
   error?: Error;
+  hasActiveConversation: boolean;
   isSidebarOpen: boolean;
   messages: UIMessage[];
   onEditUserMessage: (text: string) => void;
@@ -42,6 +44,7 @@ function formatToolTitle(toolName: string) {
 
 export function ChatMessageList({
   error,
+  hasActiveConversation,
   isSidebarOpen,
   messages,
   onEditUserMessage,
@@ -97,7 +100,7 @@ export function ChatMessageList({
           isSidebarOpen ? 'max-w-4xl' : 'max-w-6xl'
         )}
       >
-        {messages.length === 0 ? (
+        {messages.length === 0 && !hasActiveConversation ? (
           <div className="flex min-h-[36vh] items-center justify-center sm:min-h-[42vh]">
             <div className="max-w-2xl text-center">
               <h3 className="text-3xl font-semibold tracking-tight">
@@ -108,6 +111,23 @@ export function ChatMessageList({
                   {t('chat.empty_state.description')}
                 </p>
               ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        {messages.length === 0 && hasActiveConversation ? (
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 py-6">
+            <div className="flex justify-start">
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-28 rounded-md" />
+                <Skeleton className="h-16 w-[min(30rem,70vw)] rounded-2xl" />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <div className="space-y-3">
+                <Skeleton className="ml-auto h-4 w-24 rounded-md" />
+                <Skeleton className="h-20 w-[min(34rem,78vw)] rounded-2xl" />
+              </div>
             </div>
           </div>
         ) : null}
