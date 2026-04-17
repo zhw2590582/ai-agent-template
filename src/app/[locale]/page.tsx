@@ -26,5 +26,7 @@ export async function generateMetadata({
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
-  return <ChatShellPage searchParams={searchParams} />;
+  const { conversation, id } = await searchParams;
+
+  return <ChatShellPage conversationId={id ?? conversation ?? null} />;
 }

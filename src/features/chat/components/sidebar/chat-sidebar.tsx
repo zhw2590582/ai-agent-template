@@ -84,7 +84,8 @@ export function ChatSidebar({
   const t = useTranslations();
   const locale = useLocale();
   const pathname = usePathname();
-  const homeHref = `/${locale}`;
+  const rootHref = `/${locale}`;
+  const chatHomeHref = `/${locale}/chat`;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [renameTarget, setRenameTarget] = useState<ConversationSummary | null>(null);
@@ -93,12 +94,12 @@ export function ChatSidebar({
   const [isMutating, setIsMutating] = useState(false);
 
   const handleNewChatClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (pathname !== homeHref) {
+    if (pathname === chatHomeHref || pathname.startsWith(`${chatHomeHref}/`)) {
+      event.preventDefault();
+      onClearChat();
       onSelectConversation?.();
       return;
     }
-    event.preventDefault();
-    onClearChat();
     onSelectConversation?.();
   };
 
@@ -194,7 +195,7 @@ export function ChatSidebar({
         </div>
         <div className="px-3">
           <Button asChild className="w-full justify-start gap-2" size="default" variant="ghost">
-            <Link href={homeHref} onClick={handleNewChatClick}>
+            <Link href={chatHomeHref} onClick={handleNewChatClick}>
               <MessageSquarePlusIcon data-icon="inline-center" />
             </Link>
           </Button>
@@ -208,7 +209,7 @@ export function ChatSidebar({
       <div className="border-border mb-3 flex h-14 items-center justify-between border-b px-3">
         <Link
           className="text-foreground flex shrink-0 items-center gap-2 truncate text-sm font-medium"
-          href={homeHref}
+          href={rootHref}
         >
           <BotIcon className="size-4" />
           {t('chat.sidebar.agent_workspace')}
@@ -226,7 +227,7 @@ export function ChatSidebar({
 
       <div className="px-3">
         <Button asChild className="w-full justify-start gap-2" size="default" variant="ghost">
-          <Link href={homeHref} onClick={handleNewChatClick}>
+          <Link href={chatHomeHref} onClick={handleNewChatClick}>
             <MessageSquarePlusIcon data-icon="inline-start" />
             {t('chat.sidebar.new_chat')}
           </Link>

@@ -1,14 +1,21 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 export function useChatThreadState() {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const urlConversationId = useMemo(
-    () => searchParams.get('id') ?? searchParams.get('conversation') ?? null,
-    [searchParams]
-  );
+  const urlConversationId = useMemo(() => {
+    const segments = pathname.split('/').filter(Boolean);
+    const chatSegmentIndex = segments.findIndex((segment) => segment === 'chat');
+    const pathConversationId =
+      chatSegmentIndex >= 0 && segments.length > chatSegmentIndex + 1
+        ? segments[chatSegmentIndex + 1]
+        : null;
+
+    return pathConversationId ?? searchParams.get('id') ?? searchParams.get('conversation') ?? null;
+  }, [pathname, searchParams]);
 
   const [input, setInput] = useState('');
   const [isStartingThread, setIsStartingThread] = useState(false);

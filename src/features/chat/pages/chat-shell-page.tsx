@@ -3,15 +3,11 @@ import { loadChatPageData } from '@/features/chat/data/chat-page-data';
 import { ChatHomePage } from '@/features/chat/pages/chat-home-page';
 
 type ChatShellPageProps = {
-  searchParams: Promise<{
-    conversation?: string;
-    id?: string;
-  }>;
+  conversationId?: string | null;
 };
 
-export async function ChatShellPage({ searchParams }: ChatShellPageProps) {
-  const { conversation, id } = await searchParams;
-  const pageData = await loadChatPageData(id ?? conversation);
+export async function ChatShellPage({ conversationId = null }: ChatShellPageProps) {
+  const pageData = await loadChatPageData(conversationId ?? undefined);
 
   return (
     <ChatHomePage
