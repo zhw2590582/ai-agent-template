@@ -10,11 +10,7 @@ import { buildAgentRuntimeOverrides } from '@/features/chat/agent-runtime/runtim
 import { CHAT_RATE_LIMIT_ERROR_CODE, ChatRequestError } from '@/features/chat/utils/chat-errors';
 import { resolveChatRuntimeModel } from '@/features/models/utils/runtime-model';
 import type { ChatModelOption } from '@/features/models/types';
-import { buildMemoryContext } from '@/features/memory/storage/memory-retrieval';
-import {
-  ensureLocalMemoriesLoaded,
-  readLocalMemories,
-} from '@/features/memory/storage/local-memories';
+import { createClientMemorySource } from '@/features/memory/sources/client-memory-source';
 import type { AppProfileSettings } from '@/features/settings/types';
 import { readApiError } from '@/lib/api-client';
 
@@ -39,6 +35,7 @@ export function useAgentSession({
   onFinish,
   profileSettings,
 }: UseAgentSessionOptions) {
+  const guestMemorySource = useMemo(() => createClientMemorySource({ isAuthenticated: false }), []);
   const selectedModel = useMemo(() => {
     const profileSelectedModel = profileSettings?.models.selectedChatModelId ?? '';
 
@@ -125,8 +122,7 @@ export function useAgentSession({
             runtimeOverridesRef.current?.memory?.enabled &&
             runtimeOverridesRef.current.memory.crossConversation
           ) {
-            await ensureLocalMemoriesLoaded();
-            guestMemoryContext = buildMemoryContext(readLocalMemories(), {
+            guestMemoryContext = await guestMemorySource.buildContext({
               memorySettings: runtimeOverridesRef.current.memory,
             });
           }

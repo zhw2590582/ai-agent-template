@@ -1,12 +1,11 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-
 import type { AppProfileSettings } from '@/features/settings/types';
 import { useModelsDraft } from '@/features/models/hooks/use-models-draft';
+import { useModelsSave } from '@/features/models/hooks/use-models-save';
+import { useModelsSource } from '@/features/models/hooks/use-models-source';
 import { useProviderProbe } from '@/features/models/hooks/use-provider-probe';
 import type { ModelsSettings } from '@/features/models/types';
-import { getProvidersRequiringCatalogRefresh } from '@/features/models/utils/provider-sync';
 
 interface UseModelsPageOptions {
   profileSettings: AppProfileSettings;
@@ -17,9 +16,12 @@ interface UseModelsPageOptions {
 }
 
 export function useModelsPage({ profileSettings, saveProfile }: UseModelsPageOptions) {
-  const [isSavingChanges, setIsSavingChanges] = useState(false);
+  const modelsSource = useModelsSource({
+    profileSettings,
+    saveProfile,
+  });
   const modelsDraft = useModelsDraft({
-    models: profileSettings.models,
+    models: modelsSource.savedModels,
     profileSettings,
   });
   const {
@@ -44,51 +46,13 @@ export function useModelsPage({ profileSettings, saveProfile }: UseModelsPageOpt
     provider: selectedProvider,
     updateProvider,
   });
-
-  const saveChanges = useCallback(async () => {
-    setIsSavingChanges(true);
-
-    try {
-      let nextDraftModels = draftModels;
-      const providersToRefresh = getProvidersRequiringCatalogRefresh({
-        draftModels,
-        savedModels: profileSettings.models,
-      });
-
-      if (providersToRefresh.length > 0) {
-        const nextProviders = { ...draftModels.providers };
-
-        for (const providerToRefresh of providersToRefresh) {
-          const loadedProviderModels = await loadProviderModels({
-            applyResult: false,
-            notifyFailure: true,
-            notifySuccess: false,
-            providerOverride: providerToRefresh,
-          });
-
-          if (!loadedProviderModels) {
-            return false;
-          }
-
-          nextProviders[providerToRefresh.id] = {
-            ...nextProviders[providerToRefresh.id],
-            models: loadedProviderModels.mergedModels,
-          };
-        }
-
-        nextDraftModels = {
-          ...draftModels,
-          providers: nextProviders,
-        };
-
-        setDraftModels(nextDraftModels);
-      }
-
-      return await saveProfile(() => nextDraftModels);
-    } finally {
-      setIsSavingChanges(false);
-    }
-  }, [draftModels, loadProviderModels, profileSettings.models, saveProfile, setDraftModels]);
+  const { isSavingChanges, saveChanges } = useModelsSave({
+    draftModels,
+    loadProviderModels,
+    saveModels: modelsSource.saveModels,
+    savedModels: modelsSource.savedModels,
+    setDraftModels,
+  });
 
   return {
     addCustomProvider,

@@ -6,8 +6,8 @@ import { DEFAULT_LOCALE, type Locale } from '@/config/i18n';
 import { handleErrorWithLocale } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { validateRequest } from '@/lib/validation';
-import { extractConversationMemories } from '@/features/memory/storage/memory-extraction';
 import { memoryExtractPostSchema } from '@/features/chat/server/schemas';
+import { extractRequestMemories } from '@/features/memory/server/server-memory-source';
 
 export async function handleMemoryExtractPost(request: Request) {
   let locale: Locale = DEFAULT_LOCALE;
@@ -21,8 +21,9 @@ export async function handleMemoryExtractPost(request: Request) {
     const input = await validateRequest(request, memoryExtractPostSchema);
     locale = input.locale;
 
-    const memories = await extractConversationMemories(input.messages as UIMessage[], {
+    const memories = await extractRequestMemories({
       locale: input.locale,
+      messages: input.messages as UIMessage[],
       runtimeModel: input.runtimeModel,
     });
 

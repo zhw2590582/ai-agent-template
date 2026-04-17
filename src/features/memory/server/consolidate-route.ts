@@ -7,7 +7,7 @@ import { handleErrorWithLocale } from '@/lib/errors';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { validateRequest } from '@/lib/validation';
 import { memoryConsolidatePostSchema } from '@/features/chat/server/schemas';
-import { consolidateMemoryKind } from '@/features/memory/storage/memory-consolidation';
+import { consolidateRequestMemories } from '@/features/memory/server/server-memory-source';
 
 export async function handleMemoryConsolidatePost(request: Request) {
   let locale: Locale = DEFAULT_LOCALE;
@@ -21,9 +21,10 @@ export async function handleMemoryConsolidatePost(request: Request) {
     const input = await validateRequest(request, memoryConsolidatePostSchema);
     locale = input.locale;
 
-    const contents = await consolidateMemoryKind(input.memories as MemoryListItem[], {
+    const contents = await consolidateRequestMemories({
       kind: input.kind,
       locale: input.locale,
+      memories: input.memories as MemoryListItem[],
       runtimeModel: input.runtimeModel,
     });
 

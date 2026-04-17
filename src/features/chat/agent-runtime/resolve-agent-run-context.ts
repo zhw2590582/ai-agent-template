@@ -17,7 +17,7 @@ import type {
   ResolveAgentRunContextOptions,
 } from '@/features/chat/agent-runtime/types';
 import { verifyConversationOwnership } from '@/features/chat/storage';
-import { buildMemoryContext, listMemoriesForUser } from '@/features/memory/storage/memories';
+import { buildPersistedMemoryContextForUser } from '@/features/memory/server/server-memory-source';
 import { normalizeRagSettings } from '@/features/rag/settings';
 import type { RagSettings } from '@/features/rag/types';
 import { normalizeSubagentSettings } from '@/features/subagents/settings';
@@ -173,9 +173,10 @@ export async function resolveAgentRunContext({
       );
 
       if (memorySettings?.enabled && memorySettings.crossConversation) {
-        const memories = await listMemoriesForUser(user.id, supabase);
-        memoryContext = buildMemoryContext(memories, {
+        memoryContext = await buildPersistedMemoryContextForUser({
+          client: supabase,
           memorySettings,
+          userId: user.id,
         });
       }
 

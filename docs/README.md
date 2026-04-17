@@ -12,8 +12,7 @@
    开发约束和改动原则
 5. [roadmap.md](./roadmap.md)
    下一阶段推荐顺序
-6. [feature-boundary-review.md](./feature-boundary-review.md)
-   按 feature 记录影响边界清晰度和扩展性的必要问题
+6. 能力边界统一参考 `project-status.md` 与 `architecture.md`
 
 运行和维护相关：
 

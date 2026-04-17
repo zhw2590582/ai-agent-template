@@ -61,7 +61,6 @@ See [`.env.example`](./.env.example) for the full list.
 - [Architecture](./docs/architecture.md)
 - [Conventions](./docs/conventions.md)
 - [Roadmap](./docs/roadmap.md)
-- [Feature Boundary Review](./docs/feature-boundary-review.md)
 
 ## Stack
 

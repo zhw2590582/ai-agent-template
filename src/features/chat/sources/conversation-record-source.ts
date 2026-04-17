@@ -23,7 +23,7 @@ import {
   getConversationSyncPhase,
   type ConversationSyncPhase,
 } from '@/features/chat/utils/chat-sync';
-import { extractAndMergeLocalMemories } from '@/features/memory/storage/local-memories';
+import { createClientMemorySource } from '@/features/memory/sources/client-memory-source';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
 export interface ConversationRecordSyncPlanOptions {
@@ -117,6 +117,8 @@ function buildLocalConversationSyncPlan(
 }
 
 function createLocalConversationRecordSource(): ConversationRecordSource {
+  const localMemorySource = createClientMemorySource({ isAuthenticated: false });
+
   return {
     cacheMessages: () => {},
     createRecord: async ({ initialMessage }) => {
@@ -134,7 +136,7 @@ function createLocalConversationRecordSource(): ConversationRecordSource {
     },
     deleteRecord: async (conversationId) => deleteLocalConversationThread(conversationId),
     generateMemories: ({ conversationId, locale, messages, runtimeModel }) => {
-      void extractAndMergeLocalMemories({
+      void localMemorySource.syncConversationMemories({
         conversationId,
         locale,
         messages,

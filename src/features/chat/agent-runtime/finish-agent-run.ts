@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { logAgentRunFinished } from '@/features/chat/agent-runtime/run-telemetry';
 import { saveConversationMessages } from '@/features/chat/storage';
-import { saveConversationMemories } from '@/features/memory/storage/memories';
+import { savePersistedConversationMemories } from '@/features/memory/server/server-memory-source';
 import type {
   AgentRunFinishEvent,
   CreateAgentRunFinishHandlerOptions,
@@ -53,16 +53,14 @@ export function createAgentRunFinishHandler({
         }
 
         try {
-          await saveConversationMemories(
-            {
-              conversationId: runMetadata.conversationId,
-              locale,
-              messages: responseMessages,
-              runtimeModel: runMetadata.runtimeModel,
-              userId: user.id,
-            },
-            supabase
-          );
+          await savePersistedConversationMemories({
+            client: supabase,
+            conversationId: runMetadata.conversationId,
+            locale,
+            messages: responseMessages,
+            runtimeModel: runMetadata.runtimeModel,
+            userId: user.id,
+          });
         } catch (memoryError) {
           logger.error('Chat onFinish: failed to save memories', {
             conversationId: runMetadata.conversationId,

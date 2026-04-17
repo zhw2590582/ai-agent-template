@@ -3,16 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { API_ROUTES } from '@/config/api';
 import { MEMORY_CONFIG } from '@/config/memory';
 import { getApiErrorToastMessage } from '@/lib/api-client';
-import {
-  deleteLocalMemory,
-  ensureLocalMemoriesLoaded,
-  readLocalMemories,
-  subscribeToLocalMemoryUpdates,
-  updateLocalMemory,
-} from '@/features/memory/storage/local-memories';
+import { createClientMemorySource } from '@/features/memory/sources/client-memory-source';
 import type { MemoryKind, MemoryListItem } from '@/features/memory/types';
 
 interface UseMemoryItemsSourceOptions {
@@ -26,6 +19,10 @@ export function useMemoryItemsSource({
   isAuthenticated,
   t,
 }: UseMemoryItemsSourceOptions) {
+  const memorySource = useMemo(
+    () => createClientMemorySource({ isAuthenticated }),
+    [isAuthenticated]
+  );
   const [memories, setMemories] = useState(initialMemories);
   const [currentPage, setCurrentPage] = useState(1);
   const [pendingEditId, setPendingEditId] = useState<string | null>(null);
@@ -40,54 +37,45 @@ export function useMemoryItemsSource({
   }, [currentPage, memories]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      void ensureLocalMemoriesLoaded().then(() => {
-        setMemories(readLocalMemories());
-      });
-
-      return subscribeToLocalMemoryUpdates(() => {
-        setMemories(readLocalMemories());
-      });
-    }
-
     setMemories(initialMemories);
-  }, [initialMemories, isAuthenticated]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      return;
-    }
-
     const controller = new AbortController();
+    let isActive = true;
 
     void (async () => {
       try {
-        const response = await fetch(API_ROUTES.memories, {
-          method: 'GET',
+        const nextMemories = await memorySource.load({
           signal: controller.signal,
         });
 
-        if (!response.ok) {
-          toast.error(await getApiErrorToastMessage(response, t, 'memory_page.toast.load_failed'));
+        if (isActive) {
+          setMemories(nextMemories);
+        }
+      } catch (error) {
+        if ((error as Error).name === 'AbortError') {
           return;
         }
 
-        const data = (await response.json()) as {
-          memories?: MemoryListItem[];
-        };
+        if (error instanceof Response) {
+          toast.error(await getApiErrorToastMessage(error, t, 'memory_page.toast.load_failed'));
+          return;
+        }
 
-        setMemories(data.memories ?? []);
-      } catch (error) {
-        if ((error as Error).name !== 'AbortError') {
+        if (isAuthenticated) {
           toast.error(t('memory_page.toast.load_failed'));
         }
       }
     })();
 
+    const unsubscribe = memorySource.subscribe(() => {
+      setMemories(memorySource.read());
+    });
+
     return () => {
+      isActive = false;
+      unsubscribe();
       controller.abort();
     };
-  }, [isAuthenticated, t]);
+  }, [initialMemories, isAuthenticated, memorySource, t]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -98,30 +86,17 @@ export function useMemoryItemsSource({
   const handleDeleteMemory = async (memoryId: string) => {
     setPendingDeleteId(memoryId);
     try {
-      if (!isAuthenticated) {
-        const success = deleteLocalMemory(memoryId);
-        if (await success) {
-          setMemories(readLocalMemories());
-        }
-
-        return await success;
-      }
-
-      const response = await fetch(API_ROUTES.memories, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id: memoryId }),
-      });
-
-      if (!response.ok) {
-        toast.error(await getApiErrorToastMessage(response, t, 'memory_page.toast.delete_failed'));
+      const nextMemories = await memorySource.deleteMemory(memoryId);
+      setMemories(nextMemories);
+      return true;
+    } catch (error) {
+      if (error instanceof Response) {
+        toast.error(await getApiErrorToastMessage(error, t, 'memory_page.toast.delete_failed'));
         return false;
       }
 
-      setMemories((current) => current.filter((memory) => memory.id !== memoryId));
-      return true;
+      toast.error(t('memory_page.toast.delete_failed'));
+      return false;
     } finally {
       setPendingDeleteId(null);
     }
@@ -130,42 +105,17 @@ export function useMemoryItemsSource({
   const handleEditMemory = async (input: { content: string; id: string; kind: MemoryKind }) => {
     setPendingEditId(input.id);
     try {
-      if (!isAuthenticated) {
-        const success = updateLocalMemory(input);
-
-        if (await success) {
-          setMemories(readLocalMemories());
-        }
-
-        return await success;
-      }
-
-      const response = await fetch(API_ROUTES.memories, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(input),
-      });
-
-      if (!response.ok) {
-        toast.error(await getApiErrorToastMessage(response, t, 'memory_page.toast.update_failed'));
+      const nextMemories = await memorySource.updateMemory(input);
+      setMemories(nextMemories);
+      return true;
+    } catch (error) {
+      if (error instanceof Response) {
+        toast.error(await getApiErrorToastMessage(error, t, 'memory_page.toast.update_failed'));
         return false;
       }
 
-      setMemories((current) =>
-        current.map((memory) =>
-          memory.id === input.id
-            ? {
-                ...memory,
-                content: input.content,
-                kind: input.kind,
-                updatedAt: new Date().toISOString(),
-              }
-            : memory
-        )
-      );
-      return true;
+      toast.error(t('memory_page.toast.update_failed'));
+      return false;
     } finally {
       setPendingEditId(null);
     }
