@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { getConversationSyncPhase, shouldSkipUrlSync } from '@/features/chat/utils/chat-sync';
+import {
+  canPersistConversationMessages,
+  getConversationSyncPhase,
+  shouldSkipUrlSync,
+} from '@/features/chat/utils/chat-sync';
 
 describe('chat sync helpers', () => {
   it('treats non-local conversations as unmanaged', () => {
@@ -8,6 +12,8 @@ describe('chat sync helpers', () => {
       getConversationSyncPhase({
         activeThreadId: 'conversation-1',
         bootstrappingThreadId: null,
+        hydratedConversationId: null,
+        urlConversationId: 'conversation-1',
       })
     ).toBe('unmanaged');
   });
@@ -17,17 +23,32 @@ describe('chat sync helpers', () => {
       getConversationSyncPhase({
         activeThreadId: 'local-thread-1',
         bootstrappingThreadId: 'local-thread-1',
+        hydratedConversationId: null,
+        urlConversationId: 'local-thread-1',
       })
     ).toBe('bootstrapping');
   });
 
-  it('treats a persisted local thread as ready', () => {
+  it('treats an active local thread without hydrated messages as hydrating', () => {
     expect(
       getConversationSyncPhase({
         activeThreadId: 'local-thread-1',
         bootstrappingThreadId: null,
+        hydratedConversationId: null,
+        urlConversationId: 'local-thread-1',
       })
-    ).toBe('ready');
+    ).toBe('hydrating');
+  });
+
+  it('treats a hydrated local thread as hydrated', () => {
+    expect(
+      getConversationSyncPhase({
+        activeThreadId: 'local-thread-1',
+        bootstrappingThreadId: null,
+        hydratedConversationId: 'local-thread-1',
+        urlConversationId: 'local-thread-1',
+      })
+    ).toBe('hydrated');
   });
 
   it('skips url sync while a local thread is bootstrapping', () => {
@@ -40,13 +61,30 @@ describe('chat sync helpers', () => {
     ).toBe(true);
   });
 
-  it('allows url sync for a ready local thread when not busy', () => {
+  it('allows url sync for a hydrating local thread when not busy', () => {
     expect(
       shouldSkipUrlSync({
         isBusy: false,
-        phase: 'ready',
+        phase: 'hydrating',
         urlConversationId: 'local-thread-1',
       })
     ).toBe(false);
+  });
+
+  it('allows url sync for a hydrated local thread when not busy', () => {
+    expect(
+      shouldSkipUrlSync({
+        isBusy: false,
+        phase: 'hydrated',
+        urlConversationId: 'local-thread-1',
+      })
+    ).toBe(false);
+  });
+
+  it('only allows local persistence for bootstrapping or hydrated phases', () => {
+    expect(canPersistConversationMessages({ messageCount: 1, phase: 'bootstrapping' })).toBe(true);
+    expect(canPersistConversationMessages({ messageCount: 1, phase: 'hydrated' })).toBe(true);
+    expect(canPersistConversationMessages({ messageCount: 1, phase: 'hydrating' })).toBe(false);
+    expect(canPersistConversationMessages({ messageCount: 1, phase: 'unmanaged' })).toBe(false);
   });
 });

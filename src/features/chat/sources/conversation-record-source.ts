@@ -18,9 +18,10 @@ import {
   upsertLocalConversationThread,
 } from '@/features/chat/storage/local-conversations';
 import {
+  canPersistConversationMessages,
+  canRunConversationDerivedState,
   getConversationSyncPhase,
   type ConversationSyncPhase,
-  isLocalConversationId,
 } from '@/features/chat/utils/chat-sync';
 import { extractAndMergeLocalMemories } from '@/features/memory/storage/local-memories';
 import type { ChatRuntimeModel } from '@/features/models/types';
@@ -78,29 +79,14 @@ export interface ConversationRecordSource {
   renameRecord: (conversationId: string, title: string) => Promise<boolean>;
 }
 
-function isHydratedReadyLocalConversation(options: ConversationRecordSyncPlanOptions) {
-  if (
-    !options.activeThreadId ||
-    !isLocalConversationId(options.activeThreadId) ||
-    !options.urlConversationId ||
-    options.activeThreadId !== options.urlConversationId
-  ) {
-    return true;
-  }
-
-  if (!areLocalConversationThreadsLoaded()) {
-    return false;
-  }
-
-  return options.hydratedConversationId === options.activeThreadId;
-}
-
 function buildLocalConversationSyncPlan(
   options: ConversationRecordSyncPlanOptions
 ): ConversationRecordSyncPlan {
   const phase = getConversationSyncPhase({
     activeThreadId: options.activeThreadId,
     bootstrappingThreadId: options.bootstrappingThreadId,
+    hydratedConversationId: options.hydratedConversationId,
+    urlConversationId: options.urlConversationId,
   });
 
   if (phase === 'unmanaged') {
@@ -112,15 +98,20 @@ function buildLocalConversationSyncPlan(
     };
   }
 
-  const hasLoadedMessages =
-    phase === 'bootstrapping' ? true : isHydratedReadyLocalConversation(options);
-  const shouldPersistMessages = options.messages.length > 0 && hasLoadedMessages;
+  const shouldPersistMessages = canPersistConversationMessages({
+    messageCount: options.messages.length,
+    phase,
+  });
 
   return {
     phase,
     shouldPersistMessages,
     shouldClearBootstrappingAfterPersist: phase === 'bootstrapping' && !options.isBusy,
-    shouldRunDerivedState: !options.isBusy && shouldPersistMessages,
+    shouldRunDerivedState: canRunConversationDerivedState({
+      isBusy: options.isBusy,
+      phase,
+      shouldPersistMessages,
+    }),
   };
 }
 

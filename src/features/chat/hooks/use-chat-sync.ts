@@ -98,6 +98,8 @@ export function useChatSync({
     const phase = getConversationSyncPhase({
       activeThreadId: urlConversationId,
       bootstrappingThreadId,
+      hydratedConversationId,
+      urlConversationId,
     });
 
     if (shouldSkipUrlSync({ urlConversationId, phase, isBusy })) return;
@@ -167,6 +169,8 @@ export function useChatSync({
       getConversationSyncPhase({
         activeThreadId: urlConversationId,
         bootstrappingThreadId,
+        hydratedConversationId,
+        urlConversationId,
       }) === 'bootstrapping'
     ) {
       clearBootstrapping();

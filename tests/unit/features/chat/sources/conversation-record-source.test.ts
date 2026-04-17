@@ -93,7 +93,7 @@ describe('createConversationRecordSource', () => {
     });
 
     expect(plan).toEqual({
-      phase: 'ready',
+      phase: 'hydrating',
       shouldPersistMessages: false,
       shouldClearBootstrappingAfterPersist: false,
       shouldRunDerivedState: false,
@@ -121,7 +121,7 @@ describe('createConversationRecordSource', () => {
     });
 
     expect(plan).toEqual({
-      phase: 'ready',
+      phase: 'hydrated',
       shouldPersistMessages: true,
       shouldClearBootstrappingAfterPersist: false,
       shouldRunDerivedState: true,

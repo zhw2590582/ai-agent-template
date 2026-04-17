@@ -1,6 +1,6 @@
 import type { UIMessage } from 'ai';
 
-export type ConversationSyncPhase = 'bootstrapping' | 'ready' | 'unmanaged';
+export type ConversationSyncPhase = 'bootstrapping' | 'hydrated' | 'hydrating' | 'unmanaged';
 
 export function isLocalConversationId(conversationId: string | null) {
   return Boolean(conversationId?.startsWith('local-'));
@@ -9,6 +9,8 @@ export function isLocalConversationId(conversationId: string | null) {
 export function getConversationSyncPhase(options: {
   activeThreadId: string | null;
   bootstrappingThreadId: string | null;
+  hydratedConversationId: string | null;
+  urlConversationId: string | null;
 }): ConversationSyncPhase {
   if (!options.activeThreadId || !isLocalConversationId(options.activeThreadId)) {
     return 'unmanaged';
@@ -18,7 +20,34 @@ export function getConversationSyncPhase(options: {
     return 'bootstrapping';
   }
 
-  return 'ready';
+  if (
+    options.urlConversationId &&
+    options.urlConversationId === options.activeThreadId &&
+    options.hydratedConversationId !== options.activeThreadId
+  ) {
+    return 'hydrating';
+  }
+
+  return 'hydrated';
+}
+
+export function canPersistConversationMessages(options: {
+  messageCount: number;
+  phase: ConversationSyncPhase;
+}) {
+  if (options.messageCount === 0) {
+    return false;
+  }
+
+  return options.phase === 'bootstrapping' || options.phase === 'hydrated';
+}
+
+export function canRunConversationDerivedState(options: {
+  isBusy: boolean;
+  phase: ConversationSyncPhase;
+  shouldPersistMessages: boolean;
+}) {
+  return !options.isBusy && options.shouldPersistMessages && options.phase !== 'unmanaged';
 }
 
 export function shouldResetToStarter(options: {
