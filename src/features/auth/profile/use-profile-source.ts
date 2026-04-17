@@ -88,8 +88,9 @@ export function useProfileSource({ locale, t, theme, user }: UseProfileSourceOpt
         }
       } catch {
         if (!cancelled) {
-          setProfile(
+          setProfile((currentProfile) =>
             buildProfileFromSource({
+              existing: profileCache.get(user.id) ?? currentProfile,
               locale,
               theme,
               user,

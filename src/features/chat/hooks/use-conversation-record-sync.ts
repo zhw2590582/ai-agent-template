@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { UIMessage } from 'ai';
 
 import { API_ROUTES } from '@/config/api';
@@ -9,62 +9,16 @@ import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import type { MemorySettings } from '@/features/auth/profile/types';
 import {
   generateConversationRecordMemories,
-  generateConversationRecordTitle,
   generateConversationRecordSummary,
-  getConversationMessages,
+  generateConversationRecordTitle,
   persistConversationMessages,
 } from '@/features/chat/data/conversation-operations';
+import { createConversationRecordSource } from '@/features/chat/sources/conversation-record-source';
 import {
   buildConversationTitleFromText,
   getMessageText,
 } from '@/features/chat/storage/conversation-analysis';
-import {
-  areLocalConversationThreadsLoaded,
-  getLocalConversationThread,
-} from '@/features/chat/storage/local-conversations';
 import type { ChatRuntimeModel } from '@/features/models/types';
-
-function isLocalConversationId(conversationId: string | null) {
-  return Boolean(conversationId?.startsWith('local-'));
-}
-
-function areMessagesEqual(left: UIMessage[], right: UIMessage[]) {
-  return JSON.stringify(left) === JSON.stringify(right);
-}
-
-function hasLoadedActiveLocalConversationMessages(input: {
-  activeThreadId: string | null;
-  bootstrappingThreadId: string | null;
-  messages: UIMessage[];
-  urlConversationId: string | null;
-  user: AuthUserSnapshot | null;
-}) {
-  if (
-    input.user ||
-    !input.activeThreadId ||
-    !input.urlConversationId ||
-    input.activeThreadId !== input.urlConversationId ||
-    !isLocalConversationId(input.activeThreadId)
-  ) {
-    return true;
-  }
-
-  if (input.bootstrappingThreadId === input.activeThreadId) {
-    return true;
-  }
-
-  if (!areLocalConversationThreadsLoaded()) {
-    return false;
-  }
-
-  const localMessages = getLocalConversationThread(input.activeThreadId)?.messages ?? null;
-
-  if (!localMessages) {
-    return true;
-  }
-
-  return areMessagesEqual(localMessages, input.messages);
-}
 
 interface UseConversationRecordSyncOptions {
   activeThreadId: string | null;
@@ -103,61 +57,64 @@ export function useConversationRecordSync({
   urlConversationId,
   user,
 }: UseConversationRecordSyncOptions) {
+  const recordSource = useMemo(() => createConversationRecordSource(user), [user]);
   const generatedTitleKeyRef = useRef<string | null>(null);
   const generatedMemoryKeyRef = useRef<string | null>(null);
-  const hydratedLocalConversationIdRef = useRef<string | null>(null);
+  const hydratedConversationIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (user || !urlConversationId || !isLocalConversationId(urlConversationId)) {
-      hydratedLocalConversationIdRef.current = null;
-      return;
-    }
+    const syncPlan = recordSource.getSyncPlan({
+      activeThreadId,
+      bootstrappingThreadId,
+      hydratedConversationId: hydratedConversationIdRef.current,
+      isBusy,
+      messages,
+      urlConversationId,
+    });
 
-    if (isBusy || hydratedLocalConversationIdRef.current === urlConversationId) {
+    if (!syncPlan.hydrationConversationId) {
+      hydratedConversationIdRef.current = null;
       return;
     }
 
     let cancelled = false;
-    const targetConversationId = urlConversationId;
+    const targetConversationId = syncPlan.hydrationConversationId;
 
     void (async () => {
-      const localMessages = await getConversationMessages({
-        conversationId: targetConversationId,
-        user,
-      });
+      const sourceMessages = await recordSource.getMessages(targetConversationId);
 
-      if (!localMessages || cancelled) {
+      if (!sourceMessages || cancelled) {
         return;
       }
 
-      hydratedLocalConversationIdRef.current = targetConversationId;
-      setMessages(localMessages);
+      hydratedConversationIdRef.current = targetConversationId;
+      setMessages(sourceMessages);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [isBusy, setMessages, urlConversationId, user]);
+  }, [
+    activeThreadId,
+    bootstrappingThreadId,
+    isBusy,
+    messages,
+    recordSource,
+    setMessages,
+    urlConversationId,
+  ]);
 
   useEffect(() => {
-    if (
-      user ||
-      !activeThreadId ||
-      !isLocalConversationId(activeThreadId) ||
-      messages.length === 0
-    ) {
-      return;
-    }
+    const syncPlan = recordSource.getSyncPlan({
+      activeThreadId,
+      bootstrappingThreadId,
+      hydratedConversationId: hydratedConversationIdRef.current,
+      isBusy,
+      messages,
+      urlConversationId,
+    });
 
-    if (
-      !hasLoadedActiveLocalConversationMessages({
-        activeThreadId,
-        bootstrappingThreadId,
-        messages,
-        urlConversationId,
-        user,
-      })
-    ) {
+    if (!activeThreadId || !syncPlan.shouldPersistMessages) {
       return;
     }
 
@@ -171,34 +128,26 @@ export function useConversationRecordSync({
   }, [
     activeThreadId,
     bootstrappingThreadId,
+    isBusy,
     locale,
     messages,
+    recordSource,
     runtimeModel,
     urlConversationId,
     user,
   ]);
 
   useEffect(() => {
-    if (
-      user ||
-      isBusy ||
-      !activeThreadId ||
-      !isLocalConversationId(activeThreadId) ||
-      messages.length === 0 ||
-      !runtimeModel
-    ) {
-      return;
-    }
+    const syncPlan = recordSource.getSyncPlan({
+      activeThreadId,
+      bootstrappingThreadId,
+      hydratedConversationId: hydratedConversationIdRef.current,
+      isBusy,
+      messages,
+      urlConversationId,
+    });
 
-    if (
-      !hasLoadedActiveLocalConversationMessages({
-        activeThreadId,
-        bootstrappingThreadId,
-        messages,
-        urlConversationId,
-        user,
-      })
-    ) {
+    if (!activeThreadId || !runtimeModel || !syncPlan.shouldRunDerivedState) {
       return;
     }
 
@@ -214,6 +163,7 @@ export function useConversationRecordSync({
     isBusy,
     locale,
     messages,
+    recordSource,
     runtimeModel,
     urlConversationId,
     user,
@@ -290,26 +240,16 @@ export function useConversationRecordSync({
   ]);
 
   useEffect(() => {
-    if (
-      user ||
-      isBusy ||
-      !activeThreadId ||
-      !isLocalConversationId(activeThreadId) ||
-      messages.length === 0 ||
-      !runtimeModel
-    ) {
-      return;
-    }
+    const syncPlan = recordSource.getSyncPlan({
+      activeThreadId,
+      bootstrappingThreadId,
+      hydratedConversationId: hydratedConversationIdRef.current,
+      isBusy,
+      messages,
+      urlConversationId,
+    });
 
-    if (
-      !hasLoadedActiveLocalConversationMessages({
-        activeThreadId,
-        bootstrappingThreadId,
-        messages,
-        urlConversationId,
-        user,
-      })
-    ) {
+    if (!activeThreadId || !runtimeModel || !syncPlan.shouldRunDerivedState) {
       return;
     }
 
@@ -325,33 +265,28 @@ export function useConversationRecordSync({
     isBusy,
     locale,
     messages,
+    recordSource,
     runtimeModel,
     urlConversationId,
     user,
   ]);
 
   useEffect(() => {
+    const syncPlan = recordSource.getSyncPlan({
+      activeThreadId,
+      bootstrappingThreadId,
+      hydratedConversationId: hydratedConversationIdRef.current,
+      isBusy,
+      messages,
+      urlConversationId,
+    });
+
     if (
-      user ||
-      isBusy ||
       !memorySettings.enabled ||
       !memorySettings.autoWrite ||
       !activeThreadId ||
-      !isLocalConversationId(activeThreadId) ||
-      messages.length === 0 ||
-      !runtimeModel
-    ) {
-      return;
-    }
-
-    if (
-      !hasLoadedActiveLocalConversationMessages({
-        activeThreadId,
-        bootstrappingThreadId,
-        messages,
-        urlConversationId,
-        user,
-      })
+      !runtimeModel ||
+      !syncPlan.shouldRunDerivedState
     ) {
       return;
     }
@@ -381,7 +316,8 @@ export function useConversationRecordSync({
     memorySettings.enabled,
     messages,
     runtimeModel,
-    urlConversationId,
+    recordSource,
     user,
+    urlConversationId,
   ]);
 }

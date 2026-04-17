@@ -6,17 +6,34 @@ import { API_ROUTES } from '@/config/api';
 import type { Locale } from '@/config/i18n';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import {
+  areLocalConversationThreadsLoaded,
   createLocalConversationThread,
   deleteLocalConversationThread,
   ensureLocalConversationThreadsLoaded,
   generateLocalConversationSummary,
   generateLocalConversationTitle,
+  getLocalConversationThread,
   getLocalConversationThreadById,
   renameLocalConversationThread,
   upsertLocalConversationThread,
 } from '@/features/chat/storage/local-conversations';
 import { extractAndMergeLocalMemories } from '@/features/memory/storage/local-memories';
 import type { ChatRuntimeModel } from '@/features/models/types';
+
+export interface ConversationRecordSyncPlanOptions {
+  activeThreadId: string | null;
+  bootstrappingThreadId: string | null;
+  hydratedConversationId: string | null;
+  isBusy: boolean;
+  messages: UIMessage[];
+  urlConversationId: string | null;
+}
+
+export interface ConversationRecordSyncPlan {
+  hydrationConversationId: string | null;
+  shouldPersistMessages: boolean;
+  shouldRunDerivedState: boolean;
+}
 
 export interface ConversationRecordSource {
   createRecord: (options: {
@@ -42,6 +59,7 @@ export interface ConversationRecordSource {
     runtimeModel?: ChatRuntimeModel | null;
   }) => void;
   getMessages: (conversationId: string) => Promise<UIMessage[] | null>;
+  getSyncPlan: (options: ConversationRecordSyncPlanOptions) => ConversationRecordSyncPlan;
   persistMessages: (options: {
     conversationId: string;
     locale: Locale;
@@ -49,6 +67,43 @@ export interface ConversationRecordSource {
     runtimeModel?: ChatRuntimeModel | null;
   }) => void;
   renameRecord: (conversationId: string, title: string) => Promise<boolean>;
+}
+
+function isLocalConversationId(conversationId: string | null) {
+  return Boolean(conversationId?.startsWith('local-'));
+}
+
+function areMessagesEqual(left: UIMessage[], right: UIMessage[]) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function hasLoadedManagedLocalConversationMessages(
+  options: Omit<ConversationRecordSyncPlanOptions, 'hydratedConversationId' | 'isBusy'>
+) {
+  if (
+    !options.activeThreadId ||
+    !isLocalConversationId(options.activeThreadId) ||
+    !options.urlConversationId ||
+    options.activeThreadId !== options.urlConversationId
+  ) {
+    return true;
+  }
+
+  if (options.bootstrappingThreadId === options.activeThreadId) {
+    return true;
+  }
+
+  if (!areLocalConversationThreadsLoaded()) {
+    return false;
+  }
+
+  const localMessages = getLocalConversationThread(options.activeThreadId)?.messages ?? null;
+
+  if (!localMessages) {
+    return true;
+  }
+
+  return areMessagesEqual(localMessages, options.messages);
 }
 
 function createLocalConversationRecordSource(): ConversationRecordSource {
@@ -93,6 +148,44 @@ function createLocalConversationRecordSource(): ConversationRecordSource {
       await ensureLocalConversationThreadsLoaded();
       const thread = await getLocalConversationThreadById(conversationId);
       return thread?.messages ?? null;
+    },
+    getSyncPlan: ({
+      activeThreadId,
+      bootstrappingThreadId,
+      hydratedConversationId,
+      isBusy,
+      messages,
+      urlConversationId,
+    }) => {
+      const managesConversation = Boolean(activeThreadId && isLocalConversationId(activeThreadId));
+
+      if (!managesConversation) {
+        return {
+          hydrationConversationId: null,
+          shouldPersistMessages: false,
+          shouldRunDerivedState: false,
+        };
+      }
+
+      const hasLoadedMessages = hasLoadedManagedLocalConversationMessages({
+        activeThreadId,
+        bootstrappingThreadId,
+        messages,
+        urlConversationId,
+      });
+
+      return {
+        hydrationConversationId:
+          !isBusy &&
+          urlConversationId != null &&
+          activeThreadId === urlConversationId &&
+          bootstrappingThreadId !== activeThreadId &&
+          hydratedConversationId !== urlConversationId
+            ? urlConversationId
+            : null,
+        shouldPersistMessages: messages.length > 0 && hasLoadedMessages,
+        shouldRunDerivedState: !isBusy && messages.length > 0 && hasLoadedMessages,
+      };
     },
     persistMessages: ({ conversationId, messages }) => {
       void upsertLocalConversationThread({
@@ -141,6 +234,11 @@ function createRemoteConversationRecordSource(): ConversationRecordSource {
     generateSummary: () => {},
     generateTitle: () => {},
     getMessages: async () => null,
+    getSyncPlan: () => ({
+      hydrationConversationId: null,
+      shouldPersistMessages: false,
+      shouldRunDerivedState: false,
+    }),
     persistMessages: () => {},
     renameRecord: async (conversationId, title) => {
       const response = await fetch(API_ROUTES.conversations, {
