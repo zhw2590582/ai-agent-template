@@ -71,6 +71,55 @@ Saved memories:
 ${items.map((item, index) => `${index + 1}. ${item}`).join('\n')}`;
 }
 
+function buildJsonFallbackPrompt(prompt: string) {
+  return `${prompt}
+
+Return a valid JSON array only.
+- Do not wrap the JSON in markdown fences
+- Each item must follow this shape: {"content":"..."}
+- Return [] only if nothing should be kept`;
+}
+
+function extractJsonArrayText(text: string) {
+  const trimmed = text.trim();
+  const fenceMatch = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  const unfenced = fenceMatch?.[1]?.trim() ?? trimmed;
+  const arrayStart = unfenced.indexOf('[');
+  const arrayEnd = unfenced.lastIndexOf(']');
+
+  if (arrayStart === -1 || arrayEnd === -1 || arrayEnd < arrayStart) {
+    return unfenced;
+  }
+
+  return unfenced.slice(arrayStart, arrayEnd + 1);
+}
+
+function parseFallbackConsolidationOutput(text: string, maxItems: number) {
+  try {
+    const parsed = z
+      .array(consolidatedMemoryItemSchema)
+      .min(1)
+      .safeParse(JSON.parse(extractJsonArrayText(text)));
+    return parsed.success ? parsed.data.slice(0, maxItems) : [];
+  } catch {
+    return [];
+  }
+}
+
+async function requestJsonFallbackConsolidation(options: {
+  maxItems: number;
+  prompt: string;
+  runtimeModel: ChatRuntimeModel;
+}) {
+  const { text } = await generateText({
+    model: getRuntimeChatModel(options.runtimeModel),
+    prompt: buildJsonFallbackPrompt(options.prompt),
+    maxOutputTokens: AI_CONFIG.MEMORY_CONSOLIDATION_MAX_OUTPUT_TOKENS,
+  });
+
+  return parseFallbackConsolidationOutput(text, options.maxItems);
+}
+
 export async function consolidateMemoryKind(
   memories: MemoryListItem[],
   options: {
@@ -104,6 +153,7 @@ export async function consolidateMemoryKind(
   const prompt = buildConsolidationPrompt(options.kind, options.locale, candidateItems);
 
   let output: Array<{ content: string }>;
+  let shouldUseJsonFallback = false;
 
   try {
     const result = await generateText({
@@ -116,36 +166,23 @@ export async function consolidateMemoryKind(
     });
 
     output = result.output.slice(0, maxItems);
+    shouldUseJsonFallback = output.length === 0;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
 
     if (!message.toLowerCase().includes('response_format')) {
       throw error;
     }
+    shouldUseJsonFallback = true;
+    output = [];
+  }
 
-    const fallbackPrompt = `${prompt}
-
-Return a valid JSON array only.
-- Do not wrap the JSON in markdown fences
-- Each item must follow this shape: {"content":"..."}
-- Return [] only if nothing should be kept`;
-
-    const { text } = await generateText({
-      model: getRuntimeChatModel(options.runtimeModel),
-      prompt: fallbackPrompt,
-      maxOutputTokens: AI_CONFIG.MEMORY_CONSOLIDATION_MAX_OUTPUT_TOKENS,
+  if (shouldUseJsonFallback) {
+    output = await requestJsonFallbackConsolidation({
+      maxItems,
+      prompt,
+      runtimeModel: options.runtimeModel,
     });
-
-    try {
-      const parsed = z
-        .array(consolidatedMemoryItemSchema)
-        .min(1)
-        .max(maxItems)
-        .safeParse(JSON.parse(text));
-      output = parsed.success ? parsed.data : [];
-    } catch {
-      output = [];
-    }
   }
 
   const contents = dedupeConsolidatedContents(
