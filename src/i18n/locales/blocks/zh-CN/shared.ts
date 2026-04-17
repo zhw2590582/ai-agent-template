@@ -26,7 +26,6 @@ export const zhCNSharedMessages = {
     skills: 'Skills',
     rag: 'RAG',
     memory: 'Memory',
-    settings: 'Settings',
     search: 'Search',
   },
   placeholders: {
@@ -58,10 +57,6 @@ export const zhCNSharedMessages = {
     memory: {
       title: 'Memory 页面',
       description: '这里先保留为空页面，后续用于查看和控制记忆策略与存储。',
-    },
-    settings: {
-      title: 'Settings 页面',
-      description: '这里先保留为空页面，后续用于应用级设置和偏好配置。',
     },
     search: {
       title: 'Search 页面',

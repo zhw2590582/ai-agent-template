@@ -26,7 +26,6 @@ export const enUSSharedMessages = {
     skills: 'Skills',
     rag: 'RAG',
     memory: 'Memory',
-    settings: 'Settings',
     search: 'Search',
   },
   placeholders: {
@@ -59,10 +58,6 @@ export const enUSSharedMessages = {
     memory: {
       title: 'Memory Page',
       description: 'This is a placeholder for future memory controls and storage settings.',
-    },
-    settings: {
-      title: 'Settings Page',
-      description: 'This is a placeholder for future application preferences and settings.',
     },
     search: {
       title: 'Search Page',

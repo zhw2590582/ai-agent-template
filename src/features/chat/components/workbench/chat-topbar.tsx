@@ -1,4 +1,4 @@
-import { BotIcon, MenuIcon, PanelLeftIcon, SettingsIcon } from 'lucide-react';
+import { BotIcon, MenuIcon, PanelLeftIcon } from 'lucide-react';
 
 import {
   Drawer,
@@ -30,10 +30,6 @@ interface ChatTopBarProps {
 function getMobileTitle(activeView: WorkbenchView, t: TranslateFn) {
   if (activeView === 'chat') {
     return t('chat.sidebar.agent_workspace');
-  }
-
-  if (activeView === 'settings') {
-    return t('navigation.settings');
   }
 
   return t(getHeaderNavItem(activeView).translationKey);
@@ -73,15 +69,6 @@ export function ChatTopBar({
         <div className="flex flex-wrap items-center justify-end gap-2">
           <LanguageSwitcher triggerClassName="w-10" />
           <ThemeToggle />
-          <Button
-            aria-label={t('navigation.settings')}
-            size="icon"
-            type="button"
-            variant="outline"
-            onClick={() => onOpenView('settings')}
-          >
-            <SettingsIcon />
-          </Button>
           {showAuthDialog ? (
             <AuthDialog
               configurationMissingDescription={t('auth.configuration_missing_description')}
@@ -168,18 +155,6 @@ export function ChatTopBar({
                   </Button>
                 );
               })}
-              <Button
-                className="justify-start"
-                type="button"
-                variant={activeView === 'settings' ? 'secondary' : 'ghost'}
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  onOpenView('settings');
-                }}
-              >
-                <SettingsIcon data-icon="inline-start" />
-                {t('navigation.settings')}
-              </Button>
             </div>
 
             <Separator />

@@ -1,3 +1,3 @@
 import type { HeaderNavItemId } from '@/config/navigation';
 
-export type WorkbenchView = 'chat' | HeaderNavItemId | 'settings';
+export type WorkbenchView = 'chat' | HeaderNavItemId;

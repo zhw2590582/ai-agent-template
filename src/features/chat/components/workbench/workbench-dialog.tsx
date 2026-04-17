@@ -53,7 +53,7 @@ function getDialogDescriptionKey(view: Exclude<WorkbenchView, 'chat'>) {
 }
 
 export function WorkbenchDialog({ children, onOpenChange, open, t, view }: WorkbenchDialogProps) {
-  const Icon = view === 'settings' ? null : getHeaderNavItem(view).icon;
+  const Icon = getHeaderNavItem(view).icon;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

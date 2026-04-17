@@ -135,7 +135,7 @@ src/
 │   ├── rag/              # 文档上传、向量检索、来源展示
 │   ├── sandbox/          # Sandbox provider 配置、runtime session 与 tools
 │   ├── search/           # Search provider 设置、连接测试、服务端 client
-│   ├── settings/         # 用户设置聚合与页面层
+│   ├── settings/         # app 级 settings schema / source 聚合层
 │   ├── skills/           # Skills workbench UI 与设置持久化
 │   └── subagents/        # 最小串行多代理边界
 ├── i18n/                 # next-intl 请求配置
