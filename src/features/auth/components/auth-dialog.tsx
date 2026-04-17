@@ -150,7 +150,7 @@ export function AuthDialog({
   return (
     <Dialog onOpenChange={setIsOpen} open={isOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant={user ? 'secondary' : 'outline'}>
+        <Button variant={user ? 'secondary' : 'outline'}>
           <LogInIcon data-icon="inline-start" />
           {signInLabel}
         </Button>
