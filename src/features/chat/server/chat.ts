@@ -44,9 +44,14 @@ export async function handleChatPost(request: Request) {
     const originalMessages = messages as unknown as UIMessage[];
 
     const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    let user = null;
+
+    try {
+      const authResult = await supabase.auth.getUser();
+      user = authResult.data.user;
+    } catch {
+      user = null;
+    }
     const {
       agentTools,
       closeAgentResources,

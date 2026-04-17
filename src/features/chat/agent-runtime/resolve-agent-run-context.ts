@@ -218,30 +218,33 @@ export async function resolveAgentRunContext({
         userId: user.id,
       });
     }
-
-    return {
-      agentTools: toolset.agentTools,
-      closeAgentResources: toolset.closeAgentResources,
-      hasAgentTools,
-      mcpInjectedTools: toolset.mcpInjectedTools,
-      memoryContext,
-      memorySettings,
-      persistedConversationSummary,
-      ragSettings: resolvedProfileRagSettings ?? resolvedRequestRagSettings,
-      runMetadataBase: createAgentRunMetadataBase({
-        conversationId,
-        hasAgentTools,
-        hasSearchTools: toolset.hasSearchTools,
-        mcpServerNames: toolset.mcpServerNames,
-        runtimeModel,
-        userId: user?.id ?? null,
-        workspaceManifest: toolset.workspaceManifest,
-        workspaceTelemetry: toolset.workspaceTelemetry,
-      }),
-      subagentSettings: resolvedProfileSubagentSettings ?? resolvedRequestSubagentSettings,
-    };
   } catch (error) {
-    await toolset.closeAgentResourcesOnError();
-    throw error;
+    logger.warn('Chat request: failed to resolve user-specific run context, falling back', {
+      conversationId,
+      error: error instanceof Error ? error.message : String(error),
+      userId: user?.id ?? null,
+    });
   }
+
+  return {
+    agentTools: toolset.agentTools,
+    closeAgentResources: toolset.closeAgentResources,
+    hasAgentTools,
+    mcpInjectedTools: toolset.mcpInjectedTools,
+    memoryContext,
+    memorySettings,
+    persistedConversationSummary,
+    ragSettings: resolvedProfileRagSettings ?? resolvedRequestRagSettings,
+    runMetadataBase: createAgentRunMetadataBase({
+      conversationId,
+      hasAgentTools,
+      hasSearchTools: toolset.hasSearchTools,
+      mcpServerNames: toolset.mcpServerNames,
+      runtimeModel,
+      userId: user?.id ?? null,
+      workspaceManifest: toolset.workspaceManifest,
+      workspaceTelemetry: toolset.workspaceTelemetry,
+    }),
+    subagentSettings: resolvedProfileSubagentSettings ?? resolvedRequestSubagentSettings,
+  };
 }
