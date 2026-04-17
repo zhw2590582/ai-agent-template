@@ -48,6 +48,16 @@ interface UseConversationRecordSyncOptions {
   user: AuthUserSnapshot | null;
 }
 
+interface ConversationDerivedStatePlan {
+  memoryRequestKey: string | null;
+  remoteTitleInput: string | null;
+  shouldSkipCachedMemoryExtraction: boolean;
+  shouldGenerateLocalTitle: boolean;
+  shouldGenerateMemories: boolean;
+  shouldGenerateRemoteTitle: boolean;
+  shouldGenerateSummary: boolean;
+}
+
 export function useConversationRecordSync({
   activeThreadId,
   activeThreadTitle,
@@ -76,6 +86,72 @@ export function useConversationRecordSync({
       }),
     [activeThreadId, bootstrappingThreadId, isBusy, messages, recordSource, urlConversationId]
   );
+  const derivedStatePlan = useMemo<ConversationDerivedStatePlan>(() => {
+    const syncPlan = buildSyncPlan();
+    const firstUserMessage = messages.find(
+      (message) => message.role === 'user' && getMessageText(message).length > 0
+    );
+    const lastMessage = messages.at(-1);
+    const remoteTitleInput = firstUserMessage ? getMessageText(firstUserMessage) : null;
+    const fallbackTitle = remoteTitleInput
+      ? buildConversationTitleFromText(remoteTitleInput)
+      : null;
+    const memoryRequestKey =
+      activeThreadId && lastMessage
+        ? `${activeThreadId}:${messages.length}:${lastMessage.id}`
+        : activeThreadId
+          ? `${activeThreadId}:${messages.length}:`
+          : null;
+    const memoryExtractionKey =
+      activeThreadId && messages.length > 0
+        ? buildLocalConversationMemoryExtractionKey(messages)
+        : null;
+    const shouldSkipCachedMemoryExtraction = Boolean(
+      !user &&
+      activeThreadId &&
+      memoryExtractionKey &&
+      isLocalConversationId(activeThreadId) &&
+      getLocalConversationThread(activeThreadId)?.memoryExtractionKey === memoryExtractionKey
+    );
+    const shouldGenerateRemoteTitle = Boolean(
+      user &&
+      !isBusy &&
+      activeThreadId &&
+      runtimeModel &&
+      remoteTitleInput &&
+      (!activeThreadTitle || activeThreadTitle.trim() === fallbackTitle)
+    );
+
+    return {
+      memoryRequestKey,
+      remoteTitleInput,
+      shouldSkipCachedMemoryExtraction,
+      shouldGenerateLocalTitle: Boolean(
+        activeThreadId && runtimeModel && syncPlan.shouldRunDerivedState
+      ),
+      shouldGenerateMemories: Boolean(
+        memorySettings.enabled &&
+        memorySettings.autoWrite &&
+        activeThreadId &&
+        runtimeModel &&
+        syncPlan.shouldRunDerivedState
+      ),
+      shouldGenerateRemoteTitle,
+      shouldGenerateSummary: Boolean(
+        activeThreadId && runtimeModel && syncPlan.shouldRunDerivedState
+      ),
+    };
+  }, [
+    activeThreadId,
+    activeThreadTitle,
+    buildSyncPlan,
+    isBusy,
+    memorySettings.autoWrite,
+    memorySettings.enabled,
+    messages,
+    runtimeModel,
+    user,
+  ]);
 
   useEffect(() => {
     const syncPlan = buildSyncPlan();
@@ -100,39 +176,15 @@ export function useConversationRecordSync({
   }, [activeThreadId, clearBootstrapping, locale, messages, runtimeModel, user, buildSyncPlan]);
 
   useEffect(() => {
-    const syncPlan = buildSyncPlan();
-
-    if (!activeThreadId || !runtimeModel || !syncPlan.shouldRunDerivedState) {
+    if (
+      !derivedStatePlan.shouldGenerateRemoteTitle ||
+      !activeThreadId ||
+      !runtimeModel ||
+      !derivedStatePlan.remoteTitleInput
+    ) {
       return;
     }
-
-    generateConversationRecordTitle({
-      conversationId: activeThreadId,
-      locale,
-      runtimeModel,
-      user,
-    });
-  }, [activeThreadId, buildSyncPlan, locale, runtimeModel, user]);
-
-  useEffect(() => {
-    if (!user || isBusy || !activeThreadId || !runtimeModel || messages.length === 0) {
-      return;
-    }
-
-    const firstUserMessage = messages.find(
-      (message) => message.role === 'user' && getMessageText(message).length > 0
-    );
-
-    if (!firstUserMessage) {
-      return;
-    }
-
-    const input = getMessageText(firstUserMessage);
-    const fallbackTitle = buildConversationTitleFromText(input);
-
-    if (activeThreadTitle && activeThreadTitle.trim() !== fallbackTitle) {
-      return;
-    }
+    const input = derivedStatePlan.remoteTitleInput;
 
     const requestKey = `${activeThreadId}:${input}`;
     if (generatedTitleKeyRef.current === requestKey) {
@@ -175,61 +227,56 @@ export function useConversationRecordSync({
     })();
   }, [
     activeThreadId,
-    activeThreadTitle,
-    isBusy,
+    derivedStatePlan.remoteTitleInput,
+    derivedStatePlan.shouldGenerateRemoteTitle,
     locale,
-    messages,
     onOptimisticPatchConversation,
     runtimeModel,
-    user,
   ]);
 
   useEffect(() => {
-    const syncPlan = buildSyncPlan();
-
-    if (!activeThreadId || !runtimeModel || !syncPlan.shouldRunDerivedState) {
-      return;
-    }
-
-    generateConversationRecordSummary({
-      conversationId: activeThreadId,
-      locale,
-      runtimeModel,
-      user,
-    });
-  }, [activeThreadId, buildSyncPlan, locale, runtimeModel, user]);
-
-  useEffect(() => {
-    const syncPlan = buildSyncPlan();
-
     if (
-      !memorySettings.enabled ||
-      !memorySettings.autoWrite ||
       !activeThreadId ||
       !runtimeModel ||
-      !syncPlan.shouldRunDerivedState
+      (!derivedStatePlan.shouldGenerateLocalTitle &&
+        !derivedStatePlan.shouldGenerateSummary &&
+        !derivedStatePlan.shouldGenerateMemories)
     ) {
       return;
     }
 
-    const lastMessage = messages.at(-1);
-    const requestKey = `${activeThreadId}:${messages.length}:${lastMessage?.id ?? ''}`;
-    const extractionKey = buildLocalConversationMemoryExtractionKey(messages);
+    if (derivedStatePlan.shouldGenerateLocalTitle) {
+      generateConversationRecordTitle({
+        conversationId: activeThreadId,
+        locale,
+        runtimeModel,
+        user,
+      });
+    }
 
-    if (generatedMemoryKeyRef.current === requestKey) {
+    if (derivedStatePlan.shouldGenerateSummary) {
+      generateConversationRecordSummary({
+        conversationId: activeThreadId,
+        locale,
+        runtimeModel,
+        user,
+      });
+    }
+
+    if (!derivedStatePlan.shouldGenerateMemories || !derivedStatePlan.memoryRequestKey) {
       return;
     }
 
-    if (!user && isLocalConversationId(activeThreadId)) {
-      const localThread = getLocalConversationThread(activeThreadId);
-
-      if (localThread?.memoryExtractionKey === extractionKey) {
-        generatedMemoryKeyRef.current = requestKey;
-        return;
-      }
+    if (generatedMemoryKeyRef.current === derivedStatePlan.memoryRequestKey) {
+      return;
     }
 
-    generatedMemoryKeyRef.current = requestKey;
+    if (derivedStatePlan.shouldSkipCachedMemoryExtraction) {
+      generatedMemoryKeyRef.current = derivedStatePlan.memoryRequestKey;
+      return;
+    }
+
+    generatedMemoryKeyRef.current = derivedStatePlan.memoryRequestKey;
 
     void generateConversationRecordMemories({
       conversationId: activeThreadId,
@@ -240,12 +287,14 @@ export function useConversationRecordSync({
     });
   }, [
     activeThreadId,
+    derivedStatePlan.memoryRequestKey,
+    derivedStatePlan.shouldGenerateLocalTitle,
+    derivedStatePlan.shouldGenerateMemories,
+    derivedStatePlan.shouldGenerateSummary,
+    derivedStatePlan.shouldSkipCachedMemoryExtraction,
     locale,
-    memorySettings.autoWrite,
-    memorySettings.enabled,
     messages,
     runtimeModel,
     user,
-    buildSyncPlan,
   ]);
 }
