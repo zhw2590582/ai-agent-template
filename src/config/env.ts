@@ -11,8 +11,15 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 });
 
+const rawEnv = {
+  NODE_ENV: process.env.NODE_ENV,
+  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+};
+
 const parseEnv = () => {
-  const parsed = envSchema.safeParse(process.env);
+  const parsed = envSchema.safeParse(rawEnv);
 
   if (!parsed.success) {
     console.error('Environment variable validation failed:');

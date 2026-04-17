@@ -96,6 +96,7 @@ export function ChatTopBar({
               signOutLabel={t('auth.sign_out')}
               signOutSuccessLabel={t('auth.toast.sign_out_success')}
               signedInAsLabel={t('auth.signed_in_as')}
+              supabaseConfigured={showAuthDialog}
               termsAgreementLabel={t('auth.terms_agreement')}
               termsOfServiceLabel={t('auth.terms_of_service')}
               title={t('auth.title')}
@@ -200,6 +201,7 @@ export function ChatTopBar({
                   signOutLabel={t('auth.sign_out')}
                   signOutSuccessLabel={t('auth.toast.sign_out_success')}
                   signedInAsLabel={t('auth.signed_in_as')}
+                  supabaseConfigured={showAuthDialog}
                   termsAgreementLabel={t('auth.terms_agreement')}
                   termsOfServiceLabel={t('auth.terms_of_service')}
                   title={t('auth.title')}

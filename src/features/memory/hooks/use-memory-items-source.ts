@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { API_ROUTES } from '@/config/api';
+import { MEMORY_CONFIG } from '@/config/memory';
 import { getApiErrorToastMessage } from '@/lib/api-client';
 import {
   deleteLocalMemory,
@@ -26,8 +27,17 @@ export function useMemoryItemsSource({
   t,
 }: UseMemoryItemsSourceOptions) {
   const [memories, setMemories] = useState(initialMemories);
+  const [currentPage, setCurrentPage] = useState(1);
   const [pendingEditId, setPendingEditId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  const totalItems = memories.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / MEMORY_CONFIG.SAVED_MEMORIES_PAGE_SIZE));
+  const pagedMemories = useMemo(() => {
+    const startIndex = (currentPage - 1) * MEMORY_CONFIG.SAVED_MEMORIES_PAGE_SIZE;
+    const endIndex = startIndex + MEMORY_CONFIG.SAVED_MEMORIES_PAGE_SIZE;
+    return memories.slice(startIndex, endIndex);
+  }, [currentPage, memories]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -42,6 +52,12 @@ export function useMemoryItemsSource({
 
     setMemories(initialMemories);
   }, [initialMemories, isAuthenticated]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const handleDeleteMemory = async (memoryId: string) => {
     setPendingDeleteId(memoryId);
@@ -120,10 +136,14 @@ export function useMemoryItemsSource({
   };
 
   return {
+    currentPage,
     handleDeleteMemory,
     handleEditMemory,
-    memories,
+    memories: pagedMemories,
     pendingDeleteId,
     pendingEditId,
+    setPage: setCurrentPage,
+    totalItems,
+    totalPages,
   };
 }

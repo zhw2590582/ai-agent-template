@@ -1,6 +1,19 @@
+import type { MouseEvent } from 'react';
+import { useMemo, useState } from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { Spinner } from '@/components/ui/spinner';
+import { MEMORY_CONFIG } from '@/config/memory';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,10 +27,12 @@ import {
 import { PencilIcon, Trash2Icon } from 'lucide-react';
 import { EmptyMemoryState } from '@/features/memory/components/empty-memory-state';
 import { MemoryEditorDialog } from '@/features/memory/components/memory-editor-dialog';
+import { buildPaginationEntries } from '@/features/memory/components/pagination-utils';
 import type { MemoryKind, MemoryListItem } from '@/features/memory/types';
-import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface MemoryListProps {
+  currentPage: number;
   locale: string;
   onEditMemory?: (input: {
     content: string;
@@ -26,24 +41,41 @@ interface MemoryListProps {
   }) => Promise<boolean> | void;
   memories: MemoryListItem[];
   onDeleteMemory?: (memoryId: string) => Promise<boolean> | void;
+  onPageChange: (page: number) => void;
   pendingEditId?: string | null;
   pendingDeleteId?: string | null;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
+  totalItems: number;
+  totalPages: number;
 }
 
 export function MemoryList({
+  currentPage,
   locale,
   onEditMemory,
   memories,
   onDeleteMemory,
+  onPageChange,
   pendingEditId,
   pendingDeleteId,
   t,
+  totalItems,
+  totalPages,
 }: MemoryListProps) {
   const [editingMemoryId, setEditingMemoryId] = useState<string | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const editingMemory = memories.find((memory) => memory.id === editingMemoryId) ?? null;
   const deleteTarget = memories.find((memory) => memory.id === deleteTargetId) ?? null;
+  const paginationEntries = useMemo(
+    () => buildPaginationEntries(currentPage, totalPages),
+    [currentPage, totalPages]
+  );
+  const currentRangeStart =
+    totalItems === 0 ? 0 : (currentPage - 1) * MEMORY_CONFIG.SAVED_MEMORIES_PAGE_SIZE + 1;
+  const currentRangeEnd = Math.min(
+    (currentPage - 1) * MEMORY_CONFIG.SAVED_MEMORIES_PAGE_SIZE + memories.length,
+    totalItems
+  );
   const formatDate = (value: string) =>
     new Intl.DateTimeFormat(locale, {
       day: 'numeric',
@@ -64,6 +96,11 @@ export function MemoryList({
     }
   };
 
+  const handlePaginationClick = (nextPage: number) => (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    onPageChange(Math.min(Math.max(nextPage, 1), totalPages));
+  };
+
   return (
     <>
       <section className="flex flex-col gap-4">
@@ -80,54 +117,110 @@ export function MemoryList({
             title={t('memory_page.saved_memories.empty_title')}
           />
         ) : (
-          <div className="border-border overflow-hidden rounded-md border">
-            {memories.map((memory) => (
-              <article
-                className="border-border flex flex-col gap-3 border-b px-5 py-4 last:border-b-0"
-                key={memory.id}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">{memory.kind}</Badge>
-                    <Badge variant="outline">{memory.source}</Badge>
+          <div className="space-y-4">
+            <div className="border-border overflow-hidden rounded-md border">
+              {memories.map((memory) => (
+                <article
+                  className="border-border flex flex-col gap-3 border-b px-5 py-4 last:border-b-0"
+                  key={memory.id}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">{memory.kind}</Badge>
+                      <Badge variant="outline">{memory.source}</Badge>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-muted-foreground text-xs">
+                        {formatDate(memory.updatedAt)}
+                      </span>
+                      {onEditMemory ? (
+                        <Button
+                          onClick={() => setEditingMemoryId(memory.id)}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          {pendingEditId === memory.id ? (
+                            <Spinner data-icon="inline-start" />
+                          ) : (
+                            <PencilIcon />
+                          )}
+                          {t('memory_page.saved_memories.edit')}
+                        </Button>
+                      ) : null}
+                      {onDeleteMemory ? (
+                        <Button
+                          onClick={() => setDeleteTargetId(memory.id)}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          {pendingDeleteId === memory.id ? (
+                            <Spinner data-icon="inline-start" />
+                          ) : (
+                            <Trash2Icon />
+                          )}
+                          {t('memory_page.saved_memories.delete')}
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground text-xs">
-                      {formatDate(memory.updatedAt)}
-                    </span>
-                    {onEditMemory ? (
-                      <Button
-                        onClick={() => setEditingMemoryId(memory.id)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        {pendingEditId === memory.id ? (
-                          <Spinner data-icon="inline-start" />
+                  <p className="text-sm leading-6">{memory.content}</p>
+                </article>
+              ))}
+            </div>
+
+            {totalItems > MEMORY_CONFIG.SAVED_MEMORIES_PAGE_SIZE ? (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-muted-foreground text-sm">
+                  {t('memory_page.saved_memories.pagination.summary', {
+                    end: String(currentRangeEnd),
+                    start: String(currentRangeStart),
+                    total: String(totalItems),
+                  })}
+                </p>
+                <Pagination className="mx-0 w-auto justify-start sm:justify-end">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        aria-disabled={currentPage === 1}
+                        className={cn(currentPage === 1 && 'pointer-events-none opacity-50')}
+                        href="#"
+                        text={t('memory_page.saved_memories.pagination.previous')}
+                        onClick={handlePaginationClick(currentPage - 1)}
+                      />
+                    </PaginationItem>
+                    {paginationEntries.map((entry) => (
+                      <PaginationItem key={entry}>
+                        {typeof entry === 'number' ? (
+                          <PaginationLink
+                            aria-label={t('memory_page.saved_memories.pagination.page', {
+                              page: String(entry),
+                            })}
+                            href="#"
+                            isActive={entry === currentPage}
+                            onClick={handlePaginationClick(entry)}
+                          >
+                            {entry}
+                          </PaginationLink>
                         ) : (
-                          <PencilIcon />
+                          <PaginationEllipsis />
                         )}
-                        {t('memory_page.saved_memories.edit')}
-                      </Button>
-                    ) : null}
-                    {onDeleteMemory ? (
-                      <Button
-                        onClick={() => setDeleteTargetId(memory.id)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        {pendingDeleteId === memory.id ? (
-                          <Spinner data-icon="inline-start" />
-                        ) : (
-                          <Trash2Icon />
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext
+                        aria-disabled={currentPage === totalPages}
+                        className={cn(
+                          currentPage === totalPages && 'pointer-events-none opacity-50'
                         )}
-                        {t('memory_page.saved_memories.delete')}
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-                <p className="text-sm leading-6">{memory.content}</p>
-              </article>
-            ))}
+                        href="#"
+                        text={t('memory_page.saved_memories.pagination.next')}
+                        onClick={handlePaginationClick(currentPage + 1)}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            ) : null}
           </div>
         )}
 

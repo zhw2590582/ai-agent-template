@@ -28,7 +28,7 @@ import { useAuthUser } from '@/features/auth/components/auth-user-provider';
 import { OauthSignInButton } from '@/features/auth/components/oauth-sign-in-button';
 import { GithubMark, GoogleMark } from '@/features/auth/components/auth-provider-icons';
 import { toAuthUserSnapshot } from '@/features/auth/lib/auth-user';
-import { createClient, isSupabaseBrowserConfigured } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 type AuthDialogProps = {
   configurationMissingDescription: string;
@@ -43,6 +43,7 @@ type AuthDialogProps = {
   signOutFailedLabel?: string;
   signOutSuccessLabel?: string;
   signedInAsLabel: string;
+  supabaseConfigured: boolean;
   termsAgreementLabel: string;
   termsOfServiceLabel: string;
   title: string;
@@ -59,6 +60,7 @@ export function AuthDialog({
   signInFailedLabel,
   signOutLabel,
   signedInAsLabel,
+  supabaseConfigured,
   termsAgreementLabel,
   termsOfServiceLabel,
   title,
@@ -67,7 +69,6 @@ export function AuthDialog({
   const router = useRouter();
   const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
-  const supabaseConfigured = isSupabaseBrowserConfigured();
   const { user, setUser } = useAuthUser();
 
   useEffect(() => {
@@ -175,6 +176,7 @@ export function AuthDialog({
                 icon={<GoogleMark />}
                 nextPath={nextPath}
                 provider="google"
+                supabaseConfigured={supabaseConfigured}
               />
               <OauthSignInButton
                 buttonLabel={githubLabel}
@@ -182,6 +184,7 @@ export function AuthDialog({
                 icon={<GithubMark />}
                 nextPath={nextPath}
                 provider="github"
+                supabaseConfigured={supabaseConfigured}
               />
             </div>
 

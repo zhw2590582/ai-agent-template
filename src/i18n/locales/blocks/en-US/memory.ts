@@ -46,6 +46,12 @@ export const enUSMemoryMessages = {
       empty_title: 'No saved memories yet',
       empty_description:
         'Stable preferences and facts from your conversations will appear here and can be reused in future chats.',
+      pagination: {
+        summary: 'Showing {start}-{end} of {total} memories',
+        previous: 'Previous',
+        next: 'Next',
+        page: 'Go to page {page}',
+      },
     },
     summaries: {
       title: 'Conversation Summaries',

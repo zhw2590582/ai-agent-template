@@ -6,13 +6,14 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { createClient, isSupabaseBrowserConfigured } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 type OauthSignInButtonProps = {
   buttonLabel: string;
   icon: ReactNode;
   nextPath: string;
   provider: Provider;
+  supabaseConfigured: boolean;
   variant?: 'default' | 'outline';
   errorLabel?: string;
 };
@@ -23,12 +24,13 @@ export function OauthSignInButton({
   icon,
   nextPath,
   provider,
+  supabaseConfigured,
   variant = 'outline',
 }: OauthSignInButtonProps) {
   const [isPending, setIsPending] = useState(false);
 
   const handleSignIn = async () => {
-    if (!isSupabaseBrowserConfigured()) {
+    if (!supabaseConfigured) {
       return;
     }
 

@@ -40,6 +40,12 @@ export const zhCNMemoryMessages = {
       kind_workflow: '工作流',
       empty_title: '还没有已保存记忆',
       empty_description: '对话中形成的稳定偏好和事实会出现在这里，并在后续聊天中按需复用。',
+      pagination: {
+        summary: '显示第 {start}-{end} 条，共 {total} 条记忆',
+        previous: '上一页',
+        next: '下一页',
+        page: '前往第 {page} 页',
+      },
     },
     summaries: {
       title: '会话摘要',

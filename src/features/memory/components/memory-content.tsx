@@ -41,6 +41,7 @@ export function MemoryContent({
     toast.error(t('memory_page.toast.summary_load_failed'));
   }, [t]);
   const {
+    currentMemoryPage,
     currentPage,
     handleDeleteMemory,
     handleDeleteSummary,
@@ -53,12 +54,15 @@ export function MemoryContent({
     localMemories,
     localSettings,
     localSummaries,
+    memoryTotalItems,
+    memoryTotalPages,
     pendingDeleteId,
     pendingEditId,
     pendingSummaryDeleteId,
     pendingSummaryEditId,
     resetDraftSettings,
     saveSettings,
+    setMemoryPage,
     setPage,
     totalItems,
     totalPages,
@@ -129,13 +133,17 @@ export function MemoryContent({
         />
         <Separator />
         <MemoryList
+          currentPage={currentMemoryPage}
           locale={locale}
           memories={localMemories}
           onDeleteMemory={handleDeleteMemory}
           onEditMemory={handleEditMemory}
+          onPageChange={setMemoryPage}
           pendingDeleteId={pendingDeleteId}
           pendingEditId={pendingEditId}
           t={t}
+          totalItems={memoryTotalItems}
+          totalPages={memoryTotalPages}
         />
         <Separator />
         <MemorySummaryList
