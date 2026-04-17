@@ -36,6 +36,10 @@ bun run dev
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
+如果要使用仓库内置的 Supabase 管理员排查脚本，还需要：
+
+- `SUPABASE_SERVICE_ROLE_KEY`
+
 如果要启用额外平台能力，还预留了这些变量：
 
 - `UPSTASH_REDIS_REST_URL`

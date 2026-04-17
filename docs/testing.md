@@ -18,6 +18,49 @@ bun run test:coverage
 
 `bun run test:e2e` 目前只是占位命令，还没有真实 E2E 套件。
 
+## Supabase Inspector
+
+排查登录用户、会话持久化、memory consolidation 这类线上数据问题时，优先用仓库内置的管理员脚本：
+
+```bash
+bun run inspect:supabase user <userId>
+bun run inspect:supabase conversation <conversationId>
+```
+
+前置条件：
+
+- `.env.local` 或当前 shell 里已经配置：
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+
+脚本入口：
+
+- [scripts/inspect-supabase.ts](../scripts/inspect-supabase.ts)
+
+当前能力：
+
+- `user <userId>`
+  - 返回该用户的 auth user、profile、最近会话列表、全部 memories
+- `conversation <conversationId>`
+  - 返回该会话记录、所属 profile、关联 memories
+
+当前默认限制：
+
+- 最近会话列表最多返回 `20` 条
+- 上限来自 [src/config/dev.ts](../src/config/dev.ts) 的 `SUPABASE_INSPECTOR_CONVERSATION_LIMIT`
+
+典型排查场景：
+
+- 某个用户的 `profile` / `preference` / `workflow` / `fact` memory 为什么没有被 consolidation
+- 某条 conversation 是否真的写入了数据库
+- conversation 和 memory 的 `conversation_id` 是否对得上
+- profile settings 或 locale 是否是预期值
+
+说明：
+
+- 这个脚本直接使用 Supabase service role，只用于本地开发和管理员排查
+- 不要把输出直接贴到公开渠道，里面可能包含用户 profile、memory 和 settings
+
 ## 当前测试分层
 
 ```text
