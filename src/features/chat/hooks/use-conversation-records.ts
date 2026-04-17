@@ -16,6 +16,7 @@ interface UseConversationRecordsOptions {
   bootstrappingThreadId: string | null;
   clearBootstrapping: () => void;
   handleClearChat: () => void;
+  hydratedConversationId: string | null;
   isBusy: boolean;
   locale: Locale;
   memorySettings: MemorySettings;
@@ -42,6 +43,7 @@ export function useConversationRecords({
   bootstrappingThreadId,
   clearBootstrapping,
   handleClearChat,
+  hydratedConversationId,
   isBusy,
   locale,
   memorySettings,
@@ -58,6 +60,7 @@ export function useConversationRecords({
     activeThreadTitle,
     bootstrappingThreadId,
     clearBootstrapping,
+    hydratedConversationId,
     isBusy,
     locale,
     memorySettings,

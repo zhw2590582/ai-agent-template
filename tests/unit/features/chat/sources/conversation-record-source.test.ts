@@ -45,6 +45,7 @@ describe('createConversationRecordSource', () => {
     const plan = source.getSyncPlan({
       activeThreadId: 'local-thread-1',
       bootstrappingThreadId: 'local-thread-1',
+      hydratedConversationId: null,
       isBusy: false,
       messages: SAMPLE_MESSAGES,
       urlConversationId: null,
@@ -64,6 +65,7 @@ describe('createConversationRecordSource', () => {
     const plan = source.getSyncPlan({
       activeThreadId: 'local-thread-1',
       bootstrappingThreadId: 'local-thread-1',
+      hydratedConversationId: null,
       isBusy: true,
       messages: SAMPLE_MESSAGES,
       urlConversationId: 'local-thread-1',
@@ -84,6 +86,7 @@ describe('createConversationRecordSource', () => {
     const plan = source.getSyncPlan({
       activeThreadId: 'local-thread-1',
       bootstrappingThreadId: null,
+      hydratedConversationId: null,
       isBusy: false,
       messages: SAMPLE_MESSAGES,
       urlConversationId: 'local-thread-1',
@@ -94,6 +97,34 @@ describe('createConversationRecordSource', () => {
       shouldPersistMessages: false,
       shouldClearBootstrappingAfterPersist: false,
       shouldRunDerivedState: false,
+    });
+  });
+
+  it('persists new messages after an existing local thread has been hydrated', () => {
+    areLocalConversationThreadsLoaded.mockReturnValue(true);
+    const source = createConversationRecordSource(null);
+
+    const plan = source.getSyncPlan({
+      activeThreadId: 'local-thread-1',
+      bootstrappingThreadId: null,
+      hydratedConversationId: 'local-thread-1',
+      isBusy: false,
+      messages: [
+        ...SAMPLE_MESSAGES,
+        {
+          id: 'message-2',
+          parts: [{ type: 'text', text: 'follow up' }],
+          role: 'assistant',
+        },
+      ],
+      urlConversationId: 'local-thread-1',
+    });
+
+    expect(plan).toEqual({
+      phase: 'ready',
+      shouldPersistMessages: true,
+      shouldClearBootstrappingAfterPersist: false,
+      shouldRunDerivedState: true,
     });
   });
 
@@ -108,6 +139,7 @@ describe('createConversationRecordSource', () => {
     const plan = source.getSyncPlan({
       activeThreadId: 'conversation-1',
       bootstrappingThreadId: null,
+      hydratedConversationId: null,
       isBusy: false,
       messages: SAMPLE_MESSAGES,
       urlConversationId: 'conversation-1',

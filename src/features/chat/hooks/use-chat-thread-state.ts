@@ -18,6 +18,7 @@ export function useChatThreadState() {
   }, [pathname, searchParams]);
 
   const [input, setInput] = useState('');
+  const [hydratedConversationId, setHydratedConversationId] = useState<string | null>(null);
   const [isStartingThread, setIsStartingThread] = useState(false);
   const [pendingThreadId, setPendingThreadId] = useState<string | null>(null);
   const [bootstrappingThreadId, setBootstrappingThreadId] = useState<string | null>(null);
@@ -29,9 +30,11 @@ export function useChatThreadState() {
     activeThreadId,
     bootstrappingThreadId,
     effectivePendingThreadId,
+    hydratedConversationId,
     input,
     isStartingThread,
     setBootstrappingThreadId,
+    setHydratedConversationId,
     setInput,
     setIsStartingThread,
     setPendingThreadId,

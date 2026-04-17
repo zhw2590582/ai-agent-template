@@ -72,9 +72,11 @@ export function useChatWorkbench({
     activeThreadId,
     bootstrappingThreadId,
     effectivePendingThreadId,
+    hydratedConversationId,
     input,
     isStartingThread,
     setBootstrappingThreadId,
+    setHydratedConversationId,
     setInput,
     setIsStartingThread,
     setPendingThreadId,
@@ -158,6 +160,8 @@ export function useChatWorkbench({
     clearBootstrapping: useCallback(() => {
       setBootstrappingThreadId(null);
     }, [setBootstrappingThreadId]),
+    hydratedConversationId,
+    setHydratedConversationId,
     user,
   });
 
@@ -200,6 +204,7 @@ export function useChatWorkbench({
       setBootstrappingThreadId(null);
     }, [setBootstrappingThreadId]),
     handleClearChat,
+    hydratedConversationId,
     isBusy,
     locale: titleLocale,
     memorySettings: models.profile.settings.memory,

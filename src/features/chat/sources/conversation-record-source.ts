@@ -28,6 +28,7 @@ import type { ChatRuntimeModel } from '@/features/models/types';
 export interface ConversationRecordSyncPlanOptions {
   activeThreadId: string | null;
   bootstrappingThreadId: string | null;
+  hydratedConversationId: string | null;
   isBusy: boolean;
   messages: UIMessage[];
   urlConversationId: string | null;
@@ -77,11 +78,7 @@ export interface ConversationRecordSource {
   renameRecord: (conversationId: string, title: string) => Promise<boolean>;
 }
 
-function areMessagesEqual(left: UIMessage[], right: UIMessage[]) {
-  return JSON.stringify(left) === JSON.stringify(right);
-}
-
-function hasLoadedReadyLocalConversationMessages(options: ConversationRecordSyncPlanOptions) {
+function isHydratedReadyLocalConversation(options: ConversationRecordSyncPlanOptions) {
   if (
     !options.activeThreadId ||
     !isLocalConversationId(options.activeThreadId) ||
@@ -95,13 +92,7 @@ function hasLoadedReadyLocalConversationMessages(options: ConversationRecordSync
     return false;
   }
 
-  const localMessages = getLocalConversationThread(options.activeThreadId)?.messages ?? null;
-
-  if (!localMessages) {
-    return true;
-  }
-
-  return areMessagesEqual(localMessages, options.messages);
+  return options.hydratedConversationId === options.activeThreadId;
 }
 
 function buildLocalConversationSyncPlan(
@@ -122,7 +113,7 @@ function buildLocalConversationSyncPlan(
   }
 
   const hasLoadedMessages =
-    phase === 'bootstrapping' ? true : hasLoadedReadyLocalConversationMessages(options);
+    phase === 'bootstrapping' ? true : isHydratedReadyLocalConversation(options);
   const shouldPersistMessages = options.messages.length > 0 && hasLoadedMessages;
 
   return {
@@ -184,10 +175,18 @@ function createLocalConversationRecordSource(): ConversationRecordSource {
       const thread = await getLocalConversationThreadById(conversationId);
       return thread?.messages ?? null;
     },
-    getSyncPlan: ({ activeThreadId, bootstrappingThreadId, isBusy, messages, urlConversationId }) =>
+    getSyncPlan: ({
+      activeThreadId,
+      bootstrappingThreadId,
+      hydratedConversationId,
+      isBusy,
+      messages,
+      urlConversationId,
+    }) =>
       buildLocalConversationSyncPlan({
         activeThreadId,
         bootstrappingThreadId,
+        hydratedConversationId,
         isBusy,
         messages,
         urlConversationId,

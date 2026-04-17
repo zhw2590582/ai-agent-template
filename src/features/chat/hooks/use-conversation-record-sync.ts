@@ -30,6 +30,7 @@ interface UseConversationRecordSyncOptions {
   activeThreadTitle: string | null;
   bootstrappingThreadId: string | null;
   clearBootstrapping: () => void;
+  hydratedConversationId: string | null;
   isBusy: boolean;
   locale: Locale;
   memorySettings: MemorySettings;
@@ -63,6 +64,7 @@ export function useConversationRecordSync({
   activeThreadTitle,
   bootstrappingThreadId,
   clearBootstrapping,
+  hydratedConversationId,
   isBusy,
   locale,
   memorySettings,
@@ -80,11 +82,20 @@ export function useConversationRecordSync({
       recordSource.getSyncPlan({
         activeThreadId,
         bootstrappingThreadId,
+        hydratedConversationId,
         isBusy,
         messages,
         urlConversationId,
       }),
-    [activeThreadId, bootstrappingThreadId, isBusy, messages, recordSource, urlConversationId]
+    [
+      activeThreadId,
+      bootstrappingThreadId,
+      hydratedConversationId,
+      isBusy,
+      messages,
+      recordSource,
+      urlConversationId,
+    ]
   );
   const derivedStatePlan = useMemo<ConversationDerivedStatePlan>(() => {
     const syncPlan = buildSyncPlan();

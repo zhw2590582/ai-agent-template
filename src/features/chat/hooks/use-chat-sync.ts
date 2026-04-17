@@ -33,6 +33,10 @@ interface UseChatSyncOptions {
   bootstrappingThreadId: string | null;
   /** Callback to clear the bootstrapping flag. */
   clearBootstrapping: () => void;
+  /** Most recent local conversation id whose messages are hydrated into useChat state. */
+  hydratedConversationId: string | null;
+  /** Callback to update the hydrated local conversation id. */
+  setHydratedConversationId: (conversationId: string | null) => void;
   /** Current user snapshot to resolve local vs remote conversation sources. */
   user: AuthUserSnapshot | null;
 }
@@ -47,6 +51,8 @@ export function useChatSync({
   setMessages,
   bootstrappingThreadId,
   clearBootstrapping,
+  hydratedConversationId,
+  setHydratedConversationId,
   user,
 }: UseChatSyncOptions) {
   const recordSource = useMemo(() => createConversationRecordSource(user), [user]);
@@ -60,11 +66,21 @@ export function useChatSync({
 
     prevUrlIdRef.current = null;
     syncVersionRef.current++;
+    if (hydratedConversationId !== null) {
+      setHydratedConversationId(null);
+    }
 
     startTransition(() => {
       setMessages(starterMessages);
     });
-  }, [urlConversationId, pendingThreadId, setMessages, starterMessages]);
+  }, [
+    hydratedConversationId,
+    pendingThreadId,
+    setHydratedConversationId,
+    setMessages,
+    starterMessages,
+    urlConversationId,
+  ]);
 
   // Effect 2: Handle URL-driven conversation switches
   useEffect(() => {
@@ -74,6 +90,10 @@ export function useChatSync({
     prevUrlIdRef.current = urlConversationId;
 
     if (!urlChanged) return;
+
+    if (hydratedConversationId !== urlConversationId) {
+      setHydratedConversationId(null);
+    }
 
     const phase = getConversationSyncPhase({
       activeThreadId: urlConversationId,
@@ -96,6 +116,7 @@ export function useChatSync({
     });
 
     if (cachedMessages || initialUrlMessages) {
+      setHydratedConversationId(urlConversationId);
       return;
     }
 
@@ -105,6 +126,12 @@ export function useChatSync({
       if (nextMessages !== starterMessages) {
         recordSource.cacheMessages(urlConversationId, nextMessages);
       }
+
+      if (syncVersionRef.current !== capturedVersion) {
+        return;
+      }
+
+      setHydratedConversationId(urlConversationId);
 
       startTransition(() => {
         setMessages((current) => {
@@ -121,7 +148,9 @@ export function useChatSync({
     initialMessages,
     isBusy,
     bootstrappingThreadId,
+    hydratedConversationId,
     recordSource,
+    setHydratedConversationId,
     setMessages,
     starterMessages,
     urlConversationId,
@@ -145,6 +174,9 @@ export function useChatSync({
 
     if (urlConversationId) {
       recordSource.cacheMessages(urlConversationId, initialMessages);
+      if (hydratedConversationId !== urlConversationId) {
+        setHydratedConversationId(urlConversationId);
+      }
     }
 
     const capturedVersion = syncVersionRef.current;
@@ -164,6 +196,8 @@ export function useChatSync({
     initialMessages,
     bootstrappingThreadId,
     clearBootstrapping,
+    hydratedConversationId,
     setMessages,
+    setHydratedConversationId,
   ]);
 }
