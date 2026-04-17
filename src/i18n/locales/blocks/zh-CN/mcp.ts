@@ -8,6 +8,7 @@ export const zhCNMcpMessages = {
     enabled_description: '允许助手在需要时使用已启用的 MCP 服务。',
     servers_title: '服务端列表',
     servers_description: '添加你要接入的 MCP 服务，并在这里编辑、测试或删除它们。',
+    empty_state: '还没有 MCP 服务端。先添加一个，就可以测试并接入 MCP 工具。',
     add_server: '添加服务端',
     add_server_title: '添加 MCP 服务端',
     add_server_description: '填写新的 MCP 服务连接信息。',

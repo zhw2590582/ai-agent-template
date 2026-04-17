@@ -67,68 +67,76 @@ export function McpServerList({
         </div>
 
         <div className="border-border overflow-hidden rounded-md border">
-          {servers.map((server) => {
-            return (
-              <article
-                className="border-border flex flex-col gap-3 border-b px-5 py-4 last:border-b-0"
-                key={server.id}
-              >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="min-w-0 text-sm font-medium sm:truncate">
-                        {server.serverName}
-                      </h3>
-                      <Badge variant="outline">{server.transport.toUpperCase()}</Badge>
-                      <Badge variant={server.enabled ? 'secondary' : 'outline'}>
-                        {server.enabled ? t('common.enabled') : t('common.disabled')}
-                      </Badge>
+          {servers.length === 0 ? (
+            <div className="text-muted-foreground px-5 py-8 text-sm">
+              {t('mcp_page.empty_state')}
+            </div>
+          ) : (
+            servers.map((server) => {
+              return (
+                <article
+                  className="border-border flex flex-col gap-3 border-b px-5 py-4 last:border-b-0"
+                  key={server.id}
+                >
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="min-w-0 text-sm font-medium sm:truncate">
+                          {server.serverName}
+                        </h3>
+                        <Badge variant="outline">{server.transport.toUpperCase()}</Badge>
+                        <Badge variant={server.enabled ? 'secondary' : 'outline'}>
+                          {server.enabled ? t('common.enabled') : t('common.disabled')}
+                        </Badge>
+                      </div>
+                      <p className="text-muted-foreground text-sm break-all sm:truncate">
+                        {server.serverUrl || t('mcp_page.server_url_empty')}
+                      </p>
                     </div>
-                    <p className="text-muted-foreground text-sm break-all sm:truncate">
-                      {server.serverUrl || t('mcp_page.server_url_empty')}
-                    </p>
-                  </div>
 
-                  <div className="flex flex-wrap items-center justify-end gap-2 sm:justify-start">
-                    <Switch
-                      checked={server.enabled}
-                      className="data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
-                      onCheckedChange={(checked) => onToggleServerEnabled(server.id, checked)}
-                    />
-                    <Button
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                      onClick={() => onEditServer(server.id)}
-                    >
-                      <PencilIcon />
-                      {t('mcp_page.edit_server')}
-                    </Button>
-                    <Button
-                      disabled={!server.serverUrl.trim() || testingServerId != null}
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                      onClick={() => void onRunConnectionTest(server.id)}
-                    >
-                      {testingServerId !== server.id ? <PlugZapIcon /> : null}
-                      {testingServerId === server.id ? <Spinner data-icon="inline-start" /> : null}
-                      {t('mcp_page.test')}
-                    </Button>
-                    <Button
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                      onClick={() => onDeleteServer(server.id)}
-                    >
-                      <Trash2Icon />
-                      {t('common.delete')}
-                    </Button>
+                    <div className="flex flex-wrap items-center justify-end gap-2 sm:justify-start">
+                      <Switch
+                        checked={server.enabled}
+                        className="data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
+                        onCheckedChange={(checked) => onToggleServerEnabled(server.id, checked)}
+                      />
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                        onClick={() => onEditServer(server.id)}
+                      >
+                        <PencilIcon />
+                        {t('mcp_page.edit_server')}
+                      </Button>
+                      <Button
+                        disabled={!server.serverUrl.trim() || testingServerId != null}
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                        onClick={() => void onRunConnectionTest(server.id)}
+                      >
+                        {testingServerId !== server.id ? <PlugZapIcon /> : null}
+                        {testingServerId === server.id ? (
+                          <Spinner data-icon="inline-start" />
+                        ) : null}
+                        {t('mcp_page.test')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                        onClick={() => onDeleteServer(server.id)}
+                      >
+                        <Trash2Icon />
+                        {t('common.delete')}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </article>
-            );
-          })}
+                </article>
+              );
+            })
+          )}
         </div>
       </section>
 

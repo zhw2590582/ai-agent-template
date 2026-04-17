@@ -8,6 +8,7 @@ export const enUSMcpMessages = {
     enabled_description: 'Let the assistant use tools from your enabled MCP services when needed.',
     servers_title: 'Servers',
     servers_description: 'Add the MCP services you want to use, then edit, test, or remove them.',
+    empty_state: 'No MCP servers yet. Add one to start testing and using MCP tools.',
     add_server: 'Add server',
     add_server_title: 'Add MCP server',
     add_server_description: 'Enter the connection details for a new MCP service.',
