@@ -7,13 +7,9 @@
  */
 
 import { z } from 'zod';
-import { RAG_CONFIG } from '@/config/rag';
-import { SANDBOX_CONFIG } from '@/config/sandbox';
-import { SEARCH_CONFIG } from '@/config/search';
 import { TEXT_LIMITS } from '@/config/limits';
 import { SUPPORTED_LOCALES } from '@/config/i18n';
-import { SUBAGENT_CONFIG } from '@/config/subagent';
-import { SUBAGENT_TOOL_ACCESS_VALUES } from '@/features/subagents/types';
+import { agentRuntimeOverridesSchema, runtimeModelSchema } from '@/features/settings/schema';
 
 /**
  * A single message part. We only enforce it is a non-empty object with a `type` field.
@@ -37,119 +33,9 @@ export const chatPostSchema = z.object({
   conversationId: z.string().min(1).optional(),
   conversationSummary: z.string().trim().min(1).optional(),
   guestMemoryContext: z.string().trim().min(1).optional(),
-  memorySettings: z
-    .object({
-      autoWrite: z.boolean(),
-      contextMaxItems: z.number().int(),
-      crossConversation: z.boolean(),
-      enabled: z.boolean(),
-      recentMessageWindow: z.number().int(),
-      summaryMinMessages: z.number().int(),
-    })
-    .optional(),
-  mcpSettings: z
-    .object({
-      enabled: z.boolean(),
-      servers: z.array(
-        z.object({
-          bearerToken: z.string(),
-          enabled: z.boolean(),
-          id: z.string(),
-          serverName: z.string(),
-          serverUrl: z.string(),
-          transport: z.enum(['http', 'sse']),
-        })
-      ),
-    })
-    .optional(),
-  ragSettings: z
-    .object({
-      apiKey: z.string(),
-      enabled: z.boolean(),
-      matchCount: z.number().int(),
-      matchThreshold: z.number(),
-      maxContextCharacters: z.number().int(),
-      provider: z.enum(RAG_CONFIG.PROVIDER_IDS),
-    })
-    .optional(),
-  sandboxSettings: z
-    .object({
-      access: z.object({
-        allowCommands: z.boolean(),
-        allowFileDownload: z.boolean(),
-        allowFileUpload: z.boolean(),
-        allowFilesystem: z.boolean(),
-        allowInternetAccess: z.boolean(),
-        allowPty: z.boolean(),
-      }),
-      apiKey: z.string(),
-      autoPause: z.boolean(),
-      enabled: z.boolean(),
-      envVarsText: z.string(),
-      provider: z.enum(SANDBOX_CONFIG.PROVIDER_IDS),
-      secure: z.boolean(),
-      template: z.string(),
-      timeoutSeconds: z.number().int(),
-      workingDirectory: z.string(),
-    })
-    .optional(),
   messages: z.array(messageSchema).min(1),
-  searchSettings: z
-    .object({
-      crawl: z.object({
-        allowExternal: z.boolean(),
-        maxDepth: z.number().int(),
-        pageLimit: z.number().int(),
-      }),
-      enabled: z.boolean(),
-      extract: z.object({
-        chunksPerSource: z.number().int(),
-        extractDepth: z.enum(['advanced', 'basic']),
-        format: z.enum(['markdown', 'text']),
-      }),
-      search: z.object({
-        maxResults: z.number().int(),
-        searchDepth: z.enum(['advanced', 'basic']),
-        topic: z.enum(['finance', 'general', 'news']),
-      }),
-      apiKey: z.string(),
-      provider: z.enum(SEARCH_CONFIG.PROVIDER_IDS),
-    })
-    .optional(),
-  subagentSettings: z
-    .object({
-      agents: z.array(
-        z.object({
-          description: z.string(),
-          enabled: z.boolean(),
-          id: z.string(),
-          maxTokens: z
-            .number()
-            .int()
-            .min(SUBAGENT_CONFIG.MIN_TOKENS)
-            .max(SUBAGENT_CONFIG.MAX_TOKENS),
-          name: z.string(),
-          systemPrompt: z.string(),
-          temperature: z
-            .number()
-            .min(SUBAGENT_CONFIG.MIN_TEMPERATURE)
-            .max(SUBAGENT_CONFIG.MAX_TEMPERATURE),
-          themeColor: z.string(),
-          toolAccess: z.enum(SUBAGENT_TOOL_ACCESS_VALUES),
-        })
-      ),
-      enabled: z.boolean(),
-    })
-    .optional(),
-  runtimeModel: z
-    .object({
-      apiFormat: z.enum(['anthropic', 'openai']),
-      apiKey: z.string().min(1),
-      baseUrl: z.string().min(1),
-      modelId: z.string().min(1),
-      providerId: z.string().min(1),
-    })
-    .optional(),
+  runtimeModel: runtimeModelSchema.optional(),
+  runtimeOverrides: agentRuntimeOverridesSchema.optional(),
 });
 
 export type ChatPostInput = z.infer<typeof chatPostSchema>;
@@ -157,13 +43,7 @@ export type ChatPostInput = z.infer<typeof chatPostSchema>;
 export const chatTitlePostSchema = z.object({
   input: z.string().min(1),
   locale: z.enum(SUPPORTED_LOCALES).optional(),
-  runtimeModel: z.object({
-    apiFormat: z.enum(['anthropic', 'openai']),
-    apiKey: z.string().min(1),
-    baseUrl: z.string().min(1),
-    modelId: z.string().min(1),
-    providerId: z.string().min(1),
-  }),
+  runtimeModel: runtimeModelSchema,
 });
 
 export type ChatTitlePostInput = z.infer<typeof chatTitlePostSchema>;
@@ -172,13 +52,7 @@ export const chatSummaryPostSchema = z.object({
   existingSummary: z.string().trim().min(1).optional(),
   locale: z.enum(SUPPORTED_LOCALES).optional(),
   messages: z.array(messageSchema).min(1),
-  runtimeModel: z.object({
-    apiFormat: z.enum(['anthropic', 'openai']),
-    apiKey: z.string().min(1),
-    baseUrl: z.string().min(1),
-    modelId: z.string().min(1),
-    providerId: z.string().min(1),
-  }),
+  runtimeModel: runtimeModelSchema,
 });
 
 export type ChatSummaryPostInput = z.infer<typeof chatSummaryPostSchema>;
@@ -186,13 +60,7 @@ export type ChatSummaryPostInput = z.infer<typeof chatSummaryPostSchema>;
 export const memoryExtractPostSchema = z.object({
   locale: z.enum(SUPPORTED_LOCALES),
   messages: z.array(messageSchema).min(1),
-  runtimeModel: z.object({
-    apiFormat: z.enum(['anthropic', 'openai']),
-    apiKey: z.string().min(1),
-    baseUrl: z.string().min(1),
-    modelId: z.string().min(1),
-    providerId: z.string().min(1),
-  }),
+  runtimeModel: runtimeModelSchema,
 });
 
 export type MemoryExtractPostInput = z.infer<typeof memoryExtractPostSchema>;

@@ -1,7 +1,7 @@
 import type { ThemeMode } from '@/config/theme';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
-import { normalizeProfileSettings } from '@/features/auth/profile/profile-settings';
 import type { AppProfile } from '@/features/auth/profile/types';
+import { normalizeAppProfileSettings } from '@/features/settings/app-settings';
 
 export function createProfileDraft(options: {
   existing?: Partial<AppProfile>;
@@ -19,7 +19,7 @@ export function createProfileDraft(options: {
     id: options.existing?.id ?? options.user?.id ?? 'guest-local',
     locale: options.existing?.locale ?? options.locale,
     memory_summary: options.existing?.memory_summary ?? null,
-    settings: normalizeProfileSettings(options.existing?.settings),
+    settings: normalizeAppProfileSettings(options.existing?.settings),
     theme: options.existing?.theme ?? options.theme,
     updated_at: now,
   };

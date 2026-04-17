@@ -2,25 +2,17 @@ import type { SupabaseClient, User } from '@supabase/supabase-js';
 import type { FinishReason, ToolSet, UIMessage } from 'ai';
 
 import type { Locale } from '@/config/i18n';
+import type { AgentRuntimeOverrides } from '@/features/chat/agent-runtime/runtime-overrides';
 import type {
   AgentRunMetadata,
   AgentRunMetadataBase,
 } from '@/features/chat/agent-runtime/run-metadata';
-import type { McpSettings } from '@/features/mcp/types';
 import type { ChatRuntimeModel } from '@/features/models/types';
 import type { RagSettings, RagSourceItem } from '@/features/rag/types';
-import type { SandboxSettings } from '@/features/sandbox/types';
-import type { SearchSettings } from '@/features/search/types';
 import type { SubagentSettings } from '@/features/subagents/types';
+import type { MemorySettings } from '@/features/settings/types';
 
-export interface ChatProfileMemorySettings {
-  autoWrite?: boolean;
-  contextMaxItems?: number;
-  crossConversation?: boolean;
-  enabled?: boolean;
-  recentMessageWindow?: number;
-  summaryMinMessages?: number;
-}
+export type ChatProfileMemorySettings = Partial<MemorySettings>;
 
 export interface ChatProfileRagSettings {
   apiKey?: string;
@@ -42,14 +34,9 @@ export interface AgentRunRequest {
   conversationId?: string;
   conversationSummary?: string;
   guestMemoryContext?: string;
-  mcpSettings?: McpSettings;
-  memorySettings?: ChatProfileMemorySettings;
   messages: UIMessage[];
-  ragSettings?: RagSettings;
+  runtimeOverrides?: AgentRuntimeOverrides;
   runtimeModel?: ChatRuntimeModel;
-  sandboxSettings?: SandboxSettings;
-  searchSettings?: SearchSettings;
-  subagentSettings?: SubagentSettings;
 }
 
 export interface AgentTransportRequest extends AgentRunRequest {
@@ -75,13 +62,8 @@ export interface AgentRunContext {
 export interface ResolveAgentRunContextOptions {
   conversationId: string | null;
   guestMemoryContext?: string | null;
-  mcpSettings: unknown;
-  memorySettings: unknown;
-  ragSettings: unknown;
+  runtimeOverrides: unknown;
   runtimeModel: ChatRuntimeModel;
-  sandboxSettings: unknown;
-  searchSettings: unknown;
-  subagentSettings: unknown;
   supabase: SupabaseClient;
   user: User | null;
 }

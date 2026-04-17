@@ -18,7 +18,7 @@
 4. 更稳定的相关性检索
 5. Memory 行为测试补齐
 6. 修复已知标题和摘要边界问题
-7. 按同样思路继续把 `conversation source` 从 guest / 登录用户分支式实现收口成 source-based 结构
+7. 继续把 `conversation source` 的 record sync / hydration 语义也收进 source-based 结构，而不是重新长回 hook 分支
 
 推荐落点：
 

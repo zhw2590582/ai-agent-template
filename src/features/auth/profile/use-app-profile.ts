@@ -7,12 +7,10 @@ import { useTheme } from '@/features/chat/components/preferences/theme-provider'
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import { createProfileActions } from '@/features/auth/profile/profile-actions';
 import { createPersistProfile } from '@/features/auth/profile/profile-persistence';
-import {
-  getOrderedProviders,
-  normalizeProfileSettings,
-} from '@/features/auth/profile/profile-settings';
+import { normalizeAppProfileSettings } from '@/features/settings/app-settings';
 import type { AppProfile } from '@/features/auth/profile/types';
 import { useProfileSource } from '@/features/auth/profile/use-profile-source';
+import { getOrderedProviders } from '@/features/models/utils/provider-order';
 
 export function useAppProfile(user: AuthUserSnapshot | null) {
   const t = useTranslations();
@@ -56,7 +54,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
     () => (current: AppProfile, nextModels: AppProfile['settings']['models']) => ({
       ...current,
       locale,
-      settings: normalizeProfileSettings({
+      settings: normalizeAppProfileSettings({
         memory: current.settings.memory,
         mcp: current.settings.mcp,
         models: nextModels,
@@ -161,7 +159,7 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
       const nextProfile = {
         ...current,
         locale,
-        settings: normalizeProfileSettings({
+        settings: normalizeAppProfileSettings({
           ...current.settings,
           [section]: updater(current.settings[section]),
         }),

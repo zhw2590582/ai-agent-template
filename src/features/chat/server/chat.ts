@@ -23,14 +23,9 @@ export async function handleChatPost(request: Request) {
       conversationId,
       conversationSummary,
       guestMemoryContext,
-      mcpSettings,
-      memorySettings: requestedMemorySettings,
       messages,
-      ragSettings,
       runtimeModel,
-      sandboxSettings,
-      searchSettings,
-      subagentSettings,
+      runtimeOverrides,
     } = await validateRequest(request, chatPostSchema);
     const resolvedConversationId = conversationId ?? null;
 
@@ -68,13 +63,8 @@ export async function handleChatPost(request: Request) {
     } = await resolveAgentRunContext({
       conversationId: resolvedConversationId,
       guestMemoryContext,
-      mcpSettings,
-      memorySettings: requestedMemorySettings,
-      ragSettings,
+      runtimeOverrides,
       runtimeModel,
-      sandboxSettings,
-      searchSettings,
-      subagentSettings,
       supabase,
       user,
     });

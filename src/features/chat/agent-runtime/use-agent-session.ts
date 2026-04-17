@@ -5,8 +5,8 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 
 import { API_ROUTES } from '@/config/api';
-import type { AppProfileSettings } from '@/features/auth/profile/types';
 import { buildAgentRunRequest } from '@/features/chat/agent-runtime/build-agent-run-request';
+import { buildAgentRuntimeOverrides } from '@/features/chat/agent-runtime/runtime-overrides';
 import { CHAT_RATE_LIMIT_ERROR_CODE, ChatRequestError } from '@/features/chat/utils/chat-errors';
 import { resolveChatRuntimeModel } from '@/features/models/utils/runtime-model';
 import type { ChatModelOption } from '@/features/models/types';
@@ -15,6 +15,7 @@ import {
   ensureLocalMemoriesLoaded,
   readLocalMemories,
 } from '@/features/memory/storage/local-memories';
+import type { AppProfileSettings } from '@/features/settings/types';
 import { readApiError } from '@/lib/api-client';
 
 interface UseAgentSessionOptions {
@@ -62,40 +63,23 @@ export function useAgentSession({
 
     return resolveChatRuntimeModel(profileSettings, selectedModel);
   }, [profileSettings, selectedModel]);
+  const runtimeOverrides = useMemo(
+    () => buildAgentRuntimeOverrides(profileSettings),
+    [profileSettings]
+  );
   const runtimeModelRef = useRef(runtimeModel);
   const activeThreadIdRef = useRef(activeThreadId);
   const conversationSummaryRef = useRef(conversationSummary);
   const isAuthenticatedRef = useRef(isAuthenticated);
-  const memorySettingsRef = useRef(profileSettings?.memory);
-  const mcpSettingsRef = useRef(profileSettings?.mcp);
-  const ragSettingsRef = useRef(profileSettings?.rag);
-  const sandboxSettingsRef = useRef(profileSettings?.sandbox);
-  const searchSettingsRef = useRef(profileSettings?.search);
-  const subagentSettingsRef = useRef(profileSettings?.subagent);
+  const runtimeOverridesRef = useRef(runtimeOverrides);
 
   useEffect(() => {
     runtimeModelRef.current = runtimeModel;
     activeThreadIdRef.current = activeThreadId;
     conversationSummaryRef.current = conversationSummary;
     isAuthenticatedRef.current = isAuthenticated;
-    memorySettingsRef.current = profileSettings?.memory;
-    mcpSettingsRef.current = profileSettings?.mcp;
-    ragSettingsRef.current = profileSettings?.rag;
-    sandboxSettingsRef.current = profileSettings?.sandbox;
-    searchSettingsRef.current = profileSettings?.search;
-    subagentSettingsRef.current = profileSettings?.subagent;
-  }, [
-    activeThreadId,
-    conversationSummary,
-    isAuthenticated,
-    profileSettings?.memory,
-    profileSettings?.mcp,
-    profileSettings?.rag,
-    profileSettings?.sandbox,
-    profileSettings?.search,
-    profileSettings?.subagent,
-    runtimeModel,
-  ]);
+    runtimeOverridesRef.current = runtimeOverrides;
+  }, [activeThreadId, conversationSummary, isAuthenticated, runtimeModel, runtimeOverrides]);
 
   /* eslint-disable react-hooks/refs */
   const [transport] = useState(
@@ -138,12 +122,12 @@ export function useAgentSession({
 
           if (
             !isAuthenticatedRef.current &&
-            memorySettingsRef.current?.enabled &&
-            memorySettingsRef.current.crossConversation
+            runtimeOverridesRef.current?.memory?.enabled &&
+            runtimeOverridesRef.current.memory.crossConversation
           ) {
             await ensureLocalMemoriesLoaded();
             guestMemoryContext = buildMemoryContext(readLocalMemories(), {
-              memorySettings: memorySettingsRef.current,
+              memorySettings: runtimeOverridesRef.current.memory,
             });
           }
 
@@ -154,15 +138,10 @@ export function useAgentSession({
               conversationSummary: conversationSummaryRef.current,
               guestMemoryContext,
               id,
-              mcpSettings: mcpSettingsRef.current,
-              memorySettings: memorySettingsRef.current,
               messageId,
               messages,
-              ragSettings: ragSettingsRef.current,
               runtimeModel: runtimeModelRef.current,
-              sandboxSettings: sandboxSettingsRef.current,
-              searchSettings: searchSettingsRef.current,
-              subagentSettings: subagentSettingsRef.current,
+              runtimeOverrides: runtimeOverridesRef.current,
               trigger,
             }),
           };

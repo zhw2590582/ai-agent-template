@@ -9,6 +9,7 @@ import {
 import { getProfileById } from '@/features/auth/storage/profiles';
 import { createAgentRunMetadataBase } from '@/features/chat/agent-runtime/run-metadata';
 import { buildAgentToolset } from '@/features/chat/agent-runtime/build-agent-toolset';
+import { normalizeAgentRuntimeOverrides } from '@/features/chat/agent-runtime/runtime-overrides';
 import type {
   AgentRunContext,
   ChatProfileMemorySettings,
@@ -17,14 +18,8 @@ import type {
 } from '@/features/chat/agent-runtime/types';
 import { verifyConversationOwnership } from '@/features/chat/storage';
 import { buildMemoryContext, listMemoriesForUser } from '@/features/memory/storage/memories';
-import { normalizeMcpSettings } from '@/features/mcp/settings';
-import type { McpSettings } from '@/features/mcp/types';
 import { normalizeRagSettings } from '@/features/rag/settings';
 import type { RagSettings } from '@/features/rag/types';
-import { normalizeSandboxSettings } from '@/features/sandbox/settings';
-import type { SandboxSettings } from '@/features/sandbox/types';
-import { normalizeSearchSettings } from '@/features/search/settings';
-import type { SearchSettings } from '@/features/search/types';
 import { normalizeSubagentSettings } from '@/features/subagents/settings';
 import type { SubagentSettings } from '@/features/subagents/types';
 import { logger } from '@/lib/logger';
@@ -109,46 +104,6 @@ export function resolveMemorySettings(input: unknown): ChatProfileMemorySettings
   return input as ChatProfileMemorySettings;
 }
 
-export function resolveSearchSettings(input: unknown): SearchSettings | null {
-  if (typeof input !== 'object' || input == null) {
-    return null;
-  }
-
-  return normalizeSearchSettings(input);
-}
-
-export function resolveMcpSettings(input: unknown): McpSettings | null {
-  if (typeof input !== 'object' || input == null) {
-    return null;
-  }
-
-  return normalizeMcpSettings(input);
-}
-
-export function resolveSandboxSettings(input: unknown): SandboxSettings | null {
-  if (typeof input !== 'object' || input == null) {
-    return null;
-  }
-
-  return normalizeSandboxSettings(input);
-}
-
-export function resolveRagSettings(input: unknown): RagSettings | null {
-  if (typeof input !== 'object' || input == null) {
-    return null;
-  }
-
-  return normalizeRagSettings(input);
-}
-
-export function resolveSubagentSettings(input: unknown): SubagentSettings | null {
-  if (typeof input !== 'object' || input == null) {
-    return null;
-  }
-
-  return normalizeSubagentSettings(input);
-}
-
 async function loadPersistedConversationSummary(options: {
   conversationId: string | null;
   supabase: SupabaseClient;
@@ -176,13 +131,8 @@ async function loadPersistedConversationSummary(options: {
 export async function resolveAgentRunContext({
   conversationId,
   guestMemoryContext,
-  mcpSettings,
-  memorySettings: requestMemorySettings,
-  ragSettings,
+  runtimeOverrides,
   runtimeModel,
-  sandboxSettings,
-  searchSettings,
-  subagentSettings,
   supabase,
   user,
 }: ResolveAgentRunContextOptions): Promise<AgentRunContext> {
@@ -190,16 +140,20 @@ export async function resolveAgentRunContext({
     typeof guestMemoryContext === 'string' && guestMemoryContext.trim().length > 0
       ? guestMemoryContext.trim()
       : null;
-  let memorySettings = resolveMemorySettings(requestMemorySettings);
+  const resolvedRuntimeOverrides = normalizeAgentRuntimeOverrides(runtimeOverrides);
+  let memorySettings = resolveMemorySettings(resolvedRuntimeOverrides?.memory);
   let persistedConversationSummary: string | null = null;
   let resolvedProfileRagSettings: RagSettings | null = null;
   let resolvedProfileSubagentSettings: SubagentSettings | null = null;
-
-  const resolvedSearchSettings = resolveSearchSettings(searchSettings);
-  const resolvedMcpSettings = resolveMcpSettings(mcpSettings);
-  const resolvedRequestRagSettings = resolveRagSettings(ragSettings);
-  const resolvedSandboxSettings = resolveSandboxSettings(sandboxSettings);
-  const resolvedRequestSubagentSettings = resolveSubagentSettings(subagentSettings);
+  const resolvedSearchSettings = resolvedRuntimeOverrides?.search ?? null;
+  const resolvedMcpSettings = resolvedRuntimeOverrides?.mcp ?? null;
+  const resolvedRequestRagSettings = resolvedRuntimeOverrides?.rag
+    ? normalizeRagSettings(resolvedRuntimeOverrides.rag)
+    : null;
+  const resolvedSandboxSettings = resolvedRuntimeOverrides?.sandbox ?? null;
+  const resolvedRequestSubagentSettings = resolvedRuntimeOverrides?.subagent
+    ? normalizeSubagentSettings(resolvedRuntimeOverrides.subagent)
+    : null;
   const toolset = await buildAgentToolset({
     mcpSettings: resolvedMcpSettings,
     sandboxSettings: resolvedSandboxSettings,

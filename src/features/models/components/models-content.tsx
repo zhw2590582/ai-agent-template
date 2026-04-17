@@ -10,7 +10,7 @@ import { CHAT_UI_CONFIG } from '@/config/chat';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
 import { useAppProfile } from '@/features/auth/profile/use-app-profile';
-import type { AppProfileSettings } from '@/features/auth/profile/types';
+import type { AppProfileSettings } from '@/features/settings/types';
 import { ProviderList } from '@/features/models/components/provider-list';
 import { ProviderSettingsPanel } from '@/features/models/components/provider-settings-panel';
 import { useModelsPage } from '@/features/models/hooks/use-models-page';

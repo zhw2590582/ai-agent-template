@@ -2,8 +2,8 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import type { AppProfileSettings } from '@/features/auth/profile/types';
-import { getOrderedProviders } from '@/features/auth/profile/profile-settings';
+import type { AppProfileSettings } from '@/features/settings/types';
+import { getOrderedProviders } from '@/features/models/utils/provider-order';
 import type { ModelsSettings, ProviderModelItem } from '@/features/models/types';
 import { inferModelCapabilities } from '@/features/models/utils/model-capabilities';
 import { buildCustomProviderSettings } from '@/features/models/utils/provider-factories';

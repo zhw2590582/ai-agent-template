@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 
-import type { AppProfileSettings } from '@/features/auth/profile/types';
+import type { AppProfileSettings } from '@/features/settings/types';
 import { useModelsDraft } from '@/features/models/hooks/use-models-draft';
 import { useProviderProbe } from '@/features/models/hooks/use-provider-probe';
 import type { ModelsSettings } from '@/features/models/types';

@@ -31,6 +31,7 @@ src/
 │   ├── rag/                    # 文档导入和检索
 │   ├── sandbox/                # Sandbox provider 配置和服务端执行边界
 │   ├── search/                 # Tavily 配置和服务端 client
+│   ├── settings/               # app 级 settings schema / normalize 共享层
 │   └── skills/                 # Skills settings UI
 ├── i18n/                       # next-intl 配置和消息聚合
 ├── lib/                        # 跨域共享工具、错误、日志、Supabase client
@@ -136,7 +137,7 @@ Chat UI
   -> useAgentSession
   -> /api/chat
   -> src/features/chat/server/chat.ts
-  -> src/features/chat/agent-runtime/*
+  -> src/features/chat/agent-runtime/* (runtimeOverrides)
   -> model + context + tools
   -> stream response
   -> chat UI
@@ -148,6 +149,7 @@ Chat UI
 Workbench Dialog
   -> feature hook
   -> /api/profile
+  -> src/features/settings/*
   -> profiles.settings
   -> localStorage fallback for guest when applicable
 ```
@@ -167,6 +169,7 @@ Workbench Dialog
 ```text
 Sidebar / Chat actions
   -> conversation-operations
+  -> src/features/chat/sources/conversation-record-source.ts
   -> authenticated: src/features/chat/storage/conversations.ts
   -> guest: src/features/chat/storage/local-conversation-store.ts (IndexedDB-backed)
 ```

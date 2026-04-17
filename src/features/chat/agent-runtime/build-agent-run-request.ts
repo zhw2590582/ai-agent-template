@@ -1,11 +1,7 @@
 import type { UIMessage } from 'ai';
 
-import type { McpSettings } from '@/features/mcp/types';
 import type { ChatRuntimeModel } from '@/features/models/types';
-import type { RagSettings } from '@/features/rag/types';
-import type { SandboxSettings } from '@/features/sandbox/types';
-import type { SearchSettings } from '@/features/search/types';
-import type { SubagentSettings } from '@/features/subagents/types';
+import type { AgentRuntimeOverrides } from '@/features/chat/agent-runtime/runtime-overrides';
 import type { AgentTransportRequest } from '@/features/chat/agent-runtime/types';
 
 interface BuildAgentRunRequestOptions {
@@ -14,22 +10,10 @@ interface BuildAgentRunRequestOptions {
   conversationSummary?: string | null;
   guestMemoryContext?: string | null;
   id?: string;
-  mcpSettings?: McpSettings;
-  memorySettings?: {
-    autoWrite: boolean;
-    contextMaxItems: number;
-    crossConversation: boolean;
-    enabled: boolean;
-    recentMessageWindow: number;
-    summaryMinMessages: number;
-  };
   messageId?: string;
   messages: UIMessage[];
-  ragSettings?: RagSettings;
   runtimeModel: ChatRuntimeModel | null;
-  sandboxSettings?: SandboxSettings;
-  searchSettings?: SearchSettings;
-  subagentSettings?: SubagentSettings;
+  runtimeOverrides?: AgentRuntimeOverrides | null;
   trigger?: string;
 }
 
@@ -39,15 +23,10 @@ export function buildAgentRunRequest({
   conversationSummary,
   guestMemoryContext,
   id,
-  mcpSettings,
-  memorySettings,
   messageId,
   messages,
-  ragSettings,
   runtimeModel,
-  sandboxSettings,
-  searchSettings,
-  subagentSettings,
+  runtimeOverrides,
   trigger,
 }: BuildAgentRunRequestOptions): AgentTransportRequest {
   return {
@@ -58,13 +37,8 @@ export function buildAgentRunRequest({
     id,
     messageId,
     messages,
-    mcpSettings,
-    memorySettings,
-    ragSettings,
+    runtimeOverrides: runtimeOverrides ?? undefined,
     runtimeModel: runtimeModel ?? undefined,
-    sandboxSettings,
-    searchSettings,
-    subagentSettings,
     trigger,
   };
 }

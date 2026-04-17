@@ -12,8 +12,8 @@
    开发约束和改动原则
 5. [roadmap.md](./roadmap.md)
    下一阶段推荐顺序
-6. [review-findings.md](./review-findings.md)
-   按 feature 复盘时记录的真实问题
+6. [feature-boundary-review.md](./feature-boundary-review.md)
+   按 feature 记录影响边界清晰度和扩展性的必要问题
 
 运行和维护相关：
 

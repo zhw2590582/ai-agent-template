@@ -2,20 +2,9 @@
 
 import type { UIMessage } from 'ai';
 
-import { API_ROUTES } from '@/config/api';
 import type { Locale } from '@/config/i18n';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
-import {
-  createLocalConversationThread,
-  generateLocalConversationSummary,
-  generateLocalConversationTitle,
-  deleteLocalConversationThread,
-  ensureLocalConversationThreadsLoaded,
-  getLocalConversationThreadById,
-  renameLocalConversationThread,
-  upsertLocalConversationThread,
-} from '@/features/chat/storage/local-conversations';
-import { extractAndMergeLocalMemories } from '@/features/memory/storage/local-memories';
+import { createConversationRecordSource } from '@/features/chat/sources/conversation-record-source';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
 export async function createConversationRecord(options: {
@@ -24,45 +13,16 @@ export async function createConversationRecord(options: {
   runtimeModel?: ChatRuntimeModel | null;
   user: AuthUserSnapshot | null;
 }) {
-  if (!options.user) {
-    const localConversation = createLocalConversationThread(options.initialMessage);
-    void upsertLocalConversationThread({
-      id: localConversation.id,
-      messages: [],
-      title: localConversation.title,
-    });
-
-    return {
-      id: localConversation.id,
-      title: localConversation.title,
-    };
-  }
-
-  const response = await fetch(API_ROUTES.conversations, {
-    body: JSON.stringify({ initialMessage: options.initialMessage }),
-    headers: { 'Content-Type': 'application/json' },
-    method: 'POST',
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to create conversation');
-  }
-
-  const data: { conversation: { id: string; title: string } } = await response.json();
-  return data.conversation;
+  const source = createConversationRecordSource(options.user);
+  return source.createRecord(options);
 }
 
 export async function getConversationMessages(options: {
   conversationId: string;
   user: AuthUserSnapshot | null;
 }) {
-  if (options.user) {
-    return null;
-  }
-
-  await ensureLocalConversationThreadsLoaded();
-  const thread = await getLocalConversationThreadById(options.conversationId);
-  return thread?.messages ?? null;
+  const source = createConversationRecordSource(options.user);
+  return source.getMessages(options.conversationId);
 }
 
 export function persistConversationMessages(options: {
@@ -72,14 +32,8 @@ export function persistConversationMessages(options: {
   runtimeModel?: ChatRuntimeModel | null;
   user: AuthUserSnapshot | null;
 }) {
-  if (options.user) {
-    return;
-  }
-
-  void upsertLocalConversationThread({
-    id: options.conversationId,
-    messages: options.messages,
-  });
+  const source = createConversationRecordSource(options.user);
+  source.persistMessages(options);
 }
 
 export function generateConversationRecordTitle(options: {
@@ -88,15 +42,8 @@ export function generateConversationRecordTitle(options: {
   runtimeModel?: ChatRuntimeModel | null;
   user: AuthUserSnapshot | null;
 }) {
-  if (options.user) {
-    return;
-  }
-
-  void generateLocalConversationTitle({
-    id: options.conversationId,
-    locale: options.locale,
-    runtimeModel: options.runtimeModel,
-  });
+  const source = createConversationRecordSource(options.user);
+  source.generateTitle(options);
 }
 
 export function generateConversationRecordSummary(options: {
@@ -105,15 +52,8 @@ export function generateConversationRecordSummary(options: {
   runtimeModel?: ChatRuntimeModel | null;
   user: AuthUserSnapshot | null;
 }) {
-  if (options.user) {
-    return;
-  }
-
-  void generateLocalConversationSummary({
-    id: options.conversationId,
-    locale: options.locale,
-    runtimeModel: options.runtimeModel,
-  });
+  const source = createConversationRecordSource(options.user);
+  source.generateSummary(options);
 }
 
 export function generateConversationRecordMemories(options: {
@@ -123,16 +63,8 @@ export function generateConversationRecordMemories(options: {
   runtimeModel?: ChatRuntimeModel | null;
   user: AuthUserSnapshot | null;
 }) {
-  if (options.user) {
-    return;
-  }
-
-  void extractAndMergeLocalMemories({
-    conversationId: options.conversationId,
-    locale: options.locale,
-    messages: options.messages,
-    runtimeModel: options.runtimeModel,
-  });
+  const source = createConversationRecordSource(options.user);
+  source.generateMemories(options);
 }
 
 export async function renameConversationRecord(options: {
@@ -145,44 +77,14 @@ export async function renameConversationRecord(options: {
     return false;
   }
 
-  if (!options.user) {
-    return renameLocalConversationThread({
-      id: options.conversationId,
-      title: nextTitle,
-    });
-  }
-
-  const response = await fetch(API_ROUTES.conversations, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      conversationId: options.conversationId,
-      title: nextTitle,
-    }),
-  });
-
-  return response.ok;
+  const source = createConversationRecordSource(options.user);
+  return source.renameRecord(options.conversationId, nextTitle);
 }
 
 export async function deleteConversationRecord(options: {
   conversationId: string;
   user: AuthUserSnapshot | null;
 }) {
-  if (!options.user) {
-    return deleteLocalConversationThread(options.conversationId);
-  }
-
-  const response = await fetch(API_ROUTES.conversations, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      conversationId: options.conversationId,
-    }),
-  });
-
-  return response.ok;
+  const source = createConversationRecordSource(options.user);
+  return source.deleteRecord(options.conversationId);
 }

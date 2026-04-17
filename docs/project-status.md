@@ -109,6 +109,7 @@
 
 - 入口：[../src/features/chat/server/chat.ts](../src/features/chat/server/chat.ts)
 - runtime：[../src/features/chat/agent-runtime](../src/features/chat/agent-runtime)
+- runtime contract：[../src/features/chat/agent-runtime/runtime-overrides.ts](../src/features/chat/agent-runtime/runtime-overrides.ts)
 - client-safe export：[../src/features/chat/agent-runtime/client.ts](../src/features/chat/agent-runtime/client.ts)
 - server-safe export：[../src/features/chat/agent-runtime/server.ts](../src/features/chat/agent-runtime/server.ts)
 
@@ -117,6 +118,7 @@
 - client 代码只从 `agent-runtime/client` 取值
 - server 代码只从 `agent-runtime/server` 取值
 - `chat.ts` 保持薄入口，不重新堆回编排细节
+- `/api/chat` 继续通过统一的 `runtimeOverrides` 输入消费 feature runtime 配置，不再继续新增一排顶层 feature settings 字段
 
 后续待补：
 
@@ -157,6 +159,7 @@
 - 已登录会话分页、搜索、重命名、删除
 - guest 本地会话存储和标题生成
 - `Profile` 已开始按 `local / supabase` 两种 source 分层，而不是继续把 guest / 登录用户分支散在页面 hook 里
+- app 级 settings schema / normalize 已开始收口到 `src/features/settings/*`
 
 当前默认行为：
 
@@ -166,6 +169,7 @@
 关键位置：
 
 - [../src/features/auth](../src/features/auth)
+- [../src/features/settings](../src/features/settings)
 - [../src/features/chat/storage](../src/features/chat/storage)
 
 ### Memory
