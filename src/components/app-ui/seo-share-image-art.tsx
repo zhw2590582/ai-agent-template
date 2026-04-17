@@ -1,13 +1,13 @@
 import type { ReactElement } from 'react';
-import { PWA_ICON_COLORS } from '@/components/app-ui/pwa-icon-art';
+import { APP_ICON_COLORS } from '@/components/app-ui/app-icon-art';
 
 export function SeoShareImageArt(): ReactElement {
   return (
     <div
       style={{
         alignItems: 'stretch',
-        background: `linear-gradient(135deg, ${PWA_ICON_COLORS.background} 0%, #18212f 58%, #0b1220 100%)`,
-        color: PWA_ICON_COLORS.foreground,
+        background: `linear-gradient(135deg, ${APP_ICON_COLORS.background} 0%, #18212f 58%, #0b1220 100%)`,
+        color: APP_ICON_COLORS.foreground,
         display: 'flex',
         height: '100%',
         justifyContent: 'space-between',
@@ -20,7 +20,7 @@ export function SeoShareImageArt(): ReactElement {
       <div
         style={{
           background: 'rgba(34, 197, 94, 0.14)',
-          border: `6px solid ${PWA_ICON_COLORS.accent}`,
+          border: `6px solid ${APP_ICON_COLORS.accent}`,
           borderRadius: 44,
           height: 420,
           position: 'absolute',
@@ -33,7 +33,7 @@ export function SeoShareImageArt(): ReactElement {
       <div
         style={{
           background: 'rgba(34, 197, 94, 0.1)',
-          border: `4px solid ${PWA_ICON_COLORS.accent}`,
+          border: `4px solid ${APP_ICON_COLORS.accent}`,
           borderRadius: 36,
           bottom: -120,
           height: 300,
@@ -70,7 +70,7 @@ export function SeoShareImageArt(): ReactElement {
         >
           <div
             style={{
-              background: PWA_ICON_COLORS.accent,
+              background: APP_ICON_COLORS.accent,
               borderRadius: 999,
               display: 'flex',
               height: 12,
@@ -89,7 +89,7 @@ export function SeoShareImageArt(): ReactElement {
         >
           <div
             style={{
-              color: PWA_ICON_COLORS.foreground,
+              color: APP_ICON_COLORS.foreground,
               display: 'flex',
               fontFamily: 'Arial, sans-serif',
               fontSize: 92,

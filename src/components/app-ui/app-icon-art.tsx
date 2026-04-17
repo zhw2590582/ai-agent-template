@@ -1,22 +1,22 @@
 import type { ReactElement } from 'react';
 
-export const PWA_ICON_COLORS = {
+export const APP_ICON_COLORS = {
   background: '#0f1115',
   foreground: '#f8fafc',
   accent: '#22c55e',
 } as const;
 
-interface PwaIconArtProps {
+interface AppIconArtProps {
   label?: string;
 }
 
-export function PwaIconArt({ label = 'AI' }: PwaIconArtProps): ReactElement {
+export function AppIconArt({ label = 'AI' }: AppIconArtProps): ReactElement {
   return (
     <div
       style={{
         alignItems: 'center',
-        background: `linear-gradient(135deg, ${PWA_ICON_COLORS.background} 0%, #1b2230 65%, #111827 100%)`,
-        color: PWA_ICON_COLORS.foreground,
+        background: `linear-gradient(135deg, ${APP_ICON_COLORS.background} 0%, #1b2230 65%, #111827 100%)`,
+        color: APP_ICON_COLORS.foreground,
         display: 'flex',
         height: '100%',
         justifyContent: 'center',
@@ -26,7 +26,7 @@ export function PwaIconArt({ label = 'AI' }: PwaIconArtProps): ReactElement {
     >
       <div
         style={{
-          border: `18px solid ${PWA_ICON_COLORS.accent}`,
+          border: `18px solid ${APP_ICON_COLORS.accent}`,
           borderRadius: '22%',
           height: '74%',
           opacity: 0.9,

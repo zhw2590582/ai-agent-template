@@ -100,11 +100,6 @@ export function createLocaleLayoutMetadata(locale: Locale): Metadata {
 
   return {
     applicationName: APP_NAME,
-    appleWebApp: {
-      capable: true,
-      statusBarStyle: 'default',
-      title: APP_NAME,
-    },
     category: 'technology',
     description: copy.description,
     formatDetection: {

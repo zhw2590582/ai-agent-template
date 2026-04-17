@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og';
-import { PwaIconArt } from '@/components/app-ui/pwa-icon-art';
+import { AppIconArt } from '@/components/app-ui/app-icon-art';
 
 export const contentType = 'image/png';
 export const size = {
@@ -8,5 +8,5 @@ export const size = {
 };
 
 export default function AppleIcon() {
-  return new ImageResponse(<PwaIconArt />, size);
+  return new ImageResponse(<AppIconArt />, size);
 }

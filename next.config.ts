@@ -1,13 +1,7 @@
 import type { NextConfig } from 'next';
-import withSerwistInit from '@serwist/next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
-const withSerwist = withSerwistInit({
-  disable: process.env.NODE_ENV === 'development',
-  swDest: 'public/sw.js',
-  swSrc: 'src/app/sw.ts',
-});
 
 const nextConfig: NextConfig = {
   images: {
@@ -32,4 +26,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSerwist(withNextIntl(nextConfig));
+export default withNextIntl(nextConfig);
