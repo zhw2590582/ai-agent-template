@@ -1,7 +1,7 @@
 export const MEMORY_CONFIG = {
   CONTEXT_MAX_ITEMS: 4,
-  SUMMARY_MIN_MESSAGES: 8,
-  SUMMARY_RECENT_MESSAGE_WINDOW: 10,
+  SUMMARY_MIN_MESSAGES: 10,
+  SUMMARY_RECENT_MESSAGE_WINDOW: 20,
 } as const;
 
 export const MEMORY_EXTRACTION_CONFIG = {
@@ -16,8 +16,8 @@ export const MEMORY_CONSOLIDATION_CONFIG = {
   MAX_ITEMS_PER_KIND: 3,
   SOURCE_ITEMS_LIMIT: 12,
   THRESHOLDS: {
-    fact: 8,
-    preference: 6,
+    fact: 5,
+    preference: 5,
     profile: 5,
     workflow: 5,
   },
