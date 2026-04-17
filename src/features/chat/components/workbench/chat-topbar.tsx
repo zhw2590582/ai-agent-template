@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { HEADER_NAV_ITEMS } from '@/config/navigation';
 import { AuthDialog } from '@/features/auth/components/auth-dialog';
+import { GithubMark } from '@/features/auth/components/auth-provider-icons';
 import type { WorkbenchView } from '@/features/chat/types';
 import { getHeaderNavItem } from '@/config/navigation';
 import { useState } from 'react';
@@ -43,6 +44,7 @@ export function ChatTopBar({
   t,
 }: ChatTopBarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const githubRepositoryUrl = 'https://github.com/zhw2590582/ai-agent-template';
 
   return (
     <div className="border-border bg-muted/50 flex h-14 shrink-0 items-center border-b px-3 sm:px-4">
@@ -67,6 +69,11 @@ export function ChatTopBar({
           })}
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
+          <Button asChild aria-label="GitHub" className="w-10" size="icon" variant="outline">
+            <a href={githubRepositoryUrl} rel="noreferrer" target="_blank">
+              <GithubMark />
+            </a>
+          </Button>
           <LanguageSwitcher triggerClassName="w-10" />
           <ThemeToggle />
           {showAuthDialog ? (
@@ -160,6 +167,11 @@ export function ChatTopBar({
             <Separator />
 
             <div className="flex flex-wrap items-center gap-2">
+              <Button asChild aria-label="GitHub" className="w-12" size="icon" variant="outline">
+                <a href={githubRepositoryUrl} rel="noreferrer" target="_blank">
+                  <GithubMark />
+                </a>
+              </Button>
               <LanguageSwitcher triggerClassName="w-12" />
               <ThemeToggle />
               {showAuthDialog ? (
