@@ -207,6 +207,12 @@ export function useChatWorkbench({
     hydratedConversationId,
     isBusy,
     locale: titleLocale,
+    markHydratedConversation: useCallback(
+      (conversationId: string) => {
+        setHydratedConversationId(conversationId);
+      },
+      [setHydratedConversationId]
+    ),
     memorySettings: models.profile.settings.memory,
     messages,
     onOptimisticRemoveConversation: sidebar.removeConversation,

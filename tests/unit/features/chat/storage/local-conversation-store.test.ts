@@ -121,4 +121,28 @@ describe('local-conversation-store', () => {
 
     expect(readLocalConversationThreads()[0]?.memoryExtractionKey).toBe('1:message-1');
   });
+
+  it('snapshots messages before async persistence so later mutations do not leak into storage', async () => {
+    const messages: UIMessage[] = [SAMPLE_MESSAGE];
+
+    const persistPromise = upsertLocalConversationThread({
+      id: 'local-snapshot',
+      messages,
+    });
+
+    messages.push({
+      id: 'message-2',
+      parts: [{ type: 'text', text: 'Late mutation' }],
+      role: 'assistant',
+    });
+
+    await persistPromise;
+
+    expect(readLocalConversationThreads()[0]).toEqual(
+      expect.objectContaining({
+        id: 'local-snapshot',
+        messages: [SAMPLE_MESSAGE],
+      })
+    );
+  });
 });

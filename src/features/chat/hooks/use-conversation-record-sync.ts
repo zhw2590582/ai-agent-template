@@ -33,6 +33,7 @@ interface UseConversationRecordSyncOptions {
   hydratedConversationId: string | null;
   isBusy: boolean;
   locale: Locale;
+  markHydratedConversation: (conversationId: string) => void;
   memorySettings: MemorySettings;
   messages: UIMessage[];
   onOptimisticPatchConversation: (
@@ -67,6 +68,7 @@ export function useConversationRecordSync({
   hydratedConversationId,
   isBusy,
   locale,
+  markHydratedConversation,
   memorySettings,
   messages,
   onOptimisticPatchConversation,
@@ -181,10 +183,24 @@ export function useConversationRecordSync({
       });
 
       if (syncPlan.shouldClearBootstrappingAfterPersist) {
+        markHydratedConversation(activeThreadId);
         clearBootstrapping();
       }
     })();
-  }, [activeThreadId, clearBootstrapping, locale, messages, runtimeModel, user, buildSyncPlan]);
+  }, [
+    activeThreadId,
+    bootstrappingThreadId,
+    buildSyncPlan,
+    clearBootstrapping,
+    hydratedConversationId,
+    isBusy,
+    locale,
+    markHydratedConversation,
+    messages,
+    runtimeModel,
+    urlConversationId,
+    user,
+  ]);
 
   useEffect(() => {
     if (

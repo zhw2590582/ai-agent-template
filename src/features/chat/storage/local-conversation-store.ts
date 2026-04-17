@@ -13,6 +13,7 @@ const EMPTY_LOCAL_CONVERSATION_THREADS: LocalConversationThread[] = [];
 const EMPTY_LOCAL_CONVERSATION_SUMMARIES: ConversationSummary[] = [];
 
 let localConversationSummariesCache: ConversationSummary[] = EMPTY_LOCAL_CONVERSATION_SUMMARIES;
+const localConversationWriteVersions = new Map<string, number>();
 
 export interface LocalConversationThread {
   createdAt?: string;
@@ -71,6 +72,20 @@ function buildConversationSummaries(threads: LocalConversationThread[]) {
 
 function areMessagesEqual(left: UIMessage[], right: UIMessage[]) {
   return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function cloneMessages(messages: UIMessage[]) {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(messages) as UIMessage[];
+  }
+
+  return JSON.parse(JSON.stringify(messages)) as UIMessage[];
+}
+
+function reserveLocalConversationWriteVersion(conversationId: string) {
+  const nextVersion = (localConversationWriteVersions.get(conversationId) ?? 0) + 1;
+  localConversationWriteVersions.set(conversationId, nextVersion);
+  return nextVersion;
 }
 
 function parseLocalConversationThreads(input: unknown) {
@@ -149,11 +164,19 @@ export async function upsertLocalConversationThread(input: {
   messages: UIMessage[];
   title?: string;
 }) {
+  const writeVersion = reserveLocalConversationWriteVersion(input.id);
+  const messagesSnapshot = cloneMessages(input.messages);
+
   await ensureLocalConversationThreadsLoaded();
+
+  if (localConversationWriteVersions.get(input.id) !== writeVersion) {
+    return getLocalConversationThread(input.id);
+  }
+
   const existingThreads = readLocalConversationThreads();
   const existingThread = existingThreads.find((thread) => thread.id === input.id) ?? null;
   const hasMessageChanges = existingThread
-    ? !areMessagesEqual(existingThread.messages, input.messages)
+    ? !areMessagesEqual(existingThread.messages, messagesSnapshot)
     : true;
   const nextThread: LocalConversationThread = {
     createdAt: existingThread?.createdAt ?? new Date().toISOString(),
@@ -162,17 +185,21 @@ export async function upsertLocalConversationThread(input: {
       ? new Date().toISOString()
       : (existingThread?.lastMessageAt ?? new Date().toISOString()),
     memoryExtractionKey: hasMessageChanges ? null : (existingThread?.memoryExtractionKey ?? null),
-    messages: input.messages,
-    preview: buildPreview(input.messages),
+    messages: messagesSnapshot,
+    preview: buildPreview(messagesSnapshot),
     summary: existingThread?.summary ?? null,
     summaryGenerating: existingThread?.summaryGenerating ?? false,
     summaryUpdatedAt: existingThread?.summaryUpdatedAt ?? null,
     title:
       input.title?.trim() ||
-      (existingThread?.titleGenerated ? existingThread.title : buildTitle(input.messages)),
+      (existingThread?.titleGenerated ? existingThread.title : buildTitle(messagesSnapshot)),
     titleGenerated: existingThread?.titleGenerated ?? false,
     titleGenerating: existingThread?.titleGenerating ?? false,
   };
+
+  if (localConversationWriteVersions.get(input.id) !== writeVersion) {
+    return getLocalConversationThread(input.id);
+  }
 
   await writeLocalConversationThreads([
     nextThread,

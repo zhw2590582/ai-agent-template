@@ -19,6 +19,7 @@ interface UseConversationRecordsOptions {
   hydratedConversationId: string | null;
   isBusy: boolean;
   locale: Locale;
+  markHydratedConversation: (conversationId: string) => void;
   memorySettings: MemorySettings;
   messages: UIMessage[];
   onOptimisticRemoveConversation: (conversationId: string) => void;
@@ -46,6 +47,7 @@ export function useConversationRecords({
   hydratedConversationId,
   isBusy,
   locale,
+  markHydratedConversation,
   memorySettings,
   messages,
   onOptimisticRemoveConversation,
@@ -63,6 +65,7 @@ export function useConversationRecords({
     hydratedConversationId,
     isBusy,
     locale,
+    markHydratedConversation,
     memorySettings,
     messages,
     onOptimisticPatchConversation,
