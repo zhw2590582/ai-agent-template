@@ -3,7 +3,6 @@
 import type { UIMessage } from 'ai';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { ChatComposer } from '@/features/chat/components/composer/chat-composer';
@@ -109,7 +108,6 @@ export function ChatWorkbench({
   supabaseConfigured,
 }: ChatWorkbenchProps) {
   const t = useTranslations();
-  const router = useRouter();
   const workbench = useChatWorkbench({
     initialConversationId,
     initialConversations,
@@ -129,10 +127,6 @@ export function ChatWorkbench({
 
   const openView = (view: Exclude<WorkbenchView, 'chat'>) => {
     setActiveDialogView(view);
-
-    if (view === 'memory') {
-      router.refresh();
-    }
   };
 
   return (

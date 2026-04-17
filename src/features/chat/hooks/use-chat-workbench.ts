@@ -3,11 +3,10 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { UIMessage } from 'ai';
 import { toast } from 'sonner';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { normalizeLocale } from '@/config/i18n';
-import { CHAT_UI_CONFIG } from '@/config/chat';
 import { useAuthUser } from '@/features/auth/components/auth-user-provider';
 import { useAppProfile } from '@/features/auth/profile/use-app-profile';
 import { createConversationRecord } from '@/features/chat/data/conversation-operations';
@@ -45,7 +44,6 @@ export function useChatWorkbench({
   const t = useTranslations();
   const locale = normalizeLocale(useLocale());
   const titleLocale = locale;
-  const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuthUser();
   const models = useAppProfile(user);
@@ -129,15 +127,7 @@ export function useChatWorkbench({
     initialMessages: useChatInitialMessages,
     isAuthenticated: !!user,
     locale,
-    onFinish: () => {
-      if (!user) {
-        return;
-      }
-
-      window.setTimeout(() => {
-        router.refresh();
-      }, CHAT_UI_CONFIG.POST_FINISH_REFRESH_DELAY_MS);
-    },
+    onFinish: () => {},
     profileSettings: models.profile.settings,
   });
   const selectedModelOption = useMemo(
@@ -217,7 +207,6 @@ export function useChatWorkbench({
     messages,
     onOptimisticRemoveConversation: sidebar.removeConversation,
     onOptimisticPatchConversation: sidebar.patchConversation,
-    router,
     runtimeModel,
     urlConversationId,
     user,

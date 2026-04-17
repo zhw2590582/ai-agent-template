@@ -65,6 +65,7 @@ export const zhCNMemoryMessages = {
       },
     },
     toast: {
+      load_failed: '加载已保存记忆失败。',
       delete_failed: '删除记忆失败。',
       summary_load_failed: '加载会话摘要失败。',
       summary_delete_failed: '删除摘要失败。',

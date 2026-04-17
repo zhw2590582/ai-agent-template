@@ -3,7 +3,6 @@
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
 import {
@@ -24,7 +23,6 @@ interface UseConversationRecordActionsOptions {
     }
   ) => void;
   onOptimisticRemoveConversation: (conversationId: string) => void;
-  router: AppRouterInstance;
   user: AuthUserSnapshot | null;
 }
 
@@ -33,7 +31,6 @@ export function useConversationRecordActions({
   handleClearChat,
   onOptimisticPatchConversation,
   onOptimisticRemoveConversation,
-  router,
   user,
 }: UseConversationRecordActionsOptions) {
   const t = useTranslations();
@@ -55,13 +52,9 @@ export function useConversationRecordActions({
         title: title.trim(),
       });
 
-      if (user) {
-        router.refresh();
-      }
-
       return true;
     },
-    [onOptimisticPatchConversation, router, t, user]
+    [onOptimisticPatchConversation, t, user]
   );
 
   const deleteConversation = useCallback(
@@ -82,13 +75,9 @@ export function useConversationRecordActions({
         handleClearChat();
       }
 
-      if (user) {
-        router.refresh();
-      }
-
       return true;
     },
-    [activeThreadId, handleClearChat, onOptimisticRemoveConversation, router, t, user]
+    [activeThreadId, handleClearChat, onOptimisticRemoveConversation, t, user]
   );
 
   return {

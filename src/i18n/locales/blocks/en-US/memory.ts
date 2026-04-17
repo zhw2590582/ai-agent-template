@@ -72,6 +72,7 @@ export const enUSMemoryMessages = {
       },
     },
     toast: {
+      load_failed: 'Failed to load saved memories.',
       delete_failed: 'Failed to delete memory.',
       summary_load_failed: 'Failed to load conversation summaries.',
       summary_delete_failed: 'Failed to delete summary.',

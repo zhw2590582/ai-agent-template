@@ -158,7 +158,7 @@ export function useChatSync({
     urlConversationId,
   ]);
 
-  // Effect 3: Merge server-refreshed messages (e.g. after router.refresh())
+  // Effect 3: Merge route-provided messages when they already match the active conversation
   useEffect(() => {
     if (!shouldMergeServerMessages({ urlConversationId, initialConversationId, initialMessages })) {
       return;

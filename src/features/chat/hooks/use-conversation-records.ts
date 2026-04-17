@@ -1,7 +1,6 @@
 'use client';
 
 import type { UIMessage } from 'ai';
-import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
 import type { Locale } from '@/config/i18n';
 import type { AuthUserSnapshot } from '@/features/auth/lib/auth-user';
@@ -32,7 +31,6 @@ interface UseConversationRecordsOptions {
       title?: string;
     }
   ) => void;
-  router: AppRouterInstance;
   runtimeModel?: ChatRuntimeModel | null;
   urlConversationId: string | null;
   user: AuthUserSnapshot | null;
@@ -52,7 +50,6 @@ export function useConversationRecords({
   messages,
   onOptimisticRemoveConversation,
   onOptimisticPatchConversation,
-  router,
   runtimeModel,
   urlConversationId,
   user,
@@ -79,7 +76,6 @@ export function useConversationRecords({
     handleClearChat,
     onOptimisticPatchConversation,
     onOptimisticRemoveConversation,
-    router,
     user,
   });
 

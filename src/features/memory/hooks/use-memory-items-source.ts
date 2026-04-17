@@ -54,6 +54,42 @@ export function useMemoryItemsSource({
   }, [initialMemories, isAuthenticated]);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    void (async () => {
+      try {
+        const response = await fetch(API_ROUTES.memories, {
+          method: 'GET',
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          toast.error(await getApiErrorToastMessage(response, t, 'memory_page.toast.load_failed'));
+          return;
+        }
+
+        const data = (await response.json()) as {
+          memories?: MemoryListItem[];
+        };
+
+        setMemories(data.memories ?? []);
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          toast.error(t('memory_page.toast.load_failed'));
+        }
+      }
+    })();
+
+    return () => {
+      controller.abort();
+    };
+  }, [isAuthenticated, t]);
+
+  useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
     }

@@ -33,7 +33,6 @@ export function SignOutButton({
 
       if (successLabel) toast.success(successLabel);
       router.replace(redirectTo);
-      router.refresh();
     } catch {
       setIsPending(false);
       if (errorLabel) toast.error(errorLabel);

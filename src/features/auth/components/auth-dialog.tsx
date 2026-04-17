@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { CircleUserRoundIcon, LogInIcon, LogOutIcon } from 'lucide-react';
 import { useLocale } from 'next-intl';
 
@@ -66,7 +66,6 @@ export function AuthDialog({
   title,
 }: AuthDialogProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const { user, setUser } = useAuthUser();
@@ -86,14 +85,12 @@ export function AuthDialog({
       if (session?.user) {
         setIsOpen(false);
       }
-
-      router.refresh();
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [router, setUser, supabaseConfigured]);
+  }, [setUser, supabaseConfigured]);
 
   const nextPath = pathname || '/';
   const signOutHref = `/auth/sign-out?next=${encodeURIComponent(`/${locale}`)}`;
