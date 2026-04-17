@@ -17,13 +17,16 @@ const consolidatedMemoryItemSchema = z.object({
   content: z.string().min(1).max(280),
 });
 
-const consolidatedMemoryArraySchema = z
-  .array(consolidatedMemoryItemSchema)
-  .min(1)
-  .max(MEMORY_CONSOLIDATION_CONFIG.MAX_ITEMS_PER_KIND);
-
 function isConsolidatableMemoryKind(kind: MemoryKind): kind is ConsolidatableMemoryKind {
   return (CONSOLIDATABLE_MEMORY_KINDS as readonly string[]).includes(kind);
+}
+
+export function getMemoryConsolidationMaxItems(kind: MemoryKind) {
+  if (!isConsolidatableMemoryKind(kind)) {
+    return null;
+  }
+
+  return MEMORY_CONSOLIDATION_CONFIG.MAX_ITEMS_PER_KIND[kind];
 }
 
 export function getMemoryConsolidationThreshold(kind: MemoryKind) {
@@ -47,6 +50,8 @@ function dedupeConsolidatedContents(contents: string[]) {
 }
 
 function buildConsolidationPrompt(kind: ConsolidatableMemoryKind, locale: Locale, items: string[]) {
+  const maxItems = getMemoryConsolidationMaxItems(kind);
+
   return `Consolidate these saved user memories.
 
 Context:
@@ -59,7 +64,7 @@ Rules:
 - Keep distinct durable points separate
 - Do not invent new facts
 - Do not drop important information unless it is covered by a clearer merged item
-- Return at most ${MEMORY_CONSOLIDATION_CONFIG.MAX_ITEMS_PER_KIND} items
+- Return at most ${maxItems} items
 - Each item must be short, durable, and standalone
 
 Saved memories:
@@ -75,6 +80,11 @@ export async function consolidateMemoryKind(
   }
 ) {
   if (!options.runtimeModel || !isConsolidatableMemoryKind(options.kind)) {
+    return [] as string[];
+  }
+
+  const maxItems = getMemoryConsolidationMaxItems(options.kind);
+  if (maxItems == null) {
     return [] as string[];
   }
 
@@ -105,7 +115,7 @@ export async function consolidateMemoryKind(
       maxOutputTokens: AI_CONFIG.MEMORY_CONSOLIDATION_MAX_OUTPUT_TOKENS,
     });
 
-    output = result.output;
+    output = result.output.slice(0, maxItems);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
 
@@ -127,7 +137,11 @@ Return a valid JSON array only.
     });
 
     try {
-      const parsed = consolidatedMemoryArraySchema.safeParse(JSON.parse(text));
+      const parsed = z
+        .array(consolidatedMemoryItemSchema)
+        .min(1)
+        .max(maxItems)
+        .safeParse(JSON.parse(text));
       output = parsed.success ? parsed.data : [];
     } catch {
       output = [];
@@ -136,7 +150,7 @@ Return a valid JSON array only.
 
   const contents = dedupeConsolidatedContents(
     output.map((item) => normalizeMemoryContent(item.content)).filter(Boolean)
-  );
+  ).slice(0, maxItems);
 
   if (contents.length === 0) {
     logger.warn('Memory consolidation returned no items', {

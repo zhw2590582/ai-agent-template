@@ -14,7 +14,12 @@ export const MEMORY_EXTRACTION_CONFIG = {
 } as const;
 
 export const MEMORY_CONSOLIDATION_CONFIG = {
-  MAX_ITEMS_PER_KIND: 3,
+  MAX_ITEMS_PER_KIND: {
+    fact: 3,
+    preference: 3,
+    profile: 1,
+    workflow: 3,
+  },
   SOURCE_ITEMS_LIMIT: 12,
   THRESHOLDS: {
     fact: 5,
