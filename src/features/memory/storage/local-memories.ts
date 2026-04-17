@@ -7,7 +7,7 @@ import type { ChatRuntimeModel } from '@/features/models/types';
 import { dedupeExtractedMemories, planMemoryMerge } from '@/features/memory/storage/memory-merge';
 import { normalizeMemoryContent } from '@/features/memory/storage/memory-utils';
 import type { MemoryKind, MemoryListItem } from '@/features/memory/types';
-import { createLocalStorageStore } from '@/lib/local-storage-store';
+import { createIndexedDbStore } from '@/lib/indexed-db-store';
 import type { UIMessage } from 'ai';
 
 const LOCAL_CHAT_MEMORIES_STORAGE_KEY = STORAGE_KEYS.LOCAL_CHAT_MEMORIES;
@@ -40,9 +40,10 @@ function parseLocalMemories(input: unknown) {
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)) as MemoryListItem[];
 }
 
-const localMemoryStore = createLocalStorageStore<MemoryListItem[]>({
+const localMemoryStore = createIndexedDbStore<MemoryListItem[]>({
   emptyValue: EMPTY_LOCAL_MEMORIES,
   eventName: LOCAL_CHAT_MEMORIES_UPDATED_EVENT,
+  legacyStorageKey: LOCAL_CHAT_MEMORIES_STORAGE_KEY,
   parse: parseLocalMemories,
   prepareForWrite: (memories) =>
     [...memories].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)),
@@ -53,21 +54,30 @@ export function readLocalMemories() {
   return localMemoryStore.read();
 }
 
-export function writeLocalMemories(memories: MemoryListItem[]) {
-  localMemoryStore.write(memories);
+export async function ensureLocalMemoriesLoaded() {
+  return await localMemoryStore.ensureLoaded();
+}
+
+export function areLocalMemoriesLoaded() {
+  return localMemoryStore.isLoaded();
+}
+
+export async function writeLocalMemories(memories: MemoryListItem[]) {
+  await localMemoryStore.write(memories);
 }
 
 export function subscribeToLocalMemoryUpdates(onChange: () => void) {
   return localMemoryStore.subscribe(onChange);
 }
 
-export function updateLocalMemory(input: { content: string; id: string; kind: MemoryKind }) {
+export async function updateLocalMemory(input: { content: string; id: string; kind: MemoryKind }) {
   const normalizedContent = normalizeMemoryContent(input.content);
 
   if (!normalizedContent) {
     return false;
   }
 
+  await ensureLocalMemoriesLoaded();
   const existingMemories = readLocalMemories();
   const targetMemory = existingMemories.find((memory) => memory.id === input.id);
 
@@ -75,7 +85,7 @@ export function updateLocalMemory(input: { content: string; id: string; kind: Me
     return false;
   }
 
-  writeLocalMemories(
+  await writeLocalMemories(
     existingMemories.map((memory) =>
       memory.id === input.id
         ? {
@@ -91,7 +101,8 @@ export function updateLocalMemory(input: { content: string; id: string; kind: Me
   return true;
 }
 
-export function deleteLocalMemory(memoryId: string) {
+export async function deleteLocalMemory(memoryId: string) {
+  await ensureLocalMemoriesLoaded();
   const existingMemories = readLocalMemories();
   const nextMemories = existingMemories.filter((memory) => memory.id !== memoryId);
 
@@ -99,14 +110,15 @@ export function deleteLocalMemory(memoryId: string) {
     return false;
   }
 
-  writeLocalMemories(nextMemories);
+  await writeLocalMemories(nextMemories);
   return true;
 }
 
-export function mergeExtractedLocalMemories(input: {
+export async function mergeExtractedLocalMemories(input: {
   conversationId: string;
   extracted: Array<{ content: string; kind: MemoryKind }>;
 }) {
+  await ensureLocalMemoriesLoaded();
   const existingMemories = readLocalMemories();
   const dedupedExtracted = dedupeExtractedMemories(input.extracted);
   const { inserts, updates } = planMemoryMerge(existingMemories, dedupedExtracted);
@@ -142,7 +154,7 @@ export function mergeExtractedLocalMemories(input: {
     updatedAt: now,
   }));
 
-  writeLocalMemories([
+  await writeLocalMemories([
     ...nextMemories.filter((memory) => !updatedMemoryIds.has(memory.id)),
     ...nextMemories.filter((memory) => updatedMemoryIds.has(memory.id)),
     ...insertedMemories,
@@ -181,7 +193,7 @@ export async function extractAndMergeLocalMemories(input: {
     memories?: Array<{ content: string; kind: MemoryKind }>;
   };
 
-  return mergeExtractedLocalMemories({
+  return await mergeExtractedLocalMemories({
     conversationId: input.conversationId,
     extracted: data.memories ?? [],
   });

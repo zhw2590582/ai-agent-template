@@ -5,7 +5,7 @@ import type { UIMessage } from 'ai';
 import { STORAGE_KEYS, WINDOW_EVENTS } from '@/config/keys';
 import { buildConversationTitleFromText } from '@/features/chat/storage/conversations';
 import type { ConversationSummary } from '@/features/chat/storage/types';
-import { createLocalStorageStore } from '@/lib/local-storage-store';
+import { createIndexedDbStore } from '@/lib/indexed-db-store';
 
 const LOCAL_CHAT_CONVERSATIONS_STORAGE_KEY = STORAGE_KEYS.LOCAL_CHAT_CONVERSATIONS;
 const LOCAL_CHAT_CONVERSATIONS_UPDATED_EVENT = WINDOW_EVENTS.LOCAL_CHAT_CONVERSATIONS_UPDATED;
@@ -15,6 +15,7 @@ const EMPTY_LOCAL_CONVERSATION_SUMMARIES: ConversationSummary[] = [];
 let localConversationSummariesCache: ConversationSummary[] = EMPTY_LOCAL_CONVERSATION_SUMMARIES;
 
 export interface LocalConversationThread {
+  createdAt?: string;
   id: string;
   lastMessageAt: string;
   messages: UIMessage[];
@@ -53,12 +54,17 @@ function buildTitle(messages: UIMessage[]) {
 
 function buildConversationSummaries(threads: LocalConversationThread[]) {
   return threads.map((thread) => ({
+    createdAt: thread.createdAt ?? thread.lastMessageAt,
     id: thread.id,
     lastMessageAt: thread.lastMessageAt,
     preview: thread.preview,
     summary: thread.summary ?? null,
     title: thread.title,
   }));
+}
+
+function areMessagesEqual(left: UIMessage[], right: UIMessage[]) {
+  return JSON.stringify(left) === JSON.stringify(right);
 }
 
 function parseLocalConversationThreads(input: unknown) {
@@ -71,9 +77,10 @@ function parseLocalConversationThreads(input: unknown) {
     .sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt)) as LocalConversationThread[];
 }
 
-const localConversationStore = createLocalStorageStore<LocalConversationThread[]>({
+const localConversationStore = createIndexedDbStore<LocalConversationThread[]>({
   emptyValue: EMPTY_LOCAL_CONVERSATION_THREADS,
   eventName: LOCAL_CHAT_CONVERSATIONS_UPDATED_EVENT,
+  legacyStorageKey: LOCAL_CHAT_CONVERSATIONS_STORAGE_KEY,
   onCacheChange: (threads) => {
     localConversationSummariesCache = buildConversationSummaries(threads);
   },
@@ -87,8 +94,16 @@ export function readLocalConversationThreads() {
   return localConversationStore.read();
 }
 
-export function writeLocalConversationThreads(threads: LocalConversationThread[]) {
-  localConversationStore.write(threads);
+export async function ensureLocalConversationThreadsLoaded() {
+  return await localConversationStore.ensureLoaded();
+}
+
+export function areLocalConversationThreadsLoaded() {
+  return localConversationStore.isLoaded();
+}
+
+export async function writeLocalConversationThreads(threads: LocalConversationThread[]) {
+  await localConversationStore.write(threads);
 }
 
 export function subscribeToLocalConversationUpdates(onChange: () => void) {
@@ -104,9 +119,15 @@ export function getLocalConversationThread(id: string) {
   return readLocalConversationThreads().find((thread) => thread.id === id) ?? null;
 }
 
+export async function getLocalConversationThreadById(id: string) {
+  const threads = await ensureLocalConversationThreadsLoaded();
+  return threads.find((thread) => thread.id === id) ?? null;
+}
+
 export function createLocalConversationThread(initialMessage: string) {
   const now = new Date().toISOString();
   return {
+    createdAt: now,
     id: `local-${crypto.randomUUID()}`,
     lastMessageAt: now,
     messages: [],
@@ -117,16 +138,23 @@ export function createLocalConversationThread(initialMessage: string) {
   } satisfies LocalConversationThread;
 }
 
-export function upsertLocalConversationThread(input: {
+export async function upsertLocalConversationThread(input: {
   id: string;
   messages: UIMessage[];
   title?: string;
 }) {
+  await ensureLocalConversationThreadsLoaded();
   const existingThreads = readLocalConversationThreads();
   const existingThread = existingThreads.find((thread) => thread.id === input.id) ?? null;
+  const hasMessageChanges = existingThread
+    ? !areMessagesEqual(existingThread.messages, input.messages)
+    : true;
   const nextThread: LocalConversationThread = {
+    createdAt: existingThread?.createdAt ?? new Date().toISOString(),
     id: input.id,
-    lastMessageAt: new Date().toISOString(),
+    lastMessageAt: hasMessageChanges
+      ? new Date().toISOString()
+      : (existingThread?.lastMessageAt ?? new Date().toISOString()),
     messages: input.messages,
     preview: buildPreview(input.messages),
     summary: existingThread?.summary ?? null,
@@ -139,7 +167,7 @@ export function upsertLocalConversationThread(input: {
     titleGenerating: existingThread?.titleGenerating ?? false,
   };
 
-  writeLocalConversationThreads([
+  await writeLocalConversationThreads([
     nextThread,
     ...existingThreads.filter((thread) => thread.id !== input.id),
   ]);
@@ -147,12 +175,13 @@ export function upsertLocalConversationThread(input: {
   return nextThread;
 }
 
-export function renameLocalConversationThread(input: { id: string; title: string }) {
+export async function renameLocalConversationThread(input: { id: string; title: string }) {
   const nextTitle = input.title.trim();
   if (!nextTitle) {
     return false;
   }
 
+  await ensureLocalConversationThreadsLoaded();
   const existingThreads = readLocalConversationThreads();
   const targetThread = existingThreads.find((thread) => thread.id === input.id);
 
@@ -160,7 +189,7 @@ export function renameLocalConversationThread(input: { id: string; title: string
     return false;
   }
 
-  writeLocalConversationThreads(
+  await writeLocalConversationThreads(
     existingThreads.map((thread) =>
       thread.id === input.id
         ? {
@@ -176,7 +205,11 @@ export function renameLocalConversationThread(input: { id: string; title: string
   return true;
 }
 
-export function updateLocalConversationSummary(input: { id: string; summary: string | null }) {
+export async function updateLocalConversationSummary(input: {
+  id: string;
+  summary: string | null;
+}) {
+  await ensureLocalConversationThreadsLoaded();
   const existingThreads = readLocalConversationThreads();
   const targetThread = existingThreads.find((thread) => thread.id === input.id);
 
@@ -186,7 +219,7 @@ export function updateLocalConversationSummary(input: { id: string; summary: str
 
   const nextSummary = input.summary?.trim() || null;
 
-  writeLocalConversationThreads(
+  await writeLocalConversationThreads(
     existingThreads.map((thread) =>
       thread.id === input.id
         ? {
@@ -202,7 +235,8 @@ export function updateLocalConversationSummary(input: { id: string; summary: str
   return true;
 }
 
-export function deleteLocalConversationThread(id: string) {
+export async function deleteLocalConversationThread(id: string) {
+  await ensureLocalConversationThreadsLoaded();
   const existingThreads = readLocalConversationThreads();
   const nextThreads = existingThreads.filter((thread) => thread.id !== id);
 
@@ -210,6 +244,6 @@ export function deleteLocalConversationThread(id: string) {
     return false;
   }
 
-  writeLocalConversationThreads(nextThreads);
+  await writeLocalConversationThreads(nextThreads);
   return true;
 }

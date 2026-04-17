@@ -92,7 +92,7 @@ bun run dev
 当前模板默认是 `local-first`。
 
 - 匿名用户也可以使用绝大部分核心功能
-- 不登录时，模型配置、会话线程和大部分工作台设置默认只保存在当前浏览器本地
+- 不登录时，模型配置和大部分工作台设置默认保存在当前浏览器本地；guest 的会话线程与长期记忆使用 IndexedDB 持久化
 - 不登录时，`Memory` 也可用：guest 走本地长期记忆 + 本地会话摘要，并在新会话中继续跨会话注入
 - 配置了 Supabase 之后，才会显示登录入口，并把 profile / conversations 等数据持久化到远端
 - 当前 `Memory / Profile` 已开始按 `local / supabase` 两种 source 分层，后续会继续把这套边界扩到 conversations

@@ -4,7 +4,8 @@ import { API_ROUTES } from '@/config/api';
 import type { Locale } from '@/config/i18n';
 import type { ChatRuntimeModel } from '@/features/models/types';
 import {
-  getLocalConversationThread,
+  ensureLocalConversationThreadsLoaded,
+  getLocalConversationThreadById,
   readLocalConversationThreads,
   writeLocalConversationThreads,
 } from '@/features/chat/storage/local-conversation-store';
@@ -15,6 +16,7 @@ export async function generateLocalConversationSummary(input: {
   locale?: Locale;
   runtimeModel?: ChatRuntimeModel | null;
 }) {
+  await ensureLocalConversationThreadsLoaded();
   const existingThreads = readLocalConversationThreads();
   const existingThread = existingThreads.find((thread) => thread.id === input.id);
 
@@ -27,7 +29,7 @@ export async function generateLocalConversationSummary(input: {
     return existingThread ?? null;
   }
 
-  writeLocalConversationThreads(
+  await writeLocalConversationThreads(
     existingThreads.map((thread) =>
       thread.id === input.id ? { ...thread, summaryGenerating: true } : thread
     )
@@ -60,7 +62,7 @@ export async function generateLocalConversationSummary(input: {
       return null;
     }
 
-    writeLocalConversationThreads(
+    await writeLocalConversationThreads(
       refreshedThreads.map((thread) =>
         thread.id === input.id
           ? {
@@ -73,13 +75,13 @@ export async function generateLocalConversationSummary(input: {
       )
     );
 
-    return getLocalConversationThread(input.id);
+    return await getLocalConversationThreadById(input.id);
   } catch {
     const refreshedThreads = readLocalConversationThreads();
     const refreshedThread = refreshedThreads.find((thread) => thread.id === input.id);
 
     if (refreshedThread?.summaryGenerating) {
-      writeLocalConversationThreads(
+      await writeLocalConversationThreads(
         refreshedThreads.map((thread) =>
           thread.id === input.id ? { ...thread, summaryGenerating: false } : thread
         )

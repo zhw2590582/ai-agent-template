@@ -18,15 +18,58 @@ import {
   buildConversationTitleFromText,
   getMessageText,
 } from '@/features/chat/storage/conversation-analysis';
+import {
+  areLocalConversationThreadsLoaded,
+  getLocalConversationThread,
+} from '@/features/chat/storage/local-conversations';
 import type { ChatRuntimeModel } from '@/features/models/types';
 
 function isLocalConversationId(conversationId: string | null) {
   return Boolean(conversationId?.startsWith('local-'));
 }
 
+function areMessagesEqual(left: UIMessage[], right: UIMessage[]) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function hasLoadedActiveLocalConversationMessages(input: {
+  activeThreadId: string | null;
+  bootstrappingThreadId: string | null;
+  messages: UIMessage[];
+  urlConversationId: string | null;
+  user: AuthUserSnapshot | null;
+}) {
+  if (
+    input.user ||
+    !input.activeThreadId ||
+    !input.urlConversationId ||
+    input.activeThreadId !== input.urlConversationId ||
+    !isLocalConversationId(input.activeThreadId)
+  ) {
+    return true;
+  }
+
+  if (input.bootstrappingThreadId === input.activeThreadId) {
+    return true;
+  }
+
+  if (!areLocalConversationThreadsLoaded()) {
+    return false;
+  }
+
+  const localMessages = getLocalConversationThread(input.activeThreadId)?.messages ?? null;
+
+  if (!localMessages) {
+    return true;
+  }
+
+  return areMessagesEqual(localMessages, input.messages);
+}
+
 interface UseConversationRecordSyncOptions {
   activeThreadId: string | null;
   activeThreadTitle: string | null;
+  bootstrappingThreadId: string | null;
   isBusy: boolean;
   locale: Locale;
   memorySettings: MemorySettings;
@@ -49,6 +92,7 @@ interface UseConversationRecordSyncOptions {
 export function useConversationRecordSync({
   activeThreadId,
   activeThreadTitle,
+  bootstrappingThreadId,
   isBusy,
   locale,
   memorySettings,
@@ -61,21 +105,38 @@ export function useConversationRecordSync({
 }: UseConversationRecordSyncOptions) {
   const generatedTitleKeyRef = useRef<string | null>(null);
   const generatedMemoryKeyRef = useRef<string | null>(null);
+  const hydratedLocalConversationIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (user || !urlConversationId || !isLocalConversationId(urlConversationId) || isBusy) {
+    if (user || !urlConversationId || !isLocalConversationId(urlConversationId)) {
+      hydratedLocalConversationIdRef.current = null;
       return;
     }
 
-    const localMessages = getConversationMessages({
-      conversationId: urlConversationId,
-      user,
-    });
-    if (!localMessages) {
+    if (isBusy || hydratedLocalConversationIdRef.current === urlConversationId) {
       return;
     }
 
-    setMessages(localMessages);
+    let cancelled = false;
+    const targetConversationId = urlConversationId;
+
+    void (async () => {
+      const localMessages = await getConversationMessages({
+        conversationId: targetConversationId,
+        user,
+      });
+
+      if (!localMessages || cancelled) {
+        return;
+      }
+
+      hydratedLocalConversationIdRef.current = targetConversationId;
+      setMessages(localMessages);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [isBusy, setMessages, urlConversationId, user]);
 
   useEffect(() => {
@@ -88,6 +149,18 @@ export function useConversationRecordSync({
       return;
     }
 
+    if (
+      !hasLoadedActiveLocalConversationMessages({
+        activeThreadId,
+        bootstrappingThreadId,
+        messages,
+        urlConversationId,
+        user,
+      })
+    ) {
+      return;
+    }
+
     persistConversationMessages({
       conversationId: activeThreadId,
       locale,
@@ -95,7 +168,15 @@ export function useConversationRecordSync({
       runtimeModel,
       user,
     });
-  }, [activeThreadId, locale, messages, runtimeModel, user]);
+  }, [
+    activeThreadId,
+    bootstrappingThreadId,
+    locale,
+    messages,
+    runtimeModel,
+    urlConversationId,
+    user,
+  ]);
 
   useEffect(() => {
     if (
@@ -109,13 +190,34 @@ export function useConversationRecordSync({
       return;
     }
 
+    if (
+      !hasLoadedActiveLocalConversationMessages({
+        activeThreadId,
+        bootstrappingThreadId,
+        messages,
+        urlConversationId,
+        user,
+      })
+    ) {
+      return;
+    }
+
     generateConversationRecordTitle({
       conversationId: activeThreadId,
       locale,
       runtimeModel,
       user,
     });
-  }, [activeThreadId, isBusy, locale, messages.length, runtimeModel, user]);
+  }, [
+    activeThreadId,
+    bootstrappingThreadId,
+    isBusy,
+    locale,
+    messages,
+    runtimeModel,
+    urlConversationId,
+    user,
+  ]);
 
   useEffect(() => {
     if (!user || isBusy || !activeThreadId || !runtimeModel || messages.length === 0) {
@@ -199,13 +301,34 @@ export function useConversationRecordSync({
       return;
     }
 
+    if (
+      !hasLoadedActiveLocalConversationMessages({
+        activeThreadId,
+        bootstrappingThreadId,
+        messages,
+        urlConversationId,
+        user,
+      })
+    ) {
+      return;
+    }
+
     generateConversationRecordSummary({
       conversationId: activeThreadId,
       locale,
       runtimeModel,
       user,
     });
-  }, [activeThreadId, isBusy, locale, messages.length, runtimeModel, user]);
+  }, [
+    activeThreadId,
+    bootstrappingThreadId,
+    isBusy,
+    locale,
+    messages,
+    runtimeModel,
+    urlConversationId,
+    user,
+  ]);
 
   useEffect(() => {
     if (
@@ -217,6 +340,18 @@ export function useConversationRecordSync({
       !isLocalConversationId(activeThreadId) ||
       messages.length === 0 ||
       !runtimeModel
+    ) {
+      return;
+    }
+
+    if (
+      !hasLoadedActiveLocalConversationMessages({
+        activeThreadId,
+        bootstrappingThreadId,
+        messages,
+        urlConversationId,
+        user,
+      })
     ) {
       return;
     }
@@ -239,12 +374,14 @@ export function useConversationRecordSync({
     });
   }, [
     activeThreadId,
+    bootstrappingThreadId,
     isBusy,
     locale,
     memorySettings.autoWrite,
     memorySettings.enabled,
     messages,
     runtimeModel,
+    urlConversationId,
     user,
   ]);
 }

@@ -24,6 +24,7 @@ export interface ConversationRecord {
 }
 
 export interface ConversationSummary {
+  createdAt?: string;
   id: string;
   lastMessageAt: string;
   preview: string | null;

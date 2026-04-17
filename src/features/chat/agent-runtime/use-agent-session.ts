@@ -11,7 +11,10 @@ import { CHAT_RATE_LIMIT_ERROR_CODE, ChatRequestError } from '@/features/chat/ut
 import { resolveChatRuntimeModel } from '@/features/models/utils/runtime-model';
 import type { ChatModelOption } from '@/features/models/types';
 import { buildMemoryContext } from '@/features/memory/storage/memory-retrieval';
-import { readLocalMemories } from '@/features/memory/storage/local-memories';
+import {
+  ensureLocalMemoriesLoaded,
+  readLocalMemories,
+} from '@/features/memory/storage/local-memories';
 import { readApiError } from '@/lib/api-client';
 
 interface UseAgentSessionOptions {
@@ -124,38 +127,46 @@ export function useAgentSession({
 
           return response;
         },
-        prepareSendMessagesRequest: ({
+        prepareSendMessagesRequest: async ({
           messages,
           id,
           trigger,
           messageId,
           body: requestBody = {},
-        }) => ({
-          body: buildAgentRunRequest({
-            activeThreadId: activeThreadIdRef.current,
-            body: requestBody,
-            conversationSummary: conversationSummaryRef.current,
-            guestMemoryContext:
-              !isAuthenticatedRef.current &&
-              memorySettingsRef.current?.enabled &&
-              memorySettingsRef.current.crossConversation
-                ? buildMemoryContext(readLocalMemories(), {
-                    memorySettings: memorySettingsRef.current,
-                  })
-                : null,
-            id,
-            mcpSettings: mcpSettingsRef.current,
-            memorySettings: memorySettingsRef.current,
-            messageId,
-            messages,
-            ragSettings: ragSettingsRef.current,
-            runtimeModel: runtimeModelRef.current,
-            sandboxSettings: sandboxSettingsRef.current,
-            searchSettings: searchSettingsRef.current,
-            subagentSettings: subagentSettingsRef.current,
-            trigger,
-          }),
-        }),
+        }) => {
+          let guestMemoryContext: string | null = null;
+
+          if (
+            !isAuthenticatedRef.current &&
+            memorySettingsRef.current?.enabled &&
+            memorySettingsRef.current.crossConversation
+          ) {
+            await ensureLocalMemoriesLoaded();
+            guestMemoryContext = buildMemoryContext(readLocalMemories(), {
+              memorySettings: memorySettingsRef.current,
+            });
+          }
+
+          return {
+            body: buildAgentRunRequest({
+              activeThreadId: activeThreadIdRef.current,
+              body: requestBody,
+              conversationSummary: conversationSummaryRef.current,
+              guestMemoryContext,
+              id,
+              mcpSettings: mcpSettingsRef.current,
+              memorySettings: memorySettingsRef.current,
+              messageId,
+              messages,
+              ragSettings: ragSettingsRef.current,
+              runtimeModel: runtimeModelRef.current,
+              sandboxSettings: sandboxSettingsRef.current,
+              searchSettings: searchSettingsRef.current,
+              subagentSettings: subagentSettingsRef.current,
+              trigger,
+            }),
+          };
+        },
       })
   );
   /* eslint-enable react-hooks/refs */

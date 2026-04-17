@@ -52,6 +52,7 @@ export function buildConversationAnalysis(messages: UIMessage[]): ConversationAn
 
 export function mapConversationSummary(record: ConversationRecord): ConversationSummary {
   return {
+    createdAt: record.created_at,
     id: record.id,
     lastMessageAt: record.last_message_at,
     preview: record.analysis?.last_message_preview ?? null,

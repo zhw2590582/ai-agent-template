@@ -10,7 +10,8 @@ import {
   generateLocalConversationSummary,
   generateLocalConversationTitle,
   deleteLocalConversationThread,
-  getLocalConversationThread,
+  ensureLocalConversationThreadsLoaded,
+  getLocalConversationThreadById,
   renameLocalConversationThread,
   upsertLocalConversationThread,
 } from '@/features/chat/storage/local-conversations';
@@ -51,7 +52,7 @@ export async function createConversationRecord(options: {
   return data.conversation;
 }
 
-export function getConversationMessages(options: {
+export async function getConversationMessages(options: {
   conversationId: string;
   user: AuthUserSnapshot | null;
 }) {
@@ -59,7 +60,9 @@ export function getConversationMessages(options: {
     return null;
   }
 
-  return getLocalConversationThread(options.conversationId)?.messages ?? null;
+  await ensureLocalConversationThreadsLoaded();
+  const thread = await getLocalConversationThreadById(options.conversationId);
+  return thread?.messages ?? null;
 }
 
 export function persistConversationMessages(options: {

@@ -7,6 +7,7 @@ import { API_ROUTES } from '@/config/api';
 import { getApiErrorToastMessage } from '@/lib/api-client';
 import {
   deleteLocalMemory,
+  ensureLocalMemoriesLoaded,
   readLocalMemories,
   subscribeToLocalMemoryUpdates,
   updateLocalMemory,
@@ -30,7 +31,9 @@ export function useMemoryItemsSource({
 
   useEffect(() => {
     if (!isAuthenticated) {
-      setMemories(readLocalMemories());
+      void ensureLocalMemoriesLoaded().then(() => {
+        setMemories(readLocalMemories());
+      });
 
       return subscribeToLocalMemoryUpdates(() => {
         setMemories(readLocalMemories());
@@ -45,12 +48,11 @@ export function useMemoryItemsSource({
     try {
       if (!isAuthenticated) {
         const success = deleteLocalMemory(memoryId);
-
-        if (success) {
+        if (await success) {
           setMemories(readLocalMemories());
         }
 
-        return success;
+        return await success;
       }
 
       const response = await fetch(API_ROUTES.memories, {
@@ -79,11 +81,11 @@ export function useMemoryItemsSource({
       if (!isAuthenticated) {
         const success = updateLocalMemory(input);
 
-        if (success) {
+        if (await success) {
           setMemories(readLocalMemories());
         }
 
-        return success;
+        return await success;
       }
 
       const response = await fetch(API_ROUTES.memories, {

@@ -13,6 +13,7 @@ import type { ConversationSummary } from '@/features/chat/storage/types';
 import { useSidebarPagination } from '@/features/chat/hooks/use-sidebar-pagination';
 import { useSidebarSearch } from '@/features/chat/hooks/use-sidebar-search';
 import {
+  ensureLocalConversationThreadsLoaded,
   listLocalConversationSummaries,
   subscribeToLocalConversationUpdates,
 } from '@/features/chat/storage/local-conversations';
@@ -52,6 +53,14 @@ export function useSidebarConversations({
     () => EMPTY_CONVERSATIONS
   );
   const isSearching = searchQuery.trim().length > 0;
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      return;
+    }
+
+    void ensureLocalConversationThreadsLoaded();
+  }, [isAuthenticated]);
 
   const search = useSidebarSearch({
     isAuthenticated,

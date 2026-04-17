@@ -7,6 +7,7 @@ import { CONVERSATION_SUMMARY_PAGE_SIZE } from '@/config/chat';
 import { API_ROUTES } from '@/config/api';
 import { fetchConversationSummaryPage } from '@/features/chat/data/conversation-summary-service';
 import {
+  ensureLocalConversationThreadsLoaded,
   listLocalConversationSummaries,
   subscribeToLocalConversationUpdates,
   updateLocalConversationSummary,
@@ -58,6 +59,14 @@ export function useConversationSummarySource({
     () => localSummaries.filter((summary) => summary.summary?.trim()),
     [localSummaries]
   );
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      return;
+    }
+
+    void ensureLocalConversationThreadsLoaded();
+  }, [isAuthenticated]);
   const localTotalPages = Math.max(
     1,
     Math.ceil(localSummaryItems.length / CONVERSATION_SUMMARY_PAGE_SIZE)
@@ -133,7 +142,7 @@ export function useConversationSummarySource({
     setPendingDeleteId(conversationId);
     try {
       if (!isAuthenticated) {
-        return updateLocalConversationSummary({
+        return await updateLocalConversationSummary({
           id: conversationId,
           summary: null,
         });
@@ -165,7 +174,7 @@ export function useConversationSummarySource({
     setPendingEditId(input.conversationId);
     try {
       if (!isAuthenticated) {
-        return updateLocalConversationSummary({
+        return await updateLocalConversationSummary({
           id: input.conversationId,
           summary: input.summary,
         });

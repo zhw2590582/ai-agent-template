@@ -126,6 +126,10 @@ export function useChatWorkbench({
     isAuthenticated: !!user,
     locale,
     onFinish: () => {
+      if (!user) {
+        return;
+      }
+
       window.setTimeout(() => {
         router.refresh();
       }, CHAT_UI_CONFIG.POST_FINISH_REFRESH_DELAY_MS);
@@ -188,6 +192,7 @@ export function useChatWorkbench({
   const conversationRecordActions = useConversationRecords({
     activeThreadId,
     activeThreadTitle: activeConversationTitle,
+    bootstrappingThreadId,
     handleClearChat,
     isBusy,
     locale: titleLocale,

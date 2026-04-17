@@ -168,7 +168,7 @@ Workbench Dialog
 Sidebar / Chat actions
   -> conversation-operations
   -> authenticated: src/features/chat/storage/conversations.ts
-  -> guest: src/features/chat/storage/local-conversation-store.ts
+  -> guest: src/features/chat/storage/local-conversation-store.ts (IndexedDB-backed)
 ```
 
 ### 认证链路

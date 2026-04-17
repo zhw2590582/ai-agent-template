@@ -8,6 +8,7 @@ import type { LocalConversationThread } from '@/features/chat/storage/local-conv
 import {
   readLocalConversationThreads,
   subscribeToLocalConversationUpdates,
+  upsertLocalConversationThread,
   writeLocalConversationThreads,
 } from '@/features/chat/storage/local-conversation-store';
 
@@ -56,5 +57,33 @@ describe('local-conversation-store', () => {
     expect(onChange).toHaveBeenCalledTimes(1);
 
     unsubscribe();
+  });
+
+  it('keeps the original order when reloading an existing local thread without message changes', () => {
+    const newerThread: LocalConversationThread = {
+      ...SAMPLE_THREAD,
+      id: 'local-2',
+      lastMessageAt: '2026-04-17T01:00:00.000Z',
+      title: 'Newer',
+    };
+    const olderThread: LocalConversationThread = {
+      ...SAMPLE_THREAD,
+      id: 'local-1',
+      lastMessageAt: '2026-04-17T00:00:00.000Z',
+      title: 'Older',
+    };
+
+    writeLocalConversationThreads([newerThread, olderThread]);
+
+    upsertLocalConversationThread({
+      id: olderThread.id,
+      messages: olderThread.messages,
+    });
+
+    expect(readLocalConversationThreads().map((thread) => thread.id)).toEqual([
+      'local-2',
+      'local-1',
+    ]);
+    expect(readLocalConversationThreads()[1]?.lastMessageAt).toBe('2026-04-17T00:00:00.000Z');
   });
 });

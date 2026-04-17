@@ -31,6 +31,7 @@
 
 - 匿名用户可以直接使用绝大部分核心能力
 - 不登录时，数据优先保存在浏览器本地
+- 不登录时，guest conversations / memories 走 IndexedDB，本地 profile/settings 继续走 local-first storage；登录后才切到 Supabase 持久化
 - 不登录时，`Memory` 走本地长期记忆 + 本地会话摘要，登录后才切到 Supabase 持久化
 - 只有在配置了 Supabase 之后，登录入口和远端持久化才会真正启用
 
@@ -73,7 +74,7 @@
 | Chat               | 已实现    | `useChat -> /api/chat -> agent-runtime -> stream response` 主链路稳定                 | `src/features/chat/`                                        |
 | Models / Providers | 已实现    | 用户可配置 provider、探测连接、同步模型、自定义模型                                   | `src/features/models/`                                      |
 | Auth + Profile     | 已实现    | Supabase OAuth、`profiles.settings` 持久化                                            | `src/features/auth/`                                        |
-| Conversations      | 已实现    | 登录用户走 Supabase，guest 走 localStorage                                            | `src/features/chat/storage/`                                |
+| Conversations      | 已实现    | 登录用户走 Supabase，guest 走 IndexedDB-backed local store                            | `src/features/chat/storage/`                                |
 | Memory             | 已实现 V1 | 同一套 Memory UI；guest 走本地长期记忆 + 本地会话摘要，登录用户走 Supabase 记忆和摘要 | `src/features/memory/`                                      |
 | Search             | 已实现 V1 | provider-based search tools、连接测试、`web_search / web_extract / web_crawl`         | `src/features/search/`                                      |
 | Sandbox            | 已实现 V1 | provider-based sandbox runtime、首批 tools、workspace/session/telemetry 骨架          | `src/features/sandbox/`, `src/features/chat/agent-runtime/` |

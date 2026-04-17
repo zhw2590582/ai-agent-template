@@ -13,6 +13,7 @@ import type { ChatRuntimeModel } from '@/features/models/types';
 interface UseConversationRecordsOptions {
   activeThreadId: string | null;
   activeThreadTitle: string | null;
+  bootstrappingThreadId: string | null;
   handleClearChat: () => void;
   isBusy: boolean;
   locale: Locale;
@@ -38,6 +39,7 @@ interface UseConversationRecordsOptions {
 export function useConversationRecords({
   activeThreadId,
   activeThreadTitle,
+  bootstrappingThreadId,
   handleClearChat,
   isBusy,
   locale,
@@ -54,6 +56,7 @@ export function useConversationRecords({
   useConversationRecordSync({
     activeThreadId,
     activeThreadTitle,
+    bootstrappingThreadId,
     isBusy,
     locale,
     memorySettings,
