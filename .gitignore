@@ -17,6 +17,8 @@ coverage/
 out/
 build/
 dist/
+public/sw*
+public/swe-worker*
 
 # 生产环境
 .vercel

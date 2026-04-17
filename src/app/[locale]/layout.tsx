@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
@@ -25,8 +25,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'AI Agent Template',
+  applicationName: 'AI Agent Template',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'AI Agent Template',
+  },
   description: 'A general AI agent chat interface built with Next.js and AI SDK.',
+  formatDetection: {
+    telephone: false,
+  },
+  title: 'AI Agent Template',
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { color: '#fafafa', media: '(prefers-color-scheme: light)' },
+    { color: '#0f1115', media: '(prefers-color-scheme: dark)' },
+  ],
 };
 
 type Props = {
