@@ -133,7 +133,7 @@ export function ChatTopBar({
         onOpenChange={setIsMobileMenuOpen}
       >
         <DrawerContent
-          className="inset-y-0 right-0 h-dvh w-[min(24rem,calc(100vw-0.75rem))] rounded-none border-l px-4 py-4"
+          className="bg-muted/50 inset-y-0 right-0 h-dvh w-[min(24rem,calc(100vw-0.75rem))] rounded-none border-l px-4 py-4"
           showHandle={false}
         >
           <DrawerHeader className="sr-only">
