@@ -24,6 +24,7 @@ interface UseConversationRecordSyncOptions {
   activeThreadId: string | null;
   activeThreadTitle: string | null;
   bootstrappingThreadId: string | null;
+  clearBootstrapping: () => void;
   isBusy: boolean;
   locale: Locale;
   memorySettings: MemorySettings;
@@ -47,6 +48,7 @@ export function useConversationRecordSync({
   activeThreadId,
   activeThreadTitle,
   bootstrappingThreadId,
+  clearBootstrapping,
   isBusy,
   locale,
   memorySettings,
@@ -118,16 +120,23 @@ export function useConversationRecordSync({
       return;
     }
 
-    persistConversationMessages({
-      conversationId: activeThreadId,
-      locale,
-      messages,
-      runtimeModel,
-      user,
-    });
+    void (async () => {
+      await persistConversationMessages({
+        conversationId: activeThreadId,
+        locale,
+        messages,
+        runtimeModel,
+        user,
+      });
+
+      if (bootstrappingThreadId === activeThreadId && !isBusy) {
+        clearBootstrapping();
+      }
+    })();
   }, [
     activeThreadId,
     bootstrappingThreadId,
+    clearBootstrapping,
     isBusy,
     locale,
     messages,

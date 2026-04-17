@@ -65,7 +65,7 @@ export interface ConversationRecordSource {
     locale: Locale;
     messages: UIMessage[];
     runtimeModel?: ChatRuntimeModel | null;
-  }) => void;
+  }) => Promise<void>;
   renameRecord: (conversationId: string, title: string) => Promise<boolean>;
 }
 
@@ -187,8 +187,8 @@ function createLocalConversationRecordSource(): ConversationRecordSource {
         shouldRunDerivedState: !isBusy && messages.length > 0 && hasLoadedMessages,
       };
     },
-    persistMessages: ({ conversationId, messages }) => {
-      void upsertLocalConversationThread({
+    persistMessages: async ({ conversationId, messages }) => {
+      await upsertLocalConversationThread({
         id: conversationId,
         messages,
       });
@@ -239,7 +239,7 @@ function createRemoteConversationRecordSource(): ConversationRecordSource {
       shouldPersistMessages: false,
       shouldRunDerivedState: false,
     }),
-    persistMessages: () => {},
+    persistMessages: async () => {},
     renameRecord: async (conversationId, title) => {
       const response = await fetch(API_ROUTES.conversations, {
         method: 'PATCH',

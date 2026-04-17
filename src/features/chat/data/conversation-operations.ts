@@ -33,7 +33,7 @@ export function persistConversationMessages(options: {
   user: AuthUserSnapshot | null;
 }) {
   const source = createConversationRecordSource(options.user);
-  source.persistMessages(options);
+  return source.persistMessages(options);
 }
 
 export function generateConversationRecordTitle(options: {

@@ -193,6 +193,9 @@ export function useChatWorkbench({
     activeThreadId,
     activeThreadTitle: activeConversationTitle,
     bootstrappingThreadId,
+    clearBootstrapping: useCallback(() => {
+      setBootstrappingThreadId(null);
+    }, [setBootstrappingThreadId]),
     handleClearChat,
     isBusy,
     locale: titleLocale,
