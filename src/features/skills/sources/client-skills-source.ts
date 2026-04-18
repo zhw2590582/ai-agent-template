@@ -27,15 +27,20 @@ export function createClientSkillsSource(): ClientSkillsSource {
 
       return readInstalledSkillPackages()
         .filter((skillPackage) => enabledSkillIds.has(skillPackage.id))
-        .map((skillPackage) => ({
-          description: skillPackage.description,
-          files: skillPackage.files,
-          id: skillPackage.id,
-          name: skillPackage.name,
-          skillPath: skillPackage.skillPath,
-          source: skillPackage.source,
-          summary: skillPackage.summary,
-        }));
+        .map((skillPackage) => {
+          const skillSetting = skillsSettings.skills.find((skill) => skill.id === skillPackage.id);
+
+          return {
+            activationMode: skillSetting?.activationMode ?? 'lazy',
+            description: skillPackage.description,
+            files: skillPackage.files,
+            id: skillPackage.id,
+            name: skillPackage.name,
+            skillPath: skillPackage.skillPath,
+            source: skillPackage.source,
+            summary: skillPackage.summary,
+          };
+        });
     },
   };
 }

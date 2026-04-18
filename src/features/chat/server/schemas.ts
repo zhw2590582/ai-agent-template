@@ -33,6 +33,7 @@ const runtimeSkillFileSchema = z.object({
 });
 
 const runtimeSkillSchema = z.object({
+  activationMode: z.enum(['eager', 'lazy']).default('lazy'),
   description: z.string(),
   files: z.array(runtimeSkillFileSchema),
   id: z.string().min(1),

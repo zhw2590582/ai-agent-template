@@ -1,4 +1,9 @@
-import type { SkillCapability, SkillDefinition, SkillsSettings } from '@/features/skills/types';
+import type {
+  SkillActivationMode,
+  SkillCapability,
+  SkillDefinition,
+  SkillsSettings,
+} from '@/features/skills/types';
 
 export const SKILL_CAPABILITIES: SkillCapability[] = [
   'prompt',
@@ -12,6 +17,10 @@ export const SKILL_CAPABILITIES: SkillCapability[] = [
 
 function isSkillCapability(value: unknown): value is SkillCapability {
   return typeof value === 'string' && SKILL_CAPABILITIES.includes(value as SkillCapability);
+}
+
+function isSkillActivationMode(value: unknown): value is SkillActivationMode {
+  return value === 'eager' || value === 'lazy';
 }
 
 function toTitleCase(value: string) {
@@ -72,6 +81,7 @@ function normalizeSkillDefinition(
   }
 
   return {
+    activationMode: isSkillActivationMode(input.activationMode) ? input.activationMode : 'lazy',
     capabilities: Array.isArray(input.capabilities)
       ? [...new Set(input.capabilities.filter(isSkillCapability))]
       : ['prompt'],
@@ -91,6 +101,7 @@ function normalizeSkillDefinition(
 
 export function createSkillDraft(index: number): SkillDefinition {
   return {
+    activationMode: 'lazy',
     capabilities: ['prompt'],
     description: '',
     enabled: true,

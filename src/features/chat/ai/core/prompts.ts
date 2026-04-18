@@ -34,7 +34,7 @@ ${options.ragContext}`
 Available skills:
 ${options.skillsRoster}
 
-When a task matches one of these skills, use the load_skill tool to load its instructions before proceeding. If the loaded skill references supporting files, use the read_skill_file tool with the returned relative path.`
+Skills marked as "Load on demand with load_skill" are lazy by default. When a task appears related to one of these skills, load it before writing specialized guidance, changing code in that area, or calling domain-specific tools. If the loaded skill references supporting files, use the read_skill_file tool with the returned relative path.`
     : '';
   const subagentSection = options?.subagentRoster
     ? `

@@ -22,7 +22,10 @@ export function buildRuntimeSkillsPrompt(skills: RuntimeSkill[]) {
   }
 
   return skills
-    .map((skill) => `- ${skill.name} (${skill.id})\n  Description: ${skill.description}`)
+    .map(
+      (skill) =>
+        `- ${skill.name} (${skill.id})\n  Description: ${skill.description}\n  Activation: ${skill.activationMode === 'lazy' ? 'Load on demand with load_skill' : 'Apply before starting'}`
+    )
     .join('\n');
 }
 
