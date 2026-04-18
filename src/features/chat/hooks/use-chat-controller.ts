@@ -28,7 +28,6 @@ interface UseChatControllerOptions {
   setPendingThreadId: (value: string | null) => void;
   sidebar: {
     insertConversation: (conversation: ConversationSummary) => void;
-    setPendingSidebarHead: (value: string | null) => void;
   };
   starterMessages: UIMessage[];
 }
@@ -116,7 +115,6 @@ export function useChatController({
     if (isBusy) onStop();
 
     setBootstrappingThreadId(null);
-    sidebar.setPendingSidebarHead(null);
     setPendingThreadId(null);
     setMessages(starterMessages);
     setInput('');

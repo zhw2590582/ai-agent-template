@@ -64,6 +64,5 @@ export function useSidebarConversations({
     loadMore,
     patchConversation: listStore.patchConversation,
     removeConversation: listStore.removeConversation,
-    setPendingSidebarHead: listStore.clearInsertedConversation,
   };
 }
