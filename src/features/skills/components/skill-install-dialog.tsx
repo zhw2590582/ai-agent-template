@@ -3,6 +3,7 @@
 import { ExternalLinkIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,23 +18,66 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { API_ROUTES } from '@/config/api';
+import { buildResolvedSkillCatalogItemFromPackage } from '@/features/skills/catalog';
 import { SkillCapabilityBadges } from '@/features/skills/components/skill-capability-badges';
-import type { ResolvedSkillCatalogItem, SkillCatalogItem } from '@/features/skills/types';
+import type {
+  InstalledSkillPackage,
+  ResolvedSkillCatalogItem,
+  SkillCatalogItem,
+} from '@/features/skills/types';
+
+interface CatalogSkillDialogTarget {
+  kind: 'catalog';
+  skill: SkillCatalogItem;
+}
+
+interface InstalledSkillDialogTarget {
+  kind: 'installed';
+  skillPackage: InstalledSkillPackage;
+}
+
+export type SkillDialogTarget = CatalogSkillDialogTarget | InstalledSkillDialogTarget;
 
 interface SkillInstallDialogProps {
   isInstalled: boolean;
   onInstall: (skill: ResolvedSkillCatalogItem) => Promise<boolean | void> | boolean | void;
+  onRequestDeleteInstalledSkill?: (skillId: string) => void;
   onOpenChange: (open: boolean) => void;
   open: boolean;
-  skill: SkillCatalogItem | null;
+  target: SkillDialogTarget | null;
+}
+
+function buildResolveQuery(target: SkillDialogTarget, includeFiles: boolean) {
+  const skill =
+    target.kind === 'catalog'
+      ? target.skill
+      : {
+          id: target.skillPackage.id,
+          installs: 0,
+          name: target.skillPackage.name,
+          skillId: target.skillPackage.skillId,
+          source: target.skillPackage.source,
+        };
+
+  const params = new URLSearchParams({
+    id: skill.id,
+    includeFiles: includeFiles ? 'true' : 'false',
+    installs: String(skill.installs),
+    name: skill.name,
+    skillId: skill.skillId,
+    source: skill.source,
+  });
+
+  return params.toString();
 }
 
 export function SkillInstallDialog({
   isInstalled,
   onInstall,
+  onRequestDeleteInstalledSkill,
   onOpenChange,
   open,
-  skill,
+  target,
 }: SkillInstallDialogProps) {
   const t = useTranslations();
   const [resolvedSkill, setResolvedSkill] = useState<ResolvedSkillCatalogItem | null>(null);
@@ -41,8 +85,14 @@ export function SkillInstallDialog({
   const [isInstalling, setIsInstalling] = useState(false);
 
   useEffect(() => {
-    if (!open || !skill) {
+    if (!open || !target) {
       setResolvedSkill(null);
+      setIsLoading(false);
+      return;
+    }
+
+    if (target.kind === 'installed') {
+      setResolvedSkill(buildResolvedSkillCatalogItemFromPackage(target.skillPackage));
       setIsLoading(false);
       return;
     }
@@ -53,11 +103,7 @@ export function SkillInstallDialog({
 
       try {
         const response = await fetch(
-          `${API_ROUTES.skillsResolve}?id=${encodeURIComponent(skill.id)}&name=${encodeURIComponent(
-            skill.name
-          )}&skillId=${encodeURIComponent(skill.skillId)}&source=${encodeURIComponent(
-            skill.source
-          )}&installs=${skill.installs}`,
+          `${API_ROUTES.skillsResolve}?${buildResolveQuery(target, false)}`,
           {
             signal: controller.signal,
           }
@@ -83,17 +129,21 @@ export function SkillInstallDialog({
     })();
 
     return () => controller.abort();
-  }, [open, skill]);
+  }, [open, target]);
 
   const installLabel = isInstalled
-    ? t('skills_page.install_dialog.reinstall')
+    ? t('skills_page.install_dialog.update')
     : t('skills_page.install_dialog.install');
+  const title =
+    target?.kind === 'installed'
+      ? target.skillPackage.name
+      : (target?.skill.name ?? t('skills_page.install_dialog.title'));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{skill?.name ?? t('skills_page.install_dialog.title')}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{t('skills_page.install_dialog.description')}</DialogDescription>
         </DialogHeader>
 
@@ -106,28 +156,34 @@ export function SkillInstallDialog({
           </div>
         ) : resolvedSkill ? (
           <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-center gap-3 text-sm">
-              {resolvedSkill.version ? (
-                <span className="text-muted-foreground">
-                  {t('skills_page.install_dialog.version', {
-                    version: resolvedSkill.version,
-                  })}
-                </span>
-              ) : null}
-              <span className="text-muted-foreground">
-                {t('skills_page.search_dialog.installs', {
-                  count: resolvedSkill.installs,
-                })}
-              </span>
-              <a
-                className="text-sm underline underline-offset-4"
-                href={resolvedSkill.githubUrl}
-                rel="noreferrer"
-                target="_blank"
+            <div className="flex items-start gap-3">
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3 text-sm">
+                {resolvedSkill.version ? (
+                  <span className="text-muted-foreground">
+                    {t('skills_page.install_dialog.version', {
+                      version: resolvedSkill.version,
+                    })}
+                  </span>
+                ) : null}
+                {resolvedSkill.installs > 0 ? (
+                  <span className="text-muted-foreground">
+                    {t('skills_page.search_dialog.installs', {
+                      count: resolvedSkill.installs,
+                    })}
+                  </span>
+                ) : null}
+              </div>
+              <Button
+                asChild
+                className="ml-auto shrink-0 whitespace-nowrap"
+                size="sm"
+                variant="outline"
               >
-                <ExternalLinkIcon data-icon="inline-start" />
-                {t('skills_page.install_dialog.open_github')}
-              </a>
+                <a href={resolvedSkill.githubUrl} rel="noreferrer" target="_blank">
+                  <ExternalLinkIcon className="size-4" />
+                  <span>{t('skills_page.install_dialog.open_github')}</span>
+                </a>
+              </Button>
             </div>
 
             <div className="border-border bg-muted/20 rounded-md border px-4 py-3">
@@ -159,6 +215,19 @@ export function SkillInstallDialog({
         )}
 
         <DialogFooter>
+          {target?.kind === 'installed' ? (
+            <Button
+              className="mr-auto"
+              type="button"
+              variant="destructive"
+              onClick={() => {
+                onOpenChange(false);
+                onRequestDeleteInstalledSkill?.(target.skillPackage.id);
+              }}
+            >
+              {t('common.delete')}
+            </Button>
+          ) : null}
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             {t('common.cancel')}
           </Button>
@@ -166,13 +235,31 @@ export function SkillInstallDialog({
             disabled={!resolvedSkill || isInstalling}
             type="button"
             onClick={async () => {
-              if (!resolvedSkill) {
+              if (!resolvedSkill || !target) {
                 return;
               }
 
               setIsInstalling(true);
               try {
-                const success = await onInstall(resolvedSkill);
+                const response = await fetch(
+                  `${API_ROUTES.skillsResolve}?${buildResolveQuery(target, true)}`
+                );
+
+                if (!response.ok) {
+                  toast.error(t('skills_page.toast.install_failed'));
+                  return;
+                }
+
+                const data = (await response.json()) as {
+                  skill?: ResolvedSkillCatalogItem;
+                };
+
+                if (!data.skill) {
+                  toast.error(t('skills_page.toast.install_failed'));
+                  return;
+                }
+
+                const success = await onInstall(data.skill);
                 if (success !== false) {
                   onOpenChange(false);
                 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { PlusIcon, Trash2Icon } from 'lucide-react';
+import { InfoIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import {
@@ -26,6 +26,7 @@ interface SkillListProps {
   onConfirmDelete: () => Promise<void> | void;
   onDeleteSkill: (skillId: string) => void;
   onToggleSkillEnabled: (skillId: string, enabled: boolean) => void;
+  onViewSkill: (skillId: string) => void;
   skills: SkillDefinition[];
 }
 
@@ -37,6 +38,7 @@ export function SkillList({
   onConfirmDelete,
   onDeleteSkill,
   onToggleSkillEnabled,
+  onViewSkill,
   skills,
 }: SkillListProps) {
   const t = useTranslations();
@@ -68,8 +70,8 @@ export function SkillList({
                 className="border-border flex flex-col gap-3 border-b px-5 py-4 last:border-b-0"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex min-w-0 flex-1 flex-col gap-2">
-                    <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
                       <h3 className="truncate text-sm font-medium">{skill.name}</h3>
                       {installedSkillIds.includes(skill.id) ? (
                         <Badge variant="outline">{t('skills_page.local_badge')}</Badge>
@@ -78,18 +80,23 @@ export function SkillList({
                         {skill.enabled ? t('common.enabled') : t('common.disabled')}
                       </Badge>
                     </div>
-                    {skill.description ? (
-                      <p className="text-sm leading-6">{skill.description}</p>
-                    ) : null}
-                    <p className="text-muted-foreground truncate text-sm">{skill.sourceUrl}</p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     <Switch
                       checked={skill.enabled}
                       className="data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
                       onCheckedChange={(checked) => onToggleSkillEnabled(skill.id, checked)}
                     />
+                    <Button
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                      onClick={() => onViewSkill(skill.id)}
+                    >
+                      <InfoIcon />
+                      {t('skills_page.view_details')}
+                    </Button>
                     <Button
                       size="sm"
                       type="button"
@@ -101,6 +108,10 @@ export function SkillList({
                     </Button>
                   </div>
                 </div>
+                {skill.description ? (
+                  <p className="text-sm leading-6">{skill.description}</p>
+                ) : null}
+                <p className="text-muted-foreground truncate text-sm">{skill.sourceUrl}</p>
               </article>
             ))
           )}

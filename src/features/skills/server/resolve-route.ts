@@ -14,6 +14,10 @@ import type { InstalledSkillFile } from '@/features/skills/types';
 
 const resolveSkillQuerySchema = z.object({
   id: z.string().min(1),
+  includeFiles: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
   installs: z.coerce.number().int().nonnegative().default(0),
   name: z.string().min(1),
   skillId: z.string().min(1),
@@ -128,6 +132,7 @@ export async function handleSkillResolveGet(request: Request) {
     const url = new URL(request.url);
     const query = resolveSkillQuerySchema.parse({
       id: url.searchParams.get('id'),
+      includeFiles: url.searchParams.get('includeFiles') ?? 'false',
       installs: url.searchParams.get('installs') ?? '0',
       name: url.searchParams.get('name'),
       skillId: url.searchParams.get('skillId'),
@@ -156,23 +161,22 @@ export async function handleSkillResolveGet(request: Request) {
       );
     }
 
-    const files = await fetchSkillFilesRecursively(query.source, resolved.skillPath);
-    const skillMarkdownFile = files.find((file) => file.path === 'SKILL.md');
+    const resolvedSkill = parseResolvedSkillCatalogItem({
+      files: query.includeFiles
+        ? await fetchSkillFilesRecursively(query.source, resolved.skillPath)
+        : undefined,
+      item: query,
+      markdown: resolved.markdown,
+      resolvedSkillPath: resolved.skillPath,
+    });
 
-    if (!skillMarkdownFile) {
+    if (query.includeFiles && !resolvedSkill.files.some((file) => file.path === 'SKILL.md')) {
       throw new AppError(
         ErrorCode.API_NETWORK,
         'Installed skill directory is missing SKILL.md.',
         502
       );
     }
-
-    const resolvedSkill = parseResolvedSkillCatalogItem({
-      item: query,
-      files,
-      markdown: skillMarkdownFile.content,
-      resolvedSkillPath: resolved.skillPath,
-    });
 
     return Response.json({
       skill: resolvedSkill,

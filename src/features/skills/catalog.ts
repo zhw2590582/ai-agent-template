@@ -180,3 +180,24 @@ export function toInstalledSkillPackage(skill: ResolvedSkillCatalogItem): Instal
     version: skill.version,
   };
 }
+
+export function buildResolvedSkillCatalogItemFromPackage(
+  skillPackage: InstalledSkillPackage
+): ResolvedSkillCatalogItem {
+  return {
+    capabilities: skillPackage.capabilities,
+    description: skillPackage.description,
+    files: skillPackage.files,
+    githubUrl: skillPackage.githubUrl,
+    id: skillPackage.id,
+    installs: 0,
+    markdown: skillPackage.markdown,
+    name: skillPackage.name,
+    rawSkillUrl: skillPackage.rawSkillUrl,
+    skillId: skillPackage.skillId,
+    skillPath: skillPackage.skillPath,
+    source: skillPackage.source,
+    summary: skillPackage.summary,
+    version: skillPackage.version,
+  };
+}

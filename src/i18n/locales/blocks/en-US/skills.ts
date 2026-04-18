@@ -8,6 +8,7 @@ export const enUSSkillsMessages = {
       'Search the remote catalog, inspect the skill details, and install the package into local IndexedDB.',
     empty_state: 'No skills installed yet. Start by searching the skill catalog.',
     add_skill: 'Add Skill',
+    view_details: 'Details',
     local_badge: 'Local',
     add_skill_title: 'Import Skill',
     add_skill_description:
@@ -17,7 +18,7 @@ export const enUSSkillsMessages = {
     edit_skill_description: 'Update the source URL and enabled state for this entry.',
     delete_skill_title: 'Delete Skill',
     delete_skill_description:
-      'Delete "{skillName}"? This only removes the saved entry from your profile settings.',
+      'Delete "{skillName}"? This removes the installed package and local enabled state.',
     skill_enabled_label: 'Enable Skill',
     skill_enabled_description:
       'Disabled skills stay in the list but will not be considered active.',
@@ -34,9 +35,11 @@ export const enUSSkillsMessages = {
       title: 'Search Skills',
       description:
         'Search the public skills catalog by keyword, then inspect the details before installing.',
-      placeholder: 'Search skills, for example: nuxt',
-      empty_query: 'Start typing to search the skills catalog.',
-      empty_results: 'No matching skills were found.',
+      placeholder: 'Search skills...',
+      empty_query_title: 'Search the catalog',
+      empty_query: 'Start typing to look up installable skills.',
+      empty_results_title: 'No matching skills',
+      empty_results: 'Try a different keyword or broaden the query.',
       installed_badge: 'Installed',
       installs: '{count, number} installs',
     },
@@ -44,7 +47,7 @@ export const enUSSkillsMessages = {
       title: 'Skill Details',
       description: 'Review the skill metadata and GitHub source before installing it locally.',
       install: 'Install',
-      reinstall: 'Reinstall',
+      update: 'Update',
       load_failed: 'Failed to load this skill from GitHub.',
       open_github: 'Open GitHub',
       version: 'Version {version}',

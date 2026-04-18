@@ -1,9 +1,16 @@
 'use client';
 
-import { SearchIcon } from 'lucide-react';
+import { SearchIcon, SearchXIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/app-ui/empty';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -54,10 +61,9 @@ export function SkillSearchDialog({
     }
 
     const controller = new AbortController();
+    setIsLoading(true);
     const timeoutId = window.setTimeout(() => {
       void (async () => {
-        setIsLoading(true);
-
         try {
           const response = await fetch(
             `${API_ROUTES.skillsSearch}?q=${encodeURIComponent(trimmedQuery)}&limit=20`,
@@ -84,7 +90,7 @@ export function SkillSearchDialog({
           setIsLoading(false);
         }
       })();
-    }, 250);
+    }, 1500);
 
     return () => {
       controller.abort();
@@ -111,8 +117,8 @@ export function SkillSearchDialog({
             />
           </div>
 
-          <div className="border-border overflow-hidden rounded-md border">
-            <ScrollArea className="max-h-96">
+          <div className="border-border h-96 overflow-hidden rounded-md border">
+            <ScrollArea className="h-96">
               <div className="flex flex-col">
                 {isLoading ? (
                   Array.from({ length: 4 }).map((_, index) => (
@@ -125,12 +131,34 @@ export function SkillSearchDialog({
                     </div>
                   ))
                 ) : query.trim().length === 0 ? (
-                  <div className="text-muted-foreground px-4 py-10 text-sm">
-                    {t('skills_page.search_dialog.empty_query')}
+                  <div className="flex min-h-96 items-center justify-center p-4">
+                    <Empty className="w-full max-w-md">
+                      <EmptyHeader>
+                        <EmptyMedia>
+                          <SearchIcon className="size-5" />
+                        </EmptyMedia>
+                        <EmptyTitle>{t('skills_page.search_dialog.empty_query_title')}</EmptyTitle>
+                        <EmptyDescription>
+                          {t('skills_page.search_dialog.empty_query')}
+                        </EmptyDescription>
+                      </EmptyHeader>
+                    </Empty>
                   </div>
                 ) : results.length === 0 ? (
-                  <div className="text-muted-foreground px-4 py-10 text-sm">
-                    {t('skills_page.search_dialog.empty_results')}
+                  <div className="flex min-h-96 items-center justify-center p-4">
+                    <Empty className="w-full max-w-md">
+                      <EmptyHeader>
+                        <EmptyMedia>
+                          <SearchXIcon className="size-5" />
+                        </EmptyMedia>
+                        <EmptyTitle>
+                          {t('skills_page.search_dialog.empty_results_title')}
+                        </EmptyTitle>
+                        <EmptyDescription>
+                          {t('skills_page.search_dialog.empty_results')}
+                        </EmptyDescription>
+                      </EmptyHeader>
+                    </Empty>
                   </div>
                 ) : (
                   results.map((skill) => {

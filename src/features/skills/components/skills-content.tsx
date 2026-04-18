@@ -12,7 +12,10 @@ import {
   buildSkillDefinitionFromPackage,
   toInstalledSkillPackage,
 } from '@/features/skills/catalog';
-import { SkillInstallDialog } from '@/features/skills/components/skill-install-dialog';
+import {
+  SkillInstallDialog,
+  type SkillDialogTarget,
+} from '@/features/skills/components/skill-install-dialog';
 import { SkillList } from '@/features/skills/components/skill-list';
 import { SkillSearchDialog } from '@/features/skills/components/skill-search-dialog';
 import { useSkillsSettings } from '@/features/skills/hooks/use-skills-settings';
@@ -23,11 +26,7 @@ import {
   subscribeToInstalledSkillUpdates,
   upsertInstalledSkillPackage,
 } from '@/features/skills/storage/local-installed-skills';
-import type {
-  InstalledSkillPackage,
-  SkillCatalogItem,
-  SkillsSettings,
-} from '@/features/skills/types';
+import type { InstalledSkillPackage, SkillsSettings } from '@/features/skills/types';
 
 interface SkillsContentProps {
   onClose?: () => void;
@@ -43,7 +42,7 @@ export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: Ski
   const [installedSkillPackages, setInstalledSkillPackages] = useState<InstalledSkillPackage[]>([]);
   const [installedSkillsLoaded, setInstalledSkillsLoaded] = useState(false);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
-  const [selectedCatalogSkill, setSelectedCatalogSkill] = useState<SkillCatalogItem | null>(null);
+  const [selectedSkillTarget, setSelectedSkillTarget] = useState<SkillDialogTarget | null>(null);
   const {
     deleteSkill,
     isDirty,
@@ -171,6 +170,19 @@ export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: Ski
               ),
             }));
           }}
+          onViewSkill={(skillId) => {
+            const installedSkillPackage =
+              installedSkillPackages.find((skillPackage) => skillPackage.id === skillId) ?? null;
+
+            if (!installedSkillPackage) {
+              return;
+            }
+
+            setSelectedSkillTarget({
+              kind: 'installed',
+              skillPackage: installedSkillPackage,
+            });
+          }}
         />
       </div>
 
@@ -179,17 +191,24 @@ export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: Ski
         open={isSearchDialogOpen}
         onOpenChange={setIsSearchDialogOpen}
         onSelectSkill={(skill) => {
-          setSelectedCatalogSkill(skill);
+          setSelectedSkillTarget({
+            kind: 'catalog',
+            skill,
+          });
           setIsSearchDialogOpen(false);
         }}
       />
 
       <SkillInstallDialog
         isInstalled={
-          selectedCatalogSkill ? installedSkillIds.includes(selectedCatalogSkill.id) : false
+          selectedSkillTarget?.kind === 'installed'
+            ? true
+            : selectedSkillTarget
+              ? installedSkillIds.includes(selectedSkillTarget.skill.id)
+              : false
         }
-        open={selectedCatalogSkill != null}
-        skill={selectedCatalogSkill}
+        open={selectedSkillTarget != null}
+        target={selectedSkillTarget}
         onInstall={async (skill) => {
           try {
             const installedPackage = toInstalledSkillPackage(skill);
@@ -214,9 +233,13 @@ export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: Ski
             return false;
           }
         }}
+        onRequestDeleteInstalledSkill={(skillId) => {
+          setSelectedSkillTarget(null);
+          setDeleteTargetId(skillId);
+        }}
         onOpenChange={(open) => {
           if (!open) {
-            setSelectedCatalogSkill(null);
+            setSelectedSkillTarget(null);
           }
         }}
       />
