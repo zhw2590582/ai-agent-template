@@ -197,7 +197,7 @@ export function SkillInstallDialog({
                 </Button>
               </div>
 
-              <div className="border-border rounded-md border">
+              <div className="border-border overflow-hidden rounded-md border">
                 <div className="border-border bg-muted/30 px-4 py-2 text-xs font-medium tracking-wide uppercase">
                   {t('skills_page.install_dialog.description_label')}
                 </div>
@@ -205,7 +205,7 @@ export function SkillInstallDialog({
                   <p className="text-sm leading-6">{resolvedSkill.description}</p>
                 </div>
               </div>
-              <div className="border-border rounded-md border">
+              <div className="border-border overflow-hidden rounded-md border">
                 <div className="border-border bg-muted/30 px-4 py-2 text-xs font-medium tracking-wide uppercase">
                   SKILL.md
                 </div>
