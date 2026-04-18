@@ -9,6 +9,7 @@ import type {
 } from '@/features/chat/agent-runtime/run-metadata';
 import type { ChatRuntimeModel } from '@/features/models/types';
 import type { RagSettings, RagSourceItem } from '@/features/rag/types';
+import type { RuntimeSkill } from '@/features/skills/types';
 import type { SubagentSettings } from '@/features/subagents/types';
 import type { MemorySettings } from '@/features/settings/types';
 
@@ -35,6 +36,7 @@ export interface AgentRunRequest {
   conversationSummary?: string;
   guestMemoryContext?: string;
   messages: UIMessage[];
+  runtimeSkills?: RuntimeSkill[];
   runtimeOverrides?: AgentRuntimeOverrides;
   runtimeModel?: ChatRuntimeModel;
 }
@@ -55,6 +57,7 @@ export interface AgentRunContext {
   memorySettings: ChatProfileMemorySettings | null;
   persistedConversationSummary: string | null;
   ragSettings: RagSettings | null;
+  runtimeSkills: RuntimeSkill[];
   runMetadataBase: AgentRunMetadataBase;
   subagentSettings: SubagentSettings | null;
 }
@@ -62,6 +65,7 @@ export interface AgentRunContext {
 export interface ResolveAgentRunContextOptions {
   conversationId: string | null;
   guestMemoryContext?: string | null;
+  runtimeSkills?: RuntimeSkill[];
   runtimeOverrides: unknown;
   runtimeModel: ChatRuntimeModel;
   supabase: SupabaseClient;
@@ -76,6 +80,7 @@ export interface BuildAgentInputOptions {
   messages: UIMessage[];
   persistedConversationSummary?: string | null;
   ragContext?: string | null;
+  runtimeSkills?: RuntimeSkill[];
   subagentSettings?: SubagentSettings | null;
 }
 

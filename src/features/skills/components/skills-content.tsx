@@ -1,16 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { WorkbenchDialogPanel } from '@/features/chat/components/workbench/workbench-dialog-panel';
-import { SkillEditorDialog } from '@/features/skills/components/skill-editor-dialog';
+import {
+  buildSkillDefinitionFromPackage,
+  toInstalledSkillPackage,
+} from '@/features/skills/catalog';
+import { SkillInstallDialog } from '@/features/skills/components/skill-install-dialog';
 import { SkillList } from '@/features/skills/components/skill-list';
+import { SkillSearchDialog } from '@/features/skills/components/skill-search-dialog';
 import { useSkillsSettings } from '@/features/skills/hooks/use-skills-settings';
-import type { SkillsSettings } from '@/features/skills/types';
+import {
+  ensureInstalledSkillsLoaded,
+  readInstalledSkillPackages,
+  removeInstalledSkillPackage,
+  subscribeToInstalledSkillUpdates,
+  upsertInstalledSkillPackage,
+} from '@/features/skills/storage/local-installed-skills';
+import type {
+  InstalledSkillPackage,
+  SkillCatalogItem,
+  SkillsSettings,
+} from '@/features/skills/types';
 
 interface SkillsContentProps {
   onClose?: () => void;
@@ -22,8 +39,11 @@ interface SkillsContentProps {
 
 export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: SkillsContentProps) {
   const t = useTranslations();
-  const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [installedSkillPackages, setInstalledSkillPackages] = useState<InstalledSkillPackage[]>([]);
+  const [installedSkillsLoaded, setInstalledSkillsLoaded] = useState(false);
+  const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+  const [selectedCatalogSkill, setSelectedCatalogSkill] = useState<SkillCatalogItem | null>(null);
   const {
     deleteSkill,
     isDirty,
@@ -42,7 +62,45 @@ export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: Ski
     settings,
   });
 
-  const editingSkill = localSettings.skills.find((skill) => skill.id === editingSkillId) ?? null;
+  useEffect(() => {
+    const syncInstalledSkills = () => {
+      setInstalledSkillPackages(readInstalledSkillPackages());
+    };
+
+    void (async () => {
+      await ensureInstalledSkillsLoaded();
+      syncInstalledSkills();
+      setInstalledSkillsLoaded(true);
+    })();
+
+    return subscribeToInstalledSkillUpdates(syncInstalledSkills);
+  }, []);
+
+  useEffect(() => {
+    if (!installedSkillsLoaded) {
+      return;
+    }
+
+    updateSettings((current) => {
+      const nextInstalledSkills = installedSkillPackages.map((skillPackage) => {
+        const existingSkill = current.skills.find((skill) => skill.id === skillPackage.id);
+        const nextSkill = buildSkillDefinitionFromPackage(skillPackage);
+
+        return existingSkill ? { ...nextSkill, enabled: existingSkill.enabled } : nextSkill;
+      });
+
+      if (JSON.stringify(nextInstalledSkills) === JSON.stringify(current.skills)) {
+        return current;
+      }
+
+      return {
+        ...current,
+        skills: nextInstalledSkills,
+      };
+    });
+  }, [installedSkillPackages, installedSkillsLoaded, updateSettings]);
+
+  const installedSkillIds = installedSkillPackages.map((skillPackage) => skillPackage.id);
 
   return (
     <WorkbenchDialogPanel
@@ -89,18 +147,22 @@ export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: Ski
         <SkillList
           clearDeleteTarget={() => setDeleteTargetId(null)}
           deleteTargetId={deleteTargetId}
+          installedSkillIds={installedSkillIds}
           skills={localSettings.skills}
+          onAddSkill={() => setIsSearchDialogOpen(true)}
           onConfirmDelete={async () => {
             if (!deleteTargetId) {
               return;
             }
+
+            await removeInstalledSkillPackage(deleteTargetId);
             const success = await deleteSkill(deleteTargetId);
+
             if (success) {
               setDeleteTargetId(null);
             }
           }}
           onDeleteSkill={(skillId) => setDeleteTargetId(skillId)}
-          onEditSkill={(skillId) => setEditingSkillId(skillId)}
           onToggleSkillEnabled={(skillId, enabled) => {
             updateSettings((current) => ({
               ...current,
@@ -112,17 +174,51 @@ export function SkillsContent({ onClose, onSkillsSettingsChange, settings }: Ski
         />
       </div>
 
-      <SkillEditorDialog
-        key={editingSkill?.id ?? 'skills-editor'}
-        initialSkill={editingSkill}
-        mode="edit"
-        open={editingSkill != null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditingSkillId(null);
+      <SkillSearchDialog
+        installedSkillIds={installedSkillIds}
+        open={isSearchDialogOpen}
+        onOpenChange={setIsSearchDialogOpen}
+        onSelectSkill={(skill) => {
+          setSelectedCatalogSkill(skill);
+          setIsSearchDialogOpen(false);
+        }}
+      />
+
+      <SkillInstallDialog
+        isInstalled={
+          selectedCatalogSkill ? installedSkillIds.includes(selectedCatalogSkill.id) : false
+        }
+        open={selectedCatalogSkill != null}
+        skill={selectedCatalogSkill}
+        onInstall={async (skill) => {
+          try {
+            const installedPackage = toInstalledSkillPackage(skill);
+            const existingSkill = localSettings.skills.find((item) => item.id === skill.id);
+            const nextSkill = existingSkill
+              ? {
+                  ...buildSkillDefinitionFromPackage(installedPackage),
+                  enabled: existingSkill.enabled,
+                }
+              : buildSkillDefinitionFromPackage(installedPackage);
+
+            await upsertInstalledSkillPackage(installedPackage);
+            await saveSkill(nextSkill);
+            toast.success(
+              existingSkill
+                ? t('skills_page.toast.reinstall_success')
+                : t('skills_page.toast.install_success')
+            );
+            return true;
+          } catch {
+            toast.error(t('skills_page.toast.install_failed'));
+            return false;
           }
         }}
-        onSave={(skill) => saveSkill(skill, 'edit')}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedCatalogSkill(null);
+          }
+        }}
       />
     </WorkbenchDialogPanel>
   );

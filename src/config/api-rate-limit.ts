@@ -86,6 +86,16 @@ export const API_RATE_LIMITS = {
     namespace: 'api:search:test',
     windowMs: API_CONFIG.RATE_LIMIT_WINDOW,
   },
+  SKILLS_RESOLVE: {
+    maxRequests: 20,
+    namespace: 'api:skills:resolve',
+    windowMs: API_CONFIG.RATE_LIMIT_WINDOW,
+  },
+  SKILLS_SEARCH: {
+    maxRequests: 30,
+    namespace: 'api:skills:search',
+    windowMs: API_CONFIG.RATE_LIMIT_WINDOW,
+  },
   SANDBOX_TEST: {
     maxRequests: 12,
     namespace: 'api:sandbox:test',

@@ -27,6 +27,21 @@ const messageSchema = z
   })
   .passthrough();
 
+const runtimeSkillFileSchema = z.object({
+  content: z.string(),
+  path: z.string().min(1),
+});
+
+const runtimeSkillSchema = z.object({
+  description: z.string(),
+  files: z.array(runtimeSkillFileSchema),
+  id: z.string().min(1),
+  name: z.string().min(1),
+  skillPath: z.string().min(1),
+  source: z.string().min(1),
+  summary: z.string(),
+});
+
 /* ---------- Chat ---------- */
 
 export const chatPostSchema = z.object({
@@ -34,6 +49,7 @@ export const chatPostSchema = z.object({
   conversationSummary: z.string().trim().min(1).optional(),
   guestMemoryContext: z.string().trim().min(1).optional(),
   messages: z.array(messageSchema).min(1),
+  runtimeSkills: z.array(runtimeSkillSchema).optional(),
   runtimeModel: runtimeModelSchema.optional(),
   runtimeOverrides: agentRuntimeOverridesSchema.optional(),
 });

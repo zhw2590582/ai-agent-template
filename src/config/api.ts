@@ -19,4 +19,6 @@ export const API_ROUTES = {
   ragTest: '/api/rag/test',
   sandboxTest: '/api/sandbox/test',
   searchTest: '/api/search/test',
+  skillsResolve: '/api/skills/resolve',
+  skillsSearch: '/api/skills/search',
 } as const;

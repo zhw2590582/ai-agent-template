@@ -9,8 +9,6 @@ import type { SandboxSettings } from '@/features/sandbox/types';
 import { normalizeSandboxSettings } from '@/features/sandbox/settings';
 import type { SearchSettings } from '@/features/search/types';
 import { normalizeSearchSettings } from '@/features/search/settings';
-import type { SkillsSettings } from '@/features/skills/types';
-import { normalizeSkillsSettings } from '@/features/skills/settings';
 import { normalizeSubagentSettings } from '@/features/subagents/settings';
 import type { SubagentSettings } from '@/features/subagents/types';
 import type { AppProfileSettings, MemorySettings } from '@/features/settings/types';
@@ -119,7 +117,6 @@ export function normalizeAppProfileSettings(input?: unknown) {
   const rag = normalizeRagSettings(readSettingsSection<RagSettings>(input, 'rag'));
   const sandbox = normalizeSandboxSettings(readSettingsSection<SandboxSettings>(input, 'sandbox'));
   const mcp = normalizeMcpSettings(readSettingsSection<McpSettings>(input, 'mcp'));
-  const skills = normalizeSkillsSettings(readSettingsSection<SkillsSettings>(input, 'skills'));
   const subagent = normalizeSubagentSettings(
     readSettingsSection<SubagentSettings>(input, 'subagent')
   );
@@ -131,7 +128,6 @@ export function normalizeAppProfileSettings(input?: unknown) {
     rag,
     sandbox,
     search,
-    skills,
     subagent,
   } satisfies AppProfileSettings;
 }

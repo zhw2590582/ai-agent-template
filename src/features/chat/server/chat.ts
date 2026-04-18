@@ -24,6 +24,7 @@ export async function handleChatPost(request: Request) {
       conversationSummary,
       guestMemoryContext,
       messages,
+      runtimeSkills,
       runtimeModel,
       runtimeOverrides,
     } = await validateRequest(request, chatPostSchema);
@@ -63,6 +64,7 @@ export async function handleChatPost(request: Request) {
     } = await resolveAgentRunContext({
       conversationId: resolvedConversationId,
       guestMemoryContext,
+      runtimeSkills,
       runtimeOverrides,
       runtimeModel,
       supabase,
@@ -88,6 +90,7 @@ export async function handleChatPost(request: Request) {
       persistedConversationSummary,
       ragContext,
       ragSources,
+      runtimeSkills,
       runMetadataBase,
       runtimeModel,
       subagentSettings: resolvedSubagentSettings,

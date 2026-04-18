@@ -12,6 +12,7 @@ export function getSystemPrompt(
   options?: {
     memoryContext?: string | null;
     ragContext?: string | null;
+    skillsRoster?: string | null;
     subagentRoster?: string | null;
   }
 ): string {
@@ -27,6 +28,14 @@ ${options.memoryContext}`
 Retrieved knowledge base:
 ${options.ragContext}`
     : '';
+  const skillsSection = options?.skillsRoster
+    ? `
+
+Available skills:
+${options.skillsRoster}
+
+When a task matches one of these skills, use the load_skill tool to load its instructions before proceeding. If the loaded skill references supporting files, use the read_skill_file tool with the returned relative path.`
+    : '';
   const subagentSection = options?.subagentRoster
     ? `
 
@@ -37,7 +46,7 @@ ${options.subagentRoster}`
   return `${DEFAULT_SYSTEM_PROMPT}
 
 Context:
-- User locale: ${locale}${memorySection}${ragSection}${subagentSection}`;
+- User locale: ${locale}${memorySection}${ragSection}${skillsSection}${subagentSection}`;
 }
 
 export { DEFAULT_SYSTEM_PROMPT };

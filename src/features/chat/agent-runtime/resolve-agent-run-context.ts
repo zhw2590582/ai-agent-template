@@ -20,6 +20,7 @@ import { verifyConversationOwnership } from '@/features/chat/storage';
 import { buildPersistedMemoryContextForUser } from '@/features/memory/server/server-memory-source';
 import { normalizeRagSettings } from '@/features/rag/settings';
 import type { RagSettings } from '@/features/rag/types';
+import type { RuntimeSkill } from '@/features/skills/types';
 import { normalizeSubagentSettings } from '@/features/subagents/settings';
 import type { SubagentSettings } from '@/features/subagents/types';
 import { logger } from '@/lib/logger';
@@ -104,6 +105,32 @@ export function resolveMemorySettings(input: unknown): ChatProfileMemorySettings
   return input as ChatProfileMemorySettings;
 }
 
+function resolveRuntimeSkills(input: unknown): RuntimeSkill[] {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+
+  return input.filter(
+    (skill): skill is RuntimeSkill =>
+      !!skill &&
+      typeof skill === 'object' &&
+      typeof skill.id === 'string' &&
+      typeof skill.name === 'string' &&
+      typeof skill.description === 'string' &&
+      typeof skill.source === 'string' &&
+      typeof skill.skillPath === 'string' &&
+      typeof skill.summary === 'string' &&
+      Array.isArray(skill.files) &&
+      skill.files.every(
+        (file: unknown) =>
+          !!file &&
+          typeof file === 'object' &&
+          typeof (file as Record<string, unknown>).path === 'string' &&
+          typeof (file as Record<string, unknown>).content === 'string'
+      )
+  );
+}
+
 async function loadPersistedConversationSummary(options: {
   conversationId: string | null;
   supabase: SupabaseClient;
@@ -132,6 +159,7 @@ export async function resolveAgentRunContext({
   conversationId,
   guestMemoryContext,
   runtimeOverrides,
+  runtimeSkills,
   runtimeModel,
   supabase,
   user,
@@ -160,6 +188,7 @@ export async function resolveAgentRunContext({
     searchSettings: resolvedSearchSettings,
   });
   const hasAgentTools = Object.keys(toolset.agentTools).length > 0;
+  const resolvedRuntimeSkills = resolveRuntimeSkills(runtimeSkills);
 
   try {
     if (user) {
@@ -203,6 +232,7 @@ export async function resolveAgentRunContext({
     memorySettings,
     persistedConversationSummary,
     ragSettings: resolvedProfileRagSettings ?? resolvedRequestRagSettings,
+    runtimeSkills: resolvedRuntimeSkills,
     runMetadataBase: createAgentRunMetadataBase({
       conversationId,
       hasAgentTools,

@@ -86,20 +86,6 @@ export const sandboxSettingsSchema = z.object({
   workingDirectory: z.string(),
 });
 
-export const skillsSettingsSchema = z.object({
-  enabled: z.boolean(),
-  skills: z.array(
-    z.object({
-      capabilities: z.array(z.enum(['browser', 'fs', 'git', 'http', 'mcp', 'prompt', 'shell'])),
-      description: z.string(),
-      enabled: z.boolean(),
-      id: z.string(),
-      name: z.string(),
-      sourceUrl: z.string(),
-    })
-  ),
-});
-
 export const subagentDefinitionSchema = z.object({
   description: z.string(),
   enabled: z.boolean(),
@@ -124,7 +110,6 @@ export const appProfileSettingsSchema = z.object({
   rag: ragSettingsSchema,
   sandbox: sandboxSettingsSchema,
   search: searchSettingsSchema,
-  skills: skillsSettingsSchema,
   subagent: subagentSettingsSchema,
 });
 

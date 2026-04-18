@@ -51,11 +51,10 @@ export function useSkillsSettings({
     setLocalSettings((current) => updater(current));
   };
 
-  const saveSkill = async (skill: SkillDefinition, mode: 'add' | 'edit') => {
-    const nextSkills =
-      mode === 'add'
-        ? [...localSettings.skills, skill]
-        : localSettings.skills.map((item) => (item.id === skill.id ? skill : item));
+  const saveSkill = async (skill: SkillDefinition) => {
+    const nextSkills = localSettings.skills.some((item) => item.id === skill.id)
+      ? localSettings.skills.map((item) => (item.id === skill.id ? skill : item))
+      : [...localSettings.skills, skill];
 
     setLocalSettings((current) => ({
       ...current,

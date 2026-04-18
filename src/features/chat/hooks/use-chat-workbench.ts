@@ -24,6 +24,7 @@ import { updateConversationUrl } from '@/features/chat/utils/chat-controller';
 import { getInitialMessages } from '@/features/chat/utils/chat-config';
 import { isChatCapableModel } from '@/features/models/utils/model-capabilities';
 import { getChatModelOptions } from '@/features/models/utils/runtime-model';
+import { useLocalSkillsSettings } from '@/features/skills/hooks/use-local-skills-settings';
 
 interface UseChatWorkbenchOptions {
   initialConversationId: string | null;
@@ -52,10 +53,10 @@ export function useChatWorkbench({
     updateMemorySettings,
     updateRagSettings,
     updateSandboxSettings,
-    updateSkillsSettings,
     updateSubagentSettings,
     updateSelectedChatModelId,
   } = models;
+  const { skillsSettings, updateSkillsSettings } = useLocalSkillsSettings();
 
   const starterMessages = useMemo(() => getInitialMessages(), []);
   const availableModels = useMemo(
@@ -128,6 +129,7 @@ export function useChatWorkbench({
     locale,
     onFinish: () => {},
     profileSettings: models.profile.settings,
+    skillsSettings,
   });
   const selectedModelOption = useMemo(
     () => availableModels.find((model) => model.id === selectedModel) ?? null,
@@ -307,7 +309,7 @@ export function useChatWorkbench({
     ragSettings: models.profile.settings.rag,
     sandboxSettings: models.profile.settings.sandbox,
     searchSettings: models.profile.settings.search,
-    skillsSettings: models.profile.settings.skills,
+    skillsSettings,
     subagentSettings: models.profile.settings.subagent,
     setMcpSettings: updateMcpSettings,
     setRagSettings: updateRagSettings,

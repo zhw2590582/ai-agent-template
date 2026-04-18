@@ -1,6 +1,7 @@
 import { getSystemPrompt } from '@/features/chat/ai/core/prompts';
 import { buildChatMessagesWithSummary } from '@/features/chat/server/chat-message-context';
 import type { BuildAgentInputOptions } from '@/features/chat/agent-runtime/types';
+import { buildRuntimeSkillsPrompt } from '@/features/skills/runtime';
 import { listActiveSubagents } from '@/features/subagents/settings';
 import type { SubagentDefinition, SubagentToolAccess } from '@/features/subagents/types';
 
@@ -45,6 +46,7 @@ export async function buildAgentInput({
   messages,
   persistedConversationSummary,
   ragContext,
+  runtimeSkills,
   subagentSettings,
 }: BuildAgentInputOptions) {
   const activeSubagents = listActiveSubagents(subagentSettings);
@@ -58,6 +60,7 @@ export async function buildAgentInput({
     system: getSystemPrompt(locale, {
       memoryContext,
       ragContext,
+      skillsRoster: buildRuntimeSkillsPrompt(runtimeSkills ?? []),
       subagentRoster: buildSubagentRoster(activeSubagents),
     }),
   };

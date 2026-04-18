@@ -80,7 +80,7 @@
 | Sandbox            | 已实现 V1 | provider-based sandbox runtime、首批 tools、workspace/session/telemetry 骨架          | `src/features/sandbox/`, `src/features/chat/agent-runtime/` |
 | MCP                | 部分具备  | 远程 MCP server 配置、测试、tool merge；未消费 resources/prompts                      | `src/features/mcp/`                                         |
 | RAG                | 已实现 V1 | 文档导入、pgvector 检索、provider-based embeddings/rerank、来源展示                   | `src/features/rag/`                                         |
-| Skills             | 部分具备  | 只有 settings UI 和持久化，还没进入 runtime                                           | `src/features/skills/`                                      |
+| Skills             | 已实现 V1 | 本地搜索 / 安装 / 启用；运行时按需通过 `load_skill` / `read_skill_file` 注入          | `src/features/skills/`, `src/features/chat/ai/tools/`       |
 | Subagent           | 已实现 V1 | 最小串行 `Orchestrator-Subagent`，支持配置、内建角色、tool delegation 和基础展示      | `src/features/subagents/`, `src/features/chat/ai/tools/`    |
 | Testing            | 基础具备  | unit / integration 可用，E2E 仍是占位                                                 | `tests/`                                                    |
 
@@ -302,15 +302,16 @@
 已完成：
 
 - workbench 管理 UI
-- `profile.settings.skills` 持久化
-- 条目编辑 / 删除
+- 本地搜索 / 安装 / 重装
+- 完整 skill 目录下载到本地
+- 本地启用 / 删除
+- runtime `load_skill` / `read_skill_file` 注入
 
 未完成：
 
-- skill import
-- manifest 解析
 - compatibility 校验
-- runtime contract
+- runtime payload 压缩
+- 更细的 skill file loading / gating
 
 说明：
 

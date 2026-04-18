@@ -2,13 +2,13 @@ export const enUSSkillsMessages = {
   skills_page: {
     enabled_label: 'Enable Skills',
     enabled_description:
-      'Manage reusable skill definitions here. This version only stores metadata and compatibility hints.',
+      'Manage reusable local-first skill installs here. Skills are installed into local storage first, then saved as enabled settings.',
     skills_title: 'Installed Skills',
     skills_description:
-      'Add skill entries by URL first. Runtime import and execution will be layered in later.',
-    empty_state: 'No skills added yet. Start by importing one skill URL.',
-    add_skill: 'Import Skill',
-    add_skill_tooltip: 'In development',
+      'Search the remote catalog, inspect the skill details, and install the package into local IndexedDB.',
+    empty_state: 'No skills installed yet. Start by searching the skill catalog.',
+    add_skill: 'Add Skill',
+    local_badge: 'Local',
     add_skill_title: 'Import Skill',
     add_skill_description:
       'Save a skill source URL first. The system will derive the display metadata for now.',
@@ -30,6 +30,25 @@ export const enUSSkillsMessages = {
     parsed_description_hint:
       'This is currently derived from the URL. Real remote metadata parsing will be added later.',
     parsed_empty: 'Waiting for a valid URL',
+    search_dialog: {
+      title: 'Search Skills',
+      description:
+        'Search the public skills catalog by keyword, then inspect the details before installing.',
+      placeholder: 'Search skills, for example: nuxt',
+      empty_query: 'Start typing to search the skills catalog.',
+      empty_results: 'No matching skills were found.',
+      installed_badge: 'Installed',
+      installs: '{count, number} installs',
+    },
+    install_dialog: {
+      title: 'Skill Details',
+      description: 'Review the skill metadata and GitHub source before installing it locally.',
+      install: 'Install',
+      reinstall: 'Reinstall',
+      load_failed: 'Failed to load this skill from GitHub.',
+      open_github: 'Open GitHub',
+      version: 'Version {version}',
+    },
     capabilities: {
       browser: 'Browser',
       fs: 'Filesystem',
@@ -40,6 +59,9 @@ export const enUSSkillsMessages = {
       shell: 'Shell',
     },
     toast: {
+      install_failed: 'Failed to install this skill locally.',
+      install_success: 'Skill installed locally.',
+      reinstall_success: 'Skill reinstalled locally.',
       save_failed: 'Failed to save skill settings.',
       save_success: 'Skill settings saved.',
     },

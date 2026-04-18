@@ -52,7 +52,6 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
         rag: current.settings.rag,
         sandbox: current.settings.sandbox,
         search: current.settings.search,
-        skills: current.settings.skills,
         subagent: current.settings.subagent,
       }),
       theme,
@@ -202,14 +201,6 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
     [updateSettingsSection]
   );
 
-  const updateSkillsSettings = useCallback(
-    (
-      updater: (skills: AppProfile['settings']['skills']) => AppProfile['settings']['skills'],
-      options?: { silent?: boolean }
-    ) => updateSettingsSection('skills', updater, options),
-    [updateSettingsSection]
-  );
-
   const updateSubagentSettings = useCallback(
     (
       updater: (subagent: AppProfile['settings']['subagent']) => AppProfile['settings']['subagent'],
@@ -234,7 +225,6 @@ export function useAppProfile(user: AuthUserSnapshot | null) {
     updateSearchSettings,
     updateSelectedChatModelId,
     updateSandboxSettings,
-    updateSkillsSettings,
     updateSubagentSettings,
   };
 }

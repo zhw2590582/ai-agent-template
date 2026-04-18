@@ -2,6 +2,7 @@ import { stepCountIs, streamText } from 'ai';
 
 import { AI_CONFIG } from '@/config/chat';
 import { createDelegateToSubagentTool } from '@/features/chat/ai/tools/delegate_to_subagent';
+import { createLoadSkillTool, createReadSkillFileTool } from '@/features/chat/ai/tools/load_skill';
 import { getRuntimeChatModel } from '@/features/chat/ai/core/models';
 import { buildAgentInput } from '@/features/chat/agent-runtime/build-agent-input';
 import type { ExecuteAgentRunOptions } from '@/features/chat/agent-runtime/types';
@@ -18,6 +19,7 @@ export async function executeAgentRun({
   persistedConversationSummary,
   ragContext,
   runtimeModel,
+  runtimeSkills,
   subagentSettings,
   tools,
 }: ExecuteAgentRunOptions) {
@@ -32,8 +34,11 @@ export async function executeAgentRun({
     messages,
     persistedConversationSummary,
     ragContext,
+    runtimeSkills,
     subagentSettings,
   });
+  const loadSkillTool = createLoadSkillTool(runtimeSkills ?? []);
+  const readSkillFileTool = createReadSkillFileTool(runtimeSkills ?? []);
   const delegateToSubagentTool = createDelegateToSubagentTool({
     ragContext,
     runtimeModel,
@@ -42,10 +47,16 @@ export async function executeAgentRun({
   });
   const toolsWithSubagents = delegateToSubagentTool
     ? {
+        ...(loadSkillTool ? { load_skill: loadSkillTool } : {}),
+        ...(readSkillFileTool ? { read_skill_file: readSkillFileTool } : {}),
         ...tools,
         delegate_to_subagent: delegateToSubagentTool,
       }
-    : tools;
+    : {
+        ...(loadSkillTool ? { load_skill: loadSkillTool } : {}),
+        ...(readSkillFileTool ? { read_skill_file: readSkillFileTool } : {}),
+        ...tools,
+      };
   const effectiveHasAgentTools = hasAgentTools || Object.keys(toolsWithSubagents).length > 0;
 
   return streamText({

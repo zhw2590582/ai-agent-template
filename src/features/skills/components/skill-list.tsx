@@ -1,6 +1,6 @@
 'use client';
 
-import { PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { PlusIcon, Trash2Icon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import {
@@ -16,15 +16,15 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SkillDefinition } from '@/features/skills/types';
 
 interface SkillListProps {
   clearDeleteTarget: () => void;
   deleteTargetId: string | null;
+  installedSkillIds: string[];
+  onAddSkill: () => void;
   onConfirmDelete: () => Promise<void> | void;
   onDeleteSkill: (skillId: string) => void;
-  onEditSkill: (skillId: string) => void;
   onToggleSkillEnabled: (skillId: string, enabled: boolean) => void;
   skills: SkillDefinition[];
 }
@@ -32,9 +32,10 @@ interface SkillListProps {
 export function SkillList({
   clearDeleteTarget,
   deleteTargetId,
+  installedSkillIds,
+  onAddSkill,
   onConfirmDelete,
   onDeleteSkill,
-  onEditSkill,
   onToggleSkillEnabled,
   skills,
 }: SkillListProps) {
@@ -49,17 +50,10 @@ export function SkillList({
             <h2 className="text-xl font-semibold">{t('skills_page.skills_title')}</h2>
             <p className="text-muted-foreground text-sm">{t('skills_page.skills_description')}</p>
           </div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-flex">
-                <Button disabled type="button" variant="outline">
-                  <PlusIcon data-icon="inline-start" />
-                  {t('skills_page.add_skill')}
-                </Button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>{t('skills_page.add_skill_tooltip')}</TooltipContent>
-          </Tooltip>
+          <Button type="button" variant="outline" onClick={onAddSkill}>
+            <PlusIcon data-icon="inline-start" />
+            {t('skills_page.add_skill')}
+          </Button>
         </div>
 
         <div className="border-border overflow-hidden rounded-md border">
@@ -77,6 +71,9 @@ export function SkillList({
                   <div className="flex min-w-0 flex-1 flex-col gap-2">
                     <div className="flex items-center gap-2">
                       <h3 className="truncate text-sm font-medium">{skill.name}</h3>
+                      {installedSkillIds.includes(skill.id) ? (
+                        <Badge variant="outline">{t('skills_page.local_badge')}</Badge>
+                      ) : null}
                       <Badge variant={skill.enabled ? 'secondary' : 'outline'}>
                         {skill.enabled ? t('common.enabled') : t('common.disabled')}
                       </Badge>
@@ -93,15 +90,6 @@ export function SkillList({
                       className="data-checked:bg-emerald-500 dark:data-checked:bg-emerald-500"
                       onCheckedChange={(checked) => onToggleSkillEnabled(skill.id, checked)}
                     />
-                    <Button
-                      size="sm"
-                      type="button"
-                      variant="ghost"
-                      onClick={() => onEditSkill(skill.id)}
-                    >
-                      <PencilIcon />
-                      {t('skills_page.edit_skill')}
-                    </Button>
                     <Button
                       size="sm"
                       type="button"

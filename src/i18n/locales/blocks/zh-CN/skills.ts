@@ -1,12 +1,13 @@
 export const zhCNSkillsMessages = {
   skills_page: {
     enabled_label: '启用 Skills',
-    enabled_description: '在这里管理可复用的 skill 定义。当前版本只保存元数据和兼容性提示。',
+    enabled_description:
+      '在这里管理 local-first 的 skills 安装结果。skill 会先安装到本地，再作为启用设置保存。',
     skills_title: '已安装 Skills',
-    skills_description: '先按 URL 保存 skill 条目。真实导入和执行能力后续再逐步接入。',
-    empty_state: '还没有添加任何 skill，可以先导入一个 skill URL。',
-    add_skill: '导入 Skill',
-    add_skill_tooltip: '正在开发中',
+    skills_description: '先搜索远端 catalog，查看 skill 详情，再安装到本地 IndexedDB。',
+    empty_state: '还没有安装任何 skill，可以先搜索 skills catalog。',
+    add_skill: '新增 Skill',
+    local_badge: '本地',
     add_skill_title: '导入 Skill',
     add_skill_description: '先保存 skill 的来源 URL。当前会由系统自动生成展示元数据。',
     edit_skill: '编辑 Skill',
@@ -23,6 +24,24 @@ export const zhCNSkillsMessages = {
     parsed_description_label: '解析后的描述',
     parsed_description_hint: '当前是基于 URL 派生的占位结果，后续会接入真实远程元数据解析。',
     parsed_empty: '等待输入有效的 URL',
+    search_dialog: {
+      title: '搜索 Skills',
+      description: '通过关键词搜索公开的 skills catalog，查看详情后再决定是否安装。',
+      placeholder: '搜索 skills，例如：nuxt',
+      empty_query: '输入关键词后开始搜索 skills catalog。',
+      empty_results: '没有找到匹配的 skill。',
+      installed_badge: '已安装',
+      installs: '{count, number} 次安装',
+    },
+    install_dialog: {
+      title: 'Skill 详情',
+      description: '安装前先查看 skill 的元数据和 GitHub 源内容。',
+      install: '安装',
+      reinstall: '重新安装',
+      load_failed: '从 GitHub 加载这个 skill 失败。',
+      open_github: '打开 GitHub',
+      version: '版本 {version}',
+    },
     capabilities: {
       browser: '浏览器',
       fs: '文件系统',
@@ -33,6 +52,9 @@ export const zhCNSkillsMessages = {
       shell: 'Shell',
     },
     toast: {
+      install_failed: '本地安装这个 skill 失败',
+      install_success: 'Skill 已安装到本地',
+      reinstall_success: 'Skill 已重新安装到本地',
       save_failed: 'Skill 设置保存失败',
       save_success: 'Skill 设置已保存',
     },

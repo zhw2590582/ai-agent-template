@@ -11,6 +11,8 @@ import { CHAT_RATE_LIMIT_ERROR_CODE, ChatRequestError } from '@/features/chat/ut
 import { resolveChatRuntimeModel } from '@/features/models/utils/runtime-model';
 import type { ChatModelOption } from '@/features/models/types';
 import { createClientMemorySource } from '@/features/memory/sources/client-memory-source';
+import { createClientSkillsSource } from '@/features/skills/sources/client-skills-source';
+import type { SkillsSettings } from '@/features/skills/types';
 import type { AppProfileSettings } from '@/features/settings/types';
 import { readApiError } from '@/lib/api-client';
 
@@ -23,6 +25,7 @@ interface UseAgentSessionOptions {
   locale: string;
   onFinish: () => void;
   profileSettings: AppProfileSettings | null;
+  skillsSettings: SkillsSettings | null;
 }
 
 export function useAgentSession({
@@ -34,8 +37,10 @@ export function useAgentSession({
   locale,
   onFinish,
   profileSettings,
+  skillsSettings,
 }: UseAgentSessionOptions) {
   const guestMemorySource = useMemo(() => createClientMemorySource({ isAuthenticated: false }), []);
+  const clientSkillsSource = useMemo(() => createClientSkillsSource(), []);
   const selectedModel = useMemo(() => {
     const profileSelectedModel = profileSettings?.models.selectedChatModelId ?? '';
 
@@ -69,6 +74,7 @@ export function useAgentSession({
   const conversationSummaryRef = useRef(conversationSummary);
   const isAuthenticatedRef = useRef(isAuthenticated);
   const runtimeOverridesRef = useRef(runtimeOverrides);
+  const skillsSettingsRef = useRef(skillsSettings);
 
   useEffect(() => {
     runtimeModelRef.current = runtimeModel;
@@ -76,7 +82,15 @@ export function useAgentSession({
     conversationSummaryRef.current = conversationSummary;
     isAuthenticatedRef.current = isAuthenticated;
     runtimeOverridesRef.current = runtimeOverrides;
-  }, [activeThreadId, conversationSummary, isAuthenticated, runtimeModel, runtimeOverrides]);
+    skillsSettingsRef.current = skillsSettings;
+  }, [
+    activeThreadId,
+    conversationSummary,
+    isAuthenticated,
+    skillsSettings,
+    runtimeModel,
+    runtimeOverrides,
+  ]);
 
   /* eslint-disable react-hooks/refs */
   const [transport] = useState(
@@ -127,6 +141,10 @@ export function useAgentSession({
             });
           }
 
+          const runtimeSkills = await clientSkillsSource.buildRuntimeSkills({
+            skillsSettings: skillsSettingsRef.current,
+          });
+
           return {
             body: buildAgentRunRequest({
               activeThreadId: activeThreadIdRef.current,
@@ -136,6 +154,7 @@ export function useAgentSession({
               id,
               messageId,
               messages,
+              runtimeSkills,
               runtimeModel: runtimeModelRef.current,
               runtimeOverrides: runtimeOverridesRef.current,
               trigger,
