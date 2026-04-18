@@ -1,10 +1,10 @@
 # Project Status
 
-最后核对时间：2026-04-17
+最后核对时间：2026-04-18
 
 ## 一句话
 
-这是一个以聊天为中心的 AI Agent Web App 骨架。
+这是一个以聊天为中心、默认 local-first 的 AI Agent Web App 模板。
 
 当前已经稳定下来的核心是：
 
@@ -14,18 +14,21 @@
 - Memory V1
 - Search V1
 - Sandbox V1
-- 远程 MCP tools integration
+- 远程 MCP client integration V1
 - RAG V1
+- Skills V1
 - Subagents V1
 
 当前还没有做成的平台能力是：
 
-- Multi-Agent orchestration
-- Skills runtime
 - durable run storage / resume
+- 更完整的 tracing / telemetry / audit
+- 图片和附件输入链路
+- 更重的 multi-agent orchestration
+- queue / long-running job primitives
 - 本项目自己的正式 MCP server
 
-换句话说：当前项目已经具备 V1 `agent harness`，但还没有进入 `agent platform` 阶段；后者通常还包括长任务、恢复、审计和策略治理。
+换句话说：当前项目的 `Core Product V1` 已基本完成，但还没有进入更重的 `agent platform` 阶段；后者通常还包括长任务、恢复、审计、治理和更完整的平台运行时。
 
 当前模板同时采用 `local-first` 默认：
 
@@ -37,9 +40,9 @@
 
 ## 当前里程碑
 
-### Core Capabilities V1
+### Core Product V1
 
-可以认为，当前项目已经完成了 `Core Capabilities V1`。
+可以认为，当前项目已经基本完成了 `Core Product V1`。
 
 这一阶段已进入 V1 的核心产品能力包括：
 
@@ -50,16 +53,19 @@
 - Memory V1
 - Search V1
 - Sandbox V1
+- MCP Client V1
 - RAG V1
+- Skills V1
 - Subagents V1
 
 当前仍未进入这一里程碑的能力包括：
 
-- Skills runtime
-- MCP completion
-- durable run / tracing / E2E 等 production readiness
+- durable run / resume
+- tracing / audit / E2E 等 production readiness
+- first-party MCP server
+- multimodal input / attachments
 
-也就是说：从“核心产品功能”角度看，项目已经基本进入 V1；从“平台能力”角度看，还没有全部进入 V1。
+也就是说：从“核心产品功能”角度看，项目已经基本进入 V1；从“平台能力”和“生产级运行”角度看，还远没有全部进入 V1。
 
 ## 建议先看
 
@@ -71,18 +77,18 @@
 
 | Capability         | 状态      | 当前边界                                                                              | 主要位置                                                    |
 | ------------------ | --------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Chat               | 已实现    | `useChat -> /api/chat -> agent-runtime -> stream response` 主链路稳定                 | `src/features/chat/`                                        |
-| Models / Providers | 已实现    | 用户可配置 provider、探测连接、同步模型、自定义模型                                   | `src/features/models/`                                      |
-| Auth + Profile     | 已实现    | Supabase OAuth、`profiles.settings` 持久化                                            | `src/features/auth/`                                        |
-| Conversations      | 已实现    | 登录用户走 Supabase，guest 走 IndexedDB-backed local store                            | `src/features/chat/storage/`                                |
+| Chat               | 已实现 V1 | `useChat -> /api/chat -> agent-runtime -> stream response` 主链路稳定                 | `src/features/chat/`                                        |
+| Models / Providers | 已实现 V1 | 用户可配置 provider、探测连接、同步模型、自定义模型                                   | `src/features/models/`                                      |
+| Auth + Profile     | 已实现 V1 | Supabase OAuth、`profiles.settings` 持久化，guest 走 local-first                      | `src/features/auth/`                                        |
+| Conversations      | 已实现 V1 | 登录用户走 Supabase，guest 走 IndexedDB-backed local store                            | `src/features/chat/storage/`                                |
 | Memory             | 已实现 V1 | 同一套 Memory UI；guest 走本地长期记忆 + 本地会话摘要，登录用户走 Supabase 记忆和摘要 | `src/features/memory/`                                      |
 | Search             | 已实现 V1 | provider-based search tools、连接测试、`web_search / web_extract / web_crawl`         | `src/features/search/`                                      |
 | Sandbox            | 已实现 V1 | provider-based sandbox runtime、首批 tools、workspace/session/telemetry 骨架          | `src/features/sandbox/`, `src/features/chat/agent-runtime/` |
-| MCP                | 部分具备  | 远程 MCP server 配置、测试、tool merge；未消费 resources/prompts                      | `src/features/mcp/`                                         |
+| MCP                | 已实现 V1 | 远程 MCP server 配置、测试、tool merge；resources/prompts 仍未进入主运行时            | `src/features/mcp/`                                         |
 | RAG                | 已实现 V1 | 文档导入、pgvector 检索、provider-based embeddings/rerank、来源展示                   | `src/features/rag/`                                         |
 | Skills             | 已实现 V1 | 本地搜索 / 安装 / 启用；运行时按需通过 `load_skill` / `read_skill_file` 注入          | `src/features/skills/`, `src/features/chat/ai/tools/`       |
 | Subagent           | 已实现 V1 | 最小串行 `Orchestrator-Subagent`，支持配置、内建角色、tool delegation 和基础展示      | `src/features/subagents/`, `src/features/chat/ai/tools/`    |
-| Testing            | 基础具备  | unit / integration 可用，E2E 仍是占位                                                 | `tests/`                                                    |
+| Testing            | 基础具备  | unit / integration 和线上排查脚本可用，E2E 与 production-readiness checks 仍未完成    | `tests/`, `scripts/`                                        |
 
 ## 当前边界
 
@@ -98,10 +104,11 @@
 - Sandbox
 - MCP
 - RAG
+- Skills
+- Subagents
 
 当前还没有进入 harness 的能力：
 
-- Skills runtime contract
 - durable run storage / replay
 - 图片和附件输入链路
 
@@ -119,6 +126,7 @@
 - server 代码只从 `agent-runtime/server` 取值
 - `chat.ts` 保持薄入口，不重新堆回编排细节
 - `/api/chat` 继续通过统一的 `runtimeOverrides` 输入消费 feature runtime 配置，不再继续新增一排顶层 feature settings 字段
+- `Skills` 继续通过本地安装包 + 本地 settings 投影到 `runtimeSkills`，不要再回写数据库
 
 后续待补：
 
@@ -305,6 +313,7 @@
 - 本地搜索 / 安装 / 重装
 - 完整 skill 目录下载到本地
 - 本地启用 / 删除
+- guest 和登录用户统一走本地 skills 流程
 - runtime `load_skill` / `read_skill_file` 注入
 
 未完成：
@@ -312,11 +321,12 @@
 - compatibility 校验
 - runtime payload 压缩
 - 更细的 skill file loading / gating
+- `eager / lazy` 之类更细的 activation 策略
 
 说明：
 
-- 当前 `Skills` 只是配置层
-- 现在不要把它误判成 runtime capability
+- `Skills` 现在已经进入 runtime V1，但它仍然是“指导 agent 如何使用已有能力”，不是“直接授予新的权限”
+- `Skills` 只存在用户本地，不进入数据库；聊天时通过本地安装包投影成 `runtimeSkills`
 
 ### Subagents
 
@@ -355,11 +365,10 @@
 
 ## 当前优先级
 
-1. Memory V1 收尾
-2. Search 产品化补强
-3. Provider / Models 整理
-4. 页面去占位化
-5. RAG 收尾
-6. 保持 `agent-runtime` 稳定，不继续过度设计
+1. V1 稳定化和测试补强
+2. 运行时 payload / 性能 / 边界继续收紧
+3. Production readiness 基础能力
+4. Chat attachments / multimodal input
+5. 第二批 provider 和产品化体验补强
 
 细一点的顺序看 [roadmap.md](./roadmap.md)。

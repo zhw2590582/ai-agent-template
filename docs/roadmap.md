@@ -6,104 +6,107 @@
 
 ## Now
 
-### 1. Memory V1 收尾
+### 1. V1 稳定化和测试补强
 
-目标：把当前已落地的 Memory V1 打磨成可持续维护的能力。
+目标：把已经基本完成的 `Core Product V1` 收成更稳定的日常开发基线。
 
 优先做：
 
-1. login 后导入 guest 本地长期记忆 / 本地会话摘要
-2. 继续对齐 `local` 和 `supabase` 两套 memory source 的行为边界
-3. 更稳定的记忆归并与规范化
-4. 更稳定的相关性检索
-5. Memory 行为测试补齐
-6. 修复已知标题和摘要边界问题
-7. 继续把 `conversation source` 的 record sync / hydration 语义也收进 source-based 结构，而不是重新长回 hook 分支
+1. 补高价值 integration / E2E
+2. 收紧 guest conversations / memory 的边界 bug
+3. 补关键 timeout / recovery 路径
+4. 继续清掉容易互相覆盖的本地状态同步
+5. 强化线上排查和 error visibility
 
 推荐落点：
 
+- `tests/`
+- `src/features/chat/`
 - `src/features/memory/`
-- `src/features/chat/server/`
+
+### 2. 运行时 Payload / 性能收紧
+
+目标：在不改产品边界的前提下，收紧当前 V1 运行时的 payload、请求体和感知延迟。
+
+优先做：
+
+1. 压缩 `Skills` runtime payload，不再把不必要文件每轮都带进请求
+2. 收紧会话切换、hydrate 和本地持久化的边界
+3. 优化 workbench 里几个较重弹窗和列表的加载体验
+4. 增加更明确的大小限制、缓存和请求边界
+
+推荐落点：
+
+- `src/features/skills/`
+- `src/features/chat/agent-runtime/`
 - `src/features/chat/storage/`
 
-### 2. Search 产品化补强
+### 3. Production Readiness 基础能力
 
-目标：把当前已可用的 Search V1 和已建立的 provider 边界，继续打磨成更稳定、更可维护的能力。
+目标：在保持当前产品范围不扩张的前提下，补基础生产能力。
 
 优先做：
 
-1. 补第二个 Search provider，实现真正可替换
-2. 细化 provider 错误反馈，区分 `401 / 429 / quota / network`
-3. 补搜索结果展示和引用样式
-4. 增加基础缓存与请求观测
-5. 优化 tool 使用策略，而不只依赖 prompt
+1. 更清楚的 tracing / telemetry / audit 基础
+2. 更细的 provider 错误分类和可观测性
+3. 关键路径的 rate limit / quota / timeout 行为统一
+4. 为 durable run / resume 预留干净入口，但先不大扩
 
 推荐落点：
 
-- `src/features/search/`
-- `src/features/chat/ai/tools/`
 - `src/features/chat/agent-runtime/`
-
-### 3. Provider / Models 整理
-
-目标：把当前较浅的模型配置整理成更可扩展的 provider abstraction。
-
-优先做：
-
-1. 统一模型定义
-2. provider 配置和默认策略
-3. 模型可用性检查
-4. 失败回退策略
-5. 为后续 `image generation`、`TTS / audio` 预留独立接入点
-
-推荐落点：
-
-- `src/features/chat/ai/core/models.ts`
-- `src/features/models/`
+- `src/lib/`
 - `src/config/`
 
 ## Next
 
-### 4. 页面去占位化
+### 4. Chat Attachments / Multimodal Input
 
-目标：让剩余需要独立承载的 workbench 视图变成真实页面，而不是继续停留在占位态。
-
-优先做：
-
-1. `MCP`
-2. `Skills`
-3. 补齐已落地 workbench 的细节体验
-
-### 5. RAG 收尾
-
-目标：把当前已落地的 RAG V1 和已建立的 provider 边界，继续打磨成更稳定、更可维护的能力。
+目标：让聊天输入从纯文本扩展到图片和通用附件。
 
 优先做：
 
-1. 文档详情和重建索引体验
-2. 收紧 RAG 自动触发条件，减少数学题、纯推理题和无关请求的误触发
-3. 更细的错误反馈与观测
-4. 来源交互增强
-5. 补第二个 RAG provider，实现真正可替换
-6. 再评估 query rewrite / agentic RAG 的必要性
+1. 输入框里的图片 / 附件选择与上传
+2. 消息中的附件引用和展示
+3. 服务端对附件元数据和存储位置的处理
+4. 结合模型能力决定哪些 provider 支持图片输入
+5. 明确附件与 RAG / Sandbox / Subagents 的边界
 
-### 6. Agent Runtime 稳定化
+### 5. Search / RAG 第二阶段
 
-目标：继续保持 `agent-runtime` 是薄而稳定的 orchestration 层。
+目标：在已有 V1 基础上补第二批 provider 和更成熟的产品体验。
 
 优先做：
 
-1. 保持 `chat.ts` 和 wrappers 不回长逻辑
-2. 补高价值测试
-3. 优先补 `contract / evaluation / recovery`
-4. 只做必要的 telemetry / metadata 收口
-5. 不继续拆更多概念层
+1. 补第二个 Search provider，实现真正可替换
+2. 补第二个 RAG provider，实现真正可替换
+3. 收紧 RAG 自动触发条件
+4. 补搜索结果和来源展示体验
+5. 增加基础缓存与请求观测
+
+### 6. Provider / Models 第二阶段
+
+目标：继续把当前可用的模型配置整理成更稳定的 provider abstraction。
+
+优先做：
+
+1. 统一模型定义
+2. provider 默认策略
+3. 模型可用性检查和失败回退
+4. 为后续 `image generation`、`TTS / audio` 预留独立接入点
 
 ## Later
 
-### 7. Skills Runtime Contract
+### 7. Skills Runtime 第二阶段
 
-目标：只有在确有需求时，再把 `Skills` 从配置层推进到 runtime contract。
+目标：在现有本地安装 + runtime load 基础上，再决定是否推进更细的 activation / compatibility 策略。
+
+优先做：
+
+1. compatibility 校验
+2. payload 压缩
+3. 更细的 skill file gating
+4. 视真实需求再决定 `eager / lazy` 或 guardrail 注入
 
 ### 8. Subagents 稳定化
 
@@ -122,23 +125,18 @@
 - [multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md](./multi-agent/building-multi-agent-systems-when-and-how-to-use-them.md)
 - [multi-agent/ai-sdk-subagents.md](./multi-agent/ai-sdk-subagents.md)
 
-### 9. Production Readiness
+### 9. Durable Runs / Agent Platform
 
-目标：补 tracing、权限、审计、E2E，并在必要时增加 durable run 存储。
-
-### 10. Chat Attachments / Multimodal Input
-
-目标：让聊天输入从纯文本扩展到图片和通用附件。
+目标：只有在真实场景需要时，再把当前 agent harness 往更重的平台能力推进。
 
 优先做：
 
-1. 输入框里的图片 / 附件选择与上传
-2. 消息中的附件引用和展示
-3. 服务端对附件元数据和存储位置的处理
-4. 结合模型能力决定哪些 provider 支持图片输入
-5. 明确附件与 RAG / Sandbox / Subagents 的边界
+1. durable run storage / resume
+2. 更完整的 run tracing / audit
+3. queue / long-running jobs
+4. first-party MCP server 或更重 orchestration
 
-### 11. Chat Input UX
+### 10. Chat Input UX
 
 目标：补齐开箱即用的聊天输入体验，让本地版和托管版都更容易直接使用。
 
@@ -154,4 +152,4 @@
 - 新建一批 feature 专题文档
 - 过早引入重型 agent framework
 - 在没有真实需求前继续扩 runtime 抽象
-- 在 `Skills` 还没有 contract 前把它硬接进聊天
+- 过早把 `Skills` 扩成更重的权限系统

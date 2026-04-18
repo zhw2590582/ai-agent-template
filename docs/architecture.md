@@ -32,7 +32,7 @@ src/
 │   ├── sandbox/                # Sandbox provider 配置和服务端执行边界
 │   ├── search/                 # Tavily 配置和服务端 client
 │   ├── settings/               # app 级 settings schema / normalize 共享层
-│   └── skills/                 # Skills settings UI
+│   └── skills/                 # Skills 本地搜索 / 安装 / runtime loading
 ├── i18n/                       # next-intl 配置和消息聚合
 ├── lib/                        # 跨域共享工具、错误、日志、Supabase client
 └── proxy.ts                    # locale 检测和 session 更新
@@ -145,6 +145,8 @@ Chat UI
 
 ### 用户设置链路
 
+大部分 workbench 设置仍然走 profile / local fallback 这条链：
+
 ```text
 Workbench Dialog
   -> feature hook
@@ -161,8 +163,26 @@ Workbench Dialog
 - Search
 - Sandbox
 - MCP
-- Skills
 - RAG settings
+
+### Skills 本地链路
+
+`Skills` 不走数据库持久化，登录和 guest 统一走本地链路：
+
+```text
+Skills Dialog
+  -> local skills settings
+  -> installed skill packages (IndexedDB)
+  -> runtimeSkills projection
+  -> /api/chat
+  -> load_skill / read_skill_file
+```
+
+这个模式适用于：
+
+- Skills enable / disable
+- 本地安装包管理
+- runtime 按需 skill loading
 
 ### 会话存储链路
 

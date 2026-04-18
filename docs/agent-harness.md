@@ -127,13 +127,13 @@ UI / Workbench
 - Sandbox
 - MCP
 - RAG
+- Skills
 - Subagents
 
 其中 `Subagents V1` 当前仍然是最小串行 `Orchestrator-Subagent`：只支持串行 delegation，不支持并行 subagent orchestration。
 
 ### 当前还没真正进入 harness 的能力
 
-- Skills
 - Durable run storage / resume
 
 ## 当前已落地的收口结果
@@ -241,7 +241,7 @@ Capability Providers
   Memory
   RAG
   Subagents
-  Skills (future)
+  Skills
 ```
 
 这里最关键的边界有四个：
@@ -314,11 +314,15 @@ src/features/chat/
 
 兼容 wrapper 只为过渡服务。后续新增逻辑应直接落到 `agent-runtime`。
 
-### 4. 先收 runtime contract，再做 Skills / 更复杂 orchestration
+### 4. 继续收紧 runtime contract，再做更重的 Skills / orchestration
 
-`Skills` 当前只是 settings/UI，不是 runtime capability。
+`Skills` 现在已经进入 runtime V1，但当前能力仍然是：
 
-在没有明确 contract 之前，不建议直接把技能“硬接”进 prompt 或工具层。
+- 本地安装包
+- `runtimeSkills` 投影
+- `load_skill / read_skill_file`
+
+它还不是权限系统，也不是更重的 agent policy layer。
 
 更复杂的多代理编排也同理，必须等 harness 的 run context、workspace、finish、telemetry 这些基础层稳定后再接。
 
@@ -336,7 +340,8 @@ src/features/chat/
 - client / server 边界已明确
 - workspace lifecycle 已有最小模型
 - run-level metadata 和 telemetry 已经接通
-- 但还没有进入 durable run / skills / 更复杂 orchestration 阶段
+- Skills runtime V1 已接通
+- 但还没有进入 durable run / 更复杂 orchestration 阶段
 
 更准确地说：
 
@@ -351,6 +356,7 @@ src/features/chat/
 1. 补主链路高价值测试
 2. 让文档持续与代码同步
 3. 继续守住 wrapper 只做兼容层
+4. 收紧 skills payload 和本地状态边界
 
 当前已经完成、但不要再重复设计的内容：
 
@@ -372,7 +378,7 @@ src/features/chat/
 
 如果继续往下推进，只考虑这些小步，而不是重新开一轮大设计：
 
-1. 在确有产品需求时，再给 `Skills` 增加 runtime contract
+1. 在确有产品需求时，再给 `Skills` 增加更细 activation / policy contract
 2. 在确有用户可见收益时，再考虑 durable run storage / replay
 3. 在前两者都稳定后，再考虑是否需要更复杂的 orchestration
 
@@ -386,7 +392,7 @@ src/features/chat/
 
 - 直接把聊天主链路迁移到 OpenAI Agents SDK
 - 为了 subagent 提前重写整套 UI
-- 在 `Skills` 还没有 contract 之前做真实运行时接入
+- 在 `Skills` 还没有更清楚的 activation / policy contract 前，把它扩成更重的权限系统
 - 在没有 workspace lifecycle 之前扩大量 sandbox tool
 - 在没有 telemetry / durability 之前做复杂多代理并发
 - 把新的运行时逻辑继续塞回 `src/features/chat/server/chat.ts`
