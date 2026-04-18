@@ -117,7 +117,6 @@ export function buildSkillDefinitionFromPackage(
   >
 ): SkillDefinition {
   return {
-    activationMode: 'lazy',
     capabilities: skillPackage.capabilities,
     description: skillPackage.description,
     enabled: true,

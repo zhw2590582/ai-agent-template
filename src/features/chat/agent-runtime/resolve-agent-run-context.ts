@@ -114,8 +114,6 @@ function resolveRuntimeSkills(input: unknown): RuntimeSkill[] {
     (skill): skill is RuntimeSkill =>
       !!skill &&
       typeof skill === 'object' &&
-      (((skill as Record<string, unknown>).activationMode as string | undefined) === 'eager' ||
-        ((skill as Record<string, unknown>).activationMode as string | undefined) === 'lazy') &&
       typeof skill.id === 'string' &&
       typeof skill.name === 'string' &&
       typeof skill.description === 'string' &&

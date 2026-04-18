@@ -88,7 +88,6 @@ Use this skill when building Nuxt applications.
     expect(installed.githubUrl).toBe('https://github.com/antfu/skills/tree/HEAD/skills/nuxt');
     expect(installed.skillPath).toBe('nuxt');
     expect(definition).toEqual({
-      activationMode: 'lazy',
       capabilities: ['prompt'],
       description: installed.description,
       enabled: true,

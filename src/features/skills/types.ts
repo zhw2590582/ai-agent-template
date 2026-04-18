@@ -1,8 +1,6 @@
 export type SkillCapability = 'browser' | 'fs' | 'git' | 'http' | 'mcp' | 'prompt' | 'shell';
-export type SkillActivationMode = 'eager' | 'lazy';
 
 export interface SkillDefinition {
-  activationMode: SkillActivationMode;
   capabilities: SkillCapability[];
   description: string;
   enabled: boolean;
@@ -30,7 +28,6 @@ export interface InstalledSkillFile {
 }
 
 export interface RuntimeSkill {
-  activationMode: SkillActivationMode;
   description: string;
   files: InstalledSkillFile[];
   id: string;
