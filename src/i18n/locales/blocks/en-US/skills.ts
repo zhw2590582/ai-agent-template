@@ -46,6 +46,7 @@ export const enUSSkillsMessages = {
     install_dialog: {
       title: 'Skill Details',
       description: 'Review the skill metadata and GitHub source before installing it locally.',
+      description_label: 'Description',
       install: 'Install',
       update: 'Update',
       load_failed: 'Failed to load this skill from GitHub.',

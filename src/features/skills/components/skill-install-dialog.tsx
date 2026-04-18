@@ -1,11 +1,13 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
 import { ExternalLinkIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { MessageResponse } from '@/components/ai-elements/message';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { API_ROUTES } from '@/config/api';
@@ -141,78 +142,89 @@ export function SkillInstallDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="flex max-h-[min(90vh,52rem)] flex-col sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{t('skills_page.install_dialog.description')}</DialogDescription>
         </DialogHeader>
 
-        {isLoading ? (
-          <div className="flex flex-col gap-4">
-            <Skeleton className="h-5 w-52" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-11/12" />
-            <Skeleton className="h-32 w-full" />
-          </div>
-        ) : resolvedSkill ? (
-          <div className="flex flex-col gap-4">
-            <div className="flex items-start gap-3">
-              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3 text-sm">
-                {resolvedSkill.version ? (
-                  <span className="text-muted-foreground">
-                    {t('skills_page.install_dialog.version', {
-                      version: resolvedSkill.version,
-                    })}
-                  </span>
-                ) : null}
-                {resolvedSkill.installs > 0 ? (
-                  <span className="text-muted-foreground">
-                    {t('skills_page.search_dialog.installs', {
-                      count: resolvedSkill.installs,
-                    })}
-                  </span>
-                ) : null}
+        <div className="min-h-0 flex-1 overflow-y-auto pr-2">
+          {isLoading ? (
+            <div className="flex flex-col gap-4">
+              <Skeleton className="h-5 w-52" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-11/12" />
+              <Skeleton className="h-32 w-full" />
+            </div>
+          ) : resolvedSkill ? (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3 text-sm">
+                  {resolvedSkill.version ? (
+                    <span className="text-muted-foreground">
+                      {t('skills_page.install_dialog.version', {
+                        version: resolvedSkill.version,
+                      })}
+                    </span>
+                  ) : null}
+                  {resolvedSkill.installs > 0 ? (
+                    <span className="text-muted-foreground">
+                      {t('skills_page.search_dialog.installs', {
+                        count: resolvedSkill.installs,
+                      })}
+                    </span>
+                  ) : null}
+                  <SkillCapabilityBadges
+                    capabilities={resolvedSkill.capabilities}
+                    className="gap-2"
+                  />
+                  {isInstalled ? (
+                    <Badge variant="secondary">
+                      {t('skills_page.search_dialog.installed_badge')}
+                    </Badge>
+                  ) : null}
+                </div>
+                <Button
+                  asChild
+                  className="ml-auto shrink-0 whitespace-nowrap"
+                  size="sm"
+                  variant="outline"
+                >
+                  <a href={resolvedSkill.githubUrl} rel="noreferrer" target="_blank">
+                    <ExternalLinkIcon className="size-4" />
+                    <span>{t('skills_page.install_dialog.open_github')}</span>
+                  </a>
+                </Button>
               </div>
-              <Button
-                asChild
-                className="ml-auto shrink-0 whitespace-nowrap"
-                size="sm"
-                variant="outline"
-              >
-                <a href={resolvedSkill.githubUrl} rel="noreferrer" target="_blank">
-                  <ExternalLinkIcon className="size-4" />
-                  <span>{t('skills_page.install_dialog.open_github')}</span>
-                </a>
-              </Button>
-            </div>
 
-            <div className="border-border bg-muted/20 rounded-md border px-4 py-3">
-              <p className="text-sm font-medium">{resolvedSkill.description}</p>
-              {resolvedSkill.summary ? (
-                <p className="text-muted-foreground mt-2 text-sm leading-6">
-                  {resolvedSkill.summary}
-                </p>
-              ) : null}
-            </div>
-
-            <SkillCapabilityBadges capabilities={resolvedSkill.capabilities} />
-
-            <div className="border-border overflow-hidden rounded-md border">
-              <div className="border-border bg-muted/30 px-4 py-2 text-xs font-medium tracking-wide uppercase">
-                SKILL.md
+              <div className="border-border rounded-md border">
+                <div className="border-border bg-muted/30 px-4 py-2 text-xs font-medium tracking-wide uppercase">
+                  {t('skills_page.install_dialog.description_label')}
+                </div>
+                <div className="bg-card min-w-0 p-4">
+                  <p className="text-sm leading-6">{resolvedSkill.description}</p>
+                </div>
               </div>
-              <ScrollArea className="max-h-72">
-                <pre className="text-foreground overflow-x-auto p-4 text-xs whitespace-pre-wrap">
-                  {resolvedSkill.markdown}
-                </pre>
-              </ScrollArea>
+              <div className="border-border rounded-md border">
+                <div className="border-border bg-muted/30 px-4 py-2 text-xs font-medium tracking-wide uppercase">
+                  SKILL.md
+                </div>
+                <div className="bg-card min-w-0 p-4">
+                  <MessageResponse
+                    className={`[&_pre]:border-border text-sm leading-6 [&_code]:text-[0.8125rem] [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:border [&_pre]:shadow-none`}
+                    isAnimating={false}
+                  >
+                    {resolvedSkill.markdown}
+                  </MessageResponse>
+                </div>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="text-muted-foreground rounded-md border px-4 py-8 text-sm">
-            {t('skills_page.install_dialog.load_failed')}
-          </div>
-        )}
+          ) : (
+            <div className="text-muted-foreground rounded-md border px-4 py-8 text-sm">
+              {t('skills_page.install_dialog.load_failed')}
+            </div>
+          )}
+        </div>
 
         <DialogFooter>
           {target?.kind === 'installed' ? (

@@ -39,6 +39,7 @@ export const zhCNSkillsMessages = {
     install_dialog: {
       title: 'Skill 详情',
       description: '安装前先查看 skill 的元数据和 GitHub 源内容。',
+      description_label: '描述',
       install: '安装',
       update: '更新',
       load_failed: '从 GitHub 加载这个 skill 失败。',

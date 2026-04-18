@@ -33,6 +33,89 @@ const githubSkillDirectorySchema = z.array(
   })
 );
 
+const ALLOWED_SKILL_TEXT_EXTENSIONS = new Set([
+  'astro',
+  'bash',
+  'c',
+  'cc',
+  'cfg',
+  'conf',
+  'cpp',
+  'cs',
+  'css',
+  'csv',
+  'cts',
+  'cxx',
+  'env',
+  'fish',
+  'go',
+  'h',
+  'hh',
+  'hpp',
+  'html',
+  'ini',
+  'java',
+  'js',
+  'json',
+  'jsx',
+  'kt',
+  'kts',
+  'less',
+  'lua',
+  'md',
+  'mdx',
+  'mjs',
+  'mts',
+  'php',
+  'py',
+  'rb',
+  'rs',
+  'sass',
+  'scala',
+  'scss',
+  'sh',
+  'sql',
+  'svelte',
+  'swift',
+  'toml',
+  'ts',
+  'tsx',
+  'txt',
+  'vue',
+  'xml',
+  'yaml',
+  'yml',
+  'zsh',
+]);
+
+const ALLOWED_SKILL_TEXT_BASENAMES = new Set(['dockerfile', 'makefile', 'readme', 'skill']);
+
+export function isAllowedSkillTextFile(path: string) {
+  const normalizedPath = path.trim().toLowerCase();
+
+  if (!normalizedPath) {
+    return false;
+  }
+
+  const fileName = normalizedPath.split('/').at(-1) ?? normalizedPath;
+
+  if (fileName === '.env' || fileName.startsWith('.env.')) {
+    return true;
+  }
+
+  const nameWithoutLeadingDots = fileName.replace(/^\.+/, '');
+  const extension = nameWithoutLeadingDots.includes('.')
+    ? (nameWithoutLeadingDots.split('.').at(-1) ?? '')
+    : '';
+  const basename = extension ? nameWithoutLeadingDots.slice(0, -(extension.length + 1)) : fileName;
+
+  if (ALLOWED_SKILL_TEXT_EXTENSIONS.has(extension)) {
+    return true;
+  }
+
+  return ALLOWED_SKILL_TEXT_BASENAMES.has(basename);
+}
+
 async function fetchSkillMarkdown(source: string, skillPath: string) {
   const rawSkillUrl = buildSkillRawMarkdownUrl(source, skillPath);
   const response = await fetch(rawSkillUrl, {
@@ -106,6 +189,10 @@ async function fetchSkillFilesRecursively(source: string, skillPath: string) {
       }
 
       if (entry.type !== 'file' || !entry.download_url || !entry.path) {
+        continue;
+      }
+
+      if (!isAllowedSkillTextFile(entry.path)) {
         continue;
       }
 
